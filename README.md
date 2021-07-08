@@ -17,7 +17,7 @@ It provides methods of finding the validation errors defined by the DfE in 903 d
 Pyodide requires a pure Python wheel - we can build this here. Clone the repo and move it into the directory. Then run
 
 ```
-<to follow>
+python setup.py bdist_wheel
 ```
 
 ### Local installation

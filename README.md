@@ -10,3 +10,20 @@ It provides methods of finding the validation errors defined by the DfE in 903 d
 ```
 <to follow>
 ```
+
+
+### Building a wheel for Pyodide
+
+Pyodide requires a pure Python wheel - we can build this here. Clone the repo and move it into the directory. Then run
+
+```
+<to follow>
+```
+
+### Local installation
+
+To install, first clone the repo and move into the directory. Then run
+
+```
+pip install -e .
+```

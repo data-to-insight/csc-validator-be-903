@@ -1,7 +1,8 @@
+from typing import Tuple, Dict, List
 import pandas as pd
 from .types import ErrorDefinition
 
-def fake_error(dfs):
+def fake_error(dfs: Dict[str, pd.DataFrame]) -> Tuple[ErrorDefinition, Dict[str, List[int]]]:
     error = ErrorDefinition(
         code='1003',
         description='A fake error that fires if the child was born prior to 2006',

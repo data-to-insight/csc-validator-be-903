@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "903 Validator"
+version = "0.1.0"
+description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
+authors = ["Mark Waddoups <mark.waddoups@socialfinance.org.uk>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^1.3.0"
+numpy = "^1.21.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pytest-mock = "^3.6.1"
+wheel = "^0.36.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,11 +1,21 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
 from io import StringIO
-from typing import List
-from .types import UploadException
+from typing import cast
+from .types import UploadException, UploadedFile
 from .config import column_names
 
-def read_from_text(raw_files):
+def read_from_text(raw_files: list[UploadedFile]):
+    """
+    Reads from a raw list of files passed from javascript. These files are of
+    the form e.g.
+    [
+        {name: 'filename.csv', fileText: <file contents>, description: <upload metadata>}
+    ]
+
+    This function will try to catch most basic upload errors, and dispatch other errors
+    to either the csv or xml reader based on the file extension.
+    """
     if len(raw_files) == 0:
         raise UploadException('No files uploaded!')
 
@@ -16,14 +26,12 @@ def read_from_text(raw_files):
         if extensions[0] == 'csv':
             return read_csvs_from_text(raw_files)
         elif extensions[0] == 'xml':
-            if len(raw_files) != 1:
-                raise UploadException('Only reading from a single XML file is supported.')
             return read_xml_from_text(raw_files[0]['fileText'])
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
-def read_csvs_from_text(raw_files: List):
-    def _get_file_type(df):
+def read_csvs_from_text(raw_files: list[UploadedFile]):
+    def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
                 return table_name

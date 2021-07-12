@@ -1,10 +1,11 @@
 from collections import defaultdict
 from dataclasses import asdict
 from typing import Dict
+from .types import UploadedFile
 from .ingress import read_from_text
 from .config import tested_errors
 
-def run_validation_for_javascript(uploaded_files: Dict[str, str]):
+def run_validation_for_javascript(uploaded_files: list[UploadedFile]):
     """
     External API - this is the entrypoint for the frontend. 
 

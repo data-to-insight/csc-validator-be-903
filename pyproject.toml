@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
 authors = ["Mark Waddoups <mark.waddoups@socialfinance.org.uk>"]
 license = "MIT"
+packages = [
+    { include = "validator903" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

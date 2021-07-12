@@ -25,10 +25,10 @@ def read_from_text(raw_files):
 def read_csvs_from_text(raw_files: List):
     def _get_file_type(df):
         for table_name, expected_columns in column_names.items():
-            if set(df.columns) == expected_columns:
+            if set(df.columns) == set(expected_columns):
                 return table_name
         else:
-            raise UploadException('Failed to match provided data to known column names!')
+            raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
 
     files = {}
     for file_data in raw_files:

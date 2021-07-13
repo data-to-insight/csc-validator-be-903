@@ -1,11 +1,11 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
 from io import StringIO
-from typing import cast
+from typing import List
 from .types import UploadException, UploadedFile
 from .config import column_names
 
-def read_from_text(raw_files: list[UploadedFile]):
+def read_from_text(raw_files: List[UploadedFile]):
     """
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
@@ -30,7 +30,7 @@ def read_from_text(raw_files: list[UploadedFile]):
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
-def read_csvs_from_text(raw_files: list[UploadedFile]):
+def read_csvs_from_text(raw_files: List[UploadedFile]):
     def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):

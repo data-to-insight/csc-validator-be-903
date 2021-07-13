@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Type, TypedDict
+from typing import List, TypedDict
 
 @dataclass
 class ErrorDefinition:
     code: str
     description: str
-    affected_fields: list[str]
+    affected_fields: List[str]
 
 
 class UploadedFile(TypedDict):

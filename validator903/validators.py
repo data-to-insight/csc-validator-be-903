@@ -1,27 +1,31 @@
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Any
 import pandas as pd
 from .types import ErrorDefinition
 
-def fake_error(dfs: Dict[str, pd.DataFrame]) -> Tuple[ErrorDefinition, Dict[str, List[int]]]:
+def fake_error():
     error = ErrorDefinition(
         code='1003',
         description='A fake error that fires if the child was born prior to 2006',
         affected_fields=['DOB'],
     )
 
-    header = dfs['Header']
-    mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y').dt.year <= 2006
+    def _validate(dfs):
+        header = dfs['Header']
+        mask: Any = pd.to_datetime(header['DOB'], format='%d/%m/%Y').dt.year <= 2006
+        return {'Header': header.index[mask].values}
     
-    return error, {'Header': header.index[mask].values}
+    return error, _validate
 
-def fake_error2(dfs):
+def fake_error2():
     error = ErrorDefinition(
         code='2020',
         description='A fake error that fires if the child has a postcode containing F.',
         affected_fields=['HOME_POST'],
     )
 
-    df = dfs['Episodes']
-    mask = df['HOME_POST'].str.contains('F')
-    
-    return error, {'Episodes': df.index[mask].values}
+    def _validate(dfs):
+        df = dfs['Episodes']
+        mask = df['HOME_POST'].str.contains('F')
+        return {'Episodes': df.index[mask].values}
+
+    return error, _validate

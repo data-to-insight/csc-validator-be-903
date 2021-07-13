@@ -21,8 +21,7 @@ def run_validation_for_javascript(uploaded_files: list[UploadedFile]):
         
     js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
 
-
-    validated = [f(dfs) for f in tested_errors]
+    validated = [(error, f(dfs)) for error, f in tested_errors]
 
     # Passed to JS
     error_definitions = {e.code: asdict(e) for e, _ in validated}
@@ -34,3 +33,6 @@ def run_validation_for_javascript(uploaded_files: list[UploadedFile]):
                 errors[file_name][int(location)].append(error.code)
 
     return js_files, errors, error_definitions
+
+def get_error_definitions_list():
+    return [e for e, _ in tested_errors]

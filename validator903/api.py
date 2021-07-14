@@ -1,17 +1,18 @@
 from collections import defaultdict
 from dataclasses import asdict
-from typing import List, Dict
+from typing import List
 from .types import UploadedFile
 from .ingress import read_from_text
 from .config import tested_errors
 
-def run_validation_for_javascript(uploaded_files: List[UploadedFile]):
+def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_codes: List[str]):
     """
-    External API - this is the entrypoint for the frontend. 
+    External API - this is the main entrypoint for the frontend. 
 
     Returned values are designed to be Javascript friendly, so that toJs can be called.
 
-    :param uploaded_files: - should have .to_py()
+    :param uploaded_files: a list of file information with name, description and fileText - should have .to_py() called before passing
+    :param error_codes: a list of error codes to filter for when validating - should have .to_py() called before passing
     :returns: The relevant data in the form
       - js_files - A list of {row header: row value} dictionaries, one for each row.
       - errors - A list of all configured error definitions, as dictionaries.
@@ -21,7 +22,7 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile]):
         
     js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
 
-    validated = [(error, f(dfs)) for error, f in tested_errors]
+    validated = [(error, f(dfs)) for error, f in tested_errors if error.code in error_codes]
 
     # Passed to JS
     error_definitions = {e.code: asdict(e) for e, _ in validated}
@@ -35,4 +36,9 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile]):
     return js_files, errors, error_definitions
 
 def get_error_definitions_list():
+    """
+    External API - this is the other entrypoint for the frontend.
+
+    This is a simple function to return the list of all configured errors, so that end users can filter to their use case.
+    """
     return [e for e, _ in tested_errors]

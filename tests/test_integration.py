@@ -1,13 +1,8 @@
 """Tests for all configured errors"""
+import pytest
 from validator903.config import configured_errors, column_names
 import pandas as pd
 from validator903.types import ErrorDefinition
-
-def create_dummy_data():
-    return {
-        table_name: pd.DataFrame(columns=c)
-        for table_name, c in column_names.items()
-    }
 
 def test_all_configured_errors():
     codes = []
@@ -24,9 +19,13 @@ def test_all_configured_errors():
         assert error.code not in codes, f'Error code {error.code} is duplicated!'
         codes.append(error.code)
 
-def test_all_configured_error_functions():
-    # First things first - we pull in some dummy data
-    dummy_data = create_dummy_data()
+@pytest.mark.parametrize("data_choice", [
+    pytest.param('dummy_empty_input', id='empty input with columns'),
+    pytest.param('dummy_input_data', id='input with fake csvs'),
+    pytest.param('{}', id='totally empty input'),
+])
+def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_input_data):
+    dummy_data = eval(data_choice)
     for error_code, error_func in configured_errors:
         result = error_func(dummy_data)
 

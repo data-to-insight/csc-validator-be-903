@@ -9,9 +9,12 @@ def fake_error():
     )
 
     def _validate(dfs):
-        header = dfs['Header']
-        mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce').dt.year <= 2006
-        return {'Header': header.index[mask].tolist()}
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce').dt.year <= 2006
+            return {'Header': header.index[mask].tolist()}
     
     return error, _validate
 
@@ -23,8 +26,11 @@ def fake_error2():
     )
 
     def _validate(dfs):
-        df = dfs['Episodes']
-        mask = df['HOME_POST'].str.contains('F')
-        return {'Episodes': df.index[mask].tolist()}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            mask = episodes['HOME_POST'].str.contains('F')
+            return {'Episodes': episodes.index[mask].tolist()}
 
     return error, _validate

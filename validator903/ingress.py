@@ -42,8 +42,15 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
     for file_data in raw_files:
         csv_file = StringIO(file_data["fileText"])
         df = pd.read_csv(csv_file)
+        file_name = _get_file_type(df)
+        if 'This year' in file_data['description']:
+            name = file_name
+        elif 'Last year' in file_data['description']:
+            name = file_name + '_last'
+        else:
+            raise UploadException(f'Unrecognized file description {file_data["description"]}')
 
-        files[_get_file_type(df)] = df
+        files[name] = df
 
     return files
 

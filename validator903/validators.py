@@ -1,17 +1,16 @@
-from typing import Tuple, Dict, List, Any
 import pandas as pd
 from .types import ErrorDefinition
 
 def fake_error():
     error = ErrorDefinition(
-        code='1003',
+        code=1003,
         description='A fake error that fires if the child was born prior to 2006',
         affected_fields=['DOB'],
     )
 
     def _validate(dfs):
         header = dfs['Header']
-        mask: Any = pd.to_datetime(header['DOB'], format='%d/%m/%Y').dt.year <= 2006
+        mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y').dt.year <= 2006
         return {'Header': header.index[mask].values}
     
     return error, _validate

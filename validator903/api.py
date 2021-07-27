@@ -3,7 +3,7 @@ from dataclasses import asdict
 from typing import List
 from .types import UploadedFile
 from .ingress import read_from_text
-from .config import tested_errors
+from .config import configured_errors
 
 def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_codes: List[str]):
     """
@@ -22,7 +22,7 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_code
         
     js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
 
-    validated = [(error, f(dfs)) for error, f in tested_errors if error.code in error_codes]
+    validated = [(error, f(dfs)) for error, f in configured_errors if error.code in error_codes]
 
     # Passed to JS
     error_definitions = {e.code: asdict(e) for e, _ in validated}
@@ -41,4 +41,4 @@ def get_error_definitions_list():
 
     This is a simple function to return the list of all configured errors, so that end users can filter to their use case.
     """
-    return [e for e, _ in tested_errors]
+    return [e for e, _ in configured_errors]

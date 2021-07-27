@@ -3,7 +3,7 @@ from .types import ErrorDefinition
 
 def fake_error():
     error = ErrorDefinition(
-        code=1003,
+        code='1003',
         description='A fake error that fires if the child was born prior to 2006',
         affected_fields=['DOB'],
     )
@@ -11,7 +11,7 @@ def fake_error():
     def _validate(dfs):
         header = dfs['Header']
         mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y').dt.year <= 2006
-        return {'Header': header.index[mask].values}
+        return {'Header': header.index[mask].tolist()}
     
     return error, _validate
 
@@ -25,6 +25,6 @@ def fake_error2():
     def _validate(dfs):
         df = dfs['Episodes']
         mask = df['HOME_POST'].str.contains('F')
-        return {'Episodes': df.index[mask].values}
+        return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

@@ -3,6 +3,7 @@ from .types import ErrorDefinition
 
 
 def validate_101():
+    """Function to validate the 101 error"""
     error = ErrorDefinition(
         code='101',
         description='Gender code is not valid.',

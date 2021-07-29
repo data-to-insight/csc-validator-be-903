@@ -3,8 +3,8 @@ import requests
 
 # Authentication for user filing issue (must have read/write access to
 # repository to add issue to)
-USERNAME = 'mwaddoups'
-PASSWORD = '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'
+USERNAME = '<your-username>'
+PASSWORD = '<your-github-token-here>'
 
 # The repository to add this issue to
 REPO_OWNER = 'SocialFinanceDigitalLabs'

@@ -38,5 +38,5 @@ Right now this is manually copied into the frontend repo. Eventually this will b
 To install, first clone the repo and move into the directory. Then run
 
 ```
-pip install -e .
+poetry install
 ```

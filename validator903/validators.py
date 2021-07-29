@@ -1,6 +1,31 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+
+def validate_101():
+    error = ErrorDefinition(
+        code='101',
+        description='Gender code is not valid.',
+        affected_fields=['SEX']
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            valid_values = ['1', '2']
+
+            code_is_valid = header['SEX'].astype('string').isin(valid_values)
+            is_present = header['SEX'].notna()
+
+            mask = code_is_valid & is_present
+
+            labels_where_not_true = header.index[~mask].tolist()
+            return {'Header': labels_where_not_true}
+
+    return error, _validate
+
 def fake_error():
     error = ErrorDefinition(
         code='1003',

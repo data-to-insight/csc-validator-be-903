@@ -28,7 +28,7 @@ Most of the work from contributors will be in `validators.py`.
 Pyodide requires a pure Python wheel. To build one, clone the repo and move it into the directory. Then run
 
 ```
-python setup.py bdist_wheel
+poetry build
 ```
 
 Right now this is manually copied into the frontend repo. Eventually this will be ran automatically.

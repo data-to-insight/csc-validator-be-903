@@ -21,6 +21,7 @@ These all should have return type (Error, Dict[str, DataFrame])
 """
 configured_errors = [
     validate_101(),
+    validate_143(),
     fake_error(), 
     fake_error2(),
 ]

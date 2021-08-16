@@ -1,6 +1,7 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+
 def validate_143():
     error = ErrorDefinition(
         code='143',

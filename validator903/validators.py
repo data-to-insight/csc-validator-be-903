@@ -13,7 +13,28 @@ def validate_103():
             return {}
         
         header = dfs['Header']
-        code_list = ['WBRI', 'WIRI', 'WOTH', 'WIRT', 'WROM', 'MWBC', 'MWBA', 'MWAS', 'MOTH', 'AIND', 'APKN', 'ABAN', 'AOTH', 'BCRB', 'BAFR', 'BOTH', 'CHNE', 'OOTH', 'REFU', 'NOBT']
+        code_list = [
+          'WBRI', 
+          'WIRI', 
+          'WOTH', 
+          'WIRT', 
+          'WROM', 
+          'MWBC', 
+          'MWBA', 
+          'MWAS', 
+          'MOTH', 
+          'AIND', 
+          'APKN', 
+          'ABAN', 
+          'AOTH', 
+          'BCRB', 
+          'BAFR', 
+          'BOTH', 
+          'CHNE', 
+          'OOTH', 
+          'REFU', 
+          'NOBT'
+        ]
 
         mask = header['ETHNIC'].isin(code_list)
 

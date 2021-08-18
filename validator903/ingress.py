@@ -1,6 +1,7 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
-from io import StringIO
+from zipfile import ZipFile
+from io import StringIO, BytesIO
 from typing import List
 from .types import UploadException, UploadedFile
 from .config import column_names
@@ -81,3 +82,8 @@ def read_xml_from_text(xml_string):
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
     }
+
+def read_postcodes(zipped_csv_bytes):
+    with ZipFile(BytesIO(zipped_csv_bytes)) as unzipped:
+        with unzipped.open('postcodes.csv') as f:
+            return pd.read_csv(f)

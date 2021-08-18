@@ -16,8 +16,8 @@ def validate_143():
         episodes = dfs['Episodes']
         code_list = ['S', 'P', 'L', 'T', 'B']
 
-        mask = episodes['RNE'].isin(code_list)
-
+        mask = episodes['RNE'].isin(code_list) | episodes['RNE'].isna()
+        
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -45,39 +45,5 @@ def validate_101():
         validation_error_locations = header.index[validation_error_mask]
 
         return {'Header': validation_error_locations.tolist()}
-
-    return error, _validate
-
-def fake_error():
-    error = ErrorDefinition(
-        code='1003',
-        description='A fake error that fires if the child was born prior to 2006',
-        affected_fields=['DOB'],
-    )
-
-    def _validate(dfs):
-        if 'Header' not in dfs:
-            return {}
-        else:
-            header = dfs['Header']
-            mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce').dt.year <= 2006
-            return {'Header': header.index[mask].tolist()}
-    
-    return error, _validate
-
-def fake_error2():
-    error = ErrorDefinition(
-        code='2020',
-        description='A fake error that fires if the child has a postcode containing F.',
-        affected_fields=['HOME_POST'],
-    )
-
-    def _validate(dfs):
-        if 'Episodes' not in dfs:
-            return {}
-        else:
-            episodes = dfs['Episodes']
-            mask = episodes['HOME_POST'].str.contains('F')
-            return {'Episodes': episodes.index[mask].tolist()}
 
     return error, _validate

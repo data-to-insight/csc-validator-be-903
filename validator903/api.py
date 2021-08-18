@@ -1,11 +1,11 @@
 from collections import defaultdict
 from dataclasses import asdict
-from typing import List
+from typing import Any, List, Dict
 from .types import UploadedFile
 from .ingress import read_from_text
 from .config import configured_errors
 
-def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_codes: List[str]):
+def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_codes: List[str], metadata: Dict[str, Any]):
     """
     External API - this is the main entrypoint for the frontend. 
 
@@ -19,6 +19,7 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_code
       - error_definitions - A nested dictionary of {file name -> index in file -> list of error codes} 
     """
     dfs = read_from_text(raw_files=uploaded_files)
+    dfs['metadata'] = metadata
         
     js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
 

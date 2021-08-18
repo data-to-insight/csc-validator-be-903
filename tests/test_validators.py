@@ -13,3 +13,19 @@ def test_validate_101():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [2, 3]}
+
+
+def test_validate_102():
+
+    fake_data = pd.DataFrame({
+        'DOB': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19'],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_102()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [2, 3]}
+

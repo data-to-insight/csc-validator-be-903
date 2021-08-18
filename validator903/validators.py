@@ -33,7 +33,7 @@ def validate_102():
 
     def _validate(dfs):
         if 'Header' not in dfs:
-            return{}
+            return {}
         else:
             header = dfs['Header']
             mask = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce').notna()

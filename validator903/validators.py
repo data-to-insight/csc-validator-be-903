@@ -45,6 +45,29 @@ def validate_103():
 
     return error, _validate
 
+def validate_143():
+    error = ErrorDefinition(
+        code='143',
+        description='The reason for new episode code is not a valid code.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = ['S', 'P', 'L', 'T', 'B']
+
+        mask = episodes['RNE'].isin(code_list) | episodes['RNE'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_101():
     error = ErrorDefinition(
         code='101',
@@ -65,8 +88,8 @@ def validate_101():
         validation_error_locations = header.index[validation_error_mask]
 
         return {'Header': validation_error_locations.tolist()}
-
-    return error, _validate
+      
+    return error, _validate 
 
 def validate_102():
     error = ErrorDefinition(

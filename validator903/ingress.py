@@ -79,6 +79,9 @@ def read_xml_from_text(xml_string):
             if table.tag == 'EPISODE':
                 data = read_data(table)
                 episodes_df.append(pd.Series({k: {**all_data, **data}.get(k, None) for k in column_names['Episodes']}))
+            elif table.tag == 'AREVIEW':
+                data = read_data(table)
+                episodes_df.append(pd.Series({k: {**all_data, **data}.get(k, None) for k in column_names['Reviews']}))
 
     return {
         'Header': pd.DataFrame(header_df),

@@ -38,7 +38,9 @@ def validate_141():
             episodes = dfs['Episodes']
             mask = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce').notna()
 
-            validation_error_mask = ~mask
+            NA = episodes['DECOM'].isna()
+
+            validation_error_mask = ~mask & ~NA
             validation_error_locations = episodes.index[validation_error_mask]
 
             return {'Episodes': validation_error_locations.tolist()}

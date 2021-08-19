@@ -1,7 +1,6 @@
 from validator903.validators import *
 import pandas as pd
 
-
 def test_validate_143():
     fake_data = pd.DataFrame({
         'RNE': ['S', 'p', 'SP', 'a', '', pd.NA],
@@ -14,8 +13,20 @@ def test_validate_143():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [1, 2, 3, 4]}
-    
 
+def test_validate_146():
+    fake_data = pd.DataFrame({
+        'PLACE': ['A2', 'R4', 'Z', 'P1', '', 't3', pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_146()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 1, 2, 4, 5]}
+    
 def test_validate_103():
     fake_data = pd.DataFrame({
         'ETHNIC': ['WBRI', 'WIRI', 'WOTH', 'wbri', 'White British', '', pd.NA],

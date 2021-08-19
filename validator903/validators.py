@@ -88,3 +88,26 @@ def validate_102():
             return {'Header': validation_error_locations.tolist()}
     
     return error, _validate
+
+def validate_392c():
+    error = ErrorDefinition(
+        code='392c',
+        description='Postcode(s) provided are invalid.',
+        affected_fields=['HOME_POST', 'PL_POST'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'postcodes' not in dfs['metadata']:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            postcode_list = dfs['metadata']['postcodes']['pcd']
+
+            home_valid = episodes['HOME_POST'].isin(postcode_list)
+            pl_valid = episodes['PL_POST'].isin(postcode_list)
+
+            error_mask = ~home_valid | ~pl_valid
+
+            return {'Episodes': episodes.index[error_mask].tolist()}
+
+    return error, _validate

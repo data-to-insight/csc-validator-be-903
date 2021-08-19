@@ -16,12 +16,20 @@ def dummy_input_data():
         path = os.path.join(file_path, file)
         df = pd.read_csv(path)
         out[identifier] = df
+    out['metadata'] = {}
 
     return out
 
 @pytest.fixture
+def dummy_postcodes():
+    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
+    return pd.read_csv(file_path)
+
+@pytest.fixture
 def dummy_empty_input():
-    return {
+    out = {
         table_name: pd.DataFrame(columns=c)
         for table_name, c in column_names.items()
     }
+    out['metadata'] = {}
+    return out

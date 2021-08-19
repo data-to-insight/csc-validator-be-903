@@ -41,3 +41,26 @@ def test_validate_102():
 
     assert result == {'Header': [2, 3, 4]}
 
+def test_validate_392c(dummy_postcodes):
+    fake_data = pd.DataFrame({
+        'HOME_POST': [
+            'AB1 0JD',
+            'invalid',
+            'AB1 0JD',
+            'invalid',
+        ],
+        'PL_POST': [
+            'AB1 0JD',
+            'AB1 0JD',
+            'invalid',
+            'invalid',
+        ],
+    })
+
+    fake_dfs = {'Episodes': fake_data, 'metadata': {'postcodes': dummy_postcodes}}
+
+    error_defn, error_func = validate_392c()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1, 2, 3]}

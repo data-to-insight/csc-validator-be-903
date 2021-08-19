@@ -12,7 +12,7 @@ column_names = {
     'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE', 'HOME_POST', 'PL_POST', 'URN'],
     'Reviews': ['CHILD', 'DOB', 'REVIEW', 'REVIEW_CODE'],
     'UASC': ['CHILD', 'SEX', 'DOB', 'DUC'],
-    'OC3': ['CHILD', 'SEX', 'IN_TOUCH', 'ACTIV', 'ACCOM'],
+    'OC3': ['CHILD', 'DOB', 'IN_TOUCH', 'ACTIV', 'ACCOM'],
 }
 
 """

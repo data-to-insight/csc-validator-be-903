@@ -40,3 +40,11 @@ To install, first clone the repo and move into the directory. Then run
 ```
 poetry install
 ```
+
+### Updating postcodes
+
+To update postcodes, use the `scripts/create_postcode_db.py` script.
+
+This requires data from the latest ONS postcode file - the National Statistics Postcode Lookup. An example file is [here](https://geoportal.statistics.gov.uk/datasets/ons::national-statistics-postcode-lookup-may-2021/about).
+
+You will need to update the filenames in the script. This will then output `la_data.json` and `postcodes.zip`. These then need to be bundled with the [frontend code](https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta) - this will be done by a maintainer of both repositories. Reach out to Social Finance if needed.

@@ -24,6 +24,27 @@ def validate_101():
 
     return error, _validate
 
+def validate_141():
+    error = ErrorDefinition(
+        code = '141',
+        description = 'Date episode began is not a valid date.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            mask = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce').notna()
+
+            validation_error_mask = ~mask
+            validation_error_locations = episodes.index[validation_error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def fake_error():
     error = ErrorDefinition(
         code='1003',

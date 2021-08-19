@@ -59,6 +59,7 @@ def read_xml_from_text(xml_string):
     header_df = []
     episodes_df = []
     uasc_df = []
+    oc3_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
@@ -72,6 +73,8 @@ def read_xml_from_text(xml_string):
         header_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['Header']}))
         if all_data.get('DUC', None) is not None:
             uasc_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['UASC']}))
+        if all_data.get('IN_TOUCH', None) is not None:
+            oc3_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['OC3']}))
         for table in child:
             if table.tag == 'EPISODE':
                 data = read_data(table)
@@ -81,6 +84,7 @@ def read_xml_from_text(xml_string):
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
+        'OC3': pd.DataFrame(oc3_df),
     }
 
 def read_postcodes(zipped_csv_bytes):

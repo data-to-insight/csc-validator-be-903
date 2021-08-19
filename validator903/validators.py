@@ -101,10 +101,10 @@ def validate_392c():
             return {}
         else:
             episodes = dfs['Episodes']
-            postcode_list = dfs['metadata']['postcodes']['pcd']
+            postcode_list = set(dfs['metadata']['postcodes']['pcd'])
 
-            home_valid = episodes['HOME_POST'].isin(postcode_list)
-            pl_valid = episodes['PL_POST'].isin(postcode_list)
+            home_valid = episodes['HOME_POST'].apply(lambda x: x in postcode_list)
+            pl_valid = episodes['PL_POST'].apply(lambda x: x in postcode_list)
 
             error_mask = ~home_valid | ~pl_valid
 

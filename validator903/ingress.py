@@ -59,28 +59,78 @@ def read_xml_from_text(xml_string):
     header_df = []
     episodes_df = []
     uasc_df = []
+    oc2_df = []
+    oc3_df = []
+    ad1_df = []
+    reviews_df = []
+    sbpfa_df = []
+    prev_perm_df = []
+    missing_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
+        # The PL tag needs to be renamed to PLACE to match the CSV
+        conversions = {
+            'CHILDID': 'CHILD',
+            'PL': 'PLACE',
+        }
         return  {
-            (node.tag if node.tag != 'CHILDID' else 'CHILD'): node.text 
+            conversions.get(node.tag, node.tag): node.text 
             for node in table.iter() if len(node) == 0
         }
 
+    def get_fields_for_table(all_data, table_name):
+        def read_value(k):
+            val = all_data.get(k, None)
+            try:
+                val = int(val)
+            except:
+                pass
+            return val
+        return pd.Series({k: read_value(k) for k in column_names[table_name]}) 
+
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)
-        header_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['Header']}))
-        if all_data.get('DUC', None) is not None:
-            uasc_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['UASC']}))
+        header_df.append(get_fields_for_table(all_data, 'Header'))
+        if all_data.get('UASC', None) is not None:
+            uasc_df.append(get_fields_for_table(all_data, 'UASC'))
+        if all_data.get('IN_TOUCH', None) is not None:
+            oc3_df.append(get_fields_for_table(all_data, 'OC3'))
+        if all_data.get('DATE_INT', None) is not None:
+            ad1_df.append(get_fields_for_table(all_data, 'AD1'))
         for table in child:
             if table.tag == 'EPISODE':
                 data = read_data(table)
-                episodes_df.append(pd.Series({k: {**all_data, **data}.get(k, None) for k in column_names['Episodes']}))
+                episodes_df.append(get_fields_for_table({**all_data, **data}, 'Episodes'))
+            elif table.tag == 'HEADER':
+                for child_table in table:
+                    if child_table.tag == 'AREVIEW':
+                        data = read_data(child_table)
+                        reviews_df.append(get_fields_for_table({**all_data, **data}, 'Reviews'))
+                    elif child_table.tag == 'AMISSING':
+                        data = read_data(child_table)
+                        missing_df.append(get_fields_for_table({**all_data, **data}, 'Missing'))
+                    elif child_table.tag == 'OC2':
+                        data = read_data(child_table)
+                        oc2_df.append(get_fields_for_table({**all_data, **data}, 'OC2'))
+                    elif child_table.tag == 'PERMANENCE':
+                        data = read_data(child_table)
+                        prev_perm_df.append(get_fields_for_table({**all_data, **data}, 'PrevPerm'))
+                    elif child_table.tag == 'AD_PLACED':
+                        data = read_data(child_table)
+                        sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
     return {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
+        'Reviews': pd.DataFrame(reviews_df),
+        'OC2': pd.DataFrame(oc2_df),
+        'OC3': pd.DataFrame(oc3_df),
+        'AD1': pd.DataFrame(ad1_df),
+        'PlacedAdoption': pd.DataFrame(sbpfa_df),
+        'PrevPerm': pd.DataFrame(prev_perm_df),
+        'Missing': pd.DataFrame(missing_df),
     }
 
 def read_postcodes(zipped_csv_bytes):

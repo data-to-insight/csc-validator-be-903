@@ -57,7 +57,7 @@ def validate_143():
             return {}
         
         episodes = dfs['Episodes']
-        code_list = ['S', 'P', 'L', 'T', 'B']
+        code_list = ['S', 'P', 'L', 'T', 'U', 'B']
 
         mask = episodes['RNE'].isin(code_list) | episodes['RNE'].isna()
         
@@ -312,10 +312,11 @@ def validate_392c():
             return {}
         else:
             episodes = dfs['Episodes']
-            postcode_list = set(dfs['metadata']['postcodes']['pcd'])
+            postcode_list = set(dfs['metadata']['postcodes']['pcd'].str.replace(' ', ''))
 
-            home_valid = episodes['HOME_POST'].apply(lambda x: x in postcode_list)
-            pl_valid = episodes['PL_POST'].apply(lambda x: x in postcode_list)
+            is_valid = lambda x: x.replace(' ', '') in postcode_list
+            home_valid = episodes['HOME_POST'].apply(is_valid)
+            pl_valid = episodes['PL_POST'].apply(is_valid)
 
             error_mask = ~home_valid | ~pl_valid
 

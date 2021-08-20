@@ -68,6 +68,43 @@ def validate_143():
 
     return error, _validate
 
+def validate_144():
+    error = ErrorDefinition(
+        code='144',
+        description='The legal status code is not a valid code.',
+        affected_fields=['LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'C1', 
+          'C2',
+          'D1', 
+          'E1', 
+          'V2', 
+          'V3', 
+          'V4', 
+          'J1', 
+          'J2', 
+          'J3', 
+          'L1', 
+          'L2',
+          'L3'
+        ]
+
+        mask = episodes['LS'].isin(code_list) | episodes['LS'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+      
 def validate_145():
     error = ErrorDefinition(
         code='145',
@@ -89,10 +126,9 @@ def validate_145():
           'N6', 
           'N7', 
           'N8', 
-          ]
+        ]
 
         mask = episodes['CIN'].isin(code_list) | episodes['CIN'].isna()
-        
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 

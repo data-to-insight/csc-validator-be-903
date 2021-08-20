@@ -143,3 +143,17 @@ def test_validate_392c(dummy_postcodes):
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [1, 2, 3]}
+
+def test_validate_213():
+    fake_data = pd.DataFrame({
+        'PLACE': ['T0','U6','U1','U4','P1','T2','T3', pd.NA],
+        'PLACE_PROVIDER': [pd.NA , pd.NA,'PR3','PR4','PR0','PR2','PR1', pd.NA],
+    })
+
+    fake_dfs = {'Episode': fake_data}
+
+    error_defn, error_func = validate_213()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episode': [5,6]}

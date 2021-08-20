@@ -39,4 +39,5 @@ configured_errors = [
     validate_103(),
     validate_102(),
     validate_392c(),
+    validate_213(),
 ]

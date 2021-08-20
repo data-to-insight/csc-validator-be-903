@@ -14,6 +14,7 @@ def dummy_input_files():
         'placed_for_adoption.csv': 'PlacedAdoption',
         'reviews.csv': 'Reviews',
         'uasc.csv': 'UASC',
+        'previous_permanence.csv': 'PrevPerm',
     }
 
 @pytest.fixture

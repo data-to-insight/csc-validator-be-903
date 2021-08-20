@@ -68,6 +68,171 @@ def validate_143():
 
     return error, _validate
 
+def validate_144():
+    error = ErrorDefinition(
+        code='144',
+        description='The legal status code is not a valid code.',
+        affected_fields=['LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'C1', 
+          'C2',
+          'D1', 
+          'E1', 
+          'V2', 
+          'V3', 
+          'V4', 
+          'J1', 
+          'J2', 
+          'J3', 
+          'L1', 
+          'L2',
+          'L3'
+        ]
+
+        mask = episodes['LS'].isin(code_list) | episodes['LS'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_145():
+    error = ErrorDefinition(
+        code='145',
+        description='Category of need code is not a valid code.',
+        affected_fields=['CIN'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'N1', 
+          'N2', 
+          'N3', 
+          'N4', 
+          'N5', 
+          'N6', 
+          'N7', 
+          'N8', 
+        ]
+
+        mask = episodes['CIN'].isin(code_list) | episodes['CIN'].isna()
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+ 
+def validate_146():
+    error = ErrorDefinition(
+        code='146',
+        description='Placement type code is not a valid code.',
+        affected_fields=['PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'A3', 
+          'A4',
+          'A5',
+          'A6', 
+          'H5', 
+          'K1', 
+          'K2', 
+          'P1', 
+          'P2', 
+          'P3', 
+          'R1', 
+          'R2', 
+          'R3', 
+          'R5', 
+          'S1', 
+          'T0', 
+          'T1', 
+          'T2', 
+          'T3', 
+          'T4', 
+          'U1', 
+          'U2', 
+          'U3', 
+          'U4', 
+          'U5', 
+          'U6', 
+          'Z1'
+        ]
+
+        mask = episodes['PLACE'].isin(code_list) | episodes['PLACE'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_149():
+    error = ErrorDefinition(
+        code='149',
+        description='Reason episode ceased code is not valid. ',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'E11',
+          'E12', 
+          'E2', 
+          'E3', 
+          'E4A', 
+          'E4B', 
+          'E13', 
+          'E41',
+          'E45', 
+          'E46', 
+          'E47', 
+          'E48', 
+          'E5', 
+          'E6', 
+          'E7', 
+          'E8',
+          'E9',
+          'E14', 
+          'E15',
+          'E16', 
+          'E17', 
+          'X1'
+        ]
+
+        mask = episodes['REC'].isin(code_list) | episodes['REC'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_101():
     error = ErrorDefinition(
         code='101',
@@ -90,6 +255,29 @@ def validate_101():
         return {'Header': validation_error_locations.tolist()}
       
     return error, _validate 
+
+def validate_141():
+    error = ErrorDefinition(
+        code = '141',
+        description = 'Date episode began is not a valid date.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            mask = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = episodes['DECOM'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = episodes.index[validation_error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+    
+    return error, _validate
 
 def validate_102():
     error = ErrorDefinition(

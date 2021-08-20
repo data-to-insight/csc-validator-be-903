@@ -68,6 +68,125 @@ def validate_143():
 
     return error, _validate
 
+def validate_144():
+    error = ErrorDefinition(
+        code='144',
+        description='The legal status code is not a valid code.',
+        affected_fields=['LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'C1', 
+          'C2',
+          'D1', 
+          'E1', 
+          'V2', 
+          'V3', 
+          'V4', 
+          'J1', 
+          'J2', 
+          'J3', 
+          'L1', 
+          'L2',
+          'L3'
+        ]
+
+        mask = episodes['LS'].isin(code_list) | episodes['LS'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_145():
+    error = ErrorDefinition(
+        code='145',
+        description='Category of need code is not a valid code.',
+        affected_fields=['CIN'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'N1', 
+          'N2', 
+          'N3', 
+          'N4', 
+          'N5', 
+          'N6', 
+          'N7', 
+          'N8', 
+        ]
+
+        mask = episodes['CIN'].isin(code_list) | episodes['CIN'].isna()
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+ 
+def validate_146():
+    error = ErrorDefinition(
+        code='146',
+        description='Placement type code is not a valid code.',
+        affected_fields=['PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'A3', 
+          'A4',
+          'A5',
+          'A6', 
+          'H5', 
+          'K1', 
+          'K2', 
+          'P1', 
+          'P2', 
+          'P3', 
+          'R1', 
+          'R2', 
+          'R3', 
+          'R5', 
+          'S1', 
+          'T0', 
+          'T1', 
+          'T2', 
+          'T3', 
+          'T4', 
+          'U1', 
+          'U2', 
+          'U3', 
+          'U4', 
+          'U5', 
+          'U6', 
+          'Z1'
+        ]
+
+        mask = episodes['PLACE'].isin(code_list) | episodes['PLACE'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_149():
     error = ErrorDefinition(
         code='149',

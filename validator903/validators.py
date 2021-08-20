@@ -57,7 +57,7 @@ def validate_143():
             return {}
         
         episodes = dfs['Episodes']
-        code_list = ['S', 'P', 'L', 'T', 'B']
+        code_list = ['S', 'P', 'L', 'T', 'U', 'B']
 
         mask = episodes['RNE'].isin(code_list) | episodes['RNE'].isna()
         

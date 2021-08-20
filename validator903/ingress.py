@@ -59,6 +59,7 @@ def read_xml_from_text(xml_string):
     header_df = []
     episodes_df = []
     uasc_df = []
+    oc2_df = []
     oc3_df = []
     ad1_df = []
     reviews_df = []
@@ -99,6 +100,9 @@ def read_xml_from_text(xml_string):
                     if child_table.tag == 'AREVIEW':
                         data = read_data(child_table)
                         reviews_df.append(get_fields_for_table({**all_data, **data}, 'Reviews'))
+                    elif child_table.tag == 'OC2':
+                        data = read_data(child_table)
+                        oc2_df.append(get_fields_for_table({**all_data, **data}, 'OC2'))
                     elif child_table.tag == 'AD_PLACED':
                         data = read_data(child_table)
                         sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
@@ -108,6 +112,7 @@ def read_xml_from_text(xml_string):
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
         'Reviews': pd.DataFrame(reviews_df),
+        'OC2': pd.DataFrame(oc2_df),
         'OC3': pd.DataFrame(oc3_df),
         'AD1': pd.DataFrame(ad1_df),
         'PlacedAdoption': pd.DataFrame(sbpfa_df),

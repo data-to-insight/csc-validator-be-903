@@ -9,6 +9,7 @@ def dummy_input_files():
         'header.csv': 'Header',
         'episodes.csv': 'Episodes',
         'ad1.csv': 'AD1',
+        'oc2.csv': 'OC2',
         'oc3.csv': 'OC3',
         'placed_for_adoption.csv': 'PlacedAdoption',
         'reviews.csv': 'Reviews',

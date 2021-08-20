@@ -9,6 +9,11 @@ def dummy_input_data():
     file_maps = {
         'header.csv': 'Header',
         'episodes.csv': 'Episodes',
+        'ad1.csv': 'AD1',
+        'oc3.csv': 'OC3',
+        'placed_for_adoption.csv': 'PlacedAdoption',
+        'reviews.csv': 'Reviews',
+        'uasc.csv': 'UASC',
     }
 
     out = {}

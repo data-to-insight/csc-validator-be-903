@@ -1,5 +1,6 @@
 import pytest
-from validator903.ingress import read_from_text
+import os
+from validator903.ingress import read_from_text, read_xml_from_text
 from validator903.types import UploadException, UploadedFile
 
 class Test_read_from_text:
@@ -21,3 +22,15 @@ class Test_read_from_text:
         files: list[UploadedFile] = [{'name': 'data.xml', 'fileText': 'test_text', 'description': ''}]
         read_from_text(files)
         read_xml.assert_called_once_with('test_text')
+
+
+def test_read_xml_from_text():
+    xml_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'fake_903.xml')
+    with open(xml_path) as f:
+        data = f.read()
+
+    out = read_xml_from_text(data)
+
+    for name, val in out.items():
+        assert len(val) > 0, f'No entries found for {name}'
+    

@@ -60,6 +60,9 @@ def read_xml_from_text(xml_string):
     episodes_df = []
     uasc_df = []
     oc3_df = []
+    ad1_df = []
+    reviews_df = []
+    sbpfa_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
@@ -68,26 +71,46 @@ def read_xml_from_text(xml_string):
             for node in table.iter() if len(node) == 0
         }
 
+    def get_fields_for_table(all_data, table_name):
+        def read_value(k):
+            val = all_data.get(k, None)
+            try:
+                val = int(val)
+            except:
+                pass
+            return val
+        return pd.Series({k: read_value(k) for k in column_names[table_name]}) 
+
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)
-        header_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['Header']}))
-        if all_data.get('DUC', None) is not None:
-            uasc_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['UASC']}))
+        header_df.append(get_fields_for_table(all_data, 'Header'))
+        if all_data.get('UASC', None) is not None:
+            uasc_df.append(get_fields_for_table(all_data, 'UASC'))
         if all_data.get('IN_TOUCH', None) is not None:
-            oc3_df.append(pd.Series({k: all_data.get(k, None) for k in column_names['OC3']}))
+            oc3_df.append(get_fields_for_table(all_data, 'OC3'))
+        if all_data.get('DATE_INT', None) is not None:
+            ad1_df.append(get_fields_for_table(all_data, 'AD1'))
         for table in child:
             if table.tag == 'EPISODE':
                 data = read_data(table)
-                episodes_df.append(pd.Series({k: {**all_data, **data}.get(k, None) for k in column_names['Episodes']}))
-            elif table.tag == 'AREVIEW':
-                data = read_data(table)
-                episodes_df.append(pd.Series({k: {**all_data, **data}.get(k, None) for k in column_names['Reviews']}))
+                episodes_df.append(get_fields_for_table({**all_data, **data}, 'Episodes'))
+            elif table.tag == 'HEADER':
+                for child_table in table:
+                    if child_table.tag == 'AREVIEW':
+                        data = read_data(child_table)
+                        reviews_df.append(get_fields_for_table({**all_data, **data}, 'Reviews'))
+                    elif child_table.tag == 'AD_PLACED':
+                        data = read_data(child_table)
+                        sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
     return {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
+        'Reviews': pd.DataFrame(reviews_df),
         'OC3': pd.DataFrame(oc3_df),
+        'AD1': pd.DataFrame(ad1_df),
+        'PlacedAdoption': pd.DataFrame(sbpfa_df),
     }
 
 def read_postcodes(zipped_csv_bytes):

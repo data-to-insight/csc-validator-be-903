@@ -13,6 +13,8 @@ column_names = {
     'Reviews': ['CHILD', 'DOB', 'REVIEW', 'REVIEW_CODE'],
     'UASC': ['CHILD', 'SEX', 'DOB', 'DUC'],
     'OC3': ['CHILD', 'DOB', 'IN_TOUCH', 'ACTIV', 'ACCOM'],
+    'AD1': ['CHILD', 'DOB', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR'],
+    'PlacedAdoption': ['CHILD', 'DOB', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED'],
 }
 
 """

@@ -125,12 +125,14 @@ def test_validate_392c(dummy_postcodes):
             'invalid',
             'AB1 0JD',
             'invalid',
+            'AB10JD',
         ],
         'PL_POST': [
             'AB1 0JD',
             'AB1 0JD',
             'invalid',
             'invalid',
+            'AB1 0JD',
         ],
     })
 

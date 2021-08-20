@@ -67,8 +67,13 @@ def read_xml_from_text(xml_string):
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
+        # The PL tag needs to be renamed to PLACE to match the CSV
+        conversions = {
+            'CHILDID': 'CHILD',
+            'PL': 'PLACE',
+        }
         return  {
-            (node.tag if node.tag != 'CHILDID' else 'CHILD'): node.text 
+            conversions.get(node.tag, node.tag): node.text 
             for node in table.iter() if len(node) == 0
         }
 

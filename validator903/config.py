@@ -20,6 +20,7 @@ column_names = {
     'PlacedAdoption': ['CHILD', 'DOB', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED'],
     # Note: for PrevPerm, LA_PERM will usually be blank and shouldn't be used directly
     'PrevPerm': ['CHILD', 'DOB', 'PREV_PERM', 'LA_PERM', 'DATE_PERM'],
+    'Missing': ['CHILD', 'DOB', 'MISSING', 'MIS_START', 'MIS_END'],
 }
 
 """

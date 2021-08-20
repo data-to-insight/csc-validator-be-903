@@ -65,6 +65,7 @@ def read_xml_from_text(xml_string):
     reviews_df = []
     sbpfa_df = []
     prev_perm_df = []
+    missing_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
@@ -106,6 +107,9 @@ def read_xml_from_text(xml_string):
                     if child_table.tag == 'AREVIEW':
                         data = read_data(child_table)
                         reviews_df.append(get_fields_for_table({**all_data, **data}, 'Reviews'))
+                    elif child_table.tag == 'AMISSING':
+                        data = read_data(child_table)
+                        missing_df.append(get_fields_for_table({**all_data, **data}, 'Missing'))
                     elif child_table.tag == 'OC2':
                         data = read_data(child_table)
                         oc2_df.append(get_fields_for_table({**all_data, **data}, 'OC2'))
@@ -125,7 +129,8 @@ def read_xml_from_text(xml_string):
         'OC3': pd.DataFrame(oc3_df),
         'AD1': pd.DataFrame(ad1_df),
         'PlacedAdoption': pd.DataFrame(sbpfa_df),
-        'PrevPerm': pd.DataFrame(prev_perm_df)
+        'PrevPerm': pd.DataFrame(prev_perm_df),
+        'Missing': pd.DataFrame(missing_df),
     }
 
 def read_postcodes(zipped_csv_bytes):

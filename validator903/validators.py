@@ -314,11 +314,13 @@ def validate_392c():
             episodes = dfs['Episodes']
             postcode_list = set(dfs['metadata']['postcodes']['pcd'].str.replace(' ', ''))
 
-            is_valid = lambda x: x.replace(' ', '') in postcode_list
+            is_valid = lambda x: str(x).replace(' ', '') in postcode_list
+            home_provided = episodes['HOME_POST'].notna()
             home_valid = episodes['HOME_POST'].apply(is_valid)
+            pl_provided = episodes['PL_POST'].notna()
             pl_valid = episodes['PL_POST'].apply(is_valid)
 
-            error_mask = ~home_valid | ~pl_valid
+            error_mask = (home_provided & ~home_valid) | (pl_provided & ~pl_valid)
 
             return {'Episodes': episodes.index[error_mask].tolist()}
 

@@ -14,6 +14,19 @@ def test_validate_143():
 
     assert result == {'Episodes': [1, 2, 3, 4]}
     
+def test_validate_145():
+    fake_data = pd.DataFrame({
+        'CIN': ['N0', 'N1', 'N9', 'n8', '', pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_145()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 3, 4]}
+
 def test_validate_144():
     fake_data = pd.DataFrame({
         'LS': ['C1', 'c1', 'section 20', '', pd.NA],

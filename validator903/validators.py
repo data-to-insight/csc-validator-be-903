@@ -194,3 +194,101 @@ def validate_392c():
             return {'Episodes': episodes.index[error_mask].tolist()}
 
     return error, _validate
+
+def validate_388():
+    error = ErrorDefinition(
+        code='388',
+        description='Reason episode ceased is coded new episode begins, but there is no continuation episode.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            error_rows = (df['CHILD'] != df['CHILD']) 
+            for x in df['CHILD'].unique():
+              #Form a loop through each unique child id
+              this_child = df[df['CHILD'] == x].sort_values('DECOM')
+              #Focus on each child in turn (thischild)
+              if len(this_child['CHILD']) >= 2:
+              #Check this child has at least 2 rows (otherwise it's fine)
+                for inchild in range(len(this_child['CHILD']) - 1):  
+                  if (this_child['DEC'].iloc[inchild] == this_child['DECOM'].iloc[inchild + 1]) and this_child['REC'].iloc[inchild] != 'X1':
+                    error_here = (df['CHILD'] == this_child['CHILD'].iloc[inchild]) & (df['DEC'] == this_child['DEC'].iloc[inchild])
+                    error_rows = error_rows | error_here
+            return {'Episode': df.index[error_rows].tolist()}
+    
+    return error, _validate
+
+
+def validate_213 ():
+    error = ErrorDefinition(
+        code='213',
+        description='Placement provider information not required.',
+        affected_fields=['PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+          return {}
+        else:
+          df = dfs['Episode']
+          mask = df['PLACE'].isin(['T0','T1','T2','T3','T4','Z1']) & df['PLACE_PROVIDER'].notna()
+          return {'Episode': df.index[mask].tolist()}
+    
+    return error, _validate
+
+def validate_214 ():
+    error = ErrorDefinition(
+        code='214',
+        description='Placement location information not required.',
+        affected_fields=['PL_POST','URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+          return {}
+        else:
+          df = dfs['Episode']
+          mask = df['LS'].isin(['V3','V4']) & (df['PL_POST'].notna() | df['URN'].notna())
+          return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_222 ():
+    error = ErrorDefinition(
+        code='222',
+        description='Ofsted Unique reference number (URN) should not be recorded for this placement type.',
+        affected_fields=['URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+          return {}
+        else:
+          df = dfs['Episode']
+          mask = (df['PLACE'].isin(['H5','P1','P2','P3','R1','R2','R5','T0','T1','T2','T3','T4','Z1'])) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+          return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate
+
+
+
+def validate_366 ():
+    error = ErrorDefinition(
+        code='366',
+        description='A child cannot change placement during the course of an individual short-term respite break.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+          df = dfs['Episode']
+          mask = (df['LS'] == 'V3') & (df['RNE'] != 'S')
+          return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate

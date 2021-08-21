@@ -1,6 +1,30 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_178():
+    error = ErrorDefinition(
+        code='178',
+        description='Placement provider code is not a valid code.',
+        affected_fields=['PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list_1 = ['PR0', 'PR1', 'PR2', 'PR3', 'PR4', 'PR5']
+        code_list_2 = ['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
+
+        mask = episodes['PLACE_PROVIDER'].isin(code_list_1) & ~episodes['PLACE'].isin(code_list_2) | episodes['PLACE_PROVIDER'].isna() | episodes['PLACE_PROVIDER'].isna() & episodes['PLACE'].isin(code_list_2) 
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_103():
     error = ErrorDefinition(
         code='103',

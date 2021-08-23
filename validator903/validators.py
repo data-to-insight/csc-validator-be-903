@@ -325,3 +325,20 @@ def validate_392c():
             return {'Episodes': episodes.index[error_mask].tolist()}
 
     return error, _validate
+
+def validate_213():
+    error = ErrorDefinition(
+        code='213',
+        description='Placement provider information not required.',
+        affected_fields=['PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            mask = df['PLACE'].isin(['T0','T1','T2','T3','T4','Z1']) & df['PLACE_PROVIDER'].notna()
+            return {'Episode': df.index[mask].tolist()}
+    
+    return error, _validate

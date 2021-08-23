@@ -65,7 +65,21 @@ def test_validate_149():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [1, 2, 3]}
-       
+     
+def test_validate_167():
+    fake_data = pd.DataFrame({
+        'REVIEW': ['01/02/2020', '31/03/2020', '12/12/2019', '05/07/2020', pd.NA],
+        'REVIEW_CODE': ['p0', 'child too young', 'PN3', '', pd.NA],
+    })
+
+    fake_dfs = {'Reviews': fake_data}
+    
+    error_defn, error_func = validate_167()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Reviews': [0, 1, 3]}
+
 def test_validate_103():
     fake_data = pd.DataFrame({
         'ETHNIC': ['WBRI', 'WIRI', 'WOTH', 'wbri', 'White British', '', pd.NA],

@@ -233,6 +233,29 @@ def validate_149():
 
     return error, _validate
 
+def validate_167():
+    error = ErrorDefinition(
+        code='167',
+        description='Data entry for participation is invalid or blank.',
+        affected_fields=['REVIEW_CODE'],
+    )
+
+    def _validate(dfs):
+        if 'Reviews' not in dfs:
+            return {}
+        
+        review = dfs['Reviews']
+        code_list = ['PN0', 'PN1', 'PN2', 'PN3', 'PN4', 'PN5', 'PN6', 'PN7']
+
+        mask = review['REVIEW'].notna() & review['REVIEW_CODE'].isin(code_list) | review['REVIEW'].isna() & review['REVIEW_CODE'].isna()
+
+        validation_error_mask = ~mask
+        validation_error_locations = review.index[validation_error_mask]
+
+        return {'Reviews': validation_error_locations.tolist()}
+      
+    return error, _validate 
+
 def validate_101():
     error = ErrorDefinition(
         code='101',

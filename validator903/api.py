@@ -19,13 +19,18 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_code
       - errors - A list of all configured error definitions, as dictionaries.
       - error_definitions - A nested dictionary of {file name -> index in file -> list of error codes} 
     """
+    print('Reading uploaded file data...')
     dfs = read_from_text(raw_files=uploaded_files)
         
-    js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
-
+    print('Processing postcodes...')
     handle = copy(dfs)
     handle['metadata'] = _process_metadata(metadata)
+
+    print('Running validation rules...')
     validated = [(error, f(handle)) for error, f in configured_errors if error.code in error_codes]
+
+    print('Converting output to javascript...')
+    js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
 
     # Passed to JS
     error_definitions = {e.code: asdict(e) for e, _ in validated}

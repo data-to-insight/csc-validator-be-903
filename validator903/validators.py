@@ -365,3 +365,21 @@ def validate_213():
             return {'Episode': df.index[mask].tolist()}
     
     return error, _validate
+
+def validate_168():
+    error = ErrorDefinition(
+        code='168',
+        description='Unique Pupil Number (UPN) is not valid. If unknown, default codes should be UN1, UN2, UN3, UN4 or UN5.',
+        affected_fields=['UPN'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            df = dfs['Header']
+            mask = df['UPN'].str.fullmatch(r'(^((?![IOS])[A-Z]){1}(\d{12}|\d{11}[A-Z]{1})$)|^(UN[1-5])$',na=False)
+            mask = ~mask
+            return {'Header': df.index[mask].tolist()}
+    
+    return error, _validate

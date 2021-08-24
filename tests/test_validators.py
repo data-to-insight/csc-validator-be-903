@@ -171,3 +171,17 @@ def test_validate_213():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [5,6]}
+
+def test_validate_168():
+    fake_data = pd.DataFrame({
+        'UPN' : ['UN3','E07295962325C1556','UN5','UN7','UPN3sDSG','X06805040829A','5035247309594',pd.NA,'L086819786126','K06014812931','J000947841350156','M0940709','I072272729588',
+                 'N075491517151','Z041674136429','E043016488226','S074885779408'],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_168()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,3,4,6,7,9,10,11,12,16]}

@@ -383,3 +383,24 @@ def validate_168():
             return {'Header': df.index[mask].tolist()}
     
     return error, _validate
+
+def validate_388():
+    error = ErrorDefinition(
+        code='388',
+        description='Reason episode ceased is coded new episode begins, but there is no continuation episode.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+            df['LAG_DECOM'] = df['DECOM'].shift(-1)
+            df2 = df.loc[~df.index.isin(df.groupby('CHILD')['DECOM'].idxmax()),:]
+            df2 = df2[(df2['DEC'] == df2['LAG_DECOM']) & (df2['REC'] != 'X1')]
+            return {'Episode': df2.index.tolist()}
+    
+    return error, _validate

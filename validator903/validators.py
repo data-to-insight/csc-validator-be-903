@@ -398,6 +398,7 @@ def validate_388():
             df = dfs['Episode']
             df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+            df = df.sort_values(['CHILD','DECOM'])
             df['LAG_DECOM'] = df['DECOM'].shift(-1)
             df2 = df.loc[~df.index.isin(df.groupby('CHILD')['DECOM'].idxmax()),:]
             df2 = df2[(df2['DEC'] == df2['LAG_DECOM']) & (df2['REC'] != 'X1')]

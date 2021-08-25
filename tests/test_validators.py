@@ -119,6 +119,32 @@ def test_validate_141():
 
     assert result == {'Episodes': [2, 3]}
 
+def test_validate_147():
+    fake_data = pd.DataFrame({
+        'DEC': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_147()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 3]}
+
+def test_validate_171():
+    fake_data = pd.DataFrame({
+        'MC_DOB': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_171()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [2, 3]}
+
 def test_validate_102():
     fake_data = pd.DataFrame({
         'DOB': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
@@ -131,6 +157,45 @@ def test_validate_102():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [2, 3, 4]}
+
+def test_validate_112():
+    fake_data = pd.DataFrame({
+        'DATE_INT': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_112()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3]}
+
+def test_validate_115():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_115()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [2, 3]}
+
+def test_validate_116():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED_CEASED': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_116()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [2, 3]}  
 
 def test_validate_392c(dummy_postcodes):
     fake_data = pd.DataFrame({

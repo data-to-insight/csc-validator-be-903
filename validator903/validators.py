@@ -302,6 +302,52 @@ def validate_141():
     
     return error, _validate
 
+def validate_147():
+    error = ErrorDefinition(
+        code = '147',
+        description = 'Date episode ceased is not a valid date.',
+        affected_fields=['DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            mask = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = episodes['DEC'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = episodes.index[validation_error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_171():
+    error = ErrorDefinition(
+        code = '171',
+        description = "Date of birth of mother's child is not a valid date.",
+        affected_fields=['MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            mask = pd.to_datetime(header['MC_DOB'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = header['MC_DOB'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = header.index[validation_error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def validate_102():
     error = ErrorDefinition(
         code='102',
@@ -323,6 +369,75 @@ def validate_102():
     
     return error, _validate
 
+def validate_112():
+    error = ErrorDefinition(
+        code='112',
+        description='Date should be placed for adoption is not a valid date.',
+        affected_fields=['DATE_INT'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            ad1 = dfs['AD1']
+            mask = pd.to_datetime(ad1['DATE_INT'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = ad1['DATE_INT'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = ad1.index[validation_error_mask]
+
+            return {'AD1': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_115():
+    error = ErrorDefinition(
+        code='115',
+        description="Date of Local Authority's (LA) decision that a child should be placed for adoption is not a valid date.",
+        affected_fields=['DATE_PLACED'],
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            adopt = dfs['PlacedAdoption']
+            mask = pd.to_datetime(adopt['DATE_PLACED'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = adopt['DATE_PLACED'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = adopt.index[validation_error_mask]
+
+            return {'PlacedAdoption': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_116():
+    error = ErrorDefinition(
+        code='116',
+        description="Date of Local Authority's (LA) decision that a child should no longer be placed for adoption is not a valid date.",
+        affected_fields=['DATE_PLACED_CEASED'],
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            adopt = dfs['PlacedAdoption']
+            mask = pd.to_datetime(adopt['DATE_PLACED_CEASED'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = adopt['DATE_PLACED_CEASED'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = adopt.index[validation_error_mask]
+
+            return {'PlacedAdoption': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def validate_392c():
     error = ErrorDefinition(
         code='392c',
@@ -335,7 +450,7 @@ def validate_392c():
             return {}
         else:
             episodes = dfs['Episodes']
-            postcode_list = set(dfs['metadata']['postcodes']['pcd'].str.replace(' ', ''))
+            postcode_list = set(dfs['metadata']['postcodes']['pcd'])
 
             is_valid = lambda x: str(x).replace(' ', '') in postcode_list
             home_provided = episodes['HOME_POST'].notna()

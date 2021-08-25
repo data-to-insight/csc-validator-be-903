@@ -250,3 +250,16 @@ def test_validate_168():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [1,3,4,6,7,9,10,11,12,16]}
+
+def test_validate_113():
+    fake_data = pd.DataFrame({
+        'DATE_MATCH': ['22/11/2015', '08/05/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_113()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3]}

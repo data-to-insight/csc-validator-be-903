@@ -1,3 +1,4 @@
+import numpy as np
 from copy import copy
 import pandas as pd
 from .ingress import read_postcodes
@@ -8,7 +9,7 @@ def create_datastore(data, metadata):
     - Every table name in config.py
     - Every table name again, with the suffix '_last', if last years data was uploaded.
     - A 'metadata' key, which links to a nested dictionary with
-      - 'postcodes' - a postcodes csv, with columns "laua" (LA code), "lat", "long" (coordinates) and "pcd" (the postcode)
+      - 'postcodes' - a postcodes csv, with columns "laua" (LA code), "oseast1m", "osnrth1m" (coordinates) and "pcd" (the postcode)
       - 'localAuthority' - the code of the local authority (long form)
 
     :param data: Dict of raw DataFrames by name (from config.py) together with the '_last' data.
@@ -35,18 +36,20 @@ def _add_postcode_derived_fields(episodes_df, postcodes):
     pl_details = episodes_df[['pl_pcd']].merge(postcodes, how='left', left_on='pl_pcd', right_on='pcd')
     del episodes_df['pl_pcd']
 
+    # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
 
     episodes_df['HOME_LA'] = home_details['laua']
     episodes_df['PL_LA'] = pl_details['laua']
 
-    # The indexes remain the same post merge as the length of the dataframes doesn't change.
     episodes_df['PL_LOCATION'] = 'IN'
     episodes_df.loc[episodes_df['HOME_LA'] != episodes_df['PL_LA'], 'PL_LOCATION'] = 'OUT'
     episodes_df.loc[episodes_df['HOME_LA'].isna(), 'PL_LOCATION'] = pd.NA
 
+    # This formula is taken straight from the guidance, to get miles between two postcodes
+    episodes_df['PL_DISTANCE'] = np.sqrt(
+        (home_details['oseast1m'] - pl_details['oseast1m'])**2 + 
+        (home_details['osnrth1m'] - pl_details['osnrth1m'])**2 
+    ) / 1000 / 1.6093
+    episodes_df['PL_DISTANCE'] = episodes_df['PL_DISTANCE'].round(decimals=1)
+
     return episodes_df
-
-
-
-# TODO: Write tests for this
-# TODO: Add the derived fields to episodes

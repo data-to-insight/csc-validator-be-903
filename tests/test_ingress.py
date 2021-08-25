@@ -28,7 +28,7 @@ def test_read_csv_from_text(dummy_input_files):
 
     def read_file(path):
         with open(path) as f:
-            return f.read()
+            return f.read().encode()
 
     uploaded_files = [{
         'fileText': read_file(os.path.join(csv_path_dir, file_name)),

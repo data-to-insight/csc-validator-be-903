@@ -36,6 +36,9 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_code
     print('Running validations...')
     validated = [(error, f(data_store)) for error, f in configured_errors if error.code in error_codes]
 
+    print('Converting output to javascript...')
+    js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}
+
     # Passed to JS
     print('Passing back to javascript...')
     error_definitions = {e.code: asdict(e) for e, _ in validated}

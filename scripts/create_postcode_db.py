@@ -10,8 +10,11 @@ print('\tOutput to json!')
 
 print('Reading main postcodes file...')
 df = pd.read_csv('scripts/NSPL_MAY_2021_UK.csv', usecols=['pcd', 'lat', 'long', 'laua'], low_memory=True)
-df['pcd'] = df.pop('pcd').astype('string')
+df['pcd'] = df.pop('pcd').astype('string').str.replace(' ', '')
 df['laua'] = df['laua'].astype('category')
+
+df.drop_duplicates(subset=['pcd'], inplace=True)
+
 df.to_csv('scripts/postcodes.csv')
 print('\tCreated CSV, zipping...')
 zip_file = ZipFile('scripts/postcodes.zip', 'w', compression=ZIP_BZIP2, compresslevel=9)

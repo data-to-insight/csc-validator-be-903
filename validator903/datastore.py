@@ -23,22 +23,17 @@ def create_datastore(data, metadata):
 
 def _process_metadata(metadata):
     # There should be no duplicates - but to future-proof an error file we can drop them here anyway.
-    metadata['postcodes'] = {
-        p.pcd.replace(' ', ''): p for p in metadata['postcodes'].itertuples()
-    }
+    metadata['postcodes'].drop_duplicates(subset=['pcd'], inplace=True)
+    metadata['postcodes']['pcd'] = metadata['postcodes']['pcd'].str.replace(' ', '')
     return metadata
 
 def _add_postcode_derived_fields(episodes_df, postcodes):
     print('Adding postcodes...')
+    episodes_df['home_pcd'] = episodes_df['HOME_POST'].str.replace(' ', '')
 
-    def get_la(pcd):
-        try:
-            return postcodes[pcd.replace(' ', '')].laua
-        except (KeyError, AttributeError):
-            return pd.NA
+    home_details = episodes_df.merge(postcodes, how='left', left_on='home_pcd', right_on='pcd', validate='m:1')
 
-    episodes_df['HOME_LA'] = episodes_df['HOME_POST'].apply(get_la)
-    episodes_df['PL_LA'] = episodes_df['PL_POST'].apply(get_la)
+    episodes_df['HOME_LA'] = home_details['laua']
 
     # The indexes remain the same post merge as the length of the dataframes doesn't change.
     episodes_df['PL_LOCATION'] = 'IN'

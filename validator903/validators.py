@@ -398,20 +398,18 @@ def validate_388():
             df = dfs['Episode']
             df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DECOM'], format='%d/%m/%y', errors='coerce'))
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DEC'], format='%d/%m/%y', errors='coerce'))
-            #I'm fairly sure only the format dd/MM/yyyy is allowed in uploads to the CLA system, but as the episodes.CSV DEC field has dd/MM/yy I've included it
 
-            df['DECOM'] = df['DECOM'].fillna('01/01/1901')   #But again, I'm fairly sure the CLA system wouldn't allow a CSV with the DECOM field blank.
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901')
             df = df.sort_values(['CHILD','DECOM'])
 
             df['DECOM_NEXT_EPISODE'] = df.groupby(['CHILD'])['DECOM'].shift(-1)
 
-            #Group the data getting the max DECOM index for each child
-            grouped_data = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
 
             #Dataframe with the maximum DECOM removed
-            max_decom_removed = df.loc[~df.index.isin(grouped_data),:]
+            max_decom_removed = df.loc[~df.index.isin(grouped_decom_by_child),:]
             #Dataframe with the maximum DECOM only
-            max_decom_only= df.loc[df.index.isin(grouped_data),:]
+            max_decom_only= df.loc[df.index.isin(grouped_decom_by_child),:]
 
             #Case 1: If reason episode ceased is coded X1 there must be a subsequent episode 
             #        starting on the same day.
@@ -440,7 +438,7 @@ def validate_388():
 
             mask = mask_case1 + mask_case2 + mask_case3
 
-            mask.sort()   #Probably not needed, but just in case
+            mask.sort()
             return {'Episode': mask}
     
     return error, _validate

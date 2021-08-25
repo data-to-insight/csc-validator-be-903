@@ -31,10 +31,14 @@ These all should have return type (Error, Dict[str, DataFrame])
 configured_errors = [
     validate_101(),
     validate_141(),
+    validate_112(),
+    validate_115(),
+    validate_116(),
     validate_143(),
     validate_144(),
     validate_145(),
     validate_146(),
+    validate_147(),
     validate_149(),
     validate_167(),
     validate_103(),
@@ -42,4 +46,5 @@ configured_errors = [
     validate_392c(),
     validate_213(),
     validate_168(),
+    validate_171(),
 ]

@@ -396,12 +396,51 @@ def validate_388():
             return {}
         else:
             df = dfs['Episode']
-            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
-            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DECOM'], format='%d/%m/%y', errors='coerce'))
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DEC'], format='%d/%m/%y', errors='coerce'))
+            #I'm fairly sure only the format dd/MM/yyyy is allowed in uploads to the CLA system, but as the episodes.CSV DEC field has dd/MM/yy I've included it
+
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901')   #But again, I'm fairly sure the CLA system wouldn't allow a CSV with the DECOM field blank.
             df = df.sort_values(['CHILD','DECOM'])
-            df['LAG_DECOM'] = df['DECOM'].shift(-1)
-            df2 = df.loc[~df.index.isin(df.groupby('CHILD')['DECOM'].idxmax()),:]
-            df2 = df2[(df2['DEC'] == df2['LAG_DECOM']) & (df2['REC'] != 'X1')]
-            return {'Episode': df2.index.tolist()}
+
+            df['DECOM_NEXT_EPISODE'] = df.groupby(['CHILD'])['DECOM'].shift(-1)
+
+            #Group the data getting the max DECOM index for each child
+            grouped_data = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+
+            #Dataframe with the maximum DECOM removed
+            max_decom_removed = df.loc[~df.index.isin(grouped_data),:]
+            #Dataframe with the maximum DECOM only
+            max_decom_only= df.loc[df.index.isin(grouped_data),:]
+
+            #Case 1: If reason episode ceased is coded X1 there must be a subsequent episode 
+            #        starting on the same day.
+            case1 = max_decom_removed[(max_decom_removed['REC'] == 'X1') & 
+                   (max_decom_removed['DEC'].notna()) & 
+                   (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
+                   (max_decom_removed['DEC'] != max_decom_removed['DECOM_NEXT_EPISODE'])]
+
+            #Case 2: If an episode ends but the child continues to be looked after, a new
+            #        episode should start on the same day.The reason episode ceased code of
+            #        the episode which ends must be X1.
+            case2 = max_decom_removed[(max_decom_removed['REC'] != 'X1') & 
+                   (max_decom_removed['REC'].notna()) & 
+                   (max_decom_removed['DEC'].notna()) & 
+                   (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
+                   (max_decom_removed['DEC'] == max_decom_removed['DECOM_NEXT_EPISODE'])]
+
+            #Case 3: If a child ceases to be looked after reason episode ceased code X1 must
+            #        not be used. 
+            case3 = max_decom_only[(max_decom_only['DEC'].notna()) & 
+                   (max_decom_only['REC'] == 'X1')]
+
+            mask_case1 = case1.index.tolist()
+            mask_case2 = case2.index.tolist()
+            mask_case3 = case3.index.tolist()
+
+            mask = mask_case1 + mask_case2 + mask_case3
+
+            mask.sort()   #Probably not needed, but just in case
+            return {'Episode': mask}
     
     return error, _validate

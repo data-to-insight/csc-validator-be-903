@@ -383,3 +383,27 @@ def validate_168():
             return {'Header': df.index[mask].tolist()}
     
     return error, _validate
+
+def validate_113():
+    error = ErrorDefinition(
+        code='113',
+        description='Date matching child and adopter(s) is not a valid date.',
+        affected_fields=['DATE_MATCH'],
+    )
+
+    def _validate(dfs):
+        if 'ad1' not in dfs:
+            return {}
+        else:
+            ad1 = dfs['ad1']
+            mask = pd.to_datetime(ad1['DATE_MATCH'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = ad1['DATE_MATCH'].isna()
+
+            validation_error_mask = ~mask & ~na_location
+            validation_error_locations = ad1.index[validation_error_mask]
+        
+
+            return {'ad1': validation_error_locations.tolist()}
+    
+    return error, _validate

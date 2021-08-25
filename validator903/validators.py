@@ -335,7 +335,7 @@ def validate_392c():
             return {}
         else:
             episodes = dfs['Episodes']
-            postcode_list = set(dfs['metadata']['postcodes']['pcd'].str.replace(' ', ''))
+            postcode_list = set(dfs['metadata']['postcodes']['pcd'])
 
             is_valid = lambda x: str(x).replace(' ', '') in postcode_list
             home_provided = episodes['HOME_POST'].notna()

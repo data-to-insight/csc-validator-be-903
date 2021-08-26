@@ -60,29 +60,6 @@ def validate_1006():
 
     return error, _validate
 
-def validate_633():
-    error = ErrorDefinition(
-        code='633',
-        description='Local authority code where previous permanence option was arranged is not a valid value.',
-        affected_fields=['LA_PERM'],
-    )
-
-    def _validate(dfs):
-        if 'PrevPerm' not in dfs:
-            return {}
-        
-        previous_permanence = dfs['PrevPerm']
-        code_list = ['NIR', 'NUK', 'SCO', 'WAL']
-
-        mask = previous_permanence['LA_PERM'].isin(code_list) | previous_permanence['LA_PERM'].isna()
-        
-        validation_error_mask = ~mask
-        validation_error_locations = previous_permanence.index[validation_error_mask]
-
-        return {'PrevPerm': validation_error_locations.tolist()}
-
-    return error, _validate
-
 def validate_631():
     error = ErrorDefinition(
         code='631',
@@ -187,9 +164,9 @@ def validate_175():
             return {}
         
         adoptions = dfs['AD1']
-        code_list = [1, 2]
+        code_list = ['1', '2']
 
-        mask = adoptions['NB_ADOPTR'].isin(code_list) | adoptions['NB_ADOPTR'].isna()
+        mask = adoptions['NB_ADOPTR'].astype(str).isin(code_list) | adoptions['NB_ADOPTR'].isna()
         
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]
@@ -220,9 +197,9 @@ def validate_132():
           'G4',
           'G5', 
           'G6', 
-          0
+          '0'
           ]
-        mask = care_leavers['ACTIV'].isin(code_list) | care_leavers['ACTIV'].isna()
+        mask = care_leavers['ACTIV'].astype(str).isin(code_list) | care_leavers['ACTIV'].isna()
         
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]
@@ -295,9 +272,9 @@ def validate_114():
             return {}
         
         adoptions = dfs['AD1']
-        code_list = [0, 1]
+        code_list = ['0', '1']
 
-        mask = adoptions['FOSTER_CARE'].isin(code_list) | adoptions['FOSTER_CARE'].isna()
+        mask = adoptions['FOSTER_CARE'].astype(str).isin(code_list) | adoptions['FOSTER_CARE'].isna()
         
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]

@@ -27,19 +27,6 @@ def test_validate_1006():
 
     assert result == {'Missing': [2, 3, 4]}
 
-def test_validate_633():
-    fake_data = pd.DataFrame({
-        'LA_PERM': ['NUK','WAL', 'NA', '', pd.NA],
-    })
-
-    fake_dfs = {'PrevPerm': fake_data}
-
-    error_defn, error_func = validate_633()
-
-    result = error_func(fake_dfs)
-
-    assert result == {'PrevPerm': [2, 3]}
-
 def test_validate_631():
     fake_data = pd.DataFrame({
         'PREV_PERM': ['P0', 'P1', 'p1', '', pd.NA],
@@ -94,7 +81,7 @@ def test_validate_176():
 
 def test_validate_175():
     fake_data = pd.DataFrame({
-        'NB_ADOPTR': [0, 1, 2, '1', '', pd.NA],
+        'NB_ADOPTR': [0, 1, 2, '1', '2', '0', '', pd.NA],
     })
 
     fake_dfs = {'AD1': fake_data}
@@ -103,11 +90,11 @@ def test_validate_175():
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [0, 3, 4]}
+    assert result == {'AD1': [0, 5, 6]}
 
 def test_validate_132():
     fake_data = pd.DataFrame({
-        'ACTIV': ['f1', 'F1', 1, 0, '', pd.NA],
+        'ACTIV': ['f1', 'F1', 1, 0, '1', '0', '', pd.NA],
     })
 
     fake_dfs = {'OC3': fake_data}
@@ -116,7 +103,7 @@ def test_validate_132():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [0, 2, 4]}
+    assert result == {'OC3': [0, 2, 4, 6]}
 
 def test_validate_131():
     fake_data = pd.DataFrame({
@@ -155,7 +142,7 @@ def test_validate_114():
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [2, 3, 4, 5, 6]}
+    assert result == {'AD1': [4, 5, 6]}
 
 def test_validate_143():
     fake_data = pd.DataFrame({

@@ -53,3 +53,9 @@ def _add_postcode_derived_fields(episodes_df, postcodes):
     episodes_df['PL_DISTANCE'] = episodes_df['PL_DISTANCE'].round(decimals=1)
 
     return episodes_df
+
+def copy_datastore(data_store):
+    """
+    This is used for getting a shallow copy that is passed to the validation rules.
+    """
+    return {k: v.copy(deep=False) if k != 'metadata' else v for k, v in data_store.items()}

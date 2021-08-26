@@ -396,10 +396,10 @@ def validate_388():
             return {}
         else:
             df = dfs['Episode']
-            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DECOM'], format='%d/%m/%y', errors='coerce'))
-            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce').fillna(pd.to_datetime(df['DEC'], format='%d/%m/%y', errors='coerce'))
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            df['DECOM'] = df['DECOM'].fillna('01/01/1901')
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
             df = df.sort_values(['CHILD','DECOM'])
 
             df['DECOM_NEXT_EPISODE'] = df.groupby(['CHILD'])['DECOM'].shift(-1)

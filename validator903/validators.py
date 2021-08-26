@@ -956,3 +956,61 @@ def validate_119():
             return {'PlacedAdoption': validation_error_locations.tolist()}
     
     return error, _validate
+
+def validate_142():
+    error = ErrorDefinition(
+        code='142',
+        description='A new episode has started, but the previous episode has not ended.',
+        affected_fields=['DEC','REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
+            df = df.sort_values(['CHILD','DECOM'])
+
+            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+
+            #Dataframe with the maximum DECOM removed
+            df = df.loc[~df.index.isin(grouped_decom_by_child),:]
+
+            df = df[df['DEC'].isna() | df['REC'].isna()]
+            mask = df.index.tolist()
+            mask.sort()
+
+            return{'Episode': mask}
+
+def validate_148():
+    error = ErrorDefinition(
+        code='148',
+        description='Date episode ceased and reason episode ceased must both be coded, or both left blank.',
+        affected_fields=['DEC','REC'],
+    )
+    
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
+            df = df.sort_values(['CHILD','DECOM'])
+
+            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+
+            #Dataframe with the maximum DECOM only
+            df = df.loc[df.index.isin(grouped_decom_by_child),:]
+
+            df = df[df['DEC'].notna() | df['REC'].notna()]
+            mask = df.index.tolist()
+            mask.sort()
+
+            return{'Episode': mask}

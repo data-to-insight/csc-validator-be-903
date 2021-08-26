@@ -494,7 +494,6 @@ def test_validate_119():
 
     assert result == {'PlacedAdoption': [1, 2]}
 
-"""
 def test_validate_142():
     fake_data = pd.DataFrame([
     { 'CHILD' : '111', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020', 'REC': 'X1' },  #0
@@ -533,7 +532,7 @@ def test_validate_148():
     { 'CHILD' : '111', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020', 'REC': 'X1' },  #0  
     { 'CHILD' : '111', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020', 'REC': 'X1' },  #1
     { 'CHILD' : '111', 'DECOM' : '06/06/2020', 'DEC' : '08/06/2020', 'REC': 'X1' },  #2
-    { 'CHILD' : '111', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020', 'REC': 'X1' },  #3  
+    { 'CHILD' : '111', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020', 'REC': 'X1' },  #3   Fails
     { 'CHILD' : '222', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020', 'REC': pd.NA }, #4   Fails
     { 'CHILD' : '333', 'DECOM' : '06/06/2020', 'DEC' : '07/06/2020', 'REC': 'E11' }, #5  
     { 'CHILD' : '333', 'DECOM' : '07/06/2020', 'DEC' : pd.NA, 'REC': pd.NA },        #6
@@ -559,5 +558,4 @@ def test_validate_148():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [4,10,14]}
-"""
+    assert result == {'Episode': [3,4,10,14]}

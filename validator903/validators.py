@@ -976,15 +976,18 @@ def validate_142():
             df = df.sort_values(['CHILD','DECOM'])
 
             grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)
 
             #Dataframe with the maximum DECOM removed
             df = df.loc[~df.index.isin(grouped_decom_by_child),:]
 
-            df = df[df['DEC'].isna() | df['REC'].isna()]
+            df = df[(df['DEC'].isna() | df['REC'].isna()) & df['CHILD'].notna() & df['DECOM'].notna()]
             mask = df.index.tolist()
             mask.sort()
 
             return{'Episode': mask}
+    
+    return error, _validate
 
 def validate_148():
     error = ErrorDefinition(
@@ -1005,12 +1008,14 @@ def validate_148():
             df = df.sort_values(['CHILD','DECOM'])
 
             grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
-
+            df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)
             #Dataframe with the maximum DECOM only
             df = df.loc[df.index.isin(grouped_decom_by_child),:]
 
-            df = df[df['DEC'].notna() | df['REC'].notna()]
+            df = df[(df['DEC'].notna() | df['REC'].notna()) & df['CHILD'].notna() & df['DECOM'].notna()]
             mask = df.index.tolist()
             mask.sort()
 
             return{'Episode': mask}
+
+    return error, _validate

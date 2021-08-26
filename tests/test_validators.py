@@ -264,6 +264,31 @@ def test_validate_113():
 
     assert result == {'AD1': [2, 3]}
 
+def test_validate_134():
+    fake_data_oc3 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'IN_TOUCH': [pd.NA,'XXX',pd.NA,pd.NA,pd.NA],
+        'ACTIV': [pd.NA,pd.NA,'XXX',pd.NA,pd.NA],
+        'ACCOM': [pd.NA,pd.NA,pd.NA,'XXX',pd.NA],
+    })
+    fake_data_ad1 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'DATE_INT': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'DATE_MATCH': [pd.NA,'XXX','XXX',pd.NA,'XXX'],
+        'FOSTER_CARE': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'NB_ADOPTR': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'SEX_ADOPTR': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'LS_ADOPTR': [pd.NA,pd.NA,'XXX','XXX','XXX'],
+    }) 
+
+    fake_dfs = {'OC3': fake_data_oc3, 'AD1': fake_data_ad1}
+
+    error_defn, error_func = validate_134()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3': [1, 2, 3]}
+
 def test_validate_119():
     fake_data = pd.DataFrame({
         'DATE_PLACED_CEASED': ['22/11/2015', '08/05/2010', pd.NA, pd.NA],

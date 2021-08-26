@@ -523,6 +523,45 @@ def validate_113():
     
     return error, _validate
 
+def validate_134():
+    error = ErrorDefinition(
+        code='134',
+        description='Data on adoption should not be entered for the OC3 cohort.',
+        affected_fields=['IN_TOUCH','ACTIV','ACCOM','DATE_INT','DATE_MATCH','FOSTER_CARE','NB_ADOPTR','SEX_ADOPTR','LS_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            oc3 = dfs['OC3']
+            ad1 = dfs['AD1']
+
+            all_data = ad1.merge(oc3, how='left', on='CHILD')
+
+            na_oc3_data = (
+              all_data['IN_TOUCH'].isna() &
+              all_data['ACTIV'].isna() &
+              all_data['ACCOM'].isna()
+            )
+            na_ad1_data = (
+              all_data['DATE_INT'].isna() &
+              all_data['DATE_MATCH'].isna() &
+              all_data['FOSTER_CARE'].isna() &
+              all_data['NB_ADOPTR'].isna() &
+              all_data['SEX_ADOPTR'].isna() &
+              all_data['LS_ADOPTR'].isna()
+            )
+
+
+            validation_error = ~na_oc3_data & ~na_ad1_data
+            validation_error_locations = ad1.index[validation_error]
+        
+
+            return {'OC3': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def validate_119():
     error = ErrorDefinition(
         code='119',

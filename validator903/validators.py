@@ -13,6 +13,7 @@ def validate_178():
             return {}
         
         episodes = dfs['Episodes']
+        
         code_list_placement_provider = ['PR0', 'PR1', 'PR2', 'PR3', 'PR4', 'PR5']
         code_list_placement_with_no_provider = ['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
 

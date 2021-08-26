@@ -561,3 +561,26 @@ def validate_134():
             return {'OC3': validation_error_locations.tolist()}
     
     return error, _validate
+
+def validate_119():
+    error = ErrorDefinition(
+        code='119',
+        description='If the decision is made that a child should no longer be placed for adoption, then the date of this decision and the reason why this decision was made must be completed.',
+        affected_fields=['REASON_PLACED_CEASED','DATE_PLACED_CEASED'],
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            adopt = dfs['PlacedAdoption']
+            na_placed_ceased = adopt['DATE_PLACED_CEASED'].isna()
+            na_reason_ceased = adopt['REASON_PLACED_CEASED'].isna()
+
+            validation_error = (na_placed_ceased & ~na_reason_ceased) | (~na_placed_ceased & na_reason_ceased) 
+            validation_error_locations = adopt.index[validation_error]
+        
+
+            return {'PlacedAdoption': validation_error_locations.tolist()}
+    
+    return error, _validate

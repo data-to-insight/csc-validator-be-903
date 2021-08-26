@@ -288,4 +288,17 @@ def test_validate_134():
     result = error_func(fake_dfs)
 
     assert result == {'OC3': [1, 2, 3]}
-    
+
+def test_validate_119():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED_CEASED': ['22/11/2015', '08/05/2010', pd.NA, pd.NA],
+        'REASON_PLACED_CEASED': ['XXX',pd.NA, '10/05/2009', pd.NA]
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_119()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [1, 2]}

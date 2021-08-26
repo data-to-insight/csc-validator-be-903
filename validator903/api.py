@@ -5,7 +5,7 @@ from typing import Any, List, Dict
 from .types import UploadedFile
 from .ingress import read_from_text, read_postcodes
 from .config import configured_errors
-from .datastore import create_datastore
+from .datastore import copy_datastore, create_datastore
 
 def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_codes: List[str], metadata: Dict[str, Any]):
     """
@@ -34,7 +34,7 @@ def run_validation_for_javascript(uploaded_files: List[UploadedFile], error_code
 
 
     print('Running validations...')
-    validated = [(error, f(data_store)) for error, f in configured_errors if error.code in error_codes]
+    validated = [(error, f(copy_datastore(data_store))) for error, f in configured_errors if error.code in error_codes]
 
     print('Converting output to javascript...')
     js_files = {k: [t._asdict() for t in df.itertuples(index=True)] for k, df in dfs.items()}

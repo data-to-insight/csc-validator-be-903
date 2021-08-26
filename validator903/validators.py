@@ -537,7 +537,7 @@ def validate_134():
             oc3 = dfs['OC3']
             ad1 = dfs['AD1']
 
-            all_data = oc3.merge(ad1, how='left', on='CHILD')
+            all_data = ad1.merge(oc3, how='left', on='CHILD')
 
             na_oc3_data = (
               all_data['IN_TOUCH'].isna() &

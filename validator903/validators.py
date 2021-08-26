@@ -1,6 +1,288 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_1009():
+    error = ErrorDefinition(
+        code='1009',
+        description='Reason for placement change is not a valid code.',
+        affected_fields=['REASON_PLACE_CHANGE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        
+        episodes = dfs['Episodes']
+        code_list = [
+          'CARPL', 
+          'CLOSE', 
+          'ALLEG', 
+          'STAND',
+          'APPRR', 
+          'CREQB', 
+          'CREQO', 
+          'CHILD',
+          'LAREQ', 
+          'PLACE', 
+          'CUSTOD', 
+          'OTHER'
+        ]
+
+        mask = episodes['REASON_PLACE_CHANGE'].isin(code_list) | episodes['REASON_PLACE_CHANGE'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = episodes.index[validation_error_mask]
+
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_1006():
+    error = ErrorDefinition(
+        code='1006',
+        description='Missing type invalid.',
+        affected_fields=['MISSING'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        
+        missing_from_care = dfs['Missing']
+        code_list = ['M', 'A']
+
+        mask = missing_from_care['MISSING'].isin(code_list) | missing_from_care['MISSING'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = missing_from_care.index[validation_error_mask]
+
+        return {'Missing': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_631():
+    error = ErrorDefinition(
+        code='631',
+        description='Previous permanence option not a valid value.',
+        affected_fields=['PREV_PERM'],
+    )
+
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        
+        previous_permanence = dfs['PrevPerm']
+        code_list = ['P1', 'P2', 'P3', 'P4', 'Z1']
+
+        mask = previous_permanence['PREV_PERM'].isin(code_list) | previous_permanence['PREV_PERM'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = previous_permanence.index[validation_error_mask]
+
+        return {'PrevPerm': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_196():
+    error = ErrorDefinition(
+        code='196',
+        description='Strengths and Difficulties (SDQ) reason is not a valid code.',
+        affected_fields=['SDQ_REASON'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        
+        oc2 = dfs['OC2']
+        code_list = ['SDQ1', 'SDQ2', 'SDQ3', 'SDQ4', 'SDQ5']
+
+        mask = oc2['SDQ_REASON'].isin(code_list) | oc2['SDQ_REASON'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = oc2.index[validation_error_mask]
+
+        return {'OC2': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_177():
+    error = ErrorDefinition(
+        code='177',
+        description='The legal status of adopter(s) code is not a valid code.',
+        affected_fields=['LS_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        
+        adoptions = dfs['AD1']
+        code_list = ['L0', 'L11', 'L12', 'L2', 'L3', 'L4']
+
+        mask = adoptions['LS_ADOPTR'].isin(code_list) | adoptions['LS_ADOPTR'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = adoptions.index[validation_error_mask]
+
+        return {'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_176():
+    error = ErrorDefinition(
+        code='176',
+        description='The gender of adopter(s) at the date of adoption code is not a valid code.',
+        affected_fields=['SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        
+        adoptions = dfs['AD1']
+        code_list = ['M1', 'F1', 'MM', 'FF', 'MF']
+
+        mask = adoptions['SEX_ADOPTR'].isin(code_list) | adoptions['SEX_ADOPTR'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = adoptions.index[validation_error_mask]
+
+        return {'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_175():
+    error = ErrorDefinition(
+        code='175',
+        description='The number of adopter(s) code is not a valid code.',
+        affected_fields=['NB_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        
+        adoptions = dfs['AD1']
+        code_list = ['1', '2']
+
+        mask = adoptions['NB_ADOPTR'].astype(str).isin(code_list) | adoptions['NB_ADOPTR'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = adoptions.index[validation_error_mask]
+
+        return {'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_132():
+    error = ErrorDefinition(
+        code='132',
+        description='Data entry for activity after leaving care is invalid.',
+        affected_fields=['ACTIV'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+            return {}
+        
+        care_leavers = dfs['OC3']
+        code_list = [
+          'F1', 
+          'P1', 
+          'F2', 
+          'P2', 
+          'F3', 
+          'P3', 
+          'G4',
+          'G5', 
+          'G6', 
+          '0'
+          ]
+        mask = care_leavers['ACTIV'].astype(str).isin(code_list) | care_leavers['ACTIV'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = care_leavers.index[validation_error_mask]
+
+        return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_131():
+    error = ErrorDefinition(
+        code='131',
+        description='Data entry for being in touch after leaving care is invalid.',
+        affected_fields=['IN_TOUCH'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+            return {}
+        
+        care_leavers = dfs['OC3']
+        code_list = [
+          'YES', 
+          'NO', 
+          'DIED', 
+          'REFU', 
+          'NREQ', 
+          'RHOM'
+          ]
+        mask = care_leavers['IN_TOUCH'].isin(code_list) | care_leavers['IN_TOUCH'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = care_leavers.index[validation_error_mask]
+
+        return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_120():
+    error = ErrorDefinition(
+        code='120',
+        description='The reason for the reversal of the decision that the child should be placed for adoption code is not valid.',
+        affected_fields=['REASON_PLACED_CEASED'],
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        
+        placed_adoptions = dfs['PlacedAdoption']
+        code_list = ['RD1', 'RD2', 'RD3', 'RD4']
+
+        mask = placed_adoptions['REASON_PLACED_CEASED'].isin(code_list) | placed_adoptions['REASON_PLACED_CEASED'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = placed_adoptions.index[validation_error_mask]
+
+        return {'PlacedAdoption': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_114():
+    error = ErrorDefinition(
+        code='114',
+        description='Data entry to record the status of former carer(s) of an adopted child is invalid.',
+        affected_fields=['FOSTER_CARE'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        
+        adoptions = dfs['AD1']
+        code_list = ['0', '1']
+
+        mask = adoptions['FOSTER_CARE'].astype(str).isin(code_list) | adoptions['FOSTER_CARE'].isna()
+        
+        validation_error_mask = ~mask
+        validation_error_locations = adoptions.index[validation_error_mask]
+
+        return {'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_178():
     error = ErrorDefinition(
         code='178',

@@ -41,7 +41,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
 
     files = {}
     for file_data in raw_files:
-        csv_file = StringIO(file_data["fileText"])
+        csv_file = BytesIO(file_data["fileText"])
         df = pd.read_csv(csv_file)
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:

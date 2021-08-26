@@ -530,6 +530,65 @@ def validate_168():
     
     return error, _validate
 
+def validate_388():
+    error = ErrorDefinition(
+        code='388',
+        description='Reason episode ceased is coded new episode begins, but there is no continuation episode.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
+            df = df.sort_values(['CHILD','DECOM'])
+
+            df['DECOM_NEXT_EPISODE'] = df.groupby(['CHILD'])['DECOM'].shift(-1)
+
+            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+
+            #Dataframe with the maximum DECOM removed
+            max_decom_removed = df.loc[~df.index.isin(grouped_decom_by_child),:]
+            #Dataframe with the maximum DECOM only
+            max_decom_only= df.loc[df.index.isin(grouped_decom_by_child),:]
+
+            #Case 1: If reason episode ceased is coded X1 there must be a subsequent episode 
+            #        starting on the same day.
+            case1 = max_decom_removed[(max_decom_removed['REC'] == 'X1') & 
+                   (max_decom_removed['DEC'].notna()) & 
+                   (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
+                   (max_decom_removed['DEC'] != max_decom_removed['DECOM_NEXT_EPISODE'])]
+
+            #Case 2: If an episode ends but the child continues to be looked after, a new
+            #        episode should start on the same day.The reason episode ceased code of
+            #        the episode which ends must be X1.
+            case2 = max_decom_removed[(max_decom_removed['REC'] != 'X1') & 
+                   (max_decom_removed['REC'].notna()) & 
+                   (max_decom_removed['DEC'].notna()) & 
+                   (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
+                   (max_decom_removed['DEC'] == max_decom_removed['DECOM_NEXT_EPISODE'])]
+
+            #Case 3: If a child ceases to be looked after reason episode ceased code X1 must
+            #        not be used. 
+            case3 = max_decom_only[(max_decom_only['DEC'].notna()) & 
+                   (max_decom_only['REC'] == 'X1')]
+
+            mask_case1 = case1.index.tolist()
+            mask_case2 = case2.index.tolist()
+            mask_case3 = case3.index.tolist()
+
+            mask = mask_case1 + mask_case2 + mask_case3
+
+            mask.sort()
+            return {'Episode': mask}
+    
+    return error, _validate
+
 def validate_113():
     error = ErrorDefinition(
         code='113',

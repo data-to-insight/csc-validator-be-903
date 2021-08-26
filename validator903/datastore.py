@@ -1,3 +1,4 @@
+import datetime
 import numpy as np
 from copy import copy
 import pandas as pd
@@ -11,6 +12,7 @@ def create_datastore(data, metadata):
     - A 'metadata' key, which links to a nested dictionary with
       - 'postcodes' - a postcodes csv, with columns "laua" (LA code), "oseast1m", "osnrth1m" (coordinates) and "pcd" (the postcode)
       - 'localAuthority' - the code of the local authority (long form)
+      - 'collectionYear' - the collection year string (e.g. '2019/20)
 
     :param data: Dict of raw DataFrames by name (from config.py) together with the '_last' data.
     :param metadata:
@@ -23,7 +25,9 @@ def create_datastore(data, metadata):
     return data
 
 def _process_metadata(metadata):
-    # We may add logic here in future
+    collection_year = int(metadata['collectionYear'][:4])
+    metadata['collection_start'] = datetime.datetime(collection_year, 4, 1)
+    metadata['collection_end'] = datetime.datetime(collection_year + 1, 3, 31)
     return metadata
 
 def _add_postcode_derived_fields(episodes_df, postcodes):

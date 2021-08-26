@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_178():
+    fake_data = pd.DataFrame({
+        'PLACE_PROVIDER': ['PR0', 'PR1',   '', pd.NA,   '', pd.NA],
+        'PLACE':          ['U1',   'T0', 'U2',  'Z1', 'T1', pd.NA], 
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_178()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1, 2, 4]}
+
 def test_validate_143():
     fake_data = pd.DataFrame({
         'RNE': ['S', 'p', 'SP', 'a', '', pd.NA],
@@ -119,6 +133,32 @@ def test_validate_141():
 
     assert result == {'Episodes': [2, 3]}
 
+def test_validate_147():
+    fake_data = pd.DataFrame({
+        'DEC': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_147()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 3]}
+
+def test_validate_171():
+    fake_data = pd.DataFrame({
+        'MC_DOB': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_171()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [2, 3]}
+
 def test_validate_102():
     fake_data = pd.DataFrame({
         'DOB': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
@@ -131,6 +171,45 @@ def test_validate_102():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [2, 3, 4]}
+
+def test_validate_112():
+    fake_data = pd.DataFrame({
+        'DATE_INT': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_112()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3]}
+
+def test_validate_115():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_115()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [2, 3]}
+
+def test_validate_116():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED_CEASED': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_116()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [2, 3]}  
 
 def test_validate_392c(dummy_postcodes):
     fake_data = pd.DataFrame({
@@ -218,3 +297,55 @@ def test_validate_388():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [0,3,5,10,14]}
+
+def test_validate_113():
+    fake_data = pd.DataFrame({
+        'DATE_MATCH': ['22/11/2015', '08/05/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_113()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3]}
+
+def test_validate_134():
+    fake_data_oc3 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'IN_TOUCH': [pd.NA,'XXX',pd.NA,pd.NA,pd.NA],
+        'ACTIV': [pd.NA,pd.NA,'XXX',pd.NA,pd.NA],
+        'ACCOM': [pd.NA,pd.NA,pd.NA,'XXX',pd.NA],
+    })
+    fake_data_ad1 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'DATE_INT': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'DATE_MATCH': [pd.NA,'XXX','XXX',pd.NA,'XXX'],
+        'FOSTER_CARE': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'NB_ADOPTR': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'SEX_ADOPTR': [pd.NA,pd.NA,'XXX',pd.NA,'XXX'],
+        'LS_ADOPTR': [pd.NA,pd.NA,'XXX','XXX','XXX'],
+    }) 
+
+    fake_dfs = {'OC3': fake_data_oc3, 'AD1': fake_data_ad1}
+
+    error_defn, error_func = validate_134()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3': [1, 2, 3]}
+
+def test_validate_119():
+    fake_data = pd.DataFrame({
+        'DATE_PLACED_CEASED': ['22/11/2015', '08/05/2010', pd.NA, pd.NA],
+        'REASON_PLACED_CEASED': ['XXX',pd.NA, '10/05/2009', pd.NA]
+    })
+
+    fake_dfs = {'PlacedAdoption': fake_data}
+
+    error_defn, error_func = validate_119()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [1, 2]}

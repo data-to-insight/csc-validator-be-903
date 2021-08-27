@@ -561,3 +561,23 @@ def test_validate_148():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [0,2,4]}
+
+def test_validate_182():
+    fake_data = pd.DataFrame({
+        'IMMUNISATION':           [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'TEETH_CHECK':            [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , '1'  ],
+        'HEALTH_ASSESSMENT':      [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'SUBSTANCE_MISUSE':       [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  ],
+        'CONVICTED':              [pd.NA, '1'  , pd.NA, pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'HEALTH_CHECK':           [pd.NA, pd.NA, '1'  , pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_RECEIVED':  [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_OFFERED':   [pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  , pd.NA],
+    }) 
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_182()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 3, 4, 6]}

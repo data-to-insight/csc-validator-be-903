@@ -1,6 +1,18 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_530():
+  error = ErrorDefinition(
+        code = '530',
+        description = "A placement provider code of PR4 cannot be associated with placement P1.",
+        affected_fields=['PLACE', 'PLACE_PROVIDER'],
+    )
+  def _validate(dfs):
+    return[]
+    
+  return error, _validate
+
+
 def validate_611():
     error = ErrorDefinition(
         code = '611',

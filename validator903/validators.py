@@ -8,7 +8,20 @@ def validate_530():
         affected_fields=['PLACE', 'PLACE_PROVIDER'],
     )
   def _validate(dfs):
-    return[]
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      code_list_place =['P1']
+      code_list_place_provider=['PR4']
+
+      episodes = dfs['Episodes']
+
+      mask = episodes['PLACE'].isin(code_list_place) & episodes['PLACE_PROVIDER'].isin(code_list_place_provider)
+        
+      validation_error_mask = mask
+      validation_error_locations = episodes.index[validation_error_mask]
+
+      return {'Episodes': validation_error_locations.tolist()}
     
   return error, _validate
 

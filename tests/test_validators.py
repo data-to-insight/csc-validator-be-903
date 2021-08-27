@@ -561,3 +561,21 @@ def test_validate_148():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [0,2,4]}
+
+
+def test_validate_151 ():
+    fake_data = pd.DataFrame({
+       'DATE_INT': [pd.NA, '01/01/2021', '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021'],
+       'DATE_MATCH': [pd.NA, '01/01/2021', pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
+       'FOSTER_CARE': [pd.NA, '01/01/2021', pd.NA, pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, '01/01/2021'],
+       'NB_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA],
+       'SEX_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA, '01/01/2021'],
+       'LS_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA],
+ })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_151()
+    
+    result = error_func(fake_dfs)
+    assert result == {'AD1':[2,3,4,5,6,7,8]}

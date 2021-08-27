@@ -1025,3 +1025,30 @@ def validate_148():
             return{'Episode': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_151():
+    error = ErrorDefinition(
+       code='151',
+       description='All data items relating to a childs adoption must be coded or left blank.',
+       affected_fields=['DATE_INT','DATE_MATCH','FOSTER_CARE','NB_ADOPTER','SEX_ADOPTR','LS_ADOPTR'],
+    )
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+           return {}
+        else:
+           ad1 = dfs['AD1']
+           na_date_int = ad1['DATE_INT'].isna()
+           na_date_match = ad1['DATE_MATCH'].isna()
+           na_foster_care = ad1['FOSTER_CARE'].isna()
+           na_nb_adoptr = ad1['NB_ADOPTR'].isna()
+           na_sex_adoptr = ad1['SEX_ADOPTR'].isna()
+           na_lsadoptr = ad1['LS_ADOPTR'].isna()
+
+           ad1_not_null = (~na_date_int & ~na_date_match &  ~na_foster_care & ~na_nb_adoptr& ~na_sex_adoptr & ~na_lsadoptr)
+
+           validation_error = (~na_date_int | ~na_date_match | ~na_foster_care | ~na_nb_adoptr | ~na_sex_adoptr |~na_lsadoptr) & ~ad1_not_null
+           validation_error_locations = ad1.index[validation_error]
+
+           return {'AD1': validation_error_locations.tolist()}
+
+    return error,_validate

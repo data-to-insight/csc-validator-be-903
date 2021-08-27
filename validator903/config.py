@@ -49,6 +49,7 @@ configured_errors = [
     validate_146(),
     validate_147(),
     validate_149(),
+    validate_159(),
     validate_167(),
     validate_168(),
     validate_171(),

@@ -1,6 +1,33 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_184():
+    error = ErrorDefinition(
+        code='184',
+        description='Date of decision that a child should be placed for adoption is before the child was born.',
+        affected_fields=['DATE_PLACED','DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            child_record = dfs['Header']
+            ad1 = dfs['AD1']
+
+            all_data = ad1.reset_index().merge(child_record, how='left', on='CHILD')
+
+            mask = (all_data['DATE_PLACED'] >= all_data['DOB']) | all_data['DATE_PLACED'].isna()
+
+            validation_error = ~mask
+            
+            validation_error_locations = ad1.index[validation_error]['index'].unique()
+        
+            return {'AD1': validation_error_locations.tolist()}
+            
+    
+    return error, _validate
+
 def validate_1009():
     error = ErrorDefinition(
         code='1009',

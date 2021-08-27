@@ -1,6 +1,25 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_611():
+    error = ErrorDefinition(
+        code = '611',
+        description = "Date of birth field is blank, but child is a mother.",
+        affected_fields=['MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            validation_error_mask = header['MOTHER'].astype(str).isin(['1']) & header['MC_DOB'].isna()
+            validation_error_locations = header.index[validation_error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def validate_1009():
     error = ErrorDefinition(
         code='1009',

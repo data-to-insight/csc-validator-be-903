@@ -561,3 +561,41 @@ def test_validate_148():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [0,2,4]}
+
+def test_validate_214():
+    fake_data = pd.DataFrame([
+   { 'LS' : 'V3', 'PL_POST' : 'M2 3RT', 'URN' : 'XXXXXX'},    #0  Fail
+   { 'LS' : 'U1', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045099'},  #1
+   { 'LS' : 'U3', 'PL_POST' : pd.NA, 'URN' : 'SC045099'},     #2
+   { 'LS' : 'V4', 'PL_POST' : 'M2 3RT', 'URN' : pd.NA},       #3  Fail
+   { 'LS' : 'V4', 'PL_POST' : pd.NA, 'URN' : 'SC045099'},     #4  Fail
+   { 'LS' : 'T1', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045100'},  #5
+   { 'LS' : 'U6', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045101'},  #6
+   { 'LS' : 'V3', 'PL_POST' : pd.NA, 'URN' : pd.NA},          #7 
+  ])
+
+    fake_dfs = {'Episode': fake_data}
+
+    error_defn, error_func = validate_214()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episode': [0,3,4]}
+
+def test_validate_222():
+    fake_data = pd.DataFrame([
+    { 'PLACE' : 'H5', 'URN' : 'XXXXXX'},  #0
+    { 'PLACE' : 'U1', 'URN' : 'Whatever'},  #1
+    { 'PLACE' : 'U2', 'URN' : pd.NA},  #2
+    { 'PLACE' : 'T1', 'URN' : pd.NA},  #3
+    { 'PLACE' : 'R1', 'URN' : 'Whatever'},  #4  Fail
+    { 'PLACE' : 'T2', 'URN' : 'Whatever'},  #5  Fail
+  ])
+
+    fake_dfs = {'Episode': fake_data}
+
+    error_defn, error_func = validate_222()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episode': [4,5]}

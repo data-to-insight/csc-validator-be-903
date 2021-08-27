@@ -1025,3 +1025,39 @@ def validate_148():
             return{'Episode': df.index[mask].tolist()}
 
     return error, _validate
+
+
+def validate_214 ():
+    error = ErrorDefinition(
+        code='214',
+        description='Placement location information not required.',
+        affected_fields=['PL_POST','URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            mask = df['LS'].isin(['V3','V4']) & ((df['PL_POST'].notna()) | (df['URN'].notna()))
+            return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_222 ():
+    error = ErrorDefinition(
+        code='222',
+        description='Ofsted Unique reference number (URN) should not be recorded for this placement type.',
+        affected_fields=['URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            place_code_list = ['H5','P1','P2','P3','R1','R2','R5','T0','T1','T2','T3','T4','Z1']
+            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate

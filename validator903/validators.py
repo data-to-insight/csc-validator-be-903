@@ -975,15 +975,14 @@ def validate_142():
             df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
             df = df.sort_values(['CHILD','DECOM'])
 
-            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            index_of_last_episodes = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
             df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)
 
-            #Dataframe with the maximum DECOM removed
-            df = df.loc[~df.index.isin(grouped_decom_by_child),:]
+            ended_episodes_df = df.loc[~df.index.isin(index_of_last_episodes),:]
 
-            df = df[(df['DEC'].isna() | df['REC'].isna()) & df['CHILD'].notna() & df['DECOM'].notna()]
-            mask = df.index.tolist()
-            mask.sort()
+            ended_episodes_df = ended_episodes_df[(ended_episodes_df['DEC'].isna() | ended_episodes_df['REC'].isna()) & 
+                                ended_episodes_df['CHILD'].notna() & ended_episodes_df['DECOM'].notna()]
+            mask = ended_episodes_df.index.tolist()
 
             return{'Episode': mask}
     
@@ -1004,18 +1003,8 @@ def validate_148():
             df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
-            df = df.sort_values(['CHILD','DECOM'])
+            mask = (df['CHILD'].notna()) & (df['DECOM'].notna()) & (((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna())))
 
-            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
-            df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)
-            #Dataframe with the maximum DECOM only
-            df = df.loc[df.index.isin(grouped_decom_by_child),:]
-
-            df = df[(df['DEC'].notna() | df['REC'].notna()) & df['CHILD'].notna() & df['DECOM'].notna()]
-            mask = df.index.tolist()
-            mask.sort()
-
-            return{'Episode': mask}
+            return{'Episode': df.index[mask].tolist()}
 
     return error, _validate

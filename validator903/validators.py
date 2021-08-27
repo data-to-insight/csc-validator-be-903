@@ -973,7 +973,6 @@ def validate_142():
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
             df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
-            df = df.sort_values(['CHILD','DECOM'])
 
             index_of_last_episodes = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
             df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)

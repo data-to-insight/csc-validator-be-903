@@ -975,3 +975,53 @@ def validate_119():
             return {'PlacedAdoption': validation_error_locations.tolist()}
     
     return error, _validate
+
+def validate_142():
+    error = ErrorDefinition(
+        code='142',
+        description='A new episode has started, but the previous episode has not ended.',
+        affected_fields=['DEC','REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            df['DECOM'] = df['DECOM'].fillna('01/01/1901') #Watch for potential future issues
+
+            index_of_last_episodes = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            df['DECOM'] = df['DECOM'].replace('01/01/1901',pd.NA)
+
+            ended_episodes_df = df.loc[~df.index.isin(index_of_last_episodes),:]
+
+            ended_episodes_df = ended_episodes_df[(ended_episodes_df['DEC'].isna() | ended_episodes_df['REC'].isna()) & 
+                                ended_episodes_df['CHILD'].notna() & ended_episodes_df['DECOM'].notna()]
+            mask = ended_episodes_df.index.tolist()
+
+            return{'Episode': mask}
+    
+    return error, _validate
+
+def validate_148():
+    error = ErrorDefinition(
+        code='148',
+        description='Date episode ceased and reason episode ceased must both be coded, or both left blank.',
+        affected_fields=['DEC','REC'],
+    )
+    
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            mask = ((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna()))
+
+            return{'Episode': df.index[mask].tolist()}
+
+    return error, _validate

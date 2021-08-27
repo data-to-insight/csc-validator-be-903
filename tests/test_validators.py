@@ -529,9 +529,9 @@ def test_validate_142():
 
 def test_validate_148():
     fake_data = pd.DataFrame([
-    { 'CHILD' : '111', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020', 'REC': 'X1' },  #0  
+    { 'CHILD' : '111', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020', 'REC': pd.NA },  #0  Fails
     { 'CHILD' : '111', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020', 'REC': 'X1' },  #1
-    { 'CHILD' : '111', 'DECOM' : '06/06/2020', 'DEC' : '08/06/2020', 'REC': 'X1' },  #2
+    { 'CHILD' : '111', 'DECOM' : '06/06/2020', 'DEC' : pd.NA, 'REC': 'X1' },         #2   Fails
     { 'CHILD' : '111', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020', 'REC': 'X1' },  #3
     { 'CHILD' : '222', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020', 'REC': pd.NA }, #4   Fails
     { 'CHILD' : '333', 'DECOM' : '06/06/2020', 'DEC' : '07/06/2020', 'REC': 'E11' }, #5  
@@ -539,17 +539,6 @@ def test_validate_148():
     { 'CHILD' : '444', 'DECOM' : '08/06/2020', 'DEC' : '09/06/2020', 'REC': 'X1' },  #7
     { 'CHILD' : '444', 'DECOM' : '09/06/2020', 'DEC' : '10/06/2020', 'REC': 'E11' }, #8
     { 'CHILD' : '444', 'DECOM' : '15/06/2020', 'DEC' : pd.NA, 'REC': pd.NA },        #9
-    { 'CHILD' : '555', 'DECOM' : '11/06/2020', 'DEC' : '15/06/2020', 'REC': 'E11' },  #10    
-    { 'CHILD' : '6666', 'DECOM' : '12/06/2020', 'DEC' : '13/06/2020', 'REC': 'X1' },  #11
-    { 'CHILD' : '6666', 'DECOM' : '13/06/2020', 'DEC' : pd.NA, 'REC': 'X1' },         #12   Fails
-    { 'CHILD' : '6666', 'DECOM' : '14/06/2020', 'DEC' : '15/06/2020', 'REC': 'X1' },  #13
-    { 'CHILD' : '6666', 'DECOM' : '15/06/2020', 'DEC' : '16/06/2020', 'REC': pd.NA },  #14   Fails
-    { 'CHILD' : '77777', 'DECOM' : '16/06/2020', 'DEC' : '17/06/2020', 'REC': 'X1' }, #15
-    { 'CHILD' : '77777', 'DECOM' : '17/06/2020', 'DEC' : '18/06/2020', 'REC': 'X1' }, #16
-    { 'CHILD' : '77777', 'DECOM' : '18/06/2020', 'DEC' : '19/06/2020', 'REC': pd.NA },   #17 Fails
-    { 'CHILD' : '999', 'DECOM' : '31/06/2020', 'DEC' : pd.NA, 'REC': pd.NA },  #18   Nonsense date, but should pass
-    { 'CHILD' : '123', 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': 'E11'},  #19   Nonsense dates, but should pass
-    { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': pd.NA },  #20   Nonsense, but should pass
     ])
 
     fake_dfs = {'Episode': fake_data}
@@ -558,4 +547,4 @@ def test_validate_148():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [4,12,14,17]}
+    assert result == {'Episode': [0,2,4]}

@@ -999,10 +999,9 @@ def validate_148():
             return {}
         else:
             df = dfs['Episode']
-            df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            mask = (df['CHILD'].notna()) & (df['DECOM'].notna()) & (((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna())))
+            mask = ((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna()))
 
             return{'Episode': df.index[mask].tolist()}
 

@@ -599,3 +599,21 @@ def test_validate_222():
     result = error_func(fake_dfs)
 
     assert result == {'Episode': [4,5]}
+
+def test_validate_366():
+    fake_data = pd.DataFrame([
+    { 'LS' : 'V3', 'RNE' : 'S'},  #0
+    { 'LS' : 'V4', 'RNE' : 'T'},  #1
+    { 'LS' : 'U1', 'RNE' : pd.NA},  #2
+    { 'LS' : 'U2', 'RNE' : pd.NA},  #3
+    { 'LS' : 'V3', 'RNE' : 'U'},  #4  Fail
+    { 'LS' : 'V3', 'RNE' : pd.NA},  #5  Fail
+  ])
+
+    fake_dfs = {'Episode': fake_data}
+
+    error_defn, error_func = validate_366()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episode': [4,5]}

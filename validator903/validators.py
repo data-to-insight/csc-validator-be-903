@@ -1027,7 +1027,7 @@ def validate_148():
     return error, _validate
 
 
-def validate_214 ():
+def validate_214():
     error = ErrorDefinition(
         code='214',
         description='Placement location information not required.',
@@ -1044,7 +1044,7 @@ def validate_214 ():
 
     return error, _validate
 
-def validate_222 ():
+def validate_222():
     error = ErrorDefinition(
         code='222',
         description='Ofsted Unique reference number (URN) should not be recorded for this placement type.',
@@ -1058,6 +1058,23 @@ def validate_222 ():
             df = dfs['Episode']
             place_code_list = ['H5','P1','P2','P3','R1','R2','R5','T0','T1','T2','T3','T4','Z1']
             mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            return {'Episode': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_366():
+    error = ErrorDefinition(
+        code='366',
+        description='A child cannot change placement during the course of an individual short-term respite break.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episode' not in dfs:
+            return {}
+        else:
+            df = dfs['Episode']
+            mask = (df['LS'] == 'V3') & (df['RNE'] != 'S')
             return {'Episode': df.index[mask].tolist()}
 
     return error, _validate

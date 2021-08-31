@@ -778,9 +778,12 @@ def validate_392c():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs or 'postcodes' not in dfs['metadata']:
+        if 'Episodes' not in dfs:
             return {}
         else:
+            if 'postcodes' not in dfs['metadata']:
+                return {'Episodes': []}
+
             episodes = dfs['Episodes']
             postcode_list = set(dfs['metadata']['postcodes']['pcd'])
 
@@ -804,12 +807,12 @@ def validate_213():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             mask = df['PLACE'].isin(['T0','T1','T2','T3','T4','Z1']) & df['PLACE_PROVIDER'].notna()
-            return {'Episode': df.index[mask].tolist()}
+            return {'Episodes': df.index[mask].tolist()}
     
     return error, _validate
 
@@ -839,10 +842,10 @@ def validate_388():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
@@ -886,7 +889,7 @@ def validate_388():
             mask = mask_case1 + mask_case2 + mask_case3
 
             mask.sort()
-            return {'Episode': mask}
+            return {'Episodes': mask}
     
     return error, _validate
 
@@ -984,10 +987,10 @@ def validate_142():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             df['DECOM'] = pd.to_datetime(df['DECOM'], format='%d/%m/%Y', errors='coerce')
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
@@ -1002,7 +1005,7 @@ def validate_142():
                                 ended_episodes_df['CHILD'].notna() & ended_episodes_df['DECOM'].notna()]
             mask = ended_episodes_df.index.tolist()
 
-            return{'Episode': mask}
+            return{'Episodes': mask}
     
     return error, _validate
 
@@ -1014,15 +1017,15 @@ def validate_148():
     )
     
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
             mask = ((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna()))
 
-            return{'Episode': df.index[mask].tolist()}
+            return{'Episodes': df.index[mask].tolist()}
 
     return error, _validate
 
@@ -1058,5 +1061,57 @@ def validate_182():
         
 
             return {'OC2': validation_error_locations.tolist()}
+        
+    return error, _validate
+
+def validate_214():
+    error = ErrorDefinition(
+        code='214',
+        description='Placement location information not required.',
+        affected_fields=['PL_POST','URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            mask = df['LS'].isin(['V3','V4']) & ((df['PL_POST'].notna()) | (df['URN'].notna()))
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_222():
+    error = ErrorDefinition(
+        code='222',
+        description='Ofsted Unique reference number (URN) should not be recorded for this placement type.',
+        affected_fields=['URN'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            place_code_list = ['H5','P1','P2','P3','R1','R2','R5','T0','T1','T2','T3','T4','Z1']
+            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_366():
+    error = ErrorDefinition(
+        code='366',
+        description='A child cannot change placement during the course of an individual short-term respite break.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            mask = (df['LS'] == 'V3') & (df['RNE'] != 'S')
+            return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

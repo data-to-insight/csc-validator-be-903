@@ -1038,12 +1038,12 @@ def validate_214():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             mask = df['LS'].isin(['V3','V4']) & ((df['PL_POST'].notna()) | (df['URN'].notna()))
-            return {'Episode': df.index[mask].tolist()}
+            return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
 
@@ -1055,13 +1055,13 @@ def validate_222():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             place_code_list = ['H5','P1','P2','P3','R1','R2','R5','T0','T1','T2','T3','T4','Z1']
             mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
-            return {'Episode': df.index[mask].tolist()}
+            return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
 
@@ -1073,11 +1073,11 @@ def validate_366():
     )
 
     def _validate(dfs):
-        if 'Episode' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
         else:
-            df = dfs['Episode']
+            df = dfs['Episodes']
             mask = (df['LS'] == 'V3') & (df['RNE'] != 'S')
-            return {'Episode': df.index[mask].tolist()}
+            return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

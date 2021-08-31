@@ -574,13 +574,13 @@ def test_validate_214():
    { 'LS' : 'V3', 'PL_POST' : pd.NA, 'URN' : pd.NA},          #7 
   ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_214()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [0,3,4]}
+    assert result == {'Episodes': [0,3,4]}
 
 def test_validate_222():
     fake_data = pd.DataFrame([
@@ -592,13 +592,13 @@ def test_validate_222():
     { 'PLACE' : 'T2', 'URN' : 'Whatever'},  #5  Fail
   ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_222()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [4,5]}
+    assert result == {'Episodes': [4,5]}
 
 def test_validate_366():
     fake_data = pd.DataFrame([
@@ -610,10 +610,10 @@ def test_validate_366():
     { 'LS' : 'V3', 'RNE' : pd.NA},  #5  Fail
   ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_366()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [4,5]}
+    assert result == {'Episodes': [4,5]}

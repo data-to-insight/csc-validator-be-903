@@ -1028,7 +1028,7 @@ def validate_148():
 
 def validate_182():
     error = ErrorDefinition(
-        code='134',
+        code='182',
         description='Data entries on immunisations, teeth checks, health assessments and substance misuse problem identified should be completed or all OC2 fields should be left blank.',
         affected_fields=['IMMUNISATIONS','TEETH_CHECK','HEALTH_ASSESSMENT','SUBSTANCE_MISUSE','CONVICTED','HEALTH_CHECK','INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
     )
@@ -1040,7 +1040,7 @@ def validate_182():
             oc2 = dfs['OC2']
 
             mask1 = (
-              oc2['IMMUNISATION'].isna() |
+              oc2['IMMUNISATIONS'].isna() |
               oc2['TEETH_CHECK'].isna() |
               oc2['HEALTH_ASSESSMENT'].isna() |
               oc2['SUBSTANCE_MISUSE'].isna()

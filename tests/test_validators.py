@@ -564,7 +564,7 @@ def test_validate_148():
 
 def test_validate_182():
     fake_data = pd.DataFrame({
-        'IMMUNISATION':           [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'IMMUNISATIONS':           [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
         'TEETH_CHECK':            [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , '1'  ],
         'HEALTH_ASSESSMENT':      [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
         'SUBSTANCE_MISUSE':       [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  ],

@@ -1,6 +1,28 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_612():
+    error = ErrorDefinition(
+        code = '612',
+        description = "Date of birth field has been completed but mother field indicates child is not a mother.",
+        affected_fields=['SEX', 'MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+
+            mask = (header['MOTHER'].astype(str).isin(['0']) | header['MOTHER'].isna()) & header['SEX'].astype(str).isin(['2']) & header['MC_DOB'].isna()
+
+            validation_error_mask = ~mask
+            validation_error_locations = header.index[validation_error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+    
+    return error, _validate
+
 def validate_611():
     error = ErrorDefinition(
         code = '611',

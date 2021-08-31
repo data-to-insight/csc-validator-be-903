@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_612():
+    fake_data = pd.DataFrame({
+        'SEX': [2, '2', '2', 2], 
+        'MOTHER': ['0', '0', pd.NA, pd.NA], 
+        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_612()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [0, 1, 2]}
+
 def test_validate_611():
     fake_data = pd.DataFrame({
         'MOTHER': [1, '1', pd.NA, pd.NA, 1 ], 

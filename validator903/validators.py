@@ -1081,3 +1081,29 @@ def validate_366():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_628():
+    error = ErrorDefinition(
+        code='628',
+        description='Motherhood details are not required for care leavers who have not been looked after during the year.',
+        affected_fields=['MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']
+            epi = dfs['Episodes']
+            oc3 = dfs['OC3']
+            
+            oc3_has_in_touch_activ_or_accom = oc3[(oc3['IN_TOUCH'].notna()) | (oc3['ACTIV'].notna()) | (oc3['ACCOM'].notna())]
+
+            child_in_header_not_in_episode_file = ~hea['CHILD'].isin(epi['CHILD'])
+            child_in_header_in_oc3_with_appropriate_values = hea['CHILD'].isin(oc3_has_in_touch_activ_or_accom['CHILD'])
+
+            header_error_mask = child_in_header_not_in_episode_file & child_in_header_in_oc3_with_appropriate_values & hea['MOTHER'].notna()
+
+            return {'Header': hea.index[header_error_mask].tolist()}
+
+    return error, _validate

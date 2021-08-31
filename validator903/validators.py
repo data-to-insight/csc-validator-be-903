@@ -1029,6 +1029,40 @@ def validate_148():
 
     return error, _validate
 
+def validate_182():
+    error = ErrorDefinition(
+        code='182',
+        description='Data entries on immunisations, teeth checks, health assessments and substance misuse problem identified should be completed or all OC2 fields should be left blank.',
+        affected_fields=['IMMUNISATIONS','TEETH_CHECK','HEALTH_ASSESSMENT','SUBSTANCE_MISUSE','CONVICTED','HEALTH_CHECK','INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            mask1 = (
+              oc2['IMMUNISATIONS'].isna() |
+              oc2['TEETH_CHECK'].isna() |
+              oc2['HEALTH_ASSESSMENT'].isna() |
+              oc2['SUBSTANCE_MISUSE'].isna()
+            )
+            mask2 = (
+              oc2['CONVICTED'].isna() &
+              oc2['HEALTH_CHECK'].isna() &
+              oc2['INTERVENTION_RECEIVED'].isna() &
+              oc2['INTERVENTION_OFFERED'].isna()
+            )
+
+
+            validation_error = mask1 & ~mask2
+            validation_error_locations = oc2.index[validation_error]
+        
+
+            return {'OC2': validation_error_locations.tolist()}
+        
+    return error, _validate
 
 def validate_214():
     error = ErrorDefinition(

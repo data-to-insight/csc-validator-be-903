@@ -8,13 +8,14 @@ def dummy_input_files():
     return  {
         'header.csv': 'Header',
         'episodes.csv': 'Episodes',
-        'ad1.csv': 'AD1',
-        'oc2.csv': 'OC2',
-        'oc3.csv': 'OC3',
-        'placed_for_adoption.csv': 'PlacedAdoption',
         'reviews.csv': 'Reviews',
         'uasc.csv': 'UASC',
+        'oc2.csv': 'OC2',
+        'oc3.csv': 'OC3',
+        'ad1.csv': 'AD1',
+        'placed_for_adoption.csv': 'PlacedAdoption',
         'previous_permanence.csv': 'PrevPerm',
+        'missing.csv': 'Missing',
     }
 
 @pytest.fixture

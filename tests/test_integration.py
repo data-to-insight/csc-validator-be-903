@@ -36,3 +36,9 @@ def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_in
                 assert error_location in dummy_data[table_name].index, f'Location {error_location} not found in {table_name} index - check returned locations!'
 
 
+def test_has_correct_table_names(dummy_input_data):
+    for error_code, error_func in configured_errors:
+        result = error_func(dummy_input_data)
+        assert len(result) > 0, f'Validator for {error_code} does not appear to operate on any configured table names - check spelling!'
+        assert all(r in dummy_input_data for r in result), f'Validator for {error_code} returns a wrong table name!'
+

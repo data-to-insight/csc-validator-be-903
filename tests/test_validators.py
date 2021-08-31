@@ -400,13 +400,13 @@ def test_validate_213():
         'PLACE_PROVIDER': [pd.NA , pd.NA,'PR3','PR4','PR0','PR2','PR1', pd.NA],
     })
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_213()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [5,6]}
+    assert result == {'Episodes': [5,6]}
 
 def test_validate_168():
     fake_data = pd.DataFrame({
@@ -447,13 +447,13 @@ def test_validate_388():
     { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': pd.NA },  #20   Nonsense, but should pass
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_388()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [0,3,5,10,14]}
+    assert result == {'Episodes': [0,3,5,10,14]}
 
 def test_validate_113():
     fake_data = pd.DataFrame({
@@ -532,13 +532,13 @@ def test_validate_142():
     { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': pd.NA },  #20   Nonsense, but should pass
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_142()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [1,5,13]}
+    assert result == {'Episodes': [1,5,13]}
 
 def test_validate_148():
     fake_data = pd.DataFrame([
@@ -554,13 +554,13 @@ def test_validate_148():
     { 'CHILD' : '444', 'DECOM' : '15/06/2020', 'DEC' : pd.NA, 'REC': pd.NA },        #9
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_148()
 
     result = error_func(fake_dfs)
-
-    assert result == {'Episode': [0,2,4]}
+    
+    assert result == {'Episodes': [0,2,4]}
 
 def test_validate_214():
     fake_data = pd.DataFrame([

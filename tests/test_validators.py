@@ -400,13 +400,13 @@ def test_validate_213():
         'PLACE_PROVIDER': [pd.NA , pd.NA,'PR3','PR4','PR0','PR2','PR1', pd.NA],
     })
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_213()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [5,6]}
+    assert result == {'Episodes': [5,6]}
 
 def test_validate_168():
     fake_data = pd.DataFrame({
@@ -447,13 +447,13 @@ def test_validate_388():
     { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': pd.NA },  #20   Nonsense, but should pass
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_388()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [0,3,5,10,14]}
+    assert result == {'Episodes': [0,3,5,10,14]}
 
 def test_validate_113():
     fake_data = pd.DataFrame({
@@ -532,13 +532,13 @@ def test_validate_142():
     { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'DEC' : pd.NA, 'REC': pd.NA },  #20   Nonsense, but should pass
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_142()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episode': [1,5,13]}
+    assert result == {'Episodes': [1,5,13]}
 
 def test_validate_148():
     fake_data = pd.DataFrame([
@@ -554,16 +554,90 @@ def test_validate_148():
     { 'CHILD' : '444', 'DECOM' : '15/06/2020', 'DEC' : pd.NA, 'REC': pd.NA },        #9
     ])
 
-    fake_dfs = {'Episode': fake_data}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_148()
 
     result = error_func(fake_dfs)
+    
+    assert result == {'Episodes': [0,2,4]}
 
-    assert result == {'Episode': [0,2,4]}
+def test_validate_214():
+    fake_data = pd.DataFrame([
+   { 'LS' : 'V3', 'PL_POST' : 'M2 3RT', 'URN' : 'XXXXXX'},    #0  Fail
+   { 'LS' : 'U1', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045099'},  #1
+   { 'LS' : 'U3', 'PL_POST' : pd.NA, 'URN' : 'SC045099'},     #2
+   { 'LS' : 'V4', 'PL_POST' : 'M2 3RT', 'URN' : pd.NA},       #3  Fail
+   { 'LS' : 'V4', 'PL_POST' : pd.NA, 'URN' : 'SC045099'},     #4  Fail
+   { 'LS' : 'T1', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045100'},  #5
+   { 'LS' : 'U6', 'PL_POST' : 'M2 3RT', 'URN' : 'SC045101'},  #6
+   { 'LS' : 'V3', 'PL_POST' : pd.NA, 'URN' : pd.NA},          #7 
+  ])
 
+    fake_dfs = {'Episodes': fake_data}
 
-def test_validate_151 ():
+    error_defn, error_func = validate_214()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0,3,4]}
+
+def test_validate_222():
+    fake_data = pd.DataFrame([
+    { 'PLACE' : 'H5', 'URN' : 'XXXXXX'},  #0
+    { 'PLACE' : 'U1', 'URN' : 'Whatever'},  #1
+    { 'PLACE' : 'U2', 'URN' : pd.NA},  #2
+    { 'PLACE' : 'T1', 'URN' : pd.NA},  #3
+    { 'PLACE' : 'R1', 'URN' : 'Whatever'},  #4  Fail
+    { 'PLACE' : 'T2', 'URN' : 'Whatever'},  #5  Fail
+  ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_222()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [4,5]}
+
+def test_validate_366():
+    fake_data = pd.DataFrame([
+    { 'LS' : 'V3', 'RNE' : 'S'},  #0
+    { 'LS' : 'V4', 'RNE' : 'T'},  #1
+    { 'LS' : 'U1', 'RNE' : pd.NA},  #2
+    { 'LS' : 'U2', 'RNE' : pd.NA},  #3
+    { 'LS' : 'V3', 'RNE' : 'U'},  #4  Fail
+    { 'LS' : 'V3', 'RNE' : pd.NA},  #5  Fail
+  ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_366()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'Episodes': [4,5]}
+
+def test_validate_182():
+    fake_data = pd.DataFrame({
+        'IMMUNISATIONS':           [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'TEETH_CHECK':            [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , '1'  ],
+        'HEALTH_ASSESSMENT':      [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'SUBSTANCE_MISUSE':       [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  ],
+        'CONVICTED':              [pd.NA, '1'  , pd.NA, pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'HEALTH_CHECK':           [pd.NA, pd.NA, '1'  , pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_RECEIVED':  [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_OFFERED':   [pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  , pd.NA],
+    }) 
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_182()
+
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [1, 2, 3, 4, 6]}
+
+def test_validate_151():
     fake_data = pd.DataFrame({
        'DATE_INT': [pd.NA, '01/01/2021', '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021'],
        'DATE_MATCH': [pd.NA, '01/01/2021', pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
@@ -579,3 +653,4 @@ def test_validate_151 ():
     
     result = error_func(fake_dfs)
     assert result == {'AD1':[2,3,4,5,6,7,8]}
+

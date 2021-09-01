@@ -1224,4 +1224,22 @@ def validate_411():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
-    
+
+def validate_420():
+    error = ErrorDefinition(
+        code='420',
+        description='LA of placement completed but child is looked after under legal status V3 or V4.',
+        affected_fields=['PL_LA'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+
+            mask = is_short_term & df['PL_LA'].notna()
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate

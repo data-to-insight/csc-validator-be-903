@@ -708,3 +708,15 @@ def test_validate_411():
     # Note 2 and 3 pass as the rule is specific 
     # about only checking that 'IN' is set correctly
     assert error_func(fake_dfs) == {'Episodes': [4]}
+
+def test_validate_420():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'V3', 'V4', 'V3', 'V4', 'C2'],
+        'PL_LA': [pd.NA, 'E03934134', 'E059635', pd.NA, pd.NA, 'NIR']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_420()
+
+    assert error_func(fake_dfs) == {'Episodes': [1, 2]}

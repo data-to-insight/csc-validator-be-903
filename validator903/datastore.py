@@ -19,9 +19,13 @@ def create_datastore(data, metadata):
     """
     data = copy(data)
     data['metadata'] = _process_metadata(metadata)
-    data['Episodes'] = _add_postcode_derived_fields(data['Episodes'], metadata['postcodes'])
+    data['Episodes'] = _add_postcode_derived_fields(
+        data['Episodes'], metadata['postcodes'], metadata['localAuthority'],
+    )
     if 'Episodes_last' in data:
-        data['Episodes_last'] = _add_postcode_derived_fields(data['Episodes_last'], metadata['postcodes'])
+        data['Episodes_last'] = _add_postcode_derived_fields(
+            data['Episodes_last'], metadata['postcodes'], metadata['localAuthority']
+        )
     return data
 
 def _process_metadata(metadata):
@@ -30,7 +34,7 @@ def _process_metadata(metadata):
     metadata['collection_end'] = datetime.datetime(collection_year + 1, 3, 31)
     return metadata
 
-def _add_postcode_derived_fields(episodes_df, postcodes):
+def _add_postcode_derived_fields(episodes_df, postcodes, local_authority):
     print('Adding postcodes...')
     episodes_df['home_pcd'] = episodes_df['HOME_POST'].str.replace(' ', '')
     home_details = episodes_df[['home_pcd']].merge(postcodes, how='left', left_on='home_pcd', right_on='pcd')
@@ -42,12 +46,11 @@ def _add_postcode_derived_fields(episodes_df, postcodes):
 
     # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
 
-    episodes_df['HOME_LA'] = home_details['laua']
     episodes_df['PL_LA'] = pl_details['laua']
 
     episodes_df['PL_LOCATION'] = 'IN'
-    episodes_df.loc[episodes_df['HOME_LA'] != episodes_df['PL_LA'], 'PL_LOCATION'] = 'OUT'
-    episodes_df.loc[episodes_df['HOME_LA'].isna(), 'PL_LOCATION'] = pd.NA
+    episodes_df.loc[episodes_df['PL_LA'].ne(local_authority), 'PL_LOCATION'] = 'OUT'
+    episodes_df.loc[episodes_df['PL_LA'].isna(), 'PL_LOCATION'] = pd.NA
 
     # This formula is taken straight from the guidance, to get miles between two postcodes
     episodes_df['PL_DISTANCE'] = np.sqrt(

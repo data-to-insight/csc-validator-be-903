@@ -1115,3 +1115,132 @@ def validate_366():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_164():
+    error = ErrorDefinition(
+        code='164',
+        description='Distance is not valid. Please check a valid postcode has been entered.',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+            distance = pd.to_numeric(df['PL_DISTANCE'], errors='coerce')
+            # Use a bit of tolerance in these bounds
+            distance_valid = distance.gt(-0.2) & distance.lt(1001.0)
+            mask = ~is_short_term & ~distance_valid
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_169():
+    error = ErrorDefinition(
+        code='169',
+        description='Local Authority (LA) of placement is not valid or is missing. Please check a valid postcode has been entered.',
+        affected_fields=['PL_LA'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+
+            # Because PL_LA is derived, it will always be valid if present
+            mask = ~is_short_term & df['PL_LA'].isna()
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_179():
+    error = ErrorDefinition(
+        code='179',
+        description='Placement location code is not a valid code.',
+        affected_fields=['PL_LOCATION'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+
+            # Because PL_LOCATION is derived, it will always be valid if present
+            mask = ~is_short_term & df['PL_LOCATION'].isna()
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_1015():
+    error = ErrorDefinition(
+        code='1015',
+        description='Placement provider is own provision but child not placed in own LA.',
+        affected_fields=['PL_LA'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            local_authority = dfs['metadata']['localAuthority']
+
+            placement_fostering_or_adoption = df['PLACE'].isin([
+                'A3', 'A4', 'A5', 'A6', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6',
+            ])
+            own_provision = df['PLACE_PROVIDER'].eq('PR1')
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+            is_pl_la = df['PL_LA'].eq(local_authority)
+
+            checked_episodes = ~placement_fostering_or_adoption & ~is_short_term & own_provision
+            checked_episodes = checked_episodes & df['LS'].notna() & df['PLACE'].notna()
+            mask = checked_episodes & ~is_pl_la
+
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_411():
+    error = ErrorDefinition(
+        code='411',
+        description='Placement location code disagrees with LA of placement.',
+        affected_fields=['PL_LOCATION'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            local_authority = dfs['metadata']['localAuthority']
+
+            mask = df['PL_LOCATION'].eq('IN') & df['PL_LA'].ne(local_authority)
+
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+
+def validate_420():
+    error = ErrorDefinition(
+        code='420',
+        description='LA of placement completed but child is looked after under legal status V3 or V4.',
+        affected_fields=['PL_LA'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+
+            mask = is_short_term & df['PL_LA'].notna()
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate

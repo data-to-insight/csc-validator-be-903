@@ -17,7 +17,7 @@ def validate_530():
             validation_error_mask = mask
             validation_error_locations = episodes.index[validation_error_mask]
 
-            return {'Episodes': validation_error_locations.tolist()}
+            return {'Episodes': validation_error_locations.tolist()} 
       
     return error, _validate
 

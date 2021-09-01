@@ -640,8 +640,8 @@ def test_validate_182():
 
 def test_validate_164():
     fake_data = pd.DataFrame({
-        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4'],
-        'PL_DISTANCE': [12.0, '12', 1000.0, pd.NA, pd.NA, pd.NA],
+        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4', 'C2'],
+        'PL_DISTANCE': [12.0, '12', 1003.0, pd.NA, pd.NA, pd.NA, 0.0],
     })
 
     fake_dfs = {'Episodes': fake_data}

@@ -1130,7 +1130,8 @@ def validate_164():
             df = dfs['Episodes']
             is_short_term = df['LS'].isin(['V3', 'V4'])
             distance = pd.to_numeric(df['PL_DISTANCE'], errors='coerce')
-            distance_valid = distance.gt(0) & distance.lt(999)
+            # Use a bit of tolerance in these bounds
+            distance_valid = distance.gt(-0.2) & distance.lt(1001.0)
             mask = ~is_short_term & ~distance_valid
             return {'Episodes': df.index[mask].tolist()}
 

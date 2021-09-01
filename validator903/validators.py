@@ -1204,3 +1204,24 @@ def validate_1015():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_411():
+    error = ErrorDefinition(
+        code='411',
+        description='Placement location code disagrees with LA of placement.',
+        affected_fields=['PL_LOCATION'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            local_authority = dfs['metadata']['localAuthority']
+
+            mask = df['PL_LOCATION'].eq('IN') & df['PL_LA'].ne(local_authority)
+
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate
+    

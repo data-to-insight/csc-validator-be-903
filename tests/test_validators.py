@@ -694,3 +694,17 @@ def test_validate_1015():
 
     error_defn, error_func = validate_1015()
     assert error_func(fake_dfs) == {'Episodes': [1]}
+
+def test_validate_411():
+    fake_data = pd.DataFrame({
+        'PL_LA': ['auth', 'somewhere else', 'auth', 'auth', 'somewhere else'],
+        'PL_LOCATION': ['IN', 'OUT', pd.NA, 'OUT', 'IN']
+    })
+
+    fake_dfs = {'Episodes': fake_data, 'metadata': {'localAuthority': 'auth'}}
+
+    error_defn, error_func = validate_411()
+
+    # Note 2 and 3 pass as the rule is specific 
+    # about only checking that 'IN' is set correctly
+    assert error_func(fake_dfs) == {'Episodes': [4]}

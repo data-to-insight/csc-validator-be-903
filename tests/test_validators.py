@@ -649,3 +649,15 @@ def test_validate_164():
     error_defn, error_func = validate_164()
 
     assert error_func(fake_dfs) == {'Episodes': [2, 3]}
+
+def test_validate_169():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'C2', 'C2', 'V3', 'V4'],
+        'PL_LA': ['NIR', 'E03934134', pd.NA, pd.NA, pd.NA,]
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_169()
+
+    assert error_func(fake_dfs) == {'Episodes': [2]}

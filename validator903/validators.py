@@ -1175,3 +1175,32 @@ def validate_179():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_1015():
+    error = ErrorDefinition(
+        code='1015',
+        description='Placement provider is own provision but child not placed in own LA.',
+        affected_fields=['PL_LA'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            local_authority = dfs['metadata']['localAuthority']
+
+            placement_fostering_or_adoption = df['PLACE'].isin([
+                'A3', 'A4', 'A5', 'A6', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6',
+            ])
+            own_provision = df['PLACE_PROVIDER'].eq('PR1')
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+            is_pl_la = df['PL_LA'].eq(local_authority)
+
+            checked_episodes = ~placement_fostering_or_adoption & ~is_short_term & own_provision
+            checked_episodes = checked_episodes & df['LS'].notna() & df['PLACE'].notna()
+            mask = checked_episodes & ~is_pl_la
+
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate

@@ -673,3 +673,24 @@ def test_validate_179():
     error_defn, error_func = validate_179()
 
     assert error_func(fake_dfs) == {'Episodes': [2]}
+
+def test_validate_1015():
+    fake_data = pd.DataFrame([
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'auth'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'U2', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'V3', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR2', 'PL_LA': 'other'},
+        {'PLACE': pd.NA, 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': pd.NA, 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': pd.NA, 'PL_LA': 'other'},
+    ])
+
+    metadata = {
+        'localAuthority': 'auth',
+    }
+    
+    fake_dfs = {'Episodes': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_1015()
+    assert error_func(fake_dfs) == {'Episodes': [1]}

@@ -637,3 +637,15 @@ def test_validate_182():
     result = error_func(fake_dfs)
 
     assert result == {'OC2': [1, 2, 3, 4, 6]}
+
+def test_validate_164():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4'],
+        'PL_DISTANCE': [12.0, '12', 1000.0, pd.NA, pd.NA, pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_164()
+
+    assert error_func(fake_dfs) == {'Episodes': [2, 3]}

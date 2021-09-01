@@ -1115,3 +1115,23 @@ def validate_366():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_164():
+    error = ErrorDefinition(
+        code='164',
+        description='Distance is not valid. Please check a valid postcode has been entered.',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            is_short_term = df['LS'].isin(['V3', 'V4'])
+            distance = pd.to_numeric(df['PL_DISTANCE'], errors='coerce')
+            distance_valid = distance.gt(0) & distance.lt(999)
+            mask = ~is_short_term & ~distance_valid
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate

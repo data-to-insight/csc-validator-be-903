@@ -621,15 +621,16 @@ def test_validate_366():
 def test_validate_628():
     fake_data_hea = pd.DataFrame({
         'CHILD': ['0','1','2','3','4','5','6'],
-        'MOTHER': [1,pd.NA,0,1,0,1,1]   #1 will pass as null
+        'MOTHER': [1,pd.NA,0,1,0,1,1],   #1 will pass as null
     })
     fake_data_epi = pd.DataFrame({
-        'CHILD': ['1','3','4','5'],   #So 0, 2 and 6 are the ones not in episodes
+        'CHILD': ['a','1','3','3','3','4','5'],   #So 0, 2 and 6 are the ones not in episodes
     }) 
     fake_data_oc3 = pd.DataFrame([
         {'CHILD': '0', 'IN_TOUCH': 'Whatever', 'ACTIV': pd.NA, 'ACCOM': 'Whatever'}, 
         {'CHILD': '2', 'IN_TOUCH': pd.NA, 'ACTIV': pd.NA, 'ACCOM': pd.NA},     #All null values so 2 will pass
         {'CHILD': '6', 'IN_TOUCH': 'Whatever', 'ACTIV': pd.NA, 'ACCOM': pd.NA}, 
+        {'CHILD': '5', 'IN_TOUCH': 'Whatever', 'ACTIV': pd.NA, 'ACCOM': pd.NA}, 
     ])
     fake_dfs = {'Header': fake_data_hea, 'Episodes' : fake_data_epi, 'OC3' : fake_data_oc3}
 

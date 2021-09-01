@@ -1097,13 +1097,15 @@ def validate_628():
             epi = dfs['Episodes']
             oc3 = dfs['OC3']
             
-            oc3_has_in_touch_activ_or_accom = oc3[(oc3['IN_TOUCH'].notna()) | (oc3['ACTIV'].notna()) | (oc3['ACCOM'].notna())]
+            hea = hea.reset_index()
+            oc3_no_nulls = oc3[oc3[['IN_TOUCH','ACTIV','ACCOM']].notna().any(axis=1)]
 
-            child_in_header_not_in_episode_file = ~hea['CHILD'].isin(epi['CHILD'])
-            child_in_header_in_oc3_with_appropriate_values = hea['CHILD'].isin(oc3_has_in_touch_activ_or_accom['CHILD'])
+            hea_merge_epi = hea.merge(epi,how='left',on='CHILD',indicator=True)
+            hea_not_in_epi = hea_merge_epi[hea_merge_epi['_merge'] == 'left_only']
 
-            header_error_mask = child_in_header_not_in_episode_file & child_in_header_in_oc3_with_appropriate_values & hea['MOTHER'].notna()
+            cohort_to_check = hea_not_in_epi.merge(oc3_no_nulls,how='inner',on='CHILD')
+            error_cohort = cohort_to_check[cohort_to_check['MOTHER'].notna()]
 
-            return {'Header': hea.index[header_error_mask].tolist()}
+            return {'Header': error_cohort['index'].to_list()}
 
     return error, _validate

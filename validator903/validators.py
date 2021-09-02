@@ -1105,7 +1105,9 @@ def validate_628():
 
             cohort_to_check = hea_not_in_epi.merge(oc3_no_nulls,how='inner',on='CHILD')
             error_cohort = cohort_to_check[cohort_to_check['MOTHER'].notna()]
-
-            return {'Header': error_cohort['index'].to_list()}
+            
+            error_list = list(set(error_cohort['index'].to_list()))
+            error_list.sort()
+            return {'Header': error_list}
 
     return error, _validate

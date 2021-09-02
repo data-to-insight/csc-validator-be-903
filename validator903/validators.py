@@ -1116,6 +1116,36 @@ def validate_366():
 
     return error, _validate
 
+def validate_628():
+    error = ErrorDefinition(
+        code='628',
+        description='Motherhood details are not required for care leavers who have not been looked after during the year.',
+        affected_fields=['MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']
+            epi = dfs['Episodes']
+            oc3 = dfs['OC3']
+            
+            hea = hea.reset_index()
+            oc3_no_nulls = oc3[oc3[['IN_TOUCH','ACTIV','ACCOM']].notna().any(axis=1)]
+
+            hea_merge_epi = hea.merge(epi,how='left',on='CHILD',indicator=True)
+            hea_not_in_epi = hea_merge_epi[hea_merge_epi['_merge'] == 'left_only']
+
+            cohort_to_check = hea_not_in_epi.merge(oc3_no_nulls,how='inner',on='CHILD')
+            error_cohort = cohort_to_check[cohort_to_check['MOTHER'].notna()]
+            
+            error_list = list(set(error_cohort['index'].to_list()))
+            error_list.sort()
+            return {'Header': error_list}
+
+    return error, _validate
+
 def validate_164():
     error = ErrorDefinition(
         code='164',

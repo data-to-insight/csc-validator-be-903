@@ -1146,7 +1146,7 @@ def validate_628():
 
     return error, _validate
 
-  def validate_164():
+def validate_164():
     error = ErrorDefinition(
         code='164',
         description='Distance is not valid. Please check a valid postcode has been entered.',

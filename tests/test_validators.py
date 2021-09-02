@@ -742,4 +742,15 @@ def test_validate_420():
     error_defn, error_func = validate_420()
 
     assert error_func(fake_dfs) == {'Episodes': [1, 2]}
-    
+
+def test_validate_355():
+    fake_data = pd.DataFrame({
+        'DECOM': ['01/01/2000', '01/02/2000', '01/03/2000', '01/04/2000', '01/05/2000', '01/06/2000'],
+        'DEC': ['01/01/2000',   '01/03/2000',    pd.NA,     '01/04/2000', '03/05/2000', '01/06/2000'],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_355()
+
+    assert error_func(fake_dfs) == {'Episodes': [0, 3, 5]}

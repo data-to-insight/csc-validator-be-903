@@ -2,6 +2,7 @@ import pytest
 import os
 import pandas as pd
 from validator903.config import column_names 
+from validator903.datastore import create_datastore
 
 @pytest.fixture
 def dummy_input_files():
@@ -19,7 +20,22 @@ def dummy_input_files():
     }
 
 @pytest.fixture
-def dummy_input_data(dummy_input_files):
+def dummy_postcodes():
+    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
+    return pd.read_csv(file_path)
+
+@pytest.fixture
+def dummy_metadata(dummy_postcodes):
+    return {
+        'collectionYear': '2019/20',
+        'postcodes': dummy_postcodes,
+        'localAuthority': 'test_LA',
+    }
+
+
+
+@pytest.fixture
+def dummy_input_data(dummy_input_files, dummy_metadata):
     file_path = os.path.join(os.path.dirname(__file__), 'fake_data')
 
     out = {}
@@ -27,20 +43,19 @@ def dummy_input_data(dummy_input_files):
         path = os.path.join(file_path, file)
         df = pd.read_csv(path)
         out[identifier] = df
-    out['metadata'] = {}
+        out[identifier + '_last'] = df.copy()
 
-    return out
+    return create_datastore(out, dummy_metadata)
 
-@pytest.fixture
-def dummy_postcodes():
-    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
-    return pd.read_csv(file_path)
 
 @pytest.fixture
-def dummy_empty_input():
+def dummy_empty_input(dummy_metadata):
     out = {
         table_name: pd.DataFrame(columns=c)
         for table_name, c in column_names.items()
     }
-    out['metadata'] = {}
-    return out
+    out_last = {
+        table_name + '_last': pd.DataFrame(columns=c)
+        for table_name, c in column_names.items()
+    }
+    return create_datastore({**out, **out_last}, dummy_metadata)

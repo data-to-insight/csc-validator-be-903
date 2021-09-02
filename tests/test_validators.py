@@ -615,7 +615,7 @@ def test_validate_366():
     error_defn, error_func = validate_366()
 
     result = error_func(fake_dfs)
-
+    
     assert result == {'Episodes': [4,5]}
 
 def test_validate_628():
@@ -639,3 +639,107 @@ def test_validate_628():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [0,6]}
+
+def test_validate_182():
+    fake_data = pd.DataFrame({
+        'IMMUNISATIONS':           [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'TEETH_CHECK':            [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , '1'  ],
+        'HEALTH_ASSESSMENT':      [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , pd.NA, '1'  ],
+        'SUBSTANCE_MISUSE':       [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  ],
+        'CONVICTED':              [pd.NA, '1'  , pd.NA, pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'HEALTH_CHECK':           [pd.NA, pd.NA, '1'  , pd.NA, pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_RECEIVED':  [pd.NA, pd.NA, pd.NA, '1'  , pd.NA, '1'  , '1'  , pd.NA],
+        'INTERVENTION_OFFERED':   [pd.NA, pd.NA, pd.NA, pd.NA, '1'  , '1'  , '1'  , pd.NA],
+    }) 
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_182()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 3, 4, 6]}
+
+def test_validate_164():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4', 'C2'],
+        'PL_DISTANCE': [12.0, '12', 1003.0, pd.NA, pd.NA, pd.NA, 0.0],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_164()
+
+    assert error_func(fake_dfs) == {'Episodes': [2, 3]}
+
+def test_validate_169():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'C2', 'C2', 'V3', 'V4'],
+        'PL_LA': ['NIR', 'E03934134', pd.NA, pd.NA, pd.NA,]
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_169()
+
+    assert error_func(fake_dfs) == {'Episodes': [2]}
+
+def test_validate_179():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'C2', 'C2', 'V3', 'V4'],
+        'PL_LOCATION': ['IN', 'OUT', pd.NA, pd.NA, pd.NA,]
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_179()
+
+    assert error_func(fake_dfs) == {'Episodes': [2]}
+
+def test_validate_1015():
+    fake_data = pd.DataFrame([
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'auth'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'U2', 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'V3', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': 'PR2', 'PL_LA': 'other'},
+        {'PLACE': pd.NA, 'LS': 'C1', 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': pd.NA, 'PLACE_PROVIDER': 'PR1', 'PL_LA': 'other'},
+        {'PLACE': 'E1', 'LS': 'C1', 'PLACE_PROVIDER': pd.NA, 'PL_LA': 'other'},
+    ])
+
+    metadata = {
+        'localAuthority': 'auth',
+    }
+    
+    fake_dfs = {'Episodes': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_1015()
+    assert error_func(fake_dfs) == {'Episodes': [1]}
+
+def test_validate_411():
+    fake_data = pd.DataFrame({
+        'PL_LA': ['auth', 'somewhere else', 'auth', 'auth', 'somewhere else'],
+        'PL_LOCATION': ['IN', 'OUT', pd.NA, 'OUT', 'IN']
+    })
+
+    fake_dfs = {'Episodes': fake_data, 'metadata': {'localAuthority': 'auth'}}
+
+    error_defn, error_func = validate_411()
+
+    # Note 2 and 3 pass as the rule is specific 
+    # about only checking that 'IN' is set correctly
+    assert error_func(fake_dfs) == {'Episodes': [4]}
+
+def test_validate_420():
+    fake_data = pd.DataFrame({
+        'LS': ['C2', 'V3', 'V4', 'V3', 'V4', 'C2'],
+        'PL_LA': [pd.NA, 'E03934134', 'E059635', pd.NA, pd.NA, 'NIR']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_420()
+
+    assert error_func(fake_dfs) == {'Episodes': [1, 2]}
+    

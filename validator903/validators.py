@@ -1274,3 +1274,20 @@ def validate_420():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_355():
+    error = ErrorDefinition(
+        code='355',
+        description='Episode appears to have lasted for less than 24 hours',
+        affected_fields=['DECOM','DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            df = dfs['Episodes']
+            mask = df['DECOM'].astype(str) == df['DEC'].astype(str)
+            return {'Episodes': df.index[mask].tolist()}
+
+    return error, _validate

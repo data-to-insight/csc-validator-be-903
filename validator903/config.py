@@ -77,4 +77,5 @@ configured_errors = [
     validate_222(),
     validate_214(),
     validate_628(),
+    validate_355(),
 ]

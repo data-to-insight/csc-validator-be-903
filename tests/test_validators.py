@@ -754,3 +754,19 @@ def test_validate_355():
     error_defn, error_func = validate_355()
 
     assert error_func(fake_dfs) == {'Episodes': [0, 3, 5]}
+
+def test_validate_586():
+    fake_data = pd.DataFrame([
+        {'DOB' : '01/02/2020', 'MIS_START' : pd.NA },        #0
+        {'DOB' : '02/02/2020', 'MIS_START' : '07/02/2020'},  #1
+        {'DOB' : '04/02/2020', 'MIS_START' : '03/02/2020'},  #2  Fails
+        {'DOB' : '06/02/2020', 'MIS_START' : pd.NA },        #3
+        {'DOB' : '07/02/2020', 'MIS_START' : '01/02/2020'},  #4  Fails
+        {'DOB' : '08/02/2020', 'MIS_START' : '13/02/2020'},  #5
+    ])
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_586()
+
+    assert error_func(fake_dfs) == {'Missing': [2, 4]}

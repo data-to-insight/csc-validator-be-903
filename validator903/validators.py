@@ -1291,3 +1291,23 @@ def validate_355():
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate
+
+def validate_586():
+    error = ErrorDefinition(
+        code='586',
+        description='Dates of missing periods are before child’s date of birth.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            df = dfs['Missing']   
+            df['DOB'] = pd.to_datetime(df['DOB'],format='%d/%m/%Y',errors='coerce')
+            df['MIS_START'] = pd.to_datetime(df['MIS_START'],format='%d/%m/%Y',errors='coerce')
+
+            error_mask = df['MIS_START'].notna() & (df['MIS_START'] <= df['DOB'])
+            return {'Missing': df.index[error_mask].to_list()}
+
+    return error, _validate

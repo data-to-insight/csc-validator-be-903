@@ -1,6 +1,27 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_356():
+    error = ErrorDefinition(
+        code = '356',
+        description = 'The date the episode ceased is before the date the same episode started.',
+        affected_fields=['DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+          episodes = dfs['Episodes']
+          episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+          episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+
+          error_mask = episodes['DEC'].notna() & (episodes['DEC'] < episodes['DECOM'])
+          
+          return {'Episodes': episodes.index[error_mask].to_list()}
+
+    return error, _validate
+
 def validate_611():
     error = ErrorDefinition(
         code = '611',

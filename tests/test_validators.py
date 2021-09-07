@@ -784,3 +784,21 @@ def test_validate_586():
     error_defn, error_func = validate_586()
 
     assert error_func(fake_dfs) == {'Missing': [2, 4]}
+
+def test_validate_630():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['0', '1', '2', '3', '4', '5' ,'6', '7' ,'8'],
+        'RNE': [  'T', 'S', 'S', 'P', 'S', 'S', 'S', 'S', 'S'],
+    })
+    fake_pre = pd.DataFrame({
+        'CHILD':      ['2',   '4', '5' ,          '6',  '7' , '8'],
+        'PREV_PERM': [ 'Z1', 'P1', 'P1',         'Z1',  pd.NA,'P1'],
+        'LA_PERM':   [pd.NA, '352', pd.NA,       pd.NA, pd.NA,'352'],
+        'DATE_PERM': [pd.NA, pd.NA,'01/05/2000', pd.NA, pd.NA,'05/05/2020'],
+    })
+
+    fake_dfs = {'Episodes': fake_epi, 'PrevPerm': fake_pre}
+
+    error_defn, error_func = validate_630()
+
+    assert error_func(fake_dfs) == {'Episodes': [1, 4, 5, 7]}

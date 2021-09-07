@@ -1332,3 +1332,35 @@ def validate_586():
             return {'Missing': df.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_630():
+    error = ErrorDefinition(
+        code='630',
+        description='Information on previous permanence option should be returned.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            pre = dfs['PrevPerm']
+            
+            epi = epi.reset_index()
+            epi_has_rne_of_S = epi[epi['RNE'] == 'S']
+            merged_epi_preperm = epi_has_rne_of_S.merge(pre,on='CHILD',how='left',indicator=True)
+
+            error_not_in_preperm = merged_epi_preperm['_merge'] == 'left_only'
+            error_wrong_values_in_preperm = (merged_epi_preperm['PREV_PERM'] != 'Z1') & (merged_epi_preperm[['LA_PERM','DATE_PERM']].isna().any(axis=1))
+            error_null_prev_perm = (merged_epi_preperm['_merge'] == 'both') & (merged_epi_preperm['PREV_PERM'].isna())
+
+            error_mask = error_not_in_preperm | error_wrong_values_in_preperm | error_null_prev_perm
+
+            error_list = merged_epi_preperm[error_mask]['index'].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()
+
+            return {'Episodes': error_list}
+
+    return error, _validate

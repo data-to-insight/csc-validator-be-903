@@ -1332,3 +1332,38 @@ def validate_586():
             return {'Missing': df.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_502():
+    error = ErrorDefinition(
+        code='502',
+        description='Last year’s record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']
+            epi = epi.reset_index()
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'],format='%d/%m/%Y',errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'],format='%d/%m/%Y',errors='coerce')
+
+            epi_last_no_dec = epi_last[epi_last['DEC'].isna()]   
+
+            epi_min_decoms_index = epi[['CHILD','DECOM']].groupby(['CHILD'])['DECOM'].idxmin()
+
+            epi_min_decom_df = epi.loc[epi_min_decoms_index,:]
+
+            merged_episodes = epi_min_decom_df.merge(epi_last_no_dec,on='CHILD',how='inner')
+            error_cohort = merged_episodes[merged_episodes['DECOM_x'] != merged_episodes['DECOM_y']]
+
+            error_list = error_cohort['index'].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()
+            
+            return {'Episodes': error_list}
+
+    return error, _validate

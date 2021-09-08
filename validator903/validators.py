@@ -1332,3 +1332,33 @@ def validate_586():
             return {'Missing': df.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_501():
+    error = ErrorDefinition(
+        code='501',
+        description='A new episode has started before the end date of the previous episode.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']   
+            epi = epi.reset_index()
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'],format='%d/%m/%Y',errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'],format='%d/%m/%Y',errors='coerce')
+
+            epi = epi.sort_values(['CHILD','DECOM'])
+
+            epi_lead = epi.shift(1)
+            epi_lead = epi_lead.reset_index()
+
+            m_epi = epi.merge(epi_lead,left_on='index',right_on='level_0')
+
+            error_cohort = m_epi[(m_epi['CHILD_x'] == m_epi['CHILD_y']) & (m_epi['DECOM_x'] < m_epi['DEC_y'])]
+            error_list = error_cohort['index_x'].to_list()
+            error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate

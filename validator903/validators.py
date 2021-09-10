@@ -1,6 +1,38 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_NoE():
+    error = ErrorDefinition(
+        code = 'NoE',
+        description = 'This child has no episodes loaded for previous year even though child started to be looked after before this current year.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            episodes_last = dfs['Episodes_last']
+            episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'],format='%d/%m/%Y',errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+
+            episodes['index_copy'] = episodes.index
+            episodes_before_year = episodes[episodes['DECOM'] < collection_start]
+
+            episodes_merged = pd.merge(episodes_before_year, episodes_last, how='left', on=['CHILD'], indicator=True)
+
+            episodes_not_matched = episodes_merged[episodes_merged['_merge'] == 'left_only']
+            
+            error_mask = episodes['index_copy'].isin(episodes_not_matched['index_copy'])
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_356():
     error = ErrorDefinition(
         code = '356',
@@ -1359,6 +1391,41 @@ def validate_501():
             error_cohort = m_epi[(m_epi['CHILD'] == m_epi['CHILD_prev']) & (m_epi['DECOM'] < m_epi['DEC_prev'])]
             error_list = error_cohort['index'].to_list()
             error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_502():
+    error = ErrorDefinition(
+        code='502',
+        description='Last year’s record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']
+            epi = epi.reset_index()
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'],format='%d/%m/%Y',errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'],format='%d/%m/%Y',errors='coerce')
+
+            epi_last_no_dec = epi_last[epi_last['DEC'].isna()]   
+
+            epi_min_decoms_index = epi[['CHILD','DECOM']].groupby(['CHILD'])['DECOM'].idxmin()
+
+            epi_min_decom_df = epi.loc[epi_min_decoms_index,:]
+
+            merged_episodes = epi_min_decom_df.merge(epi_last_no_dec,on='CHILD',how='inner')
+            error_cohort = merged_episodes[merged_episodes['DECOM_x'] != merged_episodes['DECOM_y']]
+
+            error_list = error_cohort['index'].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()
+            
             return {'Episodes': error_list}
 
     return error, _validate

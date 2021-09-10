@@ -807,3 +807,37 @@ def test_validate_586():
     error_defn, error_func = validate_586()
 
     assert error_func(fake_dfs) == {'Missing': [2, 4]}
+
+def test_validate_502():
+    fake_epi = pd.DataFrame([
+    { 'CHILD' : '111', 'DECOM' : '01/06/2020' },  #0  Min   Fails
+    { 'CHILD' : '111', 'DECOM' : '05/06/2020' },  #1
+    { 'CHILD' : '111', 'DECOM' : '06/06/2020' },  #2   
+    { 'CHILD' : '123', 'DECOM' : '08/06/2020' },  #3  Min
+    { 'CHILD' : '222', 'DECOM' : '05/06/2020' }, #4   Min   Fails
+    { 'CHILD' : '333', 'DECOM' : '06/06/2020' }, #5  Min
+    { 'CHILD' : '333', 'DECOM' : '07/06/2020' }, #6
+    { 'CHILD' : '444', 'DECOM' : '08/06/2020' }, #7  Min   Fails 
+    { 'CHILD' : '444', 'DECOM' : '09/06/2020' }, #8
+    { 'CHILD' : '444', 'DECOM' : '15/06/2020' }, #9
+    { 'CHILD' : '555', 'DECOM' : '15/06/2020' }, #10
+    ])
+
+    fake_epi_last = pd.DataFrame([
+    { 'CHILD' : '111', 'DECOM' : '05/06/2020', 'DEC' : pd.NA },  
+    { 'CHILD' : '123', 'DECOM' : '08/06/2020', 'DEC' : pd.NA },
+    { 'CHILD' : '222', 'DECOM' : '09/06/2020', 'DEC' : pd.NA }, 
+    { 'CHILD' : '333', 'DECOM' : '06/06/2020', 'DEC' : '05/06/2020' }, 
+    { 'CHILD' : '333', 'DECOM' : '07/06/2020', 'DEC' : '05/06/2020' },
+    { 'CHILD' : '444', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020' }, 
+    { 'CHILD' : '444', 'DECOM' : '09/06/2020', 'DEC' : '05/06/2020' }, 
+    { 'CHILD' : '444', 'DECOM' : '19/06/2020', 'DEC' : pd.NA }, 
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_502()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'Episodes': [0,4,7]}

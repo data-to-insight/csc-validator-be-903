@@ -1337,7 +1337,7 @@ def validate_501():
     error = ErrorDefinition(
         code='501',
         description='A new episode has started before the end date of the previous episode.',
-        affected_fields=['DECOM'],
+        affected_fields=['DECOM','DEC'],
     )
 
     def _validate(dfs):
@@ -1354,10 +1354,10 @@ def validate_501():
             epi_lead = epi.shift(1)
             epi_lead = epi_lead.reset_index()
 
-            m_epi = epi.merge(epi_lead,left_on='index',right_on='level_0')
+            m_epi = epi.merge(epi_lead,left_on='index',right_on='level_0',suffixes=('', '_prev'))
 
-            error_cohort = m_epi[(m_epi['CHILD_x'] == m_epi['CHILD_y']) & (m_epi['DECOM_x'] < m_epi['DEC_y'])]
-            error_list = error_cohort['index_x'].to_list()
+            error_cohort = m_epi[(m_epi['CHILD'] == m_epi['CHILD_prev']) & (m_epi['DECOM'] < m_epi['DEC_prev'])]
+            error_list = error_cohort['index'].to_list()
             error_list.sort()
             return {'Episodes': error_list}
 

@@ -1343,13 +1343,22 @@ def validate_630():
     def _validate(dfs):
         if 'PrevPerm' not in dfs or 'Episodes' not in dfs:
             return {}
-        else:
+        else:        
             epi = dfs['Episodes']
             pre = dfs['PrevPerm']
             
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+
             epi = epi.reset_index()
-            epi_has_rne_of_S = epi[epi['RNE'] == 'S']
-            merged_epi_preperm = epi_has_rne_of_S.merge(pre,on='CHILD',how='left',indicator=True)
+
+            # Form the episode dataframe which has an 'RNE' of 'S' in this financial year
+            epi_has_rne_of_S_in_year = epi[(epi['RNE'] == 'S') & (epi['DECOM'] >= collection_start)]
+            # Merge to see 
+            #1) which CHILD ids are missing from the PrevPerm file
+            #2) which CHILD are in the prevPerm file, but don't have the LA_PERM/DATE_PERM field completed where they should be
+            #3) which CHILD are in the PrevPerm file, but don't have the PREV_PERM field completed.
+            merged_epi_preperm = epi_has_rne_of_S_in_year.merge(pre,on='CHILD',how='left',indicator=True)
 
             error_not_in_preperm = merged_epi_preperm['_merge'] == 'left_only'
             error_wrong_values_in_preperm = (merged_epi_preperm['PREV_PERM'] != 'Z1') & (merged_epi_preperm[['LA_PERM','DATE_PERM']].isna().any(axis=1))

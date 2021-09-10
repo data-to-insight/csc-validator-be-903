@@ -1,6 +1,29 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_NoE():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103'],
+        'DECOM':['14/03/2021','08/09/2021','03/10/2020'],
+    })
+
+    fake_data_prev = pd.DataFrame({
+        'CHILD':['101','102'],
+        'DECOM':['14/03/2021','16/06/2019']
+    })
+
+    metadata = { 
+        'collection_start': '01/04/2021'
+    }
+    
+    fake_dfs = {'Episodes': fake_data, 'Episodes_last': fake_data_prev, 'metadata': metadata}
+
+    error_defn, error_func = validate_NoE()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2]}
+
 def test_validate_356():
     fake_data = pd.DataFrame({
         'DECOM':['14/03/2021', '16/06/2019', '03/10/2020', '07/09/2021'],

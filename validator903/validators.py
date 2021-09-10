@@ -5,7 +5,7 @@ def validate_356():
     error = ErrorDefinition(
         code = '356',
         description = 'The date the episode ceased is before the date the same episode started.',
-        affected_fields=['DECOM', 'DEC'],
+        affected_fields=['DECOM'],
     )
 
     def _validate(dfs):

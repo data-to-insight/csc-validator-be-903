@@ -18,14 +18,13 @@ def validate_NoE():
             episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'],format='%d/%m/%Y',errors='coerce')
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
 
-            episodes['index_copy'] = episodes.index
             episodes_before_year = episodes[episodes['DECOM'] < collection_start]
 
-            episodes_merged = pd.merge(episodes_before_year, episodes_last, how='left', on=['CHILD'], indicator=True)
+            episodes_merged = episodes_before_year.reset_index().merge(episodes_last, how='left', on=['CHILD'], indicator=True).set_index('index')
 
             episodes_not_matched = episodes_merged[episodes_merged['_merge'] == 'left_only']
             
-            error_mask = episodes['index_copy'].isin(episodes_not_matched['index_copy'])
+            error_mask = episodes.index.isin(episodes_not_matched.index)
 
             error_locations = episodes.index[error_mask]
 
@@ -44,13 +43,13 @@ def validate_356():
         if 'Episodes' not in dfs:
             return {}
         else:
-          episodes = dfs['Episodes']
-          episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
-          episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+            episodes = dfs['Episodes']
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
 
-          error_mask = episodes['DEC'].notna() & (episodes['DEC'] < episodes['DECOM'])
+            error_mask = episodes['DEC'].notna() &(episodes['DEC'] < episodes['DECOM'])
           
-          return {'Episodes': episodes.index[error_mask].to_list()}
+            return {'Episodes': episodes.index[error_mask].to_list()}
 
     return error, _validate
 

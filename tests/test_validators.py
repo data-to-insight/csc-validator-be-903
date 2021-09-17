@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_202():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103','104'],
+        'SEX':['1',2,'1','2'],
+    })
+
+    fake_data_prev = pd.DataFrame({
+        'CHILD':['101','102','103','104'],
+        'SEX':['1',1,'2',2],
+    })
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
+
+    error_defn, error_func = validate_202()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,2]}
+
 def test_validate_NoE():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103'],

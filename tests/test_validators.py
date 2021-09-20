@@ -3,9 +3,9 @@ import pandas as pd
 
 def test_validate_612():
     fake_data = pd.DataFrame({
-        'SEX': [2, '2', '2', 2], 
-        'MOTHER': ['0', '0', pd.NA, pd.NA], 
-        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA],
+        'SEX': [2, '2', '2', 2, 2], 
+        'MOTHER': ['0', '0', pd.NA, pd.NA, 1], 
+        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA, '19/02/2019'],
     })
 
     fake_dfs = {'Header': fake_data}

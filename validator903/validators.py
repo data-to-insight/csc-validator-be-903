@@ -14,7 +14,7 @@ def validate_612():
         else:
             header = dfs['Header']
 
-            mask = (header['MOTHER'].astype(str).isin(['0']) | header['MOTHER'].isna()) & header['SEX'].astype(str).isin(['2']) & header['MC_DOB'].isna()
+            mask = (header['MOTHER'].astype(str) == '0' | header['MOTHER'].isna()) & header['SEX'].astype(str) == '2' & header['MC_DOB'].isna()
 
             validation_error_mask = ~mask
             validation_error_locations = header.index[validation_error_mask]

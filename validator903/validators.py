@@ -17,11 +17,14 @@ def validate_184():
 
             all_data = ad1.reset_index().merge(child_record, how='left', on='CHILD')
 
+            all_data['DATE_PLACED'] = pd.to_datetime(all_data['DATE_PLACED'],format='%d/%m/%Y',errors='coerce')
+            all_data['DOB'] = pd.to_datetime(all_data['DOB'],format='%d/%m/%Y',errors='coerce')
+
             mask = (all_data['DATE_PLACED'] >= all_data['DOB']) | all_data['DATE_PLACED'].isna()
 
             validation_error = ~mask
             
-            validation_error_locations = ad1.index[validation_error]['index'].unique()
+            validation_error_locations = all_data[validation_error]['index'].unique()
         
             return {'AD1': validation_error_locations.tolist()}
             

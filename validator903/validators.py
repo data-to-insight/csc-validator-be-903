@@ -13,6 +13,9 @@ def validate_621():
             return {}
         else:
             header = dfs['Header']
+            
+            header['MC_DOB'] = pd.to_datetime(header['MC_DOB'],format='%d/%m/%Y',errors='coerce')
+            header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
            
             mask = (header['MC_DOB'] > header['DOB']) | header['MC_DOB'].isna()
 

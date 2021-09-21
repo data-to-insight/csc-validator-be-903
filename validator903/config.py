@@ -85,4 +85,5 @@ configured_errors = [
     validate_501(),
     validate_502(),
     validate_NoE(),
+    validate_567(),
 ]

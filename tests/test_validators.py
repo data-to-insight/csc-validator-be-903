@@ -20,6 +20,26 @@ def test_validate_556():
 
     assert result == {'Episodes': [1]}
 
+def test_validate_393():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103','104','105'],
+        'SEX':['2','1','2','2','2'],
+        'MOTHER':['1',pd.NA,'0',pd.NA,pd.NA],
+    })
+
+    fake_data_episodes = pd.DataFrame({
+        'CHILD':['101','102','103','104','105'],
+        'LS':['C2','C2','c2','C1','v4']
+    })
+
+    fake_dfs = {'Header': fake_data, 'Episodes': fake_data_episodes}
+
+    error_defn, error_func = validate_393()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [3]} 
+
 def test_validate_NoE():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103'],

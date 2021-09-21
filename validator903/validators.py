@@ -31,6 +31,33 @@ def validate_556():
             error_locations = episodes.index[error_mask]
 
             return {'Episodes': error_locations.to_list()}
+          
+    return error, _validate
+      
+
+ def validate_393():
+    error = ErrorDefinition(
+        code = '393',
+        description = 'Child is looked after but mother field is not completed.',
+        affected_fields = ['MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header_female = header[header['SEX'].astype(str) == '2']
+
+            applicable_episodes = episodes[~episodes['LS'].str.upper().isin(['V3','V4'])]
+
+            error_mask = header_female['CHILD'].isin(applicable_episodes['CHILD']) & header_female['MOTHER'].isna()
+
+            error_locations = header_female.index[error_mask]
+
+            return {'Header': error_locations.to_list()}
 
     return error, _validate
 

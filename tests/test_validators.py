@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_556():
+    fake_data_episodes = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C'],
+        'LS': ['C1', 'D1', 'D1'],
+        'DECOM': [pd.NA, '15/03/2020', '15/03/2020'],
+    })
+    fake_data_placed_adoption = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C'],
+        'DATE_PLACED': [pd.NA, '15/04/2020', '15/02/2020'],
+    }) 
+
+    fake_dfs = {'Episodes': fake_data_episodes, 'PlacedAdoption': fake_data_placed_adoption}
+
+    error_defn, error_func = validate_556()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1]}
+
 def test_validate_393():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103','104','105'],

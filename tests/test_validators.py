@@ -924,3 +924,21 @@ def test_validate_502():
     result = error_func(fake_dfs)
     
     assert result == {'Episodes': [0,4,7]}
+
+def test_validate_567():
+    fake_mis = pd.DataFrame([
+    { 'MIS_START' : '01/06/2020', 'MIS_END' : '05/06/2020' }, #0  
+    { 'MIS_START' : '02/06/2020', 'MIS_END' : pd.NA },        #1
+    { 'MIS_START' : '03/06/2020', 'MIS_END' : '01/06/2020' }, #2 Fails
+    { 'MIS_START' : '04/06/2020', 'MIS_END' : '02/06/2020' }, #3 Fails
+    { 'MIS_START' : pd.NA,        'MIS_END' : '05/06/2020' }, #4  
+    ])
+
+    fake_dfs = {'Missing': fake_mis}
+
+    error_defn, error_func = validate_567()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'Missing': [2,3]}
+

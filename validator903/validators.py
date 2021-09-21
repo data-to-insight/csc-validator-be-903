@@ -35,7 +35,7 @@ def validate_556():
     return error, _validate
       
 
- def validate_393():
+def validate_393():
     error = ErrorDefinition(
         code = '393',
         description = 'Child is looked after but mother field is not completed.',

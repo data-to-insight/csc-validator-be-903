@@ -1495,3 +1495,208 @@ def validate_502():
             return {'Episodes': error_list}
 
     return error, _validate
+
+def validate_153():
+    error = ErrorDefinition(
+        code='153',
+        description="All data items relating to a child's activity or accommodation after leaving care must be coded or left blank.",
+        affected_fields=['IN_TOUCH','ACTIV','ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+            return {}
+        
+        oc3 = dfs['OC3']
+
+        oc3_not_na = (         
+            oc3['IN_TOUCH'].notna() &
+            oc3['ACTIV'].notna() &
+            oc3['ACCOM'].notna()
+        )
+
+        oc3_all_na = (         
+            oc3['IN_TOUCH'].isna() &
+            oc3['ACTIV'].isna() &
+            oc3['ACCOM'].isna()
+        )
+
+
+        validation_error = ~oc3_not_na & ~oc3_all_na
+
+        validation_error_locations = oc3.index[validation_error]
+
+        return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_166():
+    error = ErrorDefinition(
+        code = '166',
+        description = "Date of review is invalid or blank.",
+        affected_fields=['REVIEW'],
+    )
+
+    def _validate(dfs):
+        if 'Reviews' not in dfs:
+            return {}
+        else:
+            review = dfs['Reviews']
+
+            mask = pd.to_datetime(review['REVIEW'], format='%d/%m/%Y', errors='coerce').notna()
+
+            na_location = review['REVIEW'].isna()
+
+            validation_error_mask = (~mask & ~na_location) | na_location 
+            validation_error_locations = review.index[validation_error_mask]
+
+            return {'Reviews': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_174():
+    error = ErrorDefinition(
+        code = '174',
+        description = "Mother's child date of birth is recorded but gender shows that the child is a male.",
+        affected_fields=['SEX','MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            code_list=['1']
+
+            mask = header['SEX'].astype(str).isin(code_list)
+            na_location = header['MC_DOB'].isna()
+
+            validation_error_mask = mask & ~na_location
+            validation_error_locations = header.index[validation_error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+    
+    return error, _validate
+  
+def validate_180():
+    error = ErrorDefinition(
+        code = '180',
+        description = "Data entry for the strengths and difficulties questionnaire (SDQ) score is invalid.",
+        affected_fields=['SDQ_SCORE'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            mask = oc2['SDQ_SCORE'].astype(str).between('0','40')
+
+            validation_error_mask = ~mask
+            validation_error_locations = oc2.index[validation_error_mask]
+
+            return {'OC2': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_181():
+    error = ErrorDefinition(
+        code = '181',
+        description = "Data items relating to children looked after continuously for 12 months should be completed with a 0 or 1.",
+        affected_fields=['CONVICTED','HEALTH_CHECK','IMMUNISATIONS','TEETH_CHECK','HEALTH_ASSESSMENT','SUBSTANCE_MISUSE','INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            code_list = ['0','1']
+
+            mask = (
+              (oc2['CONVICTED'].astype(str).isin(code_list) | oc2['CONVICTED'].isna()) &
+              (oc2['HEALTH_CHECK'].astype(str).isin(code_list) | oc2['HEALTH_CHECK'].isna()) &
+              (oc2['IMMUNISATIONS'].astype(str).isin(code_list) | oc2['IMMUNISATIONS'].isna()) &
+              (oc2['TEETH_CHECK'].astype(str).isin(code_list) | oc2['TEETH_CHECK'].isna()) &
+              (oc2['HEALTH_ASSESSMENT'].astype(str).isin(code_list) | oc2['HEALTH_ASSESSMENT'].isna()) &
+              (oc2['SUBSTANCE_MISUSE'].astype(str).isin(code_list) | oc2['SUBSTANCE_MISUSE'].isna()) &
+              (oc2['INTERVENTION_RECEIVED'].astype(str).isin(code_list) | oc2['INTERVENTION_RECEIVED'].isna()) &
+              (oc2['INTERVENTION_OFFERED'].astype(str).isin(code_list) | oc2['INTERVENTION_OFFERED'].isna())
+            )
+
+            validation_error_mask = ~mask
+            validation_error_locations = oc2.index[validation_error_mask]
+
+            return {'OC2': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_192():
+    error = ErrorDefinition(
+        code = '192',
+        description = "Child has been identified as having a substance misuse problem but the additional item on whether an intervention was received has been left blank.",
+        affected_fields=['SUBSTANCE_MISUSE','INTERVENTION_RECEIVED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            misuse_na = oc2['SUBSTANCE_MISUSE'].isna()
+            inter_na = oc2['INTERVENTION_RECEIVED'].isna()
+
+            validation_error_mask = ~misuse_na & inter_na
+            validation_error_locations = oc2.index[validation_error_mask]
+
+            return {'OC2': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_193():
+    error = ErrorDefinition(
+        code = '193',
+        description = "Child not identified as having a substance misuse problem but at least one of the two additional items on whether an intervention were offered and received have been completed.",
+        affected_fields=['SUBSTANCE_MISUSE','INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            misuse_na = oc2['SUBSTANCE_MISUSE'].isna()
+            inter_na = oc2['INTERVENTION_RECEIVED'].isna() & oc2['INTERVENTION_OFFERED'].isna()
+
+            validation_error_mask = misuse_na & ~inter_na
+            validation_error_locations = oc2.index[validation_error_mask]
+
+            return {'OC2': validation_error_locations.tolist()}
+    
+    return error, _validate
+
+def validate_197():
+    error = ErrorDefinition(
+        code = '197',
+        description = "Reason for no Strengths and Difficulties (SDQ) score is not required if Strengths and Difficulties Questionnaire score is filled in.",
+        affected_fields=['SDQ_SCORE','SDQ_REASON'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            score_na = oc2['SDQ_SCORE'].isna()
+            reason_na = oc2['SDQ_REASON'].isna()
+
+            validation_error_mask = ~score_na & ~reason_na
+            validation_error_locations = oc2.index[validation_error_mask]
+
+            return {'OC2': validation_error_locations.tolist()}
+    
+    return error, _validate

@@ -905,3 +905,121 @@ def test_validate_502():
     result = error_func(fake_dfs)
     
     assert result == {'Episodes': [0,4,7]}
+
+def test_validate_153():
+    fake_data = pd.DataFrame({
+        'IN_TOUCH': ['XXX', pd.NA, 'XXX', pd.NA, pd.NA, 'XXX'],
+        'ACTIV':    ['XXX', pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+        'ACCOM':    ['XXX', pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+    })
+
+    fake_dfs = {'OC3': fake_data}
+
+    error_defn, error_func = validate_153()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3': [2, 3, 4, 5]}
+
+def test_validate_166():
+    fake_data = pd.DataFrame({
+        'REVIEW': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/19', pd.NA],
+    })
+
+    fake_dfs = {'Reviews': fake_data}
+
+    error_defn, error_func = validate_166()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Reviews': [2, 3, 4]}
+
+def test_validate_174():
+    fake_data = pd.DataFrame({
+        'SEX':    ['1', '1', '2', '2', 1, 1],
+        'MC_DOB': [pd.NA, '19/02/2010', pd.NA, '19/02/2010', pd.NA, '19/02/2010'],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_174()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1, 5]}
+
+def test_validate_180():
+    fake_data = pd.DataFrame({
+        'SDQ_SCORE':    ['10', 41, '58', 72, '0', 40],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_180()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 3]}
+
+def test_validate_181():
+    fake_data = pd.DataFrame({
+        'CONVICTED':             [ 1 , pd.NA, pd.NA,  '2' , '2'],
+        'HEALTH_CHECK':          [ 1 , pd.NA, pd.NA,   2  , '2'],
+        'IMMUNISATIONS':         [ 1 , pd.NA, pd.NA, pd.NA, '2'],
+        'TEETH_CHECK':           ['1', pd.NA,  '0' , pd.NA, '2'],
+        'HEALTH_ASSESSMENT':     ['1', pd.NA,   1  , pd.NA, '2'],
+        'SUBSTANCE_MISUSE':      [ 0 , pd.NA,   0  ,  '1' , '2'],
+        'INTERVENTION_RECEIVED': [ 0 , pd.NA,  '1' ,   1  , '2'],
+        'INTERVENTION_OFFERED':  ['1', pd.NA, pd.NA,   0  , '2'],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_181()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [3, 4]}
+
+def test_validate_192():
+    fake_data = pd.DataFrame({
+        'SUBSTANCE_MISUSE':      [ 0 , pd.NA,   0  ,  '1' ,   1  ,  '1' ],
+        'INTERVENTION_RECEIVED': [ 0 , pd.NA,  '1' ,   1  , pd.NA, pd.NA],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_192()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [4, 5]}
+
+def test_validate_193():
+    fake_data = pd.DataFrame({
+        'SUBSTANCE_MISUSE':      [ 0 , pd.NA,   0  ,  '1' , pd.NA, pd.NA],
+        'INTERVENTION_RECEIVED': [ 0 , pd.NA,  '1' ,   1  ,  '1' , pd.NA],
+        'INTERVENTION_OFFERED':  [ 0 , pd.NA,  '1' ,   1  , pd.NA,   0  ],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_193()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [4, 5]}
+
+def test_validate_197():
+    fake_data = pd.DataFrame({
+        'SDQ_SCORE':  [  0  , pd.NA,  10  ,  '1' , pd.NA],
+        'SDQ_REASON': ['XXX', pd.NA, pd.NA, 'XXX', 'XXX'],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_197()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, 3]}

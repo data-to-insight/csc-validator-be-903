@@ -23,8 +23,7 @@ def validate_621():
             validation_error_locations = header.index[validation_error_mask]
 
             return {'Header': validation_error_locations.tolist()}
-      
-      return error, _validate
+    return error, _validate
 
 def validate_556():
     error = ErrorDefinition(

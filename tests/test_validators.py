@@ -3,13 +3,13 @@ import pandas as pd
 
 def test_validate_202():
     fake_data = pd.DataFrame({
-        'CHILD':['101','102','103','104'],
-        'SEX':['1',2,'1','2'],
+        'CHILD':['101','102','103','104','105','106','108','109','110'],
+        'SEX':['1',2,'1','2',pd.NA,'1',pd.NA,'2','3'],
     })
 
     fake_data_prev = pd.DataFrame({
-        'CHILD':['101','102','103','104'],
-        'SEX':['1',1,'2',2],
+        'CHILD':['101','102','103','104','105','107','108','109','110'],
+        'SEX':['1',1,'2',2,pd.NA,'1','2',pd.NA,'2'],
     })
 
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
@@ -18,7 +18,7 @@ def test_validate_202():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [1,2]}
+    assert result == {'Header': [1,2,6,7,8]}
 
 def test_validate_NoE():
     fake_data = pd.DataFrame({

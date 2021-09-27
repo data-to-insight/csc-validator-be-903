@@ -17,9 +17,10 @@ def validate_202():
 
             header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
 
-            header_matched = header_merged[header_merged['_merge'] == 'both']
+            in_both_years = header_merged['_merge'] == 'both'
+            sex_is_different = header_merged['SEX'].astype(str) != header_merged['SEX_last'].astype(str)
 
-            error_mask = header_matched['SEX'].astype(str) != header_matched['SEX_last'].astype(str)
+            error_mask = in_both_years & sex_is_different
 
             error_locations = header.index[error_mask]
 

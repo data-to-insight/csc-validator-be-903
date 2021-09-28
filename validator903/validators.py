@@ -1,6 +1,58 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_1005():
+    error = ErrorDefinition(
+        code = '1005',
+        description = 'The end date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.',
+        affected_fields=['MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            missing = dfs['Missing']
+
+            missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
+
+            missing_end_date = missing['MIS_END'].isna()
+            invalid_end_date = missing['fMIS_END'].isna()
+
+            error_mask = ~missing_end_date & invalid_end_date
+
+            error_locations = missing.index[error_mask]
+
+            return {'Missing': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_1004():
+    error = ErrorDefinition(
+        code = '1004',
+        description = 'The start date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            missing = dfs['Missing']
+
+            missing['fMIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
+
+            missing_start_date = missing['MIS_START'].isna()
+            invalid_start_date = missing['fMIS_START'].isna()
+
+            error_mask = missing_start_date | invalid_start_date
+
+            error_locations = missing.index[error_mask]
+
+            return {'Missing': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_621():
     error = ErrorDefinition(
         code = '621',

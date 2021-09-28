@@ -23,6 +23,90 @@ def validate_202():
             error_mask = in_both_years & sex_is_different
 
             error_locations = header.index[error_mask]
+            
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_621():
+    error = ErrorDefinition(
+        code = '621',
+        description = "Mother’s field has been completed but date of birth shows that the mother is younger than her child.",
+        affected_fields=['DOB', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            
+            header['MC_DOB'] = pd.to_datetime(header['MC_DOB'],format='%d/%m/%Y',errors='coerce')
+            header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
+           
+            mask = (header['MC_DOB'] > header['DOB']) | header['MC_DOB'].isna()
+
+            validation_error_mask = ~mask
+            validation_error_locations = header.index[validation_error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+    return error, _validate
+
+def validate_556():
+    error = ErrorDefinition(
+        code = '556',
+        description = 'Date of decision that the child should be placed for adoption should be on or prior to the date that the freeing order was granted.',
+        affected_fields=['DATE_PLACED', 'DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            placedAdoptions = dfs['PlacedAdoption']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            placedAdoptions['DATE_PLACED'] = pd.to_datetime(placedAdoptions['DATE_PLACED'],format='%d/%m/%Y',errors='coerce')
+
+            episodes = episodes.reset_index()
+            
+            D1Episodes = episodes[episodes['LS'] == 'D1']
+
+            merged = D1Episodes.reset_index().merge(placedAdoptions, how='left', on='CHILD',).set_index('index')
+
+            episodes_with_errors = merged[merged['DATE_PLACED'] > merged['DECOM']]
+            
+            error_mask = episodes.index.isin(episodes_with_errors.index)
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+          
+    return error, _validate
+      
+
+def validate_393():
+    error = ErrorDefinition(
+        code = '393',
+        description = 'Child is looked after but mother field is not completed.',
+        affected_fields = ['MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header_female = header[header['SEX'].astype(str) == '2']
+
+            applicable_episodes = episodes[~episodes['LS'].str.upper().isin(['V3','V4'])]
+
+            error_mask = header_female['CHILD'].isin(applicable_episodes['CHILD']) & header_female['MOTHER'].isna()
+
+            error_locations = header_female.index[error_mask]
 
             return {'Header': error_locations.to_list()}
 
@@ -1494,5 +1578,26 @@ def validate_502():
             error_list.sort()
             
             return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_567():
+    error = ErrorDefinition(
+        code='567',
+        description='The date that the missing episode or episode that the child was away from placement without authorisation ended is before the date that it started.',
+        affected_fields=['MIS_START','MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']   
+            mis['MIS_START'] = pd.to_datetime(mis['MIS_START'],format='%d/%m/%Y',errors='coerce')
+            mis['MIS_END'] = pd.to_datetime(mis['MIS_END'],format='%d/%m/%Y',errors='coerce')
+
+            mis_error = mis[mis['MIS_START'] > mis['MIS_END']]
+
+            return {'Missing': mis_error.index.to_list()}
 
     return error, _validate

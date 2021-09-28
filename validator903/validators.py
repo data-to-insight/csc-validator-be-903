@@ -1,6 +1,34 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_571():
+    error = ErrorDefinition(
+        code = '571',
+        description = 'The date that the child ceased to be missing or away from placement without authorisation is before the start or after the end of the collection year.',
+        affected_fields=['MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            missing = dfs['Missing']
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+
+            missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
+
+            end_date_before_year = missing['fMIS_END'] < collection_start 
+            end_date_after_year = missing['fMIS_END'] > collection_end 
+
+            error_mask = end_date_before_year | end_date_after_year
+
+            error_locations = missing.index[error_mask]
+
+            return {'Missing': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_621():
     error = ErrorDefinition(
         code = '621',

@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_571():
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
+    metadata = { 
+        'collection_start': '01/04/2020',
+        'collection_end': '31/03/2020'
+    }
+
+    fake_dfs = {'Missing': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_571()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [0,2]}
+
 def test_validate_621():
     fake_data = pd.DataFrame({
         'DOB': ['01/12/2021', '19/02/2016', '31/01/2019',  '31/01/2019', '31/01/2019'],

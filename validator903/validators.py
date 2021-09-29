@@ -1,6 +1,33 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_202():
+    error = ErrorDefinition(
+        code = '202',
+        description = 'The gender code conflicts with the gender already recorded for this child.',
+        affected_fields=['SEX'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            sex_is_different = header_merged['SEX'].astype(str) != header_merged['SEX_last'].astype(str)
+
+            error_mask = in_both_years & sex_is_different
+
+            error_locations = header.index[error_mask]
+            
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_621():
     error = ErrorDefinition(
         code = '621',

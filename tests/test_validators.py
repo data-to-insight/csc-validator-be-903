@@ -976,3 +976,19 @@ def test_validate_567():
     
     assert result == {'Missing': [2,3]}
 
+def test_validate_304():
+    fake_mis = pd.DataFrame([
+    { 'DOB' : '01/06/2000', 'DUC' : '05/06/2019' }, #0 Fails 
+    { 'DOB' : '02/06/2000', 'DUC' : pd.NA },        #1
+    { 'DOB' : '03/06/2000', 'DUC' : '01/06/2015' }, #2
+    { 'DOB' : '04/06/2000', 'DUC' : '02/06/2020' }, #3 Fails
+    { 'DOB' : pd.NA,        'DUC' : '05/06/2020' }, #4  
+    ])
+
+    fake_dfs = {'UASC': fake_mis}
+
+    error_defn, error_func = validate_304()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'UASC': [0,3]}

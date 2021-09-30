@@ -976,3 +976,19 @@ def test_validate_567():
     
     assert result == {'Missing': [2,3]}
 
+def test_validate_333():
+    fake_adt = pd.DataFrame([
+    { 'DATE_INT' : '01/06/2020', 'DATE_MATCH' : '05/06/2020' }, #0  
+    { 'DATE_INT' : '02/06/2020', 'DATE_MATCH' : pd.NA },        #1
+    { 'DATE_INT' : '03/06/2020', 'DATE_MATCH' : '01/06/2020' }, #2  Fails
+    { 'DATE_INT' : '04/06/2020', 'DATE_MATCH' : '02/06/2020' }, #3  Fails 
+    { 'DATE_INT' : pd.NA,        'DATE_MATCH' : '05/06/2020' }, #4  Fails
+    ])
+
+    fake_dfs = {'AD1': fake_adt}
+
+    error_defn, error_func = validate_333()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'AD1': [2,3,4]}

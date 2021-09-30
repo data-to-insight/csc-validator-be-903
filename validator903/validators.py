@@ -1601,3 +1601,27 @@ def validate_567():
             return {'Missing': mis_error.index.to_list()}
 
     return error, _validate
+
+def validate_333():
+    error = ErrorDefinition(
+        code='333',
+        description='Date should be placed for adoption must be on or prior to the date of matching child with adopter(s).',
+        affected_fields=['DATE_INT'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            adt = dfs['AD1']   
+            adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'],format='%d/%m/%Y',errors='coerce')
+            adt['DATE_INT'] = pd.to_datetime(adt['DATE_INT'],format='%d/%m/%Y',errors='coerce')
+            
+            #If <DATE_MATCH> provided, then <DATE_INT> must also be provided and be <= <DATE_MATCH>
+            mask1 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].isna()
+            mask2 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].notna() & (adt['DATE_INT'] > adt['DATE_MATCH'])
+            mask = mask1 | mask2
+
+            return {'AD1': adt.index[mask].to_list()}
+
+    return error, _validate

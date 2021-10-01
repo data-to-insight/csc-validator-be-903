@@ -1653,6 +1653,27 @@ def validate_567():
 
     return error, _validate
 
+def validate_304():
+    error = ErrorDefinition(
+        code='304',
+        description='Date unaccompanied asylum-seeking child (UASC) status ceased must be on or before the 18th birthday of a child.',
+        affected_fields=['DUC'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']   
+            uasc['DOB'] = pd.to_datetime(uasc['DOB'],format='%d/%m/%Y',errors='coerce')
+            uasc['DUC'] = pd.to_datetime(uasc['DUC'],format='%d/%m/%Y',errors='coerce')
+            
+            mask = uasc['DUC'].notna() & (uasc['DUC'] > uasc['DOB'] + pd.offsets.DateOffset(years=18))
+
+            return {'UASC': uasc.index[mask].to_list()}
+
+    return error, _validate
+
 def validate_333():
     error = ErrorDefinition(
         code='333',

@@ -1,6 +1,34 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_1005():
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_1005()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [3]}
+
+def test_validate_1004():
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_1004()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [2,4]}
+    
 def test_validate_202():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103','104','105','106','108','109','110'],

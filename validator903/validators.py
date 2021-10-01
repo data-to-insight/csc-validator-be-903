@@ -22,10 +22,87 @@ def validate_571():
             end_date_after_year = missing['fMIS_END'] > collection_end 
 
             error_mask = end_date_before_year | end_date_after_year
+            
+            error_locations = missing.index[error_mask]
+
+            return {'Missing': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_1005():
+    error = ErrorDefinition(
+        code = '1005',
+        description = 'The end date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.',
+        affected_fields=['MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            missing = dfs['Missing']
+            missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
+
+            missing_end_date = missing['MIS_END'].isna()
+            invalid_end_date = missing['fMIS_END'].isna()
+
+            error_mask = ~missing_end_date & invalid_end_date
 
             error_locations = missing.index[error_mask]
 
             return {'Missing': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_1004():
+    error = ErrorDefinition(
+        code = '1004',
+        description = 'The start date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            missing = dfs['Missing']
+
+            missing['fMIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
+
+            missing_start_date = missing['MIS_START'].isna()
+            invalid_start_date = missing['fMIS_START'].isna()
+
+            error_mask = missing_start_date | invalid_start_date
+
+            error_locations = missing.index[error_mask]
+
+            return {'Missing': error_locations.to_list()}
+    return error, _validate
+
+def validate_202():
+    error = ErrorDefinition(
+        code = '202',
+        description = 'The gender code conflicts with the gender already recorded for this child.',
+        affected_fields=['SEX'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            sex_is_different = header_merged['SEX'].astype(str) != header_merged['SEX_last'].astype(str)
+
+            error_mask = in_both_years & sex_is_different
+
+            error_locations = header.index[error_mask]
+            
+            return {'Header': error_locations.to_list()}
 
     return error, _validate
 
@@ -85,7 +162,7 @@ def validate_556():
             return {'Episodes': error_locations.to_list()}
           
     return error, _validate
-      
+
 
 def validate_393():
     error = ErrorDefinition(
@@ -1600,5 +1677,50 @@ def validate_567():
             mis_error = mis[mis['MIS_START'] > mis['MIS_END']]
 
             return {'Missing': mis_error.index.to_list()}
+
+    return error, _validate
+
+def validate_304():
+    error = ErrorDefinition(
+        code='304',
+        description='Date unaccompanied asylum-seeking child (UASC) status ceased must be on or before the 18th birthday of a child.',
+        affected_fields=['DUC'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']   
+            uasc['DOB'] = pd.to_datetime(uasc['DOB'],format='%d/%m/%Y',errors='coerce')
+            uasc['DUC'] = pd.to_datetime(uasc['DUC'],format='%d/%m/%Y',errors='coerce')
+            
+            mask = uasc['DUC'].notna() & (uasc['DUC'] > uasc['DOB'] + pd.offsets.DateOffset(years=18))
+
+            return {'UASC': uasc.index[mask].to_list()}
+
+    return error, _validate
+
+def validate_333():
+    error = ErrorDefinition(
+        code='333',
+        description='Date should be placed for adoption must be on or prior to the date of matching child with adopter(s).',
+        affected_fields=['DATE_INT'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            adt = dfs['AD1']   
+            adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'],format='%d/%m/%Y',errors='coerce')
+            adt['DATE_INT'] = pd.to_datetime(adt['DATE_INT'],format='%d/%m/%Y',errors='coerce')
+            
+            #If <DATE_MATCH> provided, then <DATE_INT> must also be provided and be <= <DATE_MATCH>
+            mask1 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].isna()
+            mask2 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].notna() & (adt['DATE_INT'] > adt['DATE_MATCH'])
+            mask = mask1 | mask2
+
+            return {'AD1': adt.index[mask].to_list()}
 
     return error, _validate

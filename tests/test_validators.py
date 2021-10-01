@@ -2,11 +2,6 @@ from validator903.validators import *
 import pandas as pd
 
 def test_validate_571():
-    fake_data = pd.DataFrame({
-        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
-        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
-    })
-
     metadata = { 
         'collection_start': '01/04/2020',
         'collection_end': '31/03/2020'
@@ -19,6 +14,53 @@ def test_validate_571():
     result = error_func(fake_dfs)
 
     assert result == {'Missing': [0,2]}
+
+def test_validate_1005():
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_1005()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [3]}
+
+def test_validate_1004():
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_1004()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [2,4]}
+    
+def test_validate_202():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','106','108','109','110'],
+        'SEX':['1',2,'1','2',pd.NA,'1',pd.NA,'2','3'],
+    })
+
+    fake_data_prev = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','107','108','109','110'],
+        'SEX':['1',1,'2',2,pd.NA,'1','2',pd.NA,'2'],
+    })
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
+
+    error_defn, error_func = validate_202()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,2,6,7,8]}
 
 def test_validate_621():
     fake_data = pd.DataFrame({
@@ -976,3 +1018,36 @@ def test_validate_567():
     
     assert result == {'Missing': [2,3]}
 
+def test_validate_304():
+    fake_uasc = pd.DataFrame([
+    { 'DOB' : '01/06/2000', 'DUC' : '05/06/2019' }, #0 Fails 
+    { 'DOB' : '02/06/2000', 'DUC' : pd.NA },        #1
+    { 'DOB' : '03/06/2000', 'DUC' : '01/06/2015' }, #2
+    { 'DOB' : '04/06/2000', 'DUC' : '02/06/2020' }, #3 Fails
+    { 'DOB' : pd.NA,        'DUC' : '05/06/2020' }, #4  
+    ])
+
+    fake_dfs = {'UASC': fake_uasc}
+
+    error_defn, error_func = validate_304()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'UASC': [0,3]}
+
+def test_validate_333():
+    fake_adt = pd.DataFrame([
+    { 'DATE_INT' : '01/06/2020', 'DATE_MATCH' : '05/06/2020' }, #0  
+    { 'DATE_INT' : '02/06/2020', 'DATE_MATCH' : pd.NA },        #1
+    { 'DATE_INT' : '03/06/2020', 'DATE_MATCH' : '01/06/2020' }, #2  Fails
+    { 'DATE_INT' : '04/06/2020', 'DATE_MATCH' : '02/06/2020' }, #3  Fails 
+    { 'DATE_INT' : pd.NA,        'DATE_MATCH' : '05/06/2020' }, #4  Fails
+    ])
+
+    fake_dfs = {'AD1': fake_adt}
+
+    error_defn, error_func = validate_333()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'AD1': [2,3,4]}

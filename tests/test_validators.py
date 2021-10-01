@@ -2,6 +2,12 @@ from validator903.validators import *
 import pandas as pd
 
 def test_validate_571():
+    
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/03/2020','22/06/2020',pd.NA,'13/10/2021','10/24/2021'],
+        'MIS_END': ['08/03/2020',pd.NA,'22/06/2020','13/10/21',pd.NA],
+    })
+
     metadata = { 
         'collection_start': '01/04/2020',
         'collection_end': '31/03/2020'

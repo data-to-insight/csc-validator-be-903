@@ -1724,3 +1724,36 @@ def validate_333():
             return {'AD1': adt.index[mask].to_list()}
 
     return error, _validate
+
+def validate_1011():
+    error = ErrorDefinition(
+        code='1011',
+        description='This child is recorded as having his/her care transferred to another local authority for the final episode and therefore should not have the care leaver information completed.',
+        affected_fields=['IN_TOUCH','ACTIV','ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']   
+            oc3 = dfs['OC3']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            #If final <REC> = 'E3' then <IN_TOUCH>; <ACTIV> and <ACCOM> should not be provided
+            epi.sort_values(['CHILD','DECOM'],inplace=True)
+            grouped_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_decom_only = epi.loc[epi.index.isin(grouped_decom_by_child), :]
+            E3_is_last = max_decom_only[max_decom_only['REC'] == 'E3']
+            
+            oc3.reset_index(inplace=True)
+            cohort_to_check = oc3.merge(E3_is_last,on='CHILD',how='inner')
+            error_mask = cohort_to_check[['IN_TOUCH','ACTIV','ACCOM']].notna().any(axis=1)
+
+            error_list = cohort_to_check['index'][error_mask].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()
+            
+            return {'OC3': error_list}
+
+    return error, _validate

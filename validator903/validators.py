@@ -1777,3 +1777,44 @@ def validate_1011():
             return {'OC3': error_list}
 
     return error, _validate
+
+def validate_574():
+    error = ErrorDefinition(
+        code='574',
+        description='A new missing/away from placement without authorisation period cannot start when the previous missing/away from placement without authorisation period is still open. Missing/away from placement without authorisation periods should also not overlap.',
+        affected_fields=['MIS_START','MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+  
+            mis = dfs['Missing']  
+            mis['MIS_START'] = pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
+            mis['MIS_END'] = pd.to_datetime(mis['MIS_END'], format='%d/%m/%Y', errors='coerce')
+            
+            mis.sort_values(['CHILD','MIS_START'],inplace=True)
+
+            mis.reset_index(inplace=True)
+            mis.reset_index(inplace=True)  #Twice on purpose
+
+            mis['LAG_INDEX'] = mis['level_0'].shift(-1)
+
+            lag_mis = mis.merge(mis,how='inner',left_on='level_0',right_on='LAG_INDEX',suffixes=['','_PREV'])
+            
+            #We're only interested in cases where there is more than one row for a child.
+            lag_mis = lag_mis[lag_mis['CHILD'] == lag_mis['CHILD_PREV']]
+
+            #A previous MIS_END date is null
+            mask1 = lag_mis['MIS_END_PREV'].isna()
+            #MIS_START is before previous MIS_END (overlapping dates)
+            mask2 = lag_mis['MIS_START'] < lag_mis['MIS_END_PREV']
+
+            mask = mask1 | mask2
+
+            error_list = lag_mis['index'][mask].to_list()
+            error_list.sort()            
+            return {'Missing': error_list}
+
+    return error, _validate

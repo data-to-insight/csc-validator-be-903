@@ -41,6 +41,47 @@ To install, first clone the repo and move into the directory. Then run
 poetry install
 ```
 
+### The input data
+
+Below is the template for the input data that is given to each validator (the `dfs` object). You should assume that not all of these keys are present and handle that appropriately.
+
+Any XML uploads are converted into CSV form to give the same inputs.
+
+```
+{
+    # This years data
+    'Header':   # header dataframe
+    'Episodes': # episodes dataframe
+    'Reviews':  # reviews dataframe
+    'UASC':     # UASC dataframe
+    'OC2':      # OC2 dataframe
+    'OC3':      # OC3 dataframe
+    'AD1':      # AD1 dataframe
+    'PlacedAdoption':  # Placed for adoption dataframe
+    'PrevPerm': # Previous permanence dataframe
+    'Missing':  # Missing dataframe
+    # Last years data
+    'Header_last':   # header dataframe
+    'Episodes_last': # episodes dataframe
+    'Reviews_last':  # reviews dataframe
+    'UASC_last':     # UASC dataframe
+    'OC2_last':      # OC2 dataframe
+    'OC3_last':      # OC3 dataframe
+    'AD1_last':      # AD1 dataframe
+    'PlacedAdoption_last':  # Placed for adoption dataframe
+    'PrevPerm_last': # Previous permanence dataframe
+    'Missing_last':  # Missing dataframe
+    # Metadata
+    'metadata': {
+        'collection_start': # A datetime with the collection start date (year/4/1)
+        'collection_end':   # A datetime with the collection end date (year + 1/4/1)
+        'postcodes':        # Postcodes dataframe, columns laua, oseast1m, osnrth1m, pcd
+        'localAuthority:    # The local authority code entered (long form, e.g. E07000026)
+        'collectionYear':   # The raw collection year string - unlikely to need this (e.g. '2019/20')
+    }
+}
+```
+
 ### Updating postcodes
 
 To update postcodes, use the `scripts/create_postcode_db.py` script.

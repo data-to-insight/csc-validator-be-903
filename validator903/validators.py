@@ -1858,7 +1858,7 @@ def validate_564():
             return {}
         else:
             mis = dfs['Missing']  
-            error_mask = mis['MISSING'].isin(['M','A']) & mis['MIS_START'].isna()        
+            error_mask = mis['MISSING'].isin(['M','A','m','a']) & mis['MIS_START'].isna()        
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate

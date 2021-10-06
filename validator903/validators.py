@@ -1845,3 +1845,37 @@ def validate_574():
             return {'Missing': error_list}
 
     return error, _validate
+
+def validate_564():
+    error = ErrorDefinition(
+        code='564',
+        description='Child was missing or away from placement without authorisation and the date started is blank.',
+        affected_fields=['MISSING','MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']  
+            error_mask = mis['MISSING'].isin(['M','A']) & mis['MIS_START'].isna()        
+            return {'Missing': mis.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_566():
+    error = ErrorDefinition(
+        code='566',
+        description='The date that the child'+chr(39)+'s episode of being missing or away from placement without authorisation ended has been completed but whether the child was missing or away without authorisation has not been completed.',
+        affected_fields=['MISSING','MIS_END'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']  
+            error_mask = mis['MISSING'].isna() & mis['MIS_END'].notna()        
+            return {'Missing': mis.index[error_mask].to_list()}
+
+    return error, _validate

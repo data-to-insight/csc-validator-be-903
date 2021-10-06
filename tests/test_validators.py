@@ -1138,3 +1138,35 @@ def test_validate_574():
     result = error_func(fake_dfs)
     
     assert result == {'Missing': [1,4,6]}
+
+def test_validate_564():
+    fake_data = pd.DataFrame([
+        {'MISSING' : 'M',   'MIS_START' : pd.NA },        #0  Fails
+        {'MISSING' : 'A',   'MIS_START' : '07/02/2020'},  #1
+        {'MISSING' : 'A',   'MIS_START' : '03/02/2020'},  #2  
+        {'MISSING' : pd.NA, 'MIS_START' : pd.NA },        #3
+        {'MISSING' : 'M',   'MIS_START' : pd.NA},         #4  Fails  
+        {'MISSING' : 'A',   'MIS_START' : '13/02/2020'},  #5
+    ])
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_564()
+
+    assert error_func(fake_dfs) == {'Missing': [0, 4]}
+
+def test_validate_566():
+    fake_data = pd.DataFrame([
+        {'MISSING' : 'M',   'MIS_END' : pd.NA },          #0
+        {'MISSING' : pd.NA, 'MIS_END' : '07/02/2020'},    #1  Fails
+        {'MISSING' : 'A',   'MIS_END' : '03/02/2020'},    #2  
+        {'MISSING' : pd.NA, 'MIS_END' : pd.NA },          #3
+        {'MISSING' : 'M',   'MIS_END' : '01/02/2020'},    #4  
+        {'MISSING' : pd.NA, 'MIS_END' : '13/02/2020'},    #5  Fails
+    ])
+
+    fake_dfs = {'Missing': fake_data}
+
+    error_defn, error_func = validate_566()
+
+    assert error_func(fake_dfs) == {'Missing': [1, 5]}

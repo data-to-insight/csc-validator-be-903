@@ -828,8 +828,24 @@ def test_validate_182():
     error_defn, error_func = validate_182()
 
     result = error_func(fake_dfs)
-
     assert result == {'OC2': [1, 2, 3, 4, 6]}
+
+def test_validate_151():
+    fake_data = pd.DataFrame({
+       'DATE_INT': [pd.NA, '01/01/2021', '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021'],
+       'DATE_MATCH': [pd.NA, '01/01/2021', pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
+       'FOSTER_CARE': [pd.NA, '01/01/2021', pd.NA, pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, '01/01/2021'],
+       'NB_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA],
+       'SEX_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA, '01/01/2021'],
+       'LS_ADOPTR': [pd.NA, '01/01/2021', pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2021', pd.NA],
+ })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_151()
+    
+    result = error_func(fake_dfs)
+    assert result == {'AD1':[2,3,4,5,6,7,8]}
 
 def test_validate_164():
     fake_data = pd.DataFrame({

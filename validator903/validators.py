@@ -1879,3 +1879,24 @@ def validate_566():
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_570():
+    error = ErrorDefinition(
+        code = '570',
+        description = 'The date that the child started to be missing or away from placement without authorisation is after the end of the collection year.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+
+            mis['MIS_START'] =  pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
+            error_mask = mis['MIS_START'] > collection_end
+
+            return {'Missing': mis.index[error_mask].to_list()}
+
+    return error, _validate

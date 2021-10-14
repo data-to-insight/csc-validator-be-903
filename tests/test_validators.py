@@ -1170,3 +1170,19 @@ def test_validate_566():
     error_defn, error_func = validate_566()
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
+
+def test_validate_570():
+    
+    fake_data = pd.DataFrame({
+        'MIS_START': ['08/04/2020','22/06/2020',pd.NA,'13/10/2005','10/05/2001'],
+    })
+
+    metadata = {'collection_end': '31/03/2020'}
+
+    fake_dfs = {'Missing': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_570()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [0,1]}

@@ -1170,3 +1170,36 @@ def test_validate_566():
     error_defn, error_func = validate_566()
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
+
+def test_validate_436():
+    fake_data = pd.DataFrame([
+    { 'CHILD' : '11', 'DECOM' : '03/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'R','PLACE_PROVIDER':'b'},  #0  
+    { 'CHILD' : '11', 'DECOM' : '05/06/2020', 'RNE' : 'U', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'   },  #1 
+    { 'CHILD' : '11', 'DECOM' : '06/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'   },  #2 Fails diff LS, same PLACE et. al
+    { 'CHILD' : '11', 'DECOM' : '08/06/2020', 'RNE' : 'U', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'TT','URN': 'a','PLACE_PROVIDER':'b'  },  #3  
+    { 'CHILD' : '22', 'DECOM' : '05/06/2020', 'RNE' : 'U', 'LS' : 'P', 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #4
+    { 'CHILD' : '33', 'DECOM' : '06/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'E11', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #5 
+    { 'CHILD' : '33', 'DECOM' : '07/06/2020', 'RNE' : 'B', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #6
+    { 'CHILD' : '44', 'DECOM' : '08/06/2020', 'RNE' : 'T', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #7
+    { 'CHILD' : '44', 'DECOM' : '09/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'E11', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #8 Fails same LS
+    { 'CHILD' : '44', 'DECOM' : '15/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #9 Fails same LS
+    { 'CHILD' : '55', 'DECOM' : '11/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },   #10  
+    { 'CHILD' : '66', 'DECOM' : '12/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #11
+    { 'CHILD' : '66', 'DECOM' : '13/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #12
+    { 'CHILD' : '66', 'DECOM' : '14/06/2020', 'RNE' : 'B', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #13 Fails diff LS, same PLACE et. al
+    { 'CHILD' : '66', 'DECOM' : '15/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #14  
+    { 'CHILD' : '77', 'DECOM' : '16/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #15
+    { 'CHILD' : '77', 'DECOM' : '17/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #16  Fails same PLACE et. al
+    { 'CHILD' : '77', 'DECOM' : '18/06/2020', 'RNE' : 'P', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #17
+    { 'CHILD' : '99', 'DECOM' : '31/06/2020', 'RNE' : 'P', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #18   
+    { 'CHILD' : '12', 'DECOM' : pd.NA, 'RNE' : 'U', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #19  
+    { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'RNE' : 'U', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #20  
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_436()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2,8,9,13,16]}

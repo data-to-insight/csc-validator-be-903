@@ -34,7 +34,7 @@ def validate_571():
         else:
             missing = dfs['Missing']
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
-            collection_end = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
 
             missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
 

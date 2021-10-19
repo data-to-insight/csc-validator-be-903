@@ -1880,6 +1880,23 @@ def validate_566():
 
     return error, _validate
 
+def validate_531():
+    error = ErrorDefinition(
+        code='531',
+        description='A placement provider code of PR5 cannot be associated with placements P1.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')        
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
 def validate_542():
     error = ErrorDefinition(
         code='542',
@@ -1920,3 +1937,4 @@ def validate_620():
             return {'Header': hea_mother.index[error_cohort].to_list()}
 
     return error, _validate
+

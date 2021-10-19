@@ -1171,6 +1171,21 @@ def test_validate_566():
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
 
+
+def test_validate_531():
+    fake_data = pd.DataFrame({
+        'PLACE': ['P1', 'A3', 'K1', 'P1', 'P1', 'P1'],
+        'PLACE_PROVIDER': ['PR5', 'PR3', 'PR4', 'PR4', 'PR5', 'PRO']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_531()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4]}
+
 def test_validate_542():
     
     fake_data = pd.DataFrame({

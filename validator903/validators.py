@@ -1896,3 +1896,45 @@ def validate_531():
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_542():
+    error = ErrorDefinition(
+        code='542',
+        description='A child aged under 10 at 31 March should not have conviction information completed.',
+        affected_fields=['CONVICTED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']  
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()   
+            return {'OC2': oc2.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_620():
+    error = ErrorDefinition(
+        code='620',
+        description='Child has been recorded as a mother, but date of birth shows that the mother is under 11 years of age.',
+        affected_fields=['DOB','MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']  
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            hea_mother = hea[hea['MOTHER'].astype(str) == '1']
+            error_cohort = (hea_mother['DOB'] + pd.offsets.DateOffset(years=11)) > collection_start
+
+            return {'Header': hea_mother.index[error_cohort].to_list()}
+
+    return error, _validate
+

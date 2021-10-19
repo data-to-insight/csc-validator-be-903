@@ -1879,3 +1879,22 @@ def validate_566():
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_542():
+    error = ErrorDefinition(
+        code='542',
+        description='A child aged under 10 at 31 March should not have conviction information completed.',
+        affected_fields=['CONVICTED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']  
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()   
+            return {'OC2': oc2.index[error_mask].to_list()}
+
+    return error, _validate

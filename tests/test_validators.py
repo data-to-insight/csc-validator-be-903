@@ -1171,6 +1171,23 @@ def test_validate_566():
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
 
+def test_validate_542():
+    
+    fake_data = pd.DataFrame({
+        'DOB': ['08/03/2020','22/06/2000',pd.NA,'13/10/2000','10/01/2017'],
+        'CONVICTED': [1,pd.NA,1,1,1],  #0 , 4
+    })
+
+    metadata = {'collection_end': '31/03/2020'}
+
+    fake_dfs = {'OC2': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_542()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0,4]}
+
 def test_validate_620():
     
     fake_hea = pd.DataFrame([
@@ -1191,3 +1208,4 @@ def test_validate_620():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [1,2]}
+

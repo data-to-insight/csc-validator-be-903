@@ -1170,3 +1170,24 @@ def test_validate_566():
     error_defn, error_func = validate_566()
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
+
+def test_validate_620():
+    
+    fake_hea = pd.DataFrame([
+        {'MOTHER' : '1',   'DOB' : pd.NA },        #0  
+        {'MOTHER' : '1',   'DOB' : '07/02/2020'},  #1  Fails
+        {'MOTHER' : '1',   'DOB' : '03/02/2020'},  #2  Fails
+        {'MOTHER' : pd.NA, 'DOB' : pd.NA },        #3
+        {'MOTHER' : '1',   'DOB' : '18/01/1981'},  #4  Passes old DOB
+        {'MOTHER' : '0',   'DOB' : '13/02/2020'},  #5
+    ])
+
+    metadata = {'collection_start': '01/04/2020'}
+
+    fake_dfs = {'Header': fake_hea, 'metadata': metadata}
+
+    error_defn, error_func = validate_620()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,2]}

@@ -1226,11 +1226,11 @@ def test_validate_620():
 
 def test_validate_359():
     fake_hea = pd.DataFrame([
-        {'CHILD' : '111', 'DOB' : '01/06/2020'},  #0  
-        {'CHILD' : '222', 'DOB' : '05/06/2000'},  #1  Fails
-        {'CHILD' : '333', 'DOB' : '05/06/2000'},  #2  Fails
-        {'CHILD' : '444', 'DOB' : '06/06/2000'},  #4  Passes old DOB
-        {'CHILD' : '555', 'DOB' : '06/06/2019'},  #5
+        {'CHILD' : '111', 'DOB' : '01/06/2020'},  
+        {'CHILD' : '222', 'DOB' : '05/06/2000'}, 
+        {'CHILD' : '333', 'DOB' : '05/06/2000'},
+        {'CHILD' : '444', 'DOB' : '06/06/2000'},
+        {'CHILD' : '555', 'DOB' : '06/06/2019'},
     ])
 
     fake_epi = pd.DataFrame([

@@ -1938,3 +1938,33 @@ def validate_620():
 
     return error, _validate
 
+def validate_359():
+    error = ErrorDefinition(
+        code='359',
+        description='Child being looked after following 18th birthday must be accommodated under section 20(5) of the Children Act 1989 in a community home.',
+        affected_fields=['DEC','LS','PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            hea = dfs['Header']
+            hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            
+            epi.reset_index(inplace=True)
+            epi = epi.merge(hea,on='CHILD',how='left',suffixes=['','_HEA'])
+
+            mask_older_18 = (epi['DOB'] + pd.offsets.DateOffset(years=18)) < collection_end
+            mask_null_dec = epi['DEC'].isna()
+            mask_is_V2_K2 = (epi['LS'] == 'V2') & (epi['PLACE'] == 'K2')
+
+            error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2            
+            error_list = epi['index'][error_mask].to_list()
+            error_list = list(set(error_list))
+
+            return {'Episodes': error_list}
+
+    return error, _validate

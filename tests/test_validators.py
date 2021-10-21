@@ -1224,3 +1224,28 @@ def test_validate_620():
 
     assert result == {'Header': [1,2]}
 
+def test_validate_431():
+    fake_data = pd.DataFrame([
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020'  }, #0 
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020'  }, #1
+    { 'CHILD' : '111', 'RNE': 'T', 'DECOM' : '06/06/2020', 'DEC' : '08/06/2020'  }, #2 
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020'  }, #3  Fails
+    { 'CHILD' : '222', 'RNE': 'S', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020'  }, #4
+    { 'CHILD' : '333', 'RNE': 'S', 'DECOM' : '06/06/2020', 'DEC' : '07/06/2020'  }, #5  
+    { 'CHILD' : '333', 'RNE': 'S', 'DECOM' : '10/06/2020', 'DEC' : pd.NA         }, #6
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '08/06/2020', 'DEC' : '09/06/2020'  }, #7
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '09/06/2020', 'DEC' : '10/06/2020'  }, #8  Fails
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '15/06/2020', 'DEC' : pd.NA         }, #9
+    { 'CHILD' : '555', 'RNE': 'S', 'DECOM' : '11/06/2020', 'DEC' : '12/06/2020'  }, #10 
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '12/06/2020', 'DEC' : '13/06/2020' }, #11
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '13/06/2020', 'DEC' : '14/06/2020' }, #12 Fails
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '14/06/2020', 'DEC' : '15/06/2020' }, #13 Fails
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_431()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 8, 12, 13]}

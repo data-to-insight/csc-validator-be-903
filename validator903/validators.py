@@ -34,7 +34,7 @@ def validate_571():
         else:
             missing = dfs['Missing']
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
-            collection_end = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
 
             missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
 
@@ -1891,7 +1891,6 @@ def validate_436():
         if 'Episodes' not in dfs:
             return {}
         else:
-  
             epi = dfs['Episodes']  
             epi['DECOM'] =  pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             
@@ -1916,6 +1915,94 @@ def validate_436():
 
             error_list = epi_has_B_U[error_mask]['index'].to_list()
             error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_531():
+    error = ErrorDefinition(
+        code='531',
+        description='A placement provider code of PR5 cannot be associated with placements P1.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')        
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_542():
+    error = ErrorDefinition(
+        code='542',
+        description='A child aged under 10 at 31 March should not have conviction information completed.',
+        affected_fields=['CONVICTED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']  
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()   
+            return {'OC2': oc2.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_620():
+    error = ErrorDefinition(
+        code='620',
+        description='Child has been recorded as a mother, but date of birth shows that the mother is under 11 years of age.',
+        affected_fields=['DOB','MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']  
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            hea_mother = hea[hea['MOTHER'].astype(str) == '1']
+            error_cohort = (hea_mother['DOB'] + pd.offsets.DateOffset(years=11)) > collection_start
+
+            return {'Header': hea_mother.index[error_cohort].to_list()}
+
+    return error, _validate
+
+def validate_359():
+    error = ErrorDefinition(
+        code='359',
+        description='Child being looked after following 18th birthday must be accommodated under section 20(5) of the Children Act 1989 in a community home.',
+        affected_fields=['DEC','LS','PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            hea = dfs['Header']
+            hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            
+            epi.reset_index(inplace=True)
+            epi = epi.merge(hea,on='CHILD',how='left',suffixes=['','_HEA'])
+
+            mask_older_18 = (epi['DOB'] + pd.offsets.DateOffset(years=18)) < collection_end
+            mask_null_dec = epi['DEC'].isna()
+            mask_is_V2_K2 = (epi['LS'] == 'V2') & (epi['PLACE'] == 'K2')
+
+            error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2            
+            error_list = epi['index'][error_mask].to_list()
+            error_list = list(set(error_list))
             return {'Episodes': error_list}
 
     return error, _validate

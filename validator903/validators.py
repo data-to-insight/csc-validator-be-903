@@ -1880,6 +1880,26 @@ def validate_566():
 
     return error, _validate
 
+def validate_570():
+    error = ErrorDefinition(
+        code = '570',
+        description = 'The date that the child started to be missing or away from placement without authorisation is after the end of the collection year.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+
+            mis['MIS_START'] =  pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
+            error_mask = mis['MIS_START'] > collection_end
+
+            return {'Missing': mis.index[error_mask].to_list()}
+
+    return error, _validate
 def validate_531():
     error = ErrorDefinition(
         code='531',
@@ -1891,8 +1911,8 @@ def validate_531():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -1908,10 +1928,10 @@ def validate_542():
         if 'OC2' not in dfs:
             return {}
         else:
-            oc2 = dfs['OC2']  
+            oc2 = dfs['OC2']
             oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
-            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()   
+            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()
             return {'OC2': oc2.index[error_mask].to_list()}
 
     return error, _validate
@@ -1927,7 +1947,7 @@ def validate_620():
         if 'Header' not in dfs:
             return {}
         else:
-            hea = dfs['Header']  
+            hea = dfs['Header']
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
             hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
 
@@ -1953,7 +1973,7 @@ def validate_359():
             hea = dfs['Header']
             hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
-            
+
             epi.reset_index(inplace=True)
             epi = epi.merge(hea,on='CHILD',how='left',suffixes=['','_HEA'])
 
@@ -1961,7 +1981,7 @@ def validate_359():
             mask_null_dec = epi['DEC'].isna()
             mask_is_V2_K2 = (epi['LS'] == 'V2') & (epi['PLACE'] == 'K2')
 
-            error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2            
+            error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2
             error_list = epi['index'][error_mask].to_list()
             error_list = list(set(error_list))
 

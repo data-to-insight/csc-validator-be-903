@@ -1172,7 +1172,7 @@ def test_validate_566():
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
 
 def test_validate_570():
-    
+
     fake_data = pd.DataFrame({
         'MIS_START': ['08/04/2020','22/06/2020',pd.NA,'13/10/2005','10/05/2001'],
     })
@@ -1186,3 +1186,83 @@ def test_validate_570():
     result = error_func(fake_dfs)
 
     assert result == {'Missing': [0,1]}
+
+
+def test_validate_531():
+    fake_data = pd.DataFrame({
+        'PLACE': ['P1', 'A3', 'K1', 'P1', 'P1', 'P1'],
+        'PLACE_PROVIDER': ['PR5', 'PR3', 'PR4', 'PR4', 'PR5', 'PRO']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_531()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4]}
+
+def test_validate_542():
+
+    fake_data = pd.DataFrame({
+        'DOB': ['08/03/2020','22/06/2000',pd.NA,'13/10/2000','10/01/2017'],
+        'CONVICTED': [1,pd.NA,1,1,1],  #0 , 4
+    })
+
+    metadata = {'collection_end': '31/03/2020'}
+
+    fake_dfs = {'OC2': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_542()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0,4]}
+
+def test_validate_620():
+
+    fake_hea = pd.DataFrame([
+        {'MOTHER' : '1',   'DOB' : pd.NA },        #0
+        {'MOTHER' : '1',   'DOB' : '07/02/2020'},  #1  Fails
+        {'MOTHER' : '1',   'DOB' : '03/02/2020'},  #2  Fails
+        {'MOTHER' : pd.NA, 'DOB' : pd.NA },        #3
+        {'MOTHER' : '1',   'DOB' : '18/01/1981'},  #4  Passes old DOB
+        {'MOTHER' : '0',   'DOB' : '13/02/2020'},  #5
+    ])
+
+    metadata = {'collection_start': '01/04/2020'}
+
+    fake_dfs = {'Header': fake_hea, 'metadata': metadata}
+
+    error_defn, error_func = validate_620()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,2]}
+
+def test_validate_359():
+    fake_hea = pd.DataFrame([
+        {'CHILD' : '111', 'DOB' : '01/06/2020'},
+        {'CHILD' : '222', 'DOB' : '05/06/2000'},
+        {'CHILD' : '333', 'DOB' : '05/06/2000'},
+        {'CHILD' : '444', 'DOB' : '06/06/2000'},
+        {'CHILD' : '555', 'DOB' : '06/06/2019'},
+    ])
+
+    fake_epi = pd.DataFrame([
+        { 'CHILD' : '111', 'DEC' : '01/06/2020', 'LS' : 'R1', 'PLACE' : 'R2' },  #0 DOB 01/06/2020
+        { 'CHILD' : '222', 'DEC' : pd.NA,        'LS' : 'V2', 'PLACE' : 'K2' },  #1 DOB 05/06/2000 Passes older than 18, but has V2 K2
+        { 'CHILD' : '333', 'DEC' : pd.NA,        'LS' : 'V2', 'PLACE' : 'K1' },  #2 DOB 05/06/2000 Fails
+        { 'CHILD' : '444', 'DEC' : pd.NA,        'LS' : 'R1', 'PLACE' : 'R2' },  #3 DOB 06/06/2000 Fails
+        { 'CHILD' : '555', 'DEC' : pd.NA,        'LS' : 'R1', 'PLACE' : 'R2' },  #4 DOB 06/06/2019 Passes, Too young
+    ])
+
+    metadata = {'collection_end': '31/03/2021'}
+
+    fake_dfs = {'Header': fake_hea, 'Episodes': fake_epi, 'metadata': metadata}
+
+    error_defn, error_func = validate_359()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 3]}

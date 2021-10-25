@@ -1988,3 +1988,39 @@ def validate_359():
             return {'Episodes': error_list}
 
     return error, _validate
+
+def validate_562():
+    error = ErrorDefinition(
+        code='562',
+        description='Episode commenced before the start of the current collection year but there is a missing continuous episode in the previous year.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']  
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+
+            epi.reset_index(inplace=True)
+            epi = epi[epi['DECOM'] < collection_start]
+
+            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+
+            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+
+            merged_co = min_decom.merge(max_last_decom,how='left', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'], indicator=True)
+            error_cohort = merged_co[merged_co['_merge'] == 'left_only']
+
+            error_list = error_cohort['index'].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()    
+            return {'Episodes': error_list}
+
+    return error, _validate

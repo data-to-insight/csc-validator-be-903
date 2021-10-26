@@ -100,8 +100,13 @@ configured_errors = [
     validate_574(),
     validate_564(),
     validate_566(),
+    validate_570(),
     validate_531(),
     validate_542(),
     validate_620(),
     validate_353(),
+    validate_528(),
+    validate_527(),
+    validate_359(),
+    validate_562(),
 ]

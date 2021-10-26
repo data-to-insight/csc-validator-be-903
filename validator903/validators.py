@@ -1880,6 +1880,26 @@ def validate_566():
 
     return error, _validate
 
+def validate_570():
+    error = ErrorDefinition(
+        code = '570',
+        description = 'The date that the child started to be missing or away from placement without authorisation is after the end of the collection year.',
+        affected_fields=['MIS_START'],
+    )
+
+    def _validate(dfs):
+        if 'Missing' not in dfs:
+            return {}
+        else:
+            mis = dfs['Missing']
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+
+            mis['MIS_START'] =  pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
+            error_mask = mis['MIS_START'] > collection_end
+
+            return {'Missing': mis.index[error_mask].to_list()}
+
+    return error, _validate
 def validate_531():
     error = ErrorDefinition(
         code='531',
@@ -1891,8 +1911,8 @@ def validate_531():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE']=='P1') & (epi['PLACE_PROVIDER'] =='PR5')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -1908,10 +1928,10 @@ def validate_542():
         if 'OC2' not in dfs:
             return {}
         else:
-            oc2 = dfs['OC2']  
+            oc2 = dfs['OC2']
             oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
-            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()   
+            error_mask = ( oc2['DOB'] + pd.offsets.DateOffset(years=10) > collection_end ) & oc2['CONVICTED'].notna()
             return {'OC2': oc2.index[error_mask].to_list()}
 
     return error, _validate
@@ -1927,7 +1947,7 @@ def validate_620():
         if 'Header' not in dfs:
             return {}
         else:
-            hea = dfs['Header']  
+            hea = dfs['Header']
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
             hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
 
@@ -1971,3 +1991,71 @@ def validate_527():
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_359():
+    error = ErrorDefinition(
+        code='359',
+        description='Child being looked after following 18th birthday must be accommodated under section 20(5) of the Children Act 1989 in a community home.',
+        affected_fields=['DEC','LS','PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            hea = dfs['Header']
+            hea['DOB'] =  pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+
+            epi.reset_index(inplace=True)
+            epi = epi.merge(hea,on='CHILD',how='left',suffixes=['','_HEA'])
+
+            mask_older_18 = (epi['DOB'] + pd.offsets.DateOffset(years=18)) < collection_end
+            mask_null_dec = epi['DEC'].isna()
+            mask_is_V2_K2 = (epi['LS'] == 'V2') & (epi['PLACE'] == 'K2')
+
+            error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2
+            error_list = epi['index'][error_mask].to_list()
+            error_list = list(set(error_list))
+
+            return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_562():
+    error = ErrorDefinition(
+        code='562',
+        description='Episode commenced before the start of the current collection year but there is a missing continuous episode in the previous year.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']  
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+
+            epi.reset_index(inplace=True)
+            epi = epi[epi['DECOM'] < collection_start]
+
+            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+
+            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+
+            merged_co = min_decom.merge(max_last_decom,how='left', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'], indicator=True)
+            error_cohort = merged_co[merged_co['_merge'] == 'left_only']
+
+            error_list = error_cohort['index'].to_list()
+            error_list = list(set(error_list))
+            error_list.sort()    
+            return {'Episodes': error_list}
+
+    return error, _validate
+  

@@ -1958,6 +1958,25 @@ def validate_620():
 
     return error, _validate
 
+def validate_353():
+    error = ErrorDefinition(
+        code='353',
+        description='No episode submitted can start before 14 October 1991.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            min_decom_allowed = pd.to_datetime('14/10/1991', format='%d/%m/%Y', errors='coerce')
+            error_mask = epi['DECOM'] < min_decom_allowed     
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
 def validate_528():
     error = ErrorDefinition(
         code='528',

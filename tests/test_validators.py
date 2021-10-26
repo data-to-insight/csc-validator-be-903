@@ -1240,6 +1240,22 @@ def test_validate_620():
 
     assert result == {'Header': [1,2]}
 
+def test_validate_353():
+    fake_data = pd.DataFrame([
+    { 'DECOM' : pd.NA },         #0  
+    { 'DECOM' : '02/06/1980' },  #1   Fails
+    { 'DECOM' : '06/06/1890' },  #2   Fails   
+    { 'DECOM' : '08/06/2020' },  #3
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_353()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'Episodes': [1, 2]}
+
 def test_validate_528():
     fake_data = pd.DataFrame({
         'PLACE': ['P1', 'A3', 'K1', 'P1', 'P1', 'R2'],
@@ -1322,3 +1338,4 @@ def test_validate_562():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 5]}
+

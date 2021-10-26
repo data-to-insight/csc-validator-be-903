@@ -1240,6 +1240,34 @@ def test_validate_620():
 
     assert result == {'Header': [1,2]}
 
+def test_validate_528():
+    fake_data = pd.DataFrame({
+        'PLACE': ['P1', 'A3', 'K1', 'P1', 'P1', 'R2'],
+        'PLACE_PROVIDER': ['PR2', 'PR3', 'PR2', 'PR4', 'PR5', 'PR2']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_528()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 5]}
+
+def test_validate_527():
+    fake_data = pd.DataFrame({
+        'PLACE': ['P1', 'A3', 'K1', 'R2', 'P1', 'X1'],
+        'PLACE_PROVIDER': ['PR1', 'PR3', 'PR4', 'PR1', 'PR1', 'PR1']
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_527()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 3, 4]}
+
 def test_validate_359():
     fake_hea = pd.DataFrame([
         {'CHILD' : '111', 'DOB' : '01/06/2020'},

@@ -1958,6 +1958,40 @@ def validate_620():
 
     return error, _validate
 
+def validate_528():
+    error = ErrorDefinition(
+        code='528',
+        description='A placement provider code of PR2 cannot be associated with placements P1, R2 or R5.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')        
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_527():
+    error = ErrorDefinition(
+        code='527',
+        description='A placement provider code of PR1 cannot be associated with placements P1, R2 or R5.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')        
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
 def validate_359():
     error = ErrorDefinition(
         code='359',
@@ -2024,3 +2058,4 @@ def validate_562():
             return {'Episodes': error_list}
 
     return error, _validate
+  

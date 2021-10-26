@@ -1958,39 +1958,6 @@ def validate_620():
 
     return error, _validate
 
-def validate_225():
-    error = ErrorDefinition(
-        code='225',
-        description='Reason for placement change must be recorded.',
-        affected_fields=['REASON_PLACE_CHANGE'],
-    )
-
-    def _validate(dfs):
-        if 'Episodes' not in dfs:
-            return {}
-        else:
-            epi = dfs['Episodes']  
-            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
-            epi.sort_values(['CHILD','DECOM'],inplace=True)
-            epi.reset_index(inplace=True)
-            epi.reset_index(inplace=True)
-            epi['LAG_INDEX'] = epi['level_0'].shift(1)
-            m_epi = epi.merge(epi,how='inner',left_on='level_0',right_on='LAG_INDEX',suffixes=['','_NEXT'])
-            m_epi = m_epi[m_epi['CHILD'] == m_epi['CHILD_NEXT']]
-
-            mask_is_X1 = m_epi['REC'] == 'X1'
-            mask_null_place_chg = m_epi['REASON_PLACE_CHANGE'].isna()
-            mask_place_not_T = ~m_epi['PLACE'].isin(['T0','T1','T2','T3','T4'])
-            mask_next_is_PBTU = m_epi['RNE_NEXT'].isin(['P','B','T','U'])
-            mask_next_place_not_T = ~m_epi['PLACE_NEXT'].isin(['T0','T1','T2','T3','T4'])
-
-            error_mask = mask_is_X1 & mask_null_place_chg & mask_place_not_T & mask_next_is_PBTU & mask_next_place_not_T
-
-            error_list = m_epi['index'][error_mask].to_list()      
-            return {'Episodes': error_list}
-
-    return error, _validate
-
 def validate_353():
     error = ErrorDefinition(
         code='353',

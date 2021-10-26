@@ -2024,3 +2024,20 @@ def validate_562():
             return {'Episodes': error_list}
 
     return error, _validate
+
+def validate_408():
+    error = ErrorDefinition(
+        code='408',
+        description='Child is placed for adoption with a placement order, but no placement order has been recorded.',
+        affected_fields=['PLACE','LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = epi['PLACE'].isin(['A5','A6']) & (epi['LS'] !='E1')
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate

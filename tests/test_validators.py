@@ -1294,3 +1294,21 @@ def test_validate_562():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 5]}
+
+def test_validate_408():
+    fake_data = pd.DataFrame([
+    { 'PLACE' : 'A5', 'LS' : 'S'},    #0   Fail
+    { 'PLACE' : 'V4', 'LS' : 'T'},    #1
+    { 'PLACE' : 'A6', 'LS' : 'E1'},   #2
+    { 'PLACE' : 'U2', 'LS' : pd.NA},  #3
+    { 'PLACE' : 'A6', 'LS' : 'U'},    #4  Fail
+    { 'PLACE' : 'A5', 'LS' : pd.NA},  #5  Fail
+  ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_408()
+
+    result = error_func(fake_dfs)
+    
+    assert result == {'Episodes': [0, 4, 5]}

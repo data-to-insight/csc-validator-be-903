@@ -1339,3 +1339,30 @@ def test_validate_562():
 
     assert result == {'Episodes': [2, 5]}
 
+def test_validate_380():
+    fake_data = pd.DataFrame({
+        'RNE':   ['S', 'L' , 'P', 'B', 'P', pd.NA],
+        'PLACE': ['U1','T0', 'U2','Z1','T1', pd.NA], 
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_380()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1]}
+
+def test_validate_381():
+    fake_data = pd.DataFrame({
+        'REC':   ['X1', 'PR1', 'X1', pd.NA, 'X1', pd.NA],
+        'PLACE': ['T3', 'T0', 'U2',  'T2', 'T1', pd.NA], 
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_381()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1, 3]}

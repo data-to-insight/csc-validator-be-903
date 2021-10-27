@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_204():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','106','108','109','110'],
+        'ETHNIC':['WBRI','WBRI','nobt','AINS',pd.NA,'BOTH',pd.NA,'BCRB','MWBC'],
+    })
+
+    fake_data_prev = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','107','108','109','110'],
+        'ETHNIC':['WBRI','NOBT','NOBT',"AINS",pd.NA,'REFU','MOTH',pd.NA,'MWBA'],
+    })
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
+
+    error_defn, error_func = validate_204()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,6,7,8]}
+
 def test_validate_530():
     fake_data = pd.DataFrame({
         'PLACE': ['P1', 'A3', 'K1', 'P1', 'P1', 'P1'],

@@ -1,6 +1,33 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_204():
+    error = ErrorDefinition(
+        code = '204',
+        description = 'Ethnic origin code disagrees with the ethnic origin already recorded for this child.',
+        affected_fields=['ETHNIC'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            ethnic_is_different = header_merged['ETHNIC'].astype(str).str.upper() != header_merged['ETHNIC_last'].astype(str).str.upper()
+
+            error_mask = in_both_years & ethnic_is_different
+
+            error_locations = header.index[error_mask]
+
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_530():
     error = ErrorDefinition(
           code = '530',

@@ -1,6 +1,36 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_203():
+    error = ErrorDefinition(
+        code = '203',
+        description = 'Date of birth disagrees with the date of birth already recorded for this child.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
+            header_last['DOB'] = pd.to_datetime(header_last['DOB'],format='%d/%m/%Y',errors='coerce')
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            dob_is_different = header_merged['DOB'].astype(str) != header_merged['DOB_last'].astype(str)
+
+            error_mask = in_both_years & dob_is_different
+
+            error_locations = header.index[error_mask]
+            
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_530():
     error = ErrorDefinition(
           code = '530',

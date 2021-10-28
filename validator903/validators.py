@@ -2107,7 +2107,7 @@ def validate_381():
             return {}
         else:
             epi = dfs['Episodes']  
-            error_mask = (epi['PLACE'].isin(['T0','T1','T2','T3','T4'])) & (epi['REC'] != 'X1')         
+            error_mask = (epi['PLACE'].isin(['T0','T1','T2','T3','T4'])) & (epi['REC'] != 'X1') & (epi['REC'].notna())        
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate

@@ -1339,3 +1339,21 @@ def test_validate_562():
 
     assert result == {'Episodes': [2, 5]}
 
+def test_validate_385():
+    fake_data = pd.DataFrame({
+        'DEC':['14/03/2021','08/09/2021','03/10/2020','04/04/2021'],
+    })
+
+   
+    metadata = { 
+        'collection_end': '01/04/2021'
+    }
+    
+    fake_dfs = {'Episodes': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_385()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1,3]}
+

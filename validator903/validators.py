@@ -2078,3 +2078,32 @@ def validate_562():
 
     return error, _validate
   
+def validate_504():
+    error = ErrorDefinition(
+        code='504',
+        description='The category of need code differs from that reported at start of current period of being looked after',
+        affected_fields=['CIN'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            epi.sort_values(['CHILD','DECOM'],inplace=True)
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+            epi['LAG_INDEX'] = epi['level_0'].shift(1)
+
+            merge_epi = epi.merge(epi,how='inner',left_on='LAG_INDEX',right_on='level_0',suffixes=['','_PRE'])
+            merge_epi = merge_epi[merge_epi['CHILD'] == merge_epi['CHILD_PRE']]
+            merge_epi = merge_epi[(merge_epi['REC_PRE'] == 'X1') & (merge_epi['DEC_PRE'] == merge_epi['DECOM'])]
+            error_cohort = merge_epi[merge_epi['CIN'] != merge_epi['CIN_PRE']]
+            error_list = error_cohort['index'].unique().tolist()
+            error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate

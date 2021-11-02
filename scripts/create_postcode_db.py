@@ -2,14 +2,16 @@ import pandas as pd
 from zipfile import ZIP_BZIP2, ZipFile, ZIP_LZMA
 
 print('Reading LA Name <> LA ID mapping...')
-la_df = pd.read_csv('scripts/LA_UA names and codes UK as at 04_21.csv', usecols=['LAD21CD','LAD21NM'])
-la_df.columns = ['la_id', 'la_name']
+la_df = pd.read_csv('scripts/Lower_Tier_Local_Authority_to_Upper_Tier_Local_Authority_(April_2021)_Lookup_in_England_and_Wales.csv',
+                    usecols=['UTLA21CD', 'UTLA21NM'])
+la_df.columns = ['la_id', 'la_name'] # lower-tier code; upper-tier name
 la_df = la_df.sort_values('la_name')
+la_df = la_df.drop_duplicates()
 la_df.to_json('scripts/la_data.json', orient='records')
-print('\tOutput to json!')
+print('\tOutput to json done!')
 
 print('Reading main postcodes file...')
-df = pd.read_csv('scripts/NSPL_MAY_2021_UK.csv', usecols=['pcd', 'oseast1m', 'osnrth1m', 'laua'], low_memory=True)
+df = pd.read_csv('scripts/NSPL_AUG_2021_UK.csv', usecols=['pcd', 'oseast1m', 'osnrth1m', 'laua'], low_memory=True)
 df['pcd'] = df.pop('pcd').astype('string').str.replace(' ', '')
 df['laua'] = df['laua'].astype('category')
 

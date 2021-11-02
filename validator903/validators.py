@@ -946,9 +946,9 @@ def validate_101():
             return {}
         
         header = dfs['Header']
-        code_list = [1, 2]
+        code_list = ['1', '2']
 
-        mask = header['SEX'].isin(code_list)
+        mask = header['SEX'].astype(str).isin(code_list)
 
         validation_error_mask = ~mask
         validation_error_locations = header.index[validation_error_mask]

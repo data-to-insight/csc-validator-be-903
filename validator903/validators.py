@@ -1,6 +1,34 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_208():
+    error = ErrorDefinition(
+        code = '208',
+        description = 'Unique Pupil Number (UPN) for the current year disagrees with the Unique Pupil Number (UPN) already recorded for this child.',
+        affected_fields=['UPN'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            upn_is_different = header_merged['UPN'].str.upper().astype(str) != header_merged['UPN_last'].str.upper().astype(str)
+            upn_not_recorded = header_merged['UPN'].str.upper().astype(str).isin(['UN2','UN3','UN4','UN5','UN6']) & header_merged['UPN_last'].str.upper().astype(str).isin(['UN1'])
+
+            error_mask = in_both_years & upn_is_different & ~upn_not_recorded
+
+            error_locations = header.index[error_mask]
+
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_204():
     error = ErrorDefinition(
         code = '204',
@@ -53,7 +81,7 @@ def validate_203():
             error_mask = in_both_years & dob_is_different
 
             error_locations = header.index[error_mask]
-
+            
             return {'Header': error_locations.to_list()}
 
     return error, _validate

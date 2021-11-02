@@ -2077,7 +2077,42 @@ def validate_562():
             return {'Episodes': error_list}
 
     return error, _validate
-  
+
+def validate_380():
+    error = ErrorDefinition(
+        code='380',
+        description='A period of care cannot start with a temporary placement.',
+        affected_fields=['PLACE','RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['T0','T1','T2','T3','T4'])) & (~epi['RNE'].isin(['P','B']))
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_381():
+    error = ErrorDefinition(
+        code='381',
+        description='A period of care cannot end with a temporary placement.',
+        affected_fields=['PLACE','REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['T0','T1','T2','T3','T4'])) & (epi['REC'] != 'X1') & (epi['REC'].notna())
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
+
 def validate_504():
     error = ErrorDefinition(
         code='504',

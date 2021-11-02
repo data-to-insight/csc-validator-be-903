@@ -110,4 +110,10 @@ configured_errors = [
     validate_359(),
     validate_562(),
     validate_504(),
+    validate_503A(),
+    validate_503B(),
+    validate_503C(),
+    validate_503D(),
+    validate_503E(),
+    validate_503F(),
 ]

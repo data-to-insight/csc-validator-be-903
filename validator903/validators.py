@@ -2107,3 +2107,72 @@ def validate_504():
             return {'Episodes': error_list}
 
     return error, _validate
+
+def validate_503_Generic(subval):
+    Gen_503_dict = {
+        "A": {
+            "Desc": "The reason for new episode in the first episode does not match open episode at end of last year.",
+            "Fields": 'RNE'},
+        "B": {"Desc": "The legal status in the first episode does not match open episode at end of last year.",
+              "Fields": 'LS'},
+        "C": {"Desc": "The category of need in the first episode does not match open episode at end of last year.",
+              "Fields": 'CIN'},
+        "D": {"Desc": "The placement type in the first episode does not match open episode at end of last year",
+              "Fields": 'PLACE'},
+        "E": {"Desc": "The placement provider in the first episode does not match open episode at end of last year.",
+              "Fields": 'PLACE_PROVIDER'},
+        "F": {"Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
+              "Fields": 'URN'},
+    }
+    error = ErrorDefinition(
+        code='503'+subval,
+        description=Gen_503_dict[subval]['Desc'],
+        affected_fields=[Gen_503_dict[subval]['Fields']],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            epi.reset_index(inplace=True)
+
+            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+
+            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+
+            merged_co = min_decom.merge(max_last_decom, how='inner', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'])
+
+            this_one = Gen_503_dict[subval]['Fields']
+            pre_one = this_one + '_PRE'
+
+            err_mask = merged_co[this_one] != merged_co[pre_one]
+            err_list = merged_co['index'][err_mask].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+def validate_503A():
+    return validate_503_Generic('A')
+
+def validate_503B():
+    return validate_503_Generic('B')
+
+def validate_503C():
+    return validate_503_Generic('C')
+
+def validate_503D():
+    return validate_503_Generic('D')
+
+def validate_503E():
+    return validate_503_Generic('E')
+
+def validate_503F():
+    return validate_503_Generic('F')

@@ -1300,9 +1300,9 @@ def test_validate_620():
 
 def test_validate_353():
     fake_data = pd.DataFrame([
-    { 'DECOM' : pd.NA },         #0  
+    { 'DECOM' : pd.NA },         #0
     { 'DECOM' : '02/06/1980' },  #1   Fails
-    { 'DECOM' : '06/06/1890' },  #2   Fails   
+    { 'DECOM' : '06/06/1890' },  #2   Fails
     { 'DECOM' : '08/06/2020' },  #3
     ])
 
@@ -1311,7 +1311,7 @@ def test_validate_353():
     error_defn, error_func = validate_353()
 
     result = error_func(fake_dfs)
-    
+
     assert result == {'Episodes': [1, 2]}
 
 def test_validate_528():
@@ -1321,7 +1321,7 @@ def test_validate_528():
     })
 
     fake_dfs = {'Episodes': fake_data}
-    
+
     error_defn, error_func = validate_528()
 
     result = error_func(fake_dfs)
@@ -1335,7 +1335,7 @@ def test_validate_527():
     })
 
     fake_dfs = {'Episodes': fake_data}
-    
+
     error_defn, error_func = validate_527()
 
     result = error_func(fake_dfs)
@@ -1396,6 +1396,24 @@ def test_validate_562():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 5]}
+
+def test_validate_408():
+    fake_data = pd.DataFrame([
+    { 'PLACE' : 'A5', 'LS' : 'S'},    #0   Fail
+    { 'PLACE' : 'V4', 'LS' : 'T'},    #1
+    { 'PLACE' : 'A6', 'LS' : 'E1'},   #2
+    { 'PLACE' : 'U2', 'LS' : pd.NA},  #3
+    { 'PLACE' : 'A6', 'LS' : 'U'},    #4  Fail
+    { 'PLACE' : 'A5', 'LS' : pd.NA},  #5  Fail
+  ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_408()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4, 5]}
 
 def test_validate_380():
     fake_data = pd.DataFrame({

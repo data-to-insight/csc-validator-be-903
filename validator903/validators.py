@@ -81,7 +81,7 @@ def validate_203():
             error_mask = in_both_years & dob_is_different
 
             error_locations = header.index[error_mask]
-            
+
             return {'Header': error_locations.to_list()}
 
     return error, _validate
@@ -2057,7 +2057,7 @@ def validate_353():
             epi = dfs['Episodes']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             min_decom_allowed = pd.to_datetime('14/10/1991', format='%d/%m/%Y', errors='coerce')
-            error_mask = epi['DECOM'] < min_decom_allowed     
+            error_mask = epi['DECOM'] < min_decom_allowed
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2073,8 +2073,8 @@ def validate_528():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2090,8 +2090,8 @@ def validate_527():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2160,6 +2160,23 @@ def validate_562():
             error_list = list(set(error_list))
             error_list.sort()    
             return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_408():
+    error = ErrorDefinition(
+        code='408',
+        description='Child is placed for adoption with a placement order, but no placement order has been recorded.',
+        affected_fields=['PLACE','LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = epi['PLACE'].isin(['A5','A6']) & (epi['LS'] !='E1')
+            return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
 

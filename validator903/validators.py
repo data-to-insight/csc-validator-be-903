@@ -1942,7 +1942,7 @@ def validate_431():
     error = ErrorDefinition(
         code='431',
         description='The reason for new episode is started to be looked after, but the previous episode ended on the same day.',
-        affected_fields=['RNE','DECOM','DEC'],
+        affected_fields=['RNE','DECOM'],
     )
 
     def _validate(dfs):

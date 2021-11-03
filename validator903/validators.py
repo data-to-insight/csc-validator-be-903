@@ -2319,3 +2319,32 @@ def validate_504():
 
     return error, _validate
 
+def validate_431():
+    error = ErrorDefinition(
+        code='431',
+        description='The reason for new episode is started to be looked after, but the previous episode ended on the same day.',
+        affected_fields=['RNE','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            epi.sort_values(['CHILD','DECOM'],inplace=True)
+
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+            epi['LAG_INDEX'] = epi['level_0'].shift(-1)
+
+            m_epi = epi.merge(epi,how='inner',left_on='level_0',right_on='LAG_INDEX',suffixes=['','_PREV'])
+
+            m_epi = m_epi[(m_epi['CHILD'] == m_epi['CHILD_PREV']) & (m_epi['RNE'] == 'S')]
+            error_mask = m_epi['DECOM'] <= m_epi['DEC_PREV']
+            error_list = m_epi['index'][error_mask].to_list()
+            error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate

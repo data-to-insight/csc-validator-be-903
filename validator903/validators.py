@@ -946,9 +946,9 @@ def validate_101():
             return {}
         
         header = dfs['Header']
-        code_list = ['1', '2']
+        code_list = [1, 2]
 
-        mask = header['SEX'].astype(str).isin(code_list)
+        mask = header['SEX'].isin(code_list)
 
         validation_error_mask = ~mask
         validation_error_locations = header.index[validation_error_mask]
@@ -2005,6 +2005,7 @@ def validate_436():
 
     return error, _validate
 
+
 def validate_570():
     error = ErrorDefinition(
         code = '570',
@@ -2025,7 +2026,6 @@ def validate_570():
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate
-
 def validate_531():
     error = ErrorDefinition(
         code='531',
@@ -2131,7 +2131,7 @@ def validate_353():
             epi = dfs['Episodes']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             min_decom_allowed = pd.to_datetime('14/10/1991', format='%d/%m/%Y', errors='coerce')
-            error_mask = epi['DECOM'] < min_decom_allowed
+            error_mask = epi['DECOM'] < min_decom_allowed     
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2147,8 +2147,8 @@ def validate_528():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')        
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2164,8 +2164,8 @@ def validate_527():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')
+            epi = dfs['Episodes']  
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')        
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2213,7 +2213,7 @@ def validate_562():
             return {}
         else:
             epi = dfs['Episodes']
-            epi_last = dfs['Episodes_last']
+            epi_last = dfs['Episodes_last']  
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
@@ -2232,7 +2232,7 @@ def validate_562():
 
             error_list = error_cohort['index'].to_list()
             error_list = list(set(error_list))
-            error_list.sort()
+            error_list.sort()    
             return {'Episodes': error_list}
 
     return error, _validate
@@ -2287,6 +2287,7 @@ def validate_381():
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
+
 
 
 def validate_504():
@@ -2348,3 +2349,73 @@ def validate_431():
             return {'Episodes': error_list}
 
     return error, _validate
+
+def validate_503_Generic(subval):
+    Gen_503_dict = {
+        "A": {
+            "Desc": "The reason for new episode in the first episode does not match open episode at end of last year.",
+            "Fields": 'RNE'},
+        "B": {"Desc": "The legal status in the first episode does not match open episode at end of last year.",
+              "Fields": 'LS'},
+        "C": {"Desc": "The category of need in the first episode does not match open episode at end of last year.",
+              "Fields": 'CIN'},
+        "D": {"Desc": "The placement type in the first episode does not match open episode at end of last year",
+              "Fields": 'PLACE'},
+        "E": {"Desc": "The placement provider in the first episode does not match open episode at end of last year.",
+              "Fields": 'PLACE_PROVIDER'},
+        "F": {"Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
+              "Fields": 'URN'},
+    }
+    error = ErrorDefinition(
+        code='503'+subval,
+        description=Gen_503_dict[subval]['Desc'],
+        affected_fields=[Gen_503_dict[subval]['Fields']],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            epi.reset_index(inplace=True)
+
+            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+
+            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+
+            merged_co = min_decom.merge(max_last_decom, how='inner', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'])
+
+            this_one = Gen_503_dict[subval]['Fields']
+            pre_one = this_one + '_PRE'
+
+            err_mask = merged_co[this_one] != merged_co[pre_one]
+            err_list = merged_co['index'][err_mask].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+def validate_503A():
+    return validate_503_Generic('A')
+
+def validate_503B():
+    return validate_503_Generic('B')
+
+def validate_503C():
+    return validate_503_Generic('C')
+
+def validate_503D():
+    return validate_503_Generic('D')
+
+def validate_503E():
+    return validate_503_Generic('E')
+
+def validate_503F():
+    return validate_503_Generic('F')
+

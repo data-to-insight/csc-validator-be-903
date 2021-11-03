@@ -4,12 +4,12 @@ import pandas as pd
 def test_validate_207():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103','104','105','106','108','109','110'],
-        'MOTHER':['1',0,'1','0',pd.NA,'1',pd.NA,'0','2'],
+        'MOTHER':['1',0,'1',pd.NA,pd.NA,'1',pd.NA,'0','2'],
     })
 
     fake_data_prev = pd.DataFrame({
         'CHILD':['101','102','103','104','105','107','108','109','110'],
-        'MOTHER':['1',1,'0',0,pd.NA,'1','0',pd.NA,'0'],
+        'MOTHER':['1',1,'0',1,pd.NA,'1','0',pd.NA,'1'],
     })
 
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
@@ -18,7 +18,7 @@ def test_validate_207():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [1,2,6,7,8]}
+    assert result == {'Header': [1,3,8]}
 
 def test_validate_530():
     fake_data = pd.DataFrame({

@@ -23,7 +23,7 @@ def test_validate_3001():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [0,1]}
+    assert result == {'OC3': [0,1]}
 
 def test_validate_208():
     fake_data = pd.DataFrame({

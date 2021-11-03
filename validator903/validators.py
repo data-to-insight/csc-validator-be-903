@@ -24,7 +24,7 @@ def validate_387():
             episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True).set_index('index')
 
             ceased_indep = episodes_merged['REC'].str.upper().astype(str).isin(['E5','E6'])
-            ceased_over_14 = episodes_merged['DOB14'] < episodes_merged['DEC']
+            ceased_over_14 = episodes_merged['DOB14'] <= episodes_merged['DEC']
 
             error_mask = ceased_indep & ~ceased_over_14
 

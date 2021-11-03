@@ -1,6 +1,39 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_386():
+    error = ErrorDefinition(
+        code = '386',
+        description = 'Reason episode ceased is adopted but child has reached age 18.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+            header['DOB18'] = header['DOB'] + pd.DateOffset(years=18)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True).set_index('index')
+
+            ceased_adopted = episodes_merged['REC'].str.upper().astype(str).isin(['E11','E12'])
+            ceased_under_18 = episodes_merged['DOB18'] > episodes_merged['DEC']
+
+            error_mask = ceased_adopted &~ ceased_under_18
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_208():
     error = ErrorDefinition(
         code = '208',

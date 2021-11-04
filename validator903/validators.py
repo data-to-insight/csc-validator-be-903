@@ -2419,3 +2419,20 @@ def validate_503E():
 def validate_503F():
     return validate_503_Generic('F')
 
+def validate_526():
+    error = ErrorDefinition(
+        code='526',
+        description='Child is missing a placement provider code for at least one episode.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = ~epi['PLACE'].isin(['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']) & epi['PLACE_PROVIDER'].isna()
+            return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+

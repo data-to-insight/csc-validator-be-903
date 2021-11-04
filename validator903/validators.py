@@ -2436,3 +2436,24 @@ def validate_526():
 
     return error, _validate
 
+def validate_370():
+    error = ErrorDefinition(
+        code='370',
+        description='Child in independent living should be at least 15.',
+        affected_fields=['PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            hea = dfs['Header']
+            hea['DOB'] = pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+            epi.reset_index(inplace=True)
+            epi_p2 = epi[epi['PLACE'] == 'P2']
+            merged_e = epi_p2.merge(hea, how='inner', on='CHILD')
+            error_mask = merged_e['DECOM'] < merged_e['DOB'] + pd.offsets.DateOffset(years=15)
+            return {'Episodes': merged_e['index'][error_mask].unique().tolist()}
+
+    return error, _validate

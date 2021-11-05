@@ -2,10 +2,13 @@ import pandas as pd
 from .types import ErrorDefinition
 
 def validate_552():
+
+  """This error checks that the first adoption episode is after the last decision !"""
+
   error = ErrorDefinition(
     code = "552",
     description = "Date of Decision to place a child for adoption should be on or prior to the date that the child was placed for adoption.",
-    # Field that defines date of decision to place a child for adoption has not been found so a comparision between date placed and date placed ceased will be used as a placeholder for demonstrative purposes.
+    # Field that defines date of decision to place a child for adoption is DATE_PLACED and the start of adoption is defined by DECOM with 'A' placement types.
     affected_fields = ['DATE_PLACED', 'DECOM'],
   )
 
@@ -14,25 +17,35 @@ def validate_552():
         return {}
     else:
       placed_adoption = dfs['PlacedAdoption']
-
       episodes = dfs['Episodes']
-      adoption_eps = episodes[episodes['PLACE_TYPE'].isin(['A3', 'A4', 'A5', 'A6'])]
-      # replace date placed with date of decision to place.
-      place_decision_date = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
-      # replace date placed ceased with date placed
 
+      # keep index values so that they stay the same when needed later on for error locations
+      placed_adoption.reset_index(inplace = True)
+      episodes.reset_index(inplace = True)
 
-      adoption_eps_inds = adoption_eps.groupby('CHILD').idxmin('DECOM')
+      adoption_eps = episodes[episodes['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])]
+      # find most recent adoption decision
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption_inds = placed_adoption.groupby("CHILD")["DATE_PLACED"].idxmax(skipna=True)
+      last_decision = placed_adoption[placed_adoption_inds]
+
+      # first time child started adoption
+      adoption_eps["DECOM"] = pd.to_datetime(adoption_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+      adoption_eps_inds = adoption_eps.groupby('CHILD')['DECOM'].idxmin(skipna=True)
+      # full information of first adoption
       first_adoption = adoption_eps[adoption_eps_inds]
-      merged = first_adoption.merge(placed_adoption, on=['CHILD'], how='left', suffixes=['', '_PA'])
+      
+      # date of decision and date of start of adoption (DECOM) have to be put in one table
+      merged = first_adoption.merge(last_decision, on=['CHILD'], how='left', suffixes=['_EP', '_PA'])
 
+      # check to see if date of decision to place is less than or equal to date placed.
+      decided_after_placed = merged["DECOM"] > merged["DATE_PLACED"]
 
+      # find the corresponding location of error values per file.
+      episode_error_locs = merged.loc[decided_after_placed, 'index_EP']
+      placedadoption_error_locs = merged.loc[decided_after_placed, 'index_PA']
 
-      # placeholder check to see if date of decision to place is less than or equal to date placed.
-      decided_after_placed = place_decision_date > date_placed
-      # find the corresponding location of error values.
-      error_locations = placed_adoption.index[decided_after_placed]
-      return {"PlacedAdoption":error_locations.to_list()}
+      return {"PlacedAdoption":placedadoption_error_locs.to_list(),"Episodes":episode_error_locs.to_list() }
 
   return error, _validate
 

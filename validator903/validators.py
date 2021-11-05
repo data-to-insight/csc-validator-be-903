@@ -27,13 +27,13 @@ def validate_552():
       # find most recent adoption decision
       placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
       placed_adoption_inds = placed_adoption.groupby("CHILD")["DATE_PLACED"].idxmax(skipna=True)
-      last_decision = placed_adoption[placed_adoption_inds]
+      last_decision = placed_adoption.loc[placed_adoption_inds]
 
       # first time child started adoption
       adoption_eps["DECOM"] = pd.to_datetime(adoption_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
       adoption_eps_inds = adoption_eps.groupby('CHILD')['DECOM'].idxmin(skipna=True)
       # full information of first adoption
-      first_adoption = adoption_eps[adoption_eps_inds]
+      first_adoption = adoption_eps.loc[adoption_eps_inds]
       
       # date of decision and date of start of adoption (DECOM) have to be put in one table
       merged = first_adoption.merge(last_decision, on=['CHILD'], how='left', suffixes=['_EP', '_PA'])

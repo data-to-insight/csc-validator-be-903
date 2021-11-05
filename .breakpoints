@@ -7,6 +7,14 @@
         "version": 1,
         "index": 21
       }
+    ],
+    "validator903/config.py": [
+      {
+        "id": "6042452a-34d1-4882-8452-f2add97046ec",
+        "line": 23,
+        "version": 35,
+        "index": 1280
+      }
     ]
   }
 }

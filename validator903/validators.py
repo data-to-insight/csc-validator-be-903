@@ -1,6 +1,31 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_552():
+  error = ErrorDefinition(
+    code = "552",
+    description = "Date of Decision to place a child for adoption should be on or prior to the date that the child was placed for adoption.",
+    # Field that defines date of decision to place a child for adoption has not been found so a comparision between date placed and date placed ceased will be used as a placeholder for demonstrative purposes.
+    affected_fields = ['DATE_PLACED', 'DATE_PLACED_CEASED'],
+  )
+
+  def _validate(dfs):
+    if 'PlacedAdoption' not in dfs:
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      # replace date placed with date of decision to place.
+      place_decision_date = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+      # replace date placed ceased with date placed
+      date_placed = pd.to_datetime(placed_adoption['DATE_PLACED_CEASED'])
+      # placeholder check to see if date of decision to place is less than or equal to date placed.
+      decided_after_placed = place_decision_date > date_placed
+      # find the corresponding location of error values.
+      error_locations = placed_adoption.index[decided_after_placed]
+      return {"PlacedAdoption":error_locations.to_list()}
+
+  return error, _validate
+
 def validate_208():
     error = ErrorDefinition(
         code = '208',

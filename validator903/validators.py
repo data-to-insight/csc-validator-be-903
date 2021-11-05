@@ -39,7 +39,7 @@ def validate_552():
       merged = first_adoption.merge(last_decision, on=['CHILD'], how='left', suffixes=['_EP', '_PA'])
 
       # check to see if date of decision to place is less than or equal to date placed.
-      decided_after_placed = merged["DECOM"] > merged["DATE_PLACED"]
+      decided_after_placed = merged["DECOM"] < merged["DATE_PLACED"]
 
       # find the corresponding location of error values per file.
       episode_error_locs = merged.loc[decided_after_placed, 'index_EP']

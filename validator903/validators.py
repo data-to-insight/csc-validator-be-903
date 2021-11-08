@@ -16,10 +16,12 @@ def validate_552():
     if ('PlacedAdoption' not in dfs) or ('Episodes' not in dfs):
         return {}
     else:
-      # remove rows where either of the required values have not been filled.
-      placed_adoption = dfs['PlacedAdoption'].dropna()
-      episodes = dfs['Episodes'].dropna()
-
+      # get the required datasets 
+      placed_adoption = dfs['PlacedAdoption']
+      episodes = dfs['Episodes']
+      # remove rows where either of the required values have not been filled. dropna() does not produce the required results, use masking and .notna() instead.
+      placed_adoption = placed_adoption[placed_adoption['DATE_PLACED'].notna()]
+      episodes = episodes[episodes['DECOM'].notna()]
       # keep index values so that they stay the same when needed later on for error locations
       placed_adoption.reset_index(inplace = True)
       episodes.reset_index(inplace = True)
@@ -27,7 +29,7 @@ def validate_552():
       adoption_eps = episodes[episodes['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])]
       # find most recent adoption decision
       placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
-      placed_adoption_inds = placed_adoption.groupby("CHILD")["DATE_PLACED"].idxmax(skipna=True)
+      placed_adoption_inds = placed_adoption.groupby('CHILD')['DATE_PLACED'].idxmax(skipna=True)
       last_decision = placed_adoption.loc[placed_adoption_inds]
 
       # first time child started adoption

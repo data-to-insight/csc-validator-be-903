@@ -16,8 +16,9 @@ def validate_552():
     if ('PlacedAdoption' not in dfs) or ('Episodes' not in dfs):
         return {}
     else:
-      placed_adoption = dfs['PlacedAdoption']
-      episodes = dfs['Episodes']
+      # remove rows where either of the required values have not been filled.
+      placed_adoption = dfs['PlacedAdoption'].dropna()
+      episodes = dfs['Episodes'].dropna()
 
       # keep index values so that they stay the same when needed later on for error locations
       placed_adoption.reset_index(inplace = True)

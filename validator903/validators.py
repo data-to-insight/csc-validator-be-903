@@ -2419,3 +2419,76 @@ def validate_503E():
 def validate_503F():
     return validate_503_Generic('F')
 
+
+def validate_370to376and379(subval):
+    Gen_370_dict = {
+    "370": {"Desc": "Child in independent living should be at least 15.",
+        "P_Code": 'P2', "Y_gap": 15},
+    "371": {"Desc": "Child in semi-independent living accommodation not subject to children’s homes regulations " +
+        "should be at least 14.",
+        "P_Code": 'H5', "Y_gap": 14},
+    "372": {"Desc": "Child in youth custody or prison should be at least 10.",
+        "P_Code": 'R5', "Y_gap": 10},
+    "373": {"Desc": "Child placed in a school should be at least 4 years old.",
+        "P_Code": 'S1', "Y_gap": 4},
+    "374": {"Desc": "Child in residential employment should be at least 14 years old.",
+        "P_Code": 'P3', "Y_gap": 14},
+    "375": {"Desc": "Hospitalisation coded as a temporary placement exceeds six weeks.",
+        "P_Code": 'T1', "Y_gap": 42},
+    "376": {"Desc": "Temporary placements coded as being due to holiday of usual foster carer(s) cannot exceed " +
+        "three weeks.",
+        "P_Code": 'T3', "Y_gap": 21},
+    "379": {"Desc": "Temporary placements for unspecified reason (placement code T4) cannot exceed seven days.",
+        "P_Code": 'T4', "Y_gap": 7},
+    }
+    error = ErrorDefinition(
+        code=str(subval),
+        description=Gen_370_dict[subval]['Desc'],
+        affected_fields=['DECOM', 'PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            hea = dfs['Header']
+            hea['DOB'] = pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            epi.reset_index(inplace=True)
+            epi_p2 = epi[epi['PLACE'] == Gen_370_dict[subval]['P_Code']]
+            merged_e = epi_p2.merge(hea, how='inner', on='CHILD')
+            if subval == '370' or subval == '371' or subval == '372' or subval == '373' or subval == '374':
+                error_mask = merged_e['DECOM'] < (merged_e['DOB'] +
+                pd.offsets.DateOffset(years=Gen_370_dict[subval]['Y_gap']))
+            else:
+                error_mask = merged_e['DEC'] > (merged_e['DECOM'] +
+                pd.offsets.DateOffset(days=Gen_370_dict[subval]['Y_gap']))
+            return {'Episodes': merged_e['index'][error_mask].unique().tolist()}
+
+    return error, _validate
+
+def validate_370():
+    return validate_370to376and379('370')
+
+def validate_371():
+    return validate_370to376and379('371')
+
+def validate_372():
+    return validate_370to376and379('372')
+
+def validate_373():
+    return validate_370to376and379('373')
+
+def validate_374():
+    return validate_370to376and379('374')
+
+def validate_375():
+    return validate_370to376and379('375')
+
+def validate_376():
+    return validate_370to376and379('376')
+
+def validate_379():
+    return validate_370to376and379('379')

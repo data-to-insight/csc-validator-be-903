@@ -1,6 +1,40 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_523():
+  error = ErrorDefinition(
+    code = '523',
+    description = "Error code 523 - Date of decision that the child should be placed for adoption should be the same date as the decision that adoption is in the best interest (date should be placed).",
+    affected_fields = ['DATE_PLACED', 'DATE_INT'],
+  )
+  def _validate(dfs):
+    if ("AD1" not in dfs) or ("PlacedAdoption" not in dfs):
+      return {}
+    else:
+      placed_adoption = dfs["PlacedAdoption"]
+      ad1 = dfs["AD1"]
+      # drop rows where either of the required values have not been filled.
+      placed_adoption = placed_adoption[placed_adoption["DATE_PLACED"].notna()]
+      ad1 = ad1[ad1["DATE_INT"].notna()]
+      # keep initial index values to be reused for locating errors later on.
+      placed_adoption.reset_index(inplace=True)
+      ad1.reset_index(inplace=True)
+
+      # convert to datetime to enable comparison
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format="%d/%m/%Y", errors='coerce')
+      ad1["DATE_INT"] = pd.to_datetime(ad1['DATE_INIT'], format='%d/%m/%Y', errors='coerce')
+      # bring corresponding values together from both dataframes
+      merged_df = ad1.merge(placed_adoption, on=['CHILD'], how='left', suffixes=["AD", "PA"])
+      # find error values
+      different_dates = merged_df['DATE_INT'] != merged_df['DATE_PLACED']
+      # map error locations to corresponding indices
+      pa_error_locations = merged_df.loc[different_dates, 'index_PA']
+      ad1_error_locations = merged_df.loc[different_dates, 'index_AD']
+      
+      return {"PlacedAdoption":pa_error_locations.to_list(), "AD1":ad1_error_locations.to_list()}
+    return error, _validate
+        
+
 def validate_445():
     error = ErrorDefinition(
         code = '445',

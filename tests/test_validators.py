@@ -1,6 +1,18 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_523():
+  # there is already another variable called fake_data_placed_adoption
+  fake_placed_adoption = pd.DataFrame({"DATE_PLACED":['08/03/2020','22/06/2020','13/10/2022','24/10/2021', pd.NA, pd.NA]})
+  # there is already another variable called fake_data_ad1
+  fake_ad1 = pd.DataFrame({"DATE_INT":['08/03/2020','22/07/2020','13/10/2021','22/06/2020','26/05/2018', pd.NA]})
+
+  fake_dfs = {"AD1": fake_ad1, "PlacedAdoption":fake_placed_adoption}
+  # get the error function and run it on the fake data
+  error_defn, error_func = validate_523()
+  result = error_func(fake_dfs)
+  assert result == {"AD1":[1,2,3], "PlacedAdoption":[1,2,3]}
+  
 def test_validate_445():
     fake_data = pd.DataFrame({
         'LS':['D1','D1','D1','D1','D1','C1'],

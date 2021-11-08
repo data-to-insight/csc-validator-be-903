@@ -17,7 +17,7 @@ def test_validate_552():
   error_defn, error_func = validate_552()
   result = error_func(fake_dfs)
   # check that result of function on provided data is as expected
-  assert result == {"PlacedAdoption":[2,3], "Episodes":[2,3]}
+  assert result == {"PlacedAdoption":[2], "Episodes":[2]}
 
 def test_validate_208():
     fake_data = pd.DataFrame({

@@ -126,4 +126,6 @@ configured_errors = [
     validate_503E(),
     validate_503F(),
     validate_526(),
+    validate_445(),
+    validate_446(),
 ]

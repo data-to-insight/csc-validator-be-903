@@ -2459,7 +2459,7 @@ def validate_370to376and379(subval):
             epi.reset_index(inplace=True)
             epi_p2 = epi[epi['PLACE'] == Gen_370_dict[subval]['P_Code']]
             merged_e = epi_p2.merge(hea, how='inner', on='CHILD')
-            if subval == '370' or subval == '371' or subval == '372' or subval == '373' or subval == '374':
+            if subval in  ['370', '371', '372', '373', '374']:
                 error_mask = merged_e['DECOM'] < (merged_e['DOB'] +
                 pd.offsets.DateOffset(years=Gen_370_dict[subval]['Y_gap']))
             else:

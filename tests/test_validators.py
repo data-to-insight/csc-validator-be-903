@@ -1742,3 +1742,16 @@ def test_validate_503F():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 5]}
+
+
+def test_validate_526():
+    fake_data = pd.DataFrame({
+        'PLACE':          ['E1',  'P0', 'T1',   'T3', 'P1',  'Z1',  'P0'],
+        'PLACE_PROVIDER': ['PR1', 'PR2', pd.NA, 'PR0', pd.NA, pd.NA, pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_526()
+
+    assert error_func(fake_dfs) == {'Episodes': [4, 6]}

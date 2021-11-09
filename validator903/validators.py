@@ -10,7 +10,7 @@ def validate_523():
   def _validate(dfs):
     if ("AD1" not in dfs) or ("PlacedAdoption" not in dfs):
       return {}
-    else:
+    else:  
       placed_adoption = dfs["PlacedAdoption"]
       ad1 = dfs["AD1"]
       # drop rows where either of the required values have not been filled.
@@ -21,10 +21,12 @@ def validate_523():
       ad1.reset_index(inplace=True)
 
       # convert to datetime to enable comparison
-      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format="%d/%m/%Y", errors='coerce')
-      ad1["DATE_INT"] = pd.to_datetime(ad1['DATE_INIT'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption.loc['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format="%d/%m/%Y", errors='coerce')
+      ad1.loc["DATE_INT"] = pd.to_datetime(ad1['DATE_INT'], format='%d/%m/%Y', errors='coerce')
+
+      
       # bring corresponding values together from both dataframes
-      merged_df = ad1.merge(placed_adoption, on=['CHILD'], how='left', suffixes=["AD", "PA"])
+      merged_df = placed_adoption.merge(ad1, on=['CHILD'], how='left', suffixes=["AD", "PA"])
       # find error values
       different_dates = merged_df['DATE_INT'] != merged_df['DATE_PLACED']
       # map error locations to corresponding indices
@@ -32,7 +34,7 @@ def validate_523():
       ad1_error_locations = merged_df.loc[different_dates, 'index_AD']
       
       return {"PlacedAdoption":pa_error_locations.to_list(), "AD1":ad1_error_locations.to_list()}
-    return error, _validate
+  return error, _validate
         
 
 def validate_445():

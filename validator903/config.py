@@ -29,6 +29,7 @@ List of all configured errors for validation.
 These all should have return type (Error, Dict[str, DataFrame])
 """
 configured_errors = [
+    validate_210(),
     validate_101(),
     validate_102(),
     validate_103(),

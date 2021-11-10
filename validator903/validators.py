@@ -1,6 +1,32 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_210():
+    error = ErrorDefinition(
+      code='210',
+      description= 'Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.',
+      affected_fields=['LS_ADOPTR'],
+    )
+
+    def _validate(dfs):
+
+        if 'AD1' not in dfs:
+          return {}
+        else:
+            AD1 = dfs ['AD1']
+            code_list = ['M1', 'F1']
+
+            mask = AD1['LS_ADOPTR'].isin(code_list)
+
+            validation_error_mask = ~mask
+
+            validation_error_locations = AD1.index[validation_error_mask]
+
+            return {'AD1': validation_error_locations.to_lists()}
+ 
+
+    return error, _validate
+
 def validate_445():
     error = ErrorDefinition(
         code = '445',

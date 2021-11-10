@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_210():
+    fake_data = pd.DataFrame({
+        'LS_ADOPTR':  ['M1', 'F1', 'M2', pd.NA],
+    })
+  
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_210()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3]}
+
+
 def test_validate_445():
     fake_data = pd.DataFrame({
         'LS':['D1','D1','D1','D1','D1','C1'],

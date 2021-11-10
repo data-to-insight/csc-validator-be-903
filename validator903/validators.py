@@ -15,10 +15,12 @@ def validate_441():
             reviews = dfs['Reviews']
             reviews['DOB'] = pd.to_datetime(reviews['DOB'],format='%d/%m/%Y',errors='coerce')
             reviews['REVIEW'] = pd.to_datetime(reviews['REVIEW'],format='%d/%m/%Y',errors='coerce')
+            reviews = reviews.dropna(subset=['REVIEW', 'DOB'])
             
-            mask = reviews['REVIEW_CODE'].ne('PN0') & (reviews['REVIEW'] < reviews['DOB'] + pd.offsets.DateOffset(years=4))
+            mask = reviews['REVIEW_CODE'].isin(['PN1', 'PN2', 'PN3', 'PN4', 'PN5', 'PN6', 'PN7']) & (reviews['REVIEW'] < reviews['DOB'] + pd.offsets.DateOffset(years=4))
 
             validation_error_mask = mask
+
             validation_error_locations = reviews.index[validation_error_mask]
 
             return {'Reviews': validation_error_locations.tolist()}

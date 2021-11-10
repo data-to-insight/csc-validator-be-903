@@ -77,6 +77,32 @@ def test_validate_365():
     assert result == {'Episodes': [0, 2, 6]}
 
 
+def test_validate_366():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/06/2000', 'LS': 'V3'}, #0 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '01/05/2000', 'LS': 'V3'}, #1
+        {'CHILD': 30003, 'DECOM': '01/04/2000', 'DEC': '01/05/2000', 'LS': 'V3'}, #2 ^ Fail!
+        {'CHILD': 30003, 'DECOM': '01/05/2000', 'DEC': '01/07/2000', 'LS': 'xx'}, #3 |
+        {'CHILD': 30003, 'DECOM': '01/06/2000', 'DEC': '01/07/2000', 'LS': 'V3'}, #4 | Fail!
+        {'CHILD': 30003, 'DECOM': '01/07/2000', 'DEC': '01/08/2000', 'LS': 'V3'}, #5 v Fail!
+        {'CHILD': 400004, 'DECOM': '01/08/2000', 'DEC': '01/07/2000', 'LS': 'V3'}, #6
+        {'CHILD': 400004, 'DECOM': '01/08/2000', 'DEC': '01/11/2000', 'LS': 'V3'}, #7 Fail!
+        {'CHILD': 555, 'DECOM': '01/07/2000', 'DEC': pd.NA, 'LS': 'V3'}, #8 Fail!
+    ])
+
+    test_meta = {'collection_start': '01/04/2000'}
+
+    test_dfs = {
+        'Episodes': test_eps,
+        'metadata': test_meta}
+
+    error_defn, error_func = validate_366()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 4, 5, 7, 8]}
+
+
 def test_validate_440():
     fake_data = pd.DataFrame({
         'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],

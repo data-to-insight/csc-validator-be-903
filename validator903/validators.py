@@ -5,7 +5,7 @@ def validate_363():
     error = ErrorDefinition(
         code = '363',
         description = 'Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.',
-        affected_fields=['LS','DECOM','DEC'],
+        affected_fields=['LS', 'DECOM', 'DEC'],
     )
 
     def _validate(dfs):
@@ -88,7 +88,7 @@ def validate_365():
     error = ErrorDefinition(
         code = '365',
         description = 'Any individual short- term respite placement must not exceed 17 days.',
-        affected_fields=['LS','DECOM','DEC'],
+        affected_fields=['LS', 'DECOM', 'DEC'],
     )
 
     def _validate(dfs):
@@ -102,6 +102,41 @@ def validate_365():
         error_mask = (episodes['LS'] == 'V2') & over_17_days
 
         return {'Episodes': episodes.index[error_mask].to_list()}
+
+    return error, _validate
+
+
+def validate_366():
+    error = ErrorDefinition(
+        code = '366',
+        description = 'The maximum amount of respite care allowable is 75 days in any 12-month period.',
+        affected_fields=['LS', 'DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+
+        episodes = dfs['Episodes']
+        V3_eps = episodes[episodes['LS'] == 'V3']
+
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+        collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        V3_eps['DECOM'] = pd.to_datetime(V3_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        V3_eps['DEC'] = pd.to_datetime(V3_eps['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        # truncate episode start/end dates to collection start/end respectively
+        V3_eps.loc[V3_eps['DEC'].isna() | (V3_eps['DEC'] > collection_end), 'DEC'] = collection_end
+        V3_eps.loc[V3_eps['DECOM'].isna() | (V3_eps['DECOM'] < collection_start), 'DECOM'] = collection_start
+
+        V3_eps['duration'] = (V3_eps['DEC'] - V3_eps['DECOM']).dt.days
+        V3_eps = V3_eps[V3_eps['duration'] > 0]
+
+        V3_eps['year_total_duration'] = V3_eps.groupby('CHILD')['duration'].transform(sum)
+
+        error_mask = V3_eps['year_total_duration'] > 75
+
+        return {'Episodes': V3_eps.index[error_mask].to_list()}
 
     return error, _validate
 

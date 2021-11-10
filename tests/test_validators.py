@@ -1,6 +1,31 @@
 from validator903.validators import *
 import pandas as pd
 
+
+def test_validate_363():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L2'},  # 0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'},  # 1
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L2'},  # 2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '10/01/2000', 'LS': 'L2'},  # 3 ^ Fa
+        {'CHILD': 2002, 'DECOM': '10/01/2000', 'DEC': '23/01/2001', 'LS': 'L2'},  # 4 v il!
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '10/01/2002', 'LS': 'L2'},  # 5
+        {'CHILD': 2002, 'DECOM': '10/01/2002', 'DEC': '11/01/2002', 'LS': 'X'},  # 6
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '25/01/2002', 'LS': 'L2'},  # 7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L2'},  # 8 (decom>dec)
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L2'},  # 9 dec.isNA
+
+    ])
+
+    test_dfs = {'Episodes': test_eps}
+
+    error_defn, error_func = validate_363()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 3, 4]}
+
+
 def test_validate_440():
     fake_data = pd.DataFrame({
         'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],

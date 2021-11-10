@@ -1,6 +1,50 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_363():
+    error = ErrorDefinition(
+        code = '363',
+        description = 'Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.',
+        affected_fields=['LS','DECOM','DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        L2_episodes = episodes[episodes['LS'] == 'L2'].copy()
+        L2_episodes['original_index'] = L2_episodes.index
+
+        L2_episodes['DECOM'] = pd.to_datetime(L2_episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+        L2_episodes['DEC'] = pd.to_datetime(L2_episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        L2_episodes.sort_values(['CHILD', 'DECOM'])
+
+        L2_episodes['index'] = pd.RangeIndex(0, len(L2_episodes))
+        L2_episodes['index_prev'] = L2_episodes['index'] + 1
+        L2_episodes = L2_episodes.merge(L2_episodes, left_on='index', right_on='index_prev',
+                                        how='left', suffixes=[None, '_prev'])
+        L2_episodes = L2_episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+        L2_episodes['new_period'] = (
+            (L2_episodes['DECOM'] > L2_episodes['DEC_prev'])
+            | (L2_episodes['CHILD'] != L2_episodes['CHILD_prev'])
+        )
+        L2_episodes['duration'] = (L2_episodes['DEC'] - L2_episodes['DECOM']).dt.days
+
+        L2_episodes['period_id'] = L2_episodes['new_period'].astype(int).cumsum()
+
+        L2_episodes['period_duration'] = L2_episodes.groupby('period_id')['duration'].transform(sum)
+        print(episodes.head())
+        print(L2_episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'period_id', 'duration']])
+        error_mask = L2_episodes['period_duration'] > 21
+
+        return {'Episodes': L2_episodes.loc[error_mask, 'original_index'].to_list()}
+
+    return error, _validate
+
+
+
 def validate_440():
     error = ErrorDefinition(
         code = '440',

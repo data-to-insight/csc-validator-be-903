@@ -87,6 +87,28 @@ def validate_364():
     return error, _validate
 
 
+def validate_365():
+    error = ErrorDefinition(
+        code = '365',
+        description = 'Any individual short- term respite placement must not exceed 17 days.',
+        affected_fields=['LS','DECOM','DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+        episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        over_17_days = (episodes['DEC'] - episodes['DECOM']).dt.days > 17
+        error_mask = (episodes['LS'] == 'V2') & over_17_days
+
+        return {'Episodes': episodes.index[error_mask].to_list()}
+
+    return error, _validate
+
+
 def validate_440():
     error = ErrorDefinition(
         code = '440',

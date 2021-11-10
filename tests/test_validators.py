@@ -52,6 +52,31 @@ def test_validate_364():
     assert result == {'Episodes': [0, 2, 3, 4]}
 
 
+def test_validate_365():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'V2'}, #0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'}, #1
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'V2'}, #2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '10/01/2000', 'LS': 'V2'}, #3
+        {'CHILD': 2002, 'DECOM': '10/01/2000', 'DEC': '23/01/2001', 'LS': 'X'}, #4
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '18/01/2002', 'LS': 'V2'}, #5 pass -17 days
+        {'CHILD': 2002, 'DECOM': '01/02/2002', 'DEC': '19/02/2002', 'LS': 'V2'}, #6 Fail! - 18 days
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '25/01/2002', 'LS': 'J2'}, #7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'J2'}, #8 DEC < DECOM
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'V2'},  # 9 dec.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'V2'},  # 10 decom.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'V2'},  # 11
+    ])
+
+    test_dfs = {'Episodes': test_eps}
+
+    error_defn, error_func = validate_365()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 6]}
+
+
 def test_validate_440():
     fake_data = pd.DataFrame({
         'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],

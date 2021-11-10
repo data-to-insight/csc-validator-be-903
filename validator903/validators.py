@@ -43,6 +43,48 @@ def validate_363():
 
     return error, _validate
 
+def validate_364():
+    error = ErrorDefinition(
+        code = '364',
+        description = 'Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits ' +
+                      'the time a child can be detained in custody in Local Authority (LA) accommodation.',
+        affected_fields=['LS','DECOM','DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        J2_eps = episodes[episodes['LS'] == 'J2'].copy()
+        J2_eps['original_index'] = J2_eps.index
+        print(J2_eps)
+        J2_eps['DECOM'] = pd.to_datetime(J2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        J2_eps['DEC'] = pd.to_datetime(J2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        J2_eps.sort_values(['CHILD', 'DECOM'])
+
+        J2_eps['index'] = pd.RangeIndex(0, len(J2_eps))
+        J2_eps['index_prev'] = J2_eps['index'] + 1
+        J2_eps = J2_eps.merge(J2_eps, left_on='index', right_on='index_prev',
+                              how='left', suffixes=[None, '_prev'])
+        J2_eps = J2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+        J2_eps['new_period'] = (
+            (J2_eps['DECOM'] > J2_eps['DEC_prev'])
+            | (J2_eps['CHILD'] != J2_eps['CHILD_prev'])
+        )
+        J2_eps['duration'] = (J2_eps['DEC'] - J2_eps['DECOM']).dt.days
+
+        J2_eps['period_id'] = J2_eps['new_period'].astype(int).cumsum()
+
+        J2_eps['period_duration'] = J2_eps.groupby('period_id')['duration'].transform(sum)
+        print(episodes.head())
+        print(J2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'period_id', 'duration']])
+        error_mask = J2_eps['period_duration'] > 21
+
+        return {'Episodes': J2_eps.loc[error_mask, 'original_index'].to_list()}
+
+    return error, _validate
 
 
 def validate_440():

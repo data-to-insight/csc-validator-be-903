@@ -35,8 +35,7 @@ def validate_363():
         L2_episodes['period_id'] = L2_episodes['new_period'].astype(int).cumsum()
 
         L2_episodes['period_duration'] = L2_episodes.groupby('period_id')['duration'].transform(sum)
-        print(episodes.head())
-        print(L2_episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'period_id', 'duration']])
+
         error_mask = L2_episodes['period_duration'] > 7
 
         return {'Episodes': L2_episodes.loc[error_mask, 'original_index'].to_list()}
@@ -57,7 +56,7 @@ def validate_364():
         episodes = dfs['Episodes']
         J2_eps = episodes[episodes['LS'] == 'J2'].copy()
         J2_eps['original_index'] = J2_eps.index
-        print(J2_eps)
+
         J2_eps['DECOM'] = pd.to_datetime(J2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
         J2_eps['DEC'] = pd.to_datetime(J2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
 
@@ -73,13 +72,11 @@ def validate_364():
             (J2_eps['DECOM'] > J2_eps['DEC_prev'])
             | (J2_eps['CHILD'] != J2_eps['CHILD_prev'])
         )
+
         J2_eps['duration'] = (J2_eps['DEC'] - J2_eps['DECOM']).dt.days
-
         J2_eps['period_id'] = J2_eps['new_period'].astype(int).cumsum()
-
         J2_eps['period_duration'] = J2_eps.groupby('period_id')['duration'].transform(sum)
-        print(episodes.head())
-        print(J2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'period_id', 'duration']])
+
         error_mask = J2_eps['period_duration'] > 21
 
         return {'Episodes': J2_eps.loc[error_mask, 'original_index'].to_list()}

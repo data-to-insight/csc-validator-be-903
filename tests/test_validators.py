@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_440():
+    fake_data = pd.DataFrame({
+        'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],
+        'REVIEW':['31/12/2007','01/01/2007',pd.NA,'01/01/2013','01/01/2015','01/01/2014','01/01/2020'],
+        'REVIEW_CODE':['PN0','PN0','PN0','PN0','PN0','PN0','PN1'],
+    })
+
+    fake_dfs = {'Reviews': fake_data}
+    
+    error_defn, error_func = validate_440()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Reviews':[3,4]}
+
 def test_validate_445():
     fake_data = pd.DataFrame({
         'LS':['D1','D1','D1','D1','D1','C1'],

@@ -1799,7 +1799,7 @@ def test_validate_374():
 
     error_defn, error_func = validate_374()
 
-    assert error_func(fake_dfs) == {'Episodes': [2, 5, 6]}
+    assert error_func(fake_dfs) == {'Episodes': [2, 3, 5, 6]}
 
 def test_validate_375():
     fake_epi = pd.DataFrame({

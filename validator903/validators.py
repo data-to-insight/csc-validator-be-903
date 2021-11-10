@@ -22,7 +22,7 @@ def validate_210():
 
             validation_error_locations = AD1.index[validation_error_mask]
 
-            return {'AD1': validation_error_locations.to_lists()}
+            return {'AD1': validation_error_locations.tolists()}
  
 
     return error, _validate

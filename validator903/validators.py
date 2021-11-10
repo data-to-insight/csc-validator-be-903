@@ -37,7 +37,7 @@ def validate_363():
         L2_episodes['period_duration'] = L2_episodes.groupby('period_id')['duration'].transform(sum)
         print(episodes.head())
         print(L2_episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'period_id', 'duration']])
-        error_mask = L2_episodes['period_duration'] > 21
+        error_mask = L2_episodes['period_duration'] > 7
 
         return {'Episodes': L2_episodes.loc[error_mask, 'original_index'].to_list()}
 

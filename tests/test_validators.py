@@ -186,7 +186,7 @@ def test_validate_445():
     })
 
     fake_dfs = {'Episodes': fake_data}
-    
+
     error_defn, error_func = validate_445()
 
     result = error_func(fake_dfs)
@@ -200,9 +200,9 @@ def test_validate_446():
     })
 
     fake_dfs = {'Episodes': fake_data}
-    
+
     error_defn, error_func = validate_446()
-    
+
     result = error_func(fake_dfs)
 
     assert result == {'Episodes':[3,4]}
@@ -1919,6 +1919,143 @@ def test_validate_503F():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 5]}
+
+def test_validate_370():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/01/1980', '15/03/2015', '14/03/2015'],
+        'PLACE': ['E1', 'P2', 'P2', 'P2', 'P2', 'P2'],                       #15bd    #day before 15bd
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', '27/04/2010', '26/04/2004', '25/04/2014'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_370()
+
+    assert error_func(fake_dfs) == {'Episodes': [2, 3, 5]}
+
+def test_validate_371():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/01/1980', '15/03/2014', '14/03/2014'],
+        'PLACE': ['H5', 'P2', 'P2', 'H5', 'H5', 'H5'],                       #14bd    #day before 14bd
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', '27/04/2010', '26/04/2004', '25/04/2014'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_371()
+
+    assert error_func(fake_dfs) == {'Episodes': [3, 5]}
+
+def test_validate_372():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', '15/01/1980', '14/03/2010'],
+        'PLACE': ['R5', 'R5', 'P2', 'R5', 'R5', 'R5'],                                #day before 10bd
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', '27/04/2010', '26/04/2004', '25/04/2014'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_372()
+
+    assert error_func(fake_dfs) == {'Episodes': [3, 4, 5]}
+
+def test_validate_373():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', '15/03/2004', '14/03/2004'],
+        'PLACE': ['S1', 'S1', 'P2', 'S1', 'S1', 'S1'],                                #day before 4bd
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', '27/04/2010', '26/04/2004', '25/04/2014'],
+
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_373()
+
+    assert error_func(fake_dfs) == {'Episodes': [3, 5]}
+
+def test_validate_374():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666', '777'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', pd.NA, '15/03/2004', '14/03/2014'],
+        'PLACE': ['P3', 'P3', 'P3', 'P3', 'P3', 'P3', 'P3'],                                #day before 14bd
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', pd.NA, '27/04/2010', '26/04/2004', '25/04/2014'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666', '777'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_374()
+
+    assert error_func(fake_dfs) == {'Episodes': [2, 5, 6]}
+
+def test_validate_375():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', '15/03/2004', '14/03/2014'],
+        'DEC': ['13/02/2020', '14/03/2020', '14/04/2020', '27/04/2010', '26/04/2004', '25/04/2014'],
+        'PLACE': ['T1', 'T1', 'T1', 'T1', 'T1', 'P2'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_375()
+
+    assert error_func(fake_dfs) == {'Episodes': [0, 2, 3]}
+
+def test_validate_376():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666', '777'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', '15/03/2004', '14/03/2014', pd.NA],
+        'DEC': ['22/01/2020', '23/02/2020', '24/03/2020', '06/04/2010', '05/04/2004', '04/04/2014', pd.NA],
+        'PLACE': ['T3', 'T3', 'T3', 'T3', 'T3', 'P2', 'T3'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['01/01/1998', '01/02/2000', '02/03/2015', '15/01/2010', '15/03/2000', '15/03/2000'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_376()
+
+    assert error_func(fake_dfs) == {'Episodes': [1, 2, 3]}
+
+def test_validate_379():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DECOM': ['01/01/2020', '01/02/2020', '02/03/2020', '15/03/2010', '15/03/2004', '14/03/2014'],
+        'DEC': ['08/01/2020', '09/02/2020', '09/03/2020', '25/03/2010', '22/03/2004', '25/03/2014'],
+        'PLACE': ['T4', 'T4', 'T4', 'T4', 'T4', 'P2'],
+    })
+    fake_hea = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666'],
+        'DOB': ['08/01/2020', '08/02/2020', '09/03/2020', '22/03/2010', '22/03/2004', '21/03/2014'],
+    })
+    fake_dfs = {'Episodes': fake_epi, 'Header': fake_hea}
+
+    error_defn, error_func = validate_379()
+
+    assert error_func(fake_dfs) == {'Episodes': [1, 3]}
 
 
 def test_validate_526():

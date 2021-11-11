@@ -12,35 +12,40 @@ def validate_363():
         if 'Episodes' not in dfs:
             return {}
         episodes = dfs['Episodes']
-        L2_episodes = episodes[episodes['LS'] == 'L2'].copy()
-        L2_episodes['original_index'] = L2_episodes.index
+        collection_end_str = dfs['metadata']['collection_end']
 
-        L2_episodes['DECOM'] = pd.to_datetime(L2_episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-        L2_episodes['DEC'] = pd.to_datetime(L2_episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+        L2_eps = episodes[episodes['LS'] == 'L2'].copy()
+        L2_eps['original_index'] = L2_eps.index
+        L2_eps = L2_eps[L2_eps['DECOM'].notna()]
 
-        L2_episodes.sort_values(['CHILD', 'DECOM'])
+        L2_eps.loc[L2_eps['DEC'].isna(), 'DEC'] = collection_end_str
+        L2_eps['DECOM'] = pd.to_datetime(L2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        L2_eps = L2_eps.dropna(subset=['DECOM'])
+        L2_eps['DEC'] = pd.to_datetime(L2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
 
-        L2_episodes['index'] = pd.RangeIndex(0, len(L2_episodes))
-        L2_episodes['index_prev'] = L2_episodes['index'] + 1
-        L2_episodes = L2_episodes.merge(L2_episodes, left_on='index', right_on='index_prev',
-                                        how='left', suffixes=[None, '_prev'])
-        L2_episodes = L2_episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+        L2_eps.sort_values(['CHILD', 'DECOM'])
 
-        L2_episodes['new_period'] = (
-            (L2_episodes['DECOM'] > L2_episodes['DEC_prev'])
-            | (L2_episodes['CHILD'] != L2_episodes['CHILD_prev'])
+        L2_eps['index'] = pd.RangeIndex(0, len(L2_eps))
+        L2_eps['index+1'] = L2_eps['index'] + 1
+        L2_eps = L2_eps.merge(L2_eps, left_on='index', right_on='index+1',
+                              how='left', suffixes=[None, '_prev'])
+        L2_eps = L2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+        L2_eps['new_period'] = (
+            (L2_eps['DECOM'] > L2_eps['DEC_prev'])
+            | (L2_eps['CHILD'] != L2_eps['CHILD_prev'])
         )
-        L2_episodes['duration'] = (L2_episodes['DEC'] - L2_episodes['DECOM']).dt.days
 
-        L2_episodes['period_id'] = L2_episodes['new_period'].astype(int).cumsum()
+        L2_eps['duration'] = (L2_eps['DEC'] - L2_eps['DECOM']).dt.days
+        L2_eps['period_id'] = L2_eps['new_period'].astype(int).cumsum()
+        L2_eps['period_duration'] = L2_eps.groupby('period_id')['duration'].transform(sum)
 
-        L2_episodes['period_duration'] = L2_episodes.groupby('period_id')['duration'].transform(sum)
+        error_mask = L2_eps['period_duration'] > 7
 
-        error_mask = L2_episodes['period_duration'] > 7
-
-        return {'Episodes': L2_episodes.loc[error_mask, 'original_index'].to_list()}
+        return {'Episodes': L2_eps.loc[error_mask, 'original_index'].to_list()}
 
     return error, _validate
+
 
 def validate_364():
     error = ErrorDefinition(
@@ -54,10 +59,14 @@ def validate_364():
         if 'Episodes' not in dfs:
             return {}
         episodes = dfs['Episodes']
+        collection_end_str = dfs['metadata']['collection_end']
+
         J2_eps = episodes[episodes['LS'] == 'J2'].copy()
         J2_eps['original_index'] = J2_eps.index
 
         J2_eps['DECOM'] = pd.to_datetime(J2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        J2_eps = J2_eps[J2_eps['DECOM'].notna()]
+        J2_eps.loc[J2_eps['DEC'].isna(), 'DEC'] = collection_end_str
         J2_eps['DEC'] = pd.to_datetime(J2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
 
         J2_eps.sort_values(['CHILD', 'DECOM'])
@@ -95,10 +104,13 @@ def validate_365():
         if 'Episodes' not in dfs:
             return {}
         episodes = dfs['Episodes']
+        collection_end_str = dfs['metadata']['collection_end']
+
+        episodes.loc[episodes['DEC'].isna(), 'DEC'] = collection_end_str
         episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
         episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-        over_17_days = (episodes['DEC'] - episodes['DECOM']).dt.days > 17
+        over_17_days = episodes['DEC'] > episodes['DECOM'] + pd.DateOffset(days=17)
         error_mask = (episodes['LS'] == 'V2') & over_17_days
 
         return {'Episodes': episodes.index[error_mask].to_list()}
@@ -106,9 +118,9 @@ def validate_365():
     return error, _validate
 
 
-def validate_366():
+def validate_367():
     error = ErrorDefinition(
-        code = '366',
+        code = '367',
         description = 'The maximum amount of respite care allowable is 75 days in any 12-month period.',
         affected_fields=['LS', 'DECOM', 'DEC'],
     )
@@ -155,7 +167,7 @@ def validate_440():
             reviews = dfs['Reviews']
             reviews['DOB'] = pd.to_datetime(reviews['DOB'],format='%d/%m/%Y',errors='coerce')
             reviews['REVIEW'] = pd.to_datetime(reviews['REVIEW'],format='%d/%m/%Y',errors='coerce')
-            
+
             mask = reviews['REVIEW_CODE'].eq('PN0') & (reviews['REVIEW'] > reviews['DOB'] + pd.offsets.DateOffset(years=4))
 
             validation_error_mask = mask
@@ -179,13 +191,13 @@ def validate_445():
             episodes = dfs['Episodes']
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
             max_decom_allowed = pd.to_datetime('31/12/2005', format='%d/%m/%Y', errors='coerce')
-            
+
             mask = episodes['LS'].eq('D1') & (episodes['DECOM'] > max_decom_allowed)
             validation_error_mask = mask
             validation_error_locations = episodes.index[validation_error_mask]
 
-            return {'Episodes': validation_error_locations.tolist()} 
-    
+            return {'Episodes': validation_error_locations.tolist()}
+
     return error, _validate
 
 def validate_446():
@@ -202,13 +214,13 @@ def validate_446():
             episodes = dfs['Episodes']
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
             min_decom_allowed = pd.to_datetime('01/12/2005', format='%d/%m/%Y', errors='coerce')
-            
+
             mask = episodes['LS'].eq('E1') & (episodes['DECOM'] < min_decom_allowed)
             validation_error_mask = mask
             validation_error_locations = episodes.index[validation_error_mask]
 
-            return {'Episodes': validation_error_locations.tolist()} 
-    
+            return {'Episodes': validation_error_locations.tolist()}
+
     return error, _validate
 
 def validate_208():
@@ -308,12 +320,12 @@ def validate_530():
         else:
             episodes = dfs['Episodes']
             mask = episodes['PLACE'].eq('P1') & episodes['PLACE_PROVIDER'].eq('PR4')
-              
+
             validation_error_mask = mask
             validation_error_locations = episodes.index[validation_error_mask]
 
-            return {'Episodes': validation_error_locations.tolist()} 
-      
+            return {'Episodes': validation_error_locations.tolist()}
+
     return error, _validate
 
 def validate_571():
@@ -333,11 +345,11 @@ def validate_571():
 
             missing['fMIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
 
-            end_date_before_year = missing['fMIS_END'] < collection_start 
-            end_date_after_year = missing['fMIS_END'] > collection_end 
+            end_date_before_year = missing['fMIS_END'] < collection_start
+            end_date_after_year = missing['fMIS_END'] > collection_end
 
             error_mask = end_date_before_year | end_date_after_year
-            
+
             error_locations = missing.index[error_mask]
 
             return {'Missing': error_locations.to_list()}
@@ -416,7 +428,7 @@ def validate_202():
             error_mask = in_both_years & sex_is_different
 
             error_locations = header.index[error_mask]
-            
+
             return {'Header': error_locations.to_list()}
 
     return error, _validate
@@ -433,10 +445,10 @@ def validate_621():
             return {}
         else:
             header = dfs['Header']
-            
+
             header['MC_DOB'] = pd.to_datetime(header['MC_DOB'],format='%d/%m/%Y',errors='coerce')
             header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
-           
+
             mask = (header['MC_DOB'] > header['DOB']) | header['MC_DOB'].isna()
 
             validation_error_mask = ~mask
@@ -463,19 +475,19 @@ def validate_556():
             placedAdoptions['DATE_PLACED'] = pd.to_datetime(placedAdoptions['DATE_PLACED'],format='%d/%m/%Y',errors='coerce')
 
             episodes = episodes.reset_index()
-            
+
             D1Episodes = episodes[episodes['LS'] == 'D1']
 
             merged = D1Episodes.reset_index().merge(placedAdoptions, how='left', on='CHILD',).set_index('index')
 
             episodes_with_errors = merged[merged['DATE_PLACED'] > merged['DECOM']]
-            
+
             error_mask = episodes.index.isin(episodes_with_errors.index)
 
             error_locations = episodes.index[error_mask]
 
             return {'Episodes': error_locations.to_list()}
-          
+
     return error, _validate
 
 
@@ -527,7 +539,7 @@ def validate_NoE():
             episodes_merged = episodes_before_year.reset_index().merge(episodes_last, how='left', on=['CHILD'], indicator=True).set_index('index')
 
             episodes_not_matched = episodes_merged[episodes_merged['_merge'] == 'left_only']
-            
+
             error_mask = episodes.index.isin(episodes_not_matched.index)
 
             error_locations = episodes.index[error_mask]
@@ -552,7 +564,7 @@ def validate_356():
             episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
 
             error_mask = episodes['DEC'].notna() &(episodes['DEC'] < episodes['DECOM'])
-          
+
             return {'Episodes': episodes.index[error_mask].to_list()}
 
     return error, _validate
@@ -573,7 +585,7 @@ def validate_611():
             validation_error_locations = header.index[validation_error_mask]
 
             return {'Header': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_1009():
@@ -586,25 +598,25 @@ def validate_1009():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = [
-          'CARPL', 
-          'CLOSE', 
-          'ALLEG', 
+          'CARPL',
+          'CLOSE',
+          'ALLEG',
           'STAND',
-          'APPRR', 
-          'CREQB', 
-          'CREQO', 
+          'APPRR',
+          'CREQB',
+          'CREQO',
           'CHILD',
-          'LAREQ', 
-          'PLACE', 
-          'CUSTOD', 
+          'LAREQ',
+          'PLACE',
+          'CUSTOD',
           'OTHER'
         ]
 
         mask = episodes['REASON_PLACE_CHANGE'].isin(code_list) | episodes['REASON_PLACE_CHANGE'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -622,12 +634,12 @@ def validate_1006():
     def _validate(dfs):
         if 'Missing' not in dfs:
             return {}
-        
+
         missing_from_care = dfs['Missing']
         code_list = ['M', 'A']
 
         mask = missing_from_care['MISSING'].isin(code_list) | missing_from_care['MISSING'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = missing_from_care.index[validation_error_mask]
 
@@ -645,12 +657,12 @@ def validate_631():
     def _validate(dfs):
         if 'PrevPerm' not in dfs:
             return {}
-        
+
         previous_permanence = dfs['PrevPerm']
         code_list = ['P1', 'P2', 'P3', 'P4', 'Z1']
 
         mask = previous_permanence['PREV_PERM'].isin(code_list) | previous_permanence['PREV_PERM'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = previous_permanence.index[validation_error_mask]
 
@@ -668,12 +680,12 @@ def validate_196():
     def _validate(dfs):
         if 'OC2' not in dfs:
             return {}
-        
+
         oc2 = dfs['OC2']
         code_list = ['SDQ1', 'SDQ2', 'SDQ3', 'SDQ4', 'SDQ5']
 
         mask = oc2['SDQ_REASON'].isin(code_list) | oc2['SDQ_REASON'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = oc2.index[validation_error_mask]
 
@@ -691,12 +703,12 @@ def validate_177():
     def _validate(dfs):
         if 'AD1' not in dfs:
             return {}
-        
+
         adoptions = dfs['AD1']
         code_list = ['L0', 'L11', 'L12', 'L2', 'L3', 'L4']
 
         mask = adoptions['LS_ADOPTR'].isin(code_list) | adoptions['LS_ADOPTR'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]
 
@@ -714,12 +726,12 @@ def validate_176():
     def _validate(dfs):
         if 'AD1' not in dfs:
             return {}
-        
+
         adoptions = dfs['AD1']
         code_list = ['M1', 'F1', 'MM', 'FF', 'MF']
 
         mask = adoptions['SEX_ADOPTR'].isin(code_list) | adoptions['SEX_ADOPTR'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]
 
@@ -737,12 +749,12 @@ def validate_175():
     def _validate(dfs):
         if 'AD1' not in dfs:
             return {}
-        
+
         adoptions = dfs['AD1']
         code_list = ['1', '2']
 
         mask = adoptions['NB_ADOPTR'].astype(str).isin(code_list) | adoptions['NB_ADOPTR'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]
 
@@ -760,22 +772,22 @@ def validate_132():
     def _validate(dfs):
         if 'OC3' not in dfs:
             return {}
-        
+
         care_leavers = dfs['OC3']
         code_list = [
-          'F1', 
-          'P1', 
-          'F2', 
-          'P2', 
-          'F3', 
-          'P3', 
+          'F1',
+          'P1',
+          'F2',
+          'P2',
+          'F3',
+          'P3',
           'G4',
-          'G5', 
-          'G6', 
+          'G5',
+          'G6',
           '0'
           ]
         mask = care_leavers['ACTIV'].astype(str).isin(code_list) | care_leavers['ACTIV'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]
 
@@ -793,18 +805,18 @@ def validate_131():
     def _validate(dfs):
         if 'OC3' not in dfs:
             return {}
-        
+
         care_leavers = dfs['OC3']
         code_list = [
-          'YES', 
-          'NO', 
-          'DIED', 
-          'REFU', 
-          'NREQ', 
+          'YES',
+          'NO',
+          'DIED',
+          'REFU',
+          'NREQ',
           'RHOM'
           ]
         mask = care_leavers['IN_TOUCH'].isin(code_list) | care_leavers['IN_TOUCH'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]
 
@@ -822,12 +834,12 @@ def validate_120():
     def _validate(dfs):
         if 'PlacedAdoption' not in dfs:
             return {}
-        
+
         placed_adoptions = dfs['PlacedAdoption']
         code_list = ['RD1', 'RD2', 'RD3', 'RD4']
 
         mask = placed_adoptions['REASON_PLACED_CEASED'].isin(code_list) | placed_adoptions['REASON_PLACED_CEASED'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = placed_adoptions.index[validation_error_mask]
 
@@ -845,12 +857,12 @@ def validate_114():
     def _validate(dfs):
         if 'AD1' not in dfs:
             return {}
-        
+
         adoptions = dfs['AD1']
         code_list = ['0', '1']
 
         mask = adoptions['FOSTER_CARE'].astype(str).isin(code_list) | adoptions['FOSTER_CARE'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = adoptions.index[validation_error_mask]
 
@@ -868,18 +880,18 @@ def validate_178():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
-        
+
         code_list_placement_provider = ['PR0', 'PR1', 'PR2', 'PR3', 'PR4', 'PR5']
         code_list_placement_with_no_provider = ['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
 
-        place_provider_needed_and_correct = episodes['PLACE_PROVIDER'].isin(code_list_placement_provider) & ~episodes['PLACE'].isin(code_list_placement_with_no_provider) 
-        
-        place_provider_not_provided = episodes['PLACE_PROVIDER'].isna() 
-        
-        place_provider_not_needed = episodes['PLACE_PROVIDER'].isna() & episodes['PLACE'].isin(code_list_placement_with_no_provider) 
-        
+        place_provider_needed_and_correct = episodes['PLACE_PROVIDER'].isin(code_list_placement_provider) & ~episodes['PLACE'].isin(code_list_placement_with_no_provider)
+
+        place_provider_not_provided = episodes['PLACE_PROVIDER'].isna()
+
+        place_provider_not_needed = episodes['PLACE_PROVIDER'].isna() & episodes['PLACE'].isin(code_list_placement_with_no_provider)
+
         mask = place_provider_needed_and_correct | place_provider_not_provided | place_provider_not_needed
 
         validation_error_mask = ~mask
@@ -899,28 +911,28 @@ def validate_103():
     def _validate(dfs):
         if 'Header' not in dfs:
             return {}
-        
+
         header = dfs['Header']
         code_list = [
-          'WBRI', 
-          'WIRI', 
-          'WOTH', 
-          'WIRT', 
-          'WROM', 
-          'MWBC', 
-          'MWBA', 
-          'MWAS', 
-          'MOTH', 
-          'AIND', 
-          'APKN', 
-          'ABAN', 
-          'AOTH', 
-          'BCRB', 
-          'BAFR', 
-          'BOTH', 
-          'CHNE', 
-          'OOTH', 
-          'REFU', 
+          'WBRI',
+          'WIRI',
+          'WOTH',
+          'WIRT',
+          'WROM',
+          'MWBC',
+          'MWBA',
+          'MWAS',
+          'MOTH',
+          'AIND',
+          'APKN',
+          'ABAN',
+          'AOTH',
+          'BCRB',
+          'BAFR',
+          'BOTH',
+          'CHNE',
+          'OOTH',
+          'REFU',
           'NOBT'
         ]
 
@@ -943,12 +955,12 @@ def validate_143():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = ['S', 'P', 'L', 'T', 'U', 'B']
 
         mask = episodes['RNE'].isin(code_list) | episodes['RNE'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -966,26 +978,26 @@ def validate_144():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = [
-          'C1', 
+          'C1',
           'C2',
-          'D1', 
-          'E1', 
-          'V2', 
-          'V3', 
-          'V4', 
-          'J1', 
-          'J2', 
-          'J3', 
-          'L1', 
+          'D1',
+          'E1',
+          'V2',
+          'V3',
+          'V4',
+          'J1',
+          'J2',
+          'J3',
+          'L1',
           'L2',
           'L3'
         ]
 
         mask = episodes['LS'].isin(code_list) | episodes['LS'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -1003,17 +1015,17 @@ def validate_145():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = [
-          'N1', 
-          'N2', 
-          'N3', 
-          'N4', 
-          'N5', 
-          'N6', 
-          'N7', 
-          'N8', 
+          'N1',
+          'N2',
+          'N3',
+          'N4',
+          'N5',
+          'N6',
+          'N7',
+          'N8',
         ]
 
         mask = episodes['CIN'].isin(code_list) | episodes['CIN'].isna()
@@ -1023,7 +1035,7 @@ def validate_145():
         return {'Episodes': validation_error_locations.tolist()}
 
     return error, _validate
- 
+
 def validate_146():
     error = ErrorDefinition(
         code='146',
@@ -1034,40 +1046,40 @@ def validate_146():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = [
-          'A3', 
+          'A3',
           'A4',
           'A5',
-          'A6', 
-          'H5', 
-          'K1', 
-          'K2', 
-          'P1', 
-          'P2', 
-          'P3', 
-          'R1', 
-          'R2', 
-          'R3', 
-          'R5', 
-          'S1', 
-          'T0', 
-          'T1', 
-          'T2', 
-          'T3', 
-          'T4', 
-          'U1', 
-          'U2', 
-          'U3', 
-          'U4', 
-          'U5', 
-          'U6', 
+          'A6',
+          'H5',
+          'K1',
+          'K2',
+          'P1',
+          'P2',
+          'P3',
+          'R1',
+          'R2',
+          'R3',
+          'R5',
+          'S1',
+          'T0',
+          'T1',
+          'T2',
+          'T3',
+          'T4',
+          'U1',
+          'U2',
+          'U3',
+          'U4',
+          'U5',
+          'U6',
           'Z1'
         ]
 
         mask = episodes['PLACE'].isin(code_list) | episodes['PLACE'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -1085,35 +1097,35 @@ def validate_149():
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
-        
+
         episodes = dfs['Episodes']
         code_list = [
           'E11',
-          'E12', 
-          'E2', 
-          'E3', 
-          'E4A', 
-          'E4B', 
-          'E13', 
+          'E12',
+          'E2',
+          'E3',
+          'E4A',
+          'E4B',
+          'E13',
           'E41',
-          'E45', 
-          'E46', 
-          'E47', 
-          'E48', 
-          'E5', 
-          'E6', 
-          'E7', 
+          'E45',
+          'E46',
+          'E47',
+          'E48',
+          'E5',
+          'E6',
+          'E7',
           'E8',
           'E9',
-          'E14', 
+          'E14',
           'E15',
-          'E16', 
-          'E17', 
+          'E16',
+          'E17',
           'X1'
         ]
 
         mask = episodes['REC'].isin(code_list) | episodes['REC'].isna()
-        
+
         validation_error_mask = ~mask
         validation_error_locations = episodes.index[validation_error_mask]
 
@@ -1131,7 +1143,7 @@ def validate_167():
     def _validate(dfs):
         if 'Reviews' not in dfs:
             return {}
-        
+
         review = dfs['Reviews']
         code_list = ['PN0', 'PN1', 'PN2', 'PN3', 'PN4', 'PN5', 'PN6', 'PN7']
 
@@ -1141,8 +1153,8 @@ def validate_167():
         validation_error_locations = review.index[validation_error_mask]
 
         return {'Reviews': validation_error_locations.tolist()}
-      
-    return error, _validate 
+
+    return error, _validate
 
 def validate_101():
     error = ErrorDefinition(
@@ -1154,7 +1166,7 @@ def validate_101():
     def _validate(dfs):
         if 'Header' not in dfs:
             return {}
-        
+
         header = dfs['Header']
         code_list = [1, 2]
 
@@ -1164,8 +1176,8 @@ def validate_101():
         validation_error_locations = header.index[validation_error_mask]
 
         return {'Header': validation_error_locations.tolist()}
-      
-    return error, _validate 
+
+    return error, _validate
 
 def validate_141():
     error = ErrorDefinition(
@@ -1187,7 +1199,7 @@ def validate_141():
             validation_error_locations = episodes.index[validation_error_mask]
 
             return {'Episodes': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_147():
@@ -1210,7 +1222,7 @@ def validate_147():
             validation_error_locations = episodes.index[validation_error_mask]
 
             return {'Episodes': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_171():
@@ -1233,7 +1245,7 @@ def validate_171():
             validation_error_locations = header.index[validation_error_mask]
 
             return {'Header': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_102():
@@ -1254,7 +1266,7 @@ def validate_102():
             validation_error_locations = header.index[validation_error_mask]
 
             return {'Header': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_112():
@@ -1277,7 +1289,7 @@ def validate_112():
             validation_error_locations = ad1.index[validation_error_mask]
 
             return {'AD1': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_115():
@@ -1300,7 +1312,7 @@ def validate_115():
             validation_error_locations = adopt.index[validation_error_mask]
 
             return {'PlacedAdoption': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_116():
@@ -1323,7 +1335,7 @@ def validate_116():
             validation_error_locations = adopt.index[validation_error_mask]
 
             return {'PlacedAdoption': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_392c():
@@ -1369,7 +1381,7 @@ def validate_213():
             df = dfs['Episodes']
             mask = df['PLACE'].isin(['T0','T1','T2','T3','T4','Z1']) & df['PLACE_PROVIDER'].notna()
             return {'Episodes': df.index[mask].tolist()}
-    
+
     return error, _validate
 
 def validate_168():
@@ -1387,7 +1399,7 @@ def validate_168():
             mask = df['UPN'].str.match(r'(^((?![IOS])[A-Z]){1}(\d{12}|\d{11}[A-Z]{1})$)|^(UN[1-5])$',na=False)
             mask = ~mask
             return {'Header': df.index[mask].tolist()}
-    
+
     return error, _validate
 
 def validate_388():
@@ -1417,25 +1429,25 @@ def validate_388():
             #Dataframe with the maximum DECOM only
             max_decom_only= df.loc[df.index.isin(grouped_decom_by_child),:]
 
-            #Case 1: If reason episode ceased is coded X1 there must be a subsequent episode 
+            #Case 1: If reason episode ceased is coded X1 there must be a subsequent episode
             #        starting on the same day.
-            case1 = max_decom_removed[(max_decom_removed['REC'] == 'X1') & 
-                   (max_decom_removed['DEC'].notna()) & 
+            case1 = max_decom_removed[(max_decom_removed['REC'] == 'X1') &
+                   (max_decom_removed['DEC'].notna()) &
                    (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
                    (max_decom_removed['DEC'] != max_decom_removed['DECOM_NEXT_EPISODE'])]
 
             #Case 2: If an episode ends but the child continues to be looked after, a new
             #        episode should start on the same day.The reason episode ceased code of
             #        the episode which ends must be X1.
-            case2 = max_decom_removed[(max_decom_removed['REC'] != 'X1') & 
-                   (max_decom_removed['REC'].notna()) & 
-                   (max_decom_removed['DEC'].notna()) & 
+            case2 = max_decom_removed[(max_decom_removed['REC'] != 'X1') &
+                   (max_decom_removed['REC'].notna()) &
+                   (max_decom_removed['DEC'].notna()) &
                    (max_decom_removed['DECOM_NEXT_EPISODE'].notna()) &
                    (max_decom_removed['DEC'] == max_decom_removed['DECOM_NEXT_EPISODE'])]
 
             #Case 3: If a child ceases to be looked after reason episode ceased code X1 must
             #        not be used. 
-            case3 = max_decom_only[(max_decom_only['DEC'].notna()) & 
+            case3 = max_decom_only[(max_decom_only['DEC'].notna()) &
                    (max_decom_only['REC'] == 'X1')]
 
             mask_case1 = case1.index.tolist()
@@ -1446,7 +1458,7 @@ def validate_388():
 
             mask.sort()
             return {'Episodes': mask}
-    
+
     return error, _validate
 
 def validate_113():
@@ -1467,10 +1479,10 @@ def validate_113():
 
             validation_error_mask = ~mask & ~na_location
             validation_error_locations = ad1.index[validation_error_mask]
-        
+
 
             return {'AD1': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_134():
@@ -1506,10 +1518,10 @@ def validate_134():
 
             validation_error = ~na_oc3_data & ~na_ad1_data
             validation_error_locations = ad1.index[validation_error]
-        
+
 
             return {'OC3': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_119():
@@ -1527,12 +1539,12 @@ def validate_119():
             na_placed_ceased = adopt['DATE_PLACED_CEASED'].isna()
             na_reason_ceased = adopt['REASON_PLACED_CEASED'].isna()
 
-            validation_error = (na_placed_ceased & ~na_reason_ceased) | (~na_placed_ceased & na_reason_ceased) 
+            validation_error = (na_placed_ceased & ~na_reason_ceased) | (~na_placed_ceased & na_reason_ceased)
             validation_error_locations = adopt.index[validation_error]
-        
+
 
             return {'PlacedAdoption': validation_error_locations.tolist()}
-    
+
     return error, _validate
 
 def validate_142():
@@ -1557,12 +1569,12 @@ def validate_142():
 
             ended_episodes_df = df.loc[~df.index.isin(index_of_last_episodes),:]
 
-            ended_episodes_df = ended_episodes_df[(ended_episodes_df['DEC'].isna() | ended_episodes_df['REC'].isna()) & 
+            ended_episodes_df = ended_episodes_df[(ended_episodes_df['DEC'].isna() | ended_episodes_df['REC'].isna()) &
                                 ended_episodes_df['CHILD'].notna() & ended_episodes_df['DECOM'].notna()]
             mask = ended_episodes_df.index.tolist()
 
             return{'Episodes': mask}
-    
+
     return error, _validate
 
 def validate_148():
@@ -1571,7 +1583,7 @@ def validate_148():
         description='Date episode ceased and reason episode ceased must both be coded, or both left blank.',
         affected_fields=['DEC','REC'],
     )
-    
+
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
@@ -1641,10 +1653,10 @@ def validate_182():
 
             validation_error = mask1 & ~mask2
             validation_error_locations = oc2.index[validation_error]
-        
+
 
             return {'OC2': validation_error_locations.tolist()}
-        
+
     return error, _validate
 
 def validate_214():
@@ -1713,7 +1725,7 @@ def validate_628():
             hea = dfs['Header']
             epi = dfs['Episodes']
             oc3 = dfs['OC3']
-            
+
             hea = hea.reset_index()
             oc3_no_nulls = oc3[oc3[['IN_TOUCH','ACTIV','ACCOM']].notna().any(axis=1)]
 
@@ -1722,7 +1734,7 @@ def validate_628():
 
             cohort_to_check = hea_not_in_epi.merge(oc3_no_nulls,how='inner',on='CHILD')
             error_cohort = cohort_to_check[cohort_to_check['MOTHER'].notna()]
-            
+
             error_list = list(set(error_cohort['index'].to_list()))
             error_list.sort()
             return {'Header': error_list}
@@ -1886,7 +1898,7 @@ def validate_586():
         if 'Missing' not in dfs:
             return {}
         else:
-            df = dfs['Missing']   
+            df = dfs['Missing']
             df['DOB'] = pd.to_datetime(df['DOB'],format='%d/%m/%Y',errors='coerce')
             df['MIS_START'] = pd.to_datetime(df['MIS_START'],format='%d/%m/%Y',errors='coerce')
 
@@ -1905,10 +1917,10 @@ def validate_630():
     def _validate(dfs):
         if 'PrevPerm' not in dfs or 'Episodes' not in dfs:
             return {}
-        else:        
+        else:
             epi = dfs['Episodes']
             pre = dfs['PrevPerm']
-            
+
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
 
@@ -1947,7 +1959,7 @@ def validate_501():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']   
+            epi = dfs['Episodes']
             epi = epi.reset_index()
             epi['DECOM'] = pd.to_datetime(epi['DECOM'],format='%d/%m/%Y',errors='coerce')
             epi['DEC'] = pd.to_datetime(epi['DEC'],format='%d/%m/%Y',errors='coerce')
@@ -1984,7 +1996,7 @@ def validate_502():
             epi['DECOM'] = pd.to_datetime(epi['DECOM'],format='%d/%m/%Y',errors='coerce')
             epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'],format='%d/%m/%Y',errors='coerce')
 
-            epi_last_no_dec = epi_last[epi_last['DEC'].isna()]   
+            epi_last_no_dec = epi_last[epi_last['DEC'].isna()]
 
             epi_min_decoms_index = epi[['CHILD','DECOM']].groupby(['CHILD'])['DECOM'].idxmin()
 
@@ -1996,7 +2008,7 @@ def validate_502():
             error_list = error_cohort['index'].to_list()
             error_list = list(set(error_list))
             error_list.sort()
-            
+
             return {'Episodes': error_list}
 
     return error, _validate
@@ -2012,7 +2024,7 @@ def validate_567():
         if 'Missing' not in dfs:
             return {}
         else:
-            mis = dfs['Missing']   
+            mis = dfs['Missing']
             mis['MIS_START'] = pd.to_datetime(mis['MIS_START'],format='%d/%m/%Y',errors='coerce')
             mis['MIS_END'] = pd.to_datetime(mis['MIS_END'],format='%d/%m/%Y',errors='coerce')
 
@@ -2033,10 +2045,10 @@ def validate_304():
         if 'UASC' not in dfs:
             return {}
         else:
-            uasc = dfs['UASC']   
+            uasc = dfs['UASC']
             uasc['DOB'] = pd.to_datetime(uasc['DOB'],format='%d/%m/%Y',errors='coerce')
             uasc['DUC'] = pd.to_datetime(uasc['DUC'],format='%d/%m/%Y',errors='coerce')
-            
+
             mask = uasc['DUC'].notna() & (uasc['DUC'] > uasc['DOB'] + pd.offsets.DateOffset(years=18))
 
             return {'UASC': uasc.index[mask].to_list()}
@@ -2054,10 +2066,10 @@ def validate_333():
         if 'AD1' not in dfs:
             return {}
         else:
-            adt = dfs['AD1']   
+            adt = dfs['AD1']
             adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'],format='%d/%m/%Y',errors='coerce')
             adt['DATE_INT'] = pd.to_datetime(adt['DATE_INT'],format='%d/%m/%Y',errors='coerce')
-            
+
             #If <DATE_MATCH> provided, then <DATE_INT> must also be provided and be <= <DATE_MATCH>
             mask1 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].isna()
             mask2 = adt['DATE_MATCH'].notna() & adt['DATE_INT'].notna() & (adt['DATE_INT'] > adt['DATE_MATCH'])
@@ -2078,7 +2090,7 @@ def validate_1011():
         if 'OC3' not in dfs or 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']   
+            epi = dfs['Episodes']
             oc3 = dfs['OC3']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
 
@@ -2087,7 +2099,7 @@ def validate_1011():
             grouped_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
             max_decom_only = epi.loc[epi.index.isin(grouped_decom_by_child), :]
             E3_is_last = max_decom_only[max_decom_only['REC'] == 'E3']
-            
+
             oc3.reset_index(inplace=True)
             cohort_to_check = oc3.merge(E3_is_last,on='CHILD',how='inner')
             error_mask = cohort_to_check[['IN_TOUCH','ACTIV','ACCOM']].notna().any(axis=1)
@@ -2095,7 +2107,7 @@ def validate_1011():
             error_list = cohort_to_check['index'][error_mask].to_list()
             error_list = list(set(error_list))
             error_list.sort()
-            
+
             return {'OC3': error_list}
 
     return error, _validate
@@ -2111,11 +2123,11 @@ def validate_574():
         if 'Missing' not in dfs:
             return {}
         else:
-  
-            mis = dfs['Missing']  
+
+            mis = dfs['Missing']
             mis['MIS_START'] = pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
             mis['MIS_END'] = pd.to_datetime(mis['MIS_END'], format='%d/%m/%Y', errors='coerce')
-            
+
             mis.sort_values(['CHILD','MIS_START'],inplace=True)
 
             mis.reset_index(inplace=True)
@@ -2124,7 +2136,7 @@ def validate_574():
             mis['LAG_INDEX'] = mis['level_0'].shift(-1)
 
             lag_mis = mis.merge(mis,how='inner',left_on='level_0',right_on='LAG_INDEX',suffixes=['','_PREV'])
-            
+
             #We're only interested in cases where there is more than one row for a child.
             lag_mis = lag_mis[lag_mis['CHILD'] == lag_mis['CHILD_PREV']]
 
@@ -2136,7 +2148,7 @@ def validate_574():
             mask = mask1 | mask2
 
             error_list = lag_mis['index'][mask].to_list()
-            error_list.sort()            
+            error_list.sort()
             return {'Missing': error_list}
 
     return error, _validate
@@ -2152,8 +2164,8 @@ def validate_564():
         if 'Missing' not in dfs:
             return {}
         else:
-            mis = dfs['Missing']  
-            error_mask = mis['MISSING'].isin(['M','A','m','a']) & mis['MIS_START'].isna()        
+            mis = dfs['Missing']
+            error_mask = mis['MISSING'].isin(['M','A','m','a']) & mis['MIS_START'].isna()
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate
@@ -2169,8 +2181,8 @@ def validate_566():
         if 'Missing' not in dfs:
             return {}
         else:
-            mis = dfs['Missing']  
-            error_mask = mis['MISSING'].isna() & mis['MIS_END'].notna()        
+            mis = dfs['Missing']
+            error_mask = mis['MISSING'].isna() & mis['MIS_END'].notna()
             return {'Missing': mis.index[error_mask].to_list()}
 
     return error, _validate
@@ -2341,7 +2353,7 @@ def validate_353():
             epi = dfs['Episodes']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             min_decom_allowed = pd.to_datetime('14/10/1991', format='%d/%m/%Y', errors='coerce')
-            error_mask = epi['DECOM'] < min_decom_allowed     
+            error_mask = epi['DECOM'] < min_decom_allowed
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2357,8 +2369,8 @@ def validate_528():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR2')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2374,8 +2386,8 @@ def validate_527():
         if 'Episodes' not in dfs:
             return {}
         else:
-            epi = dfs['Episodes']  
-            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')        
+            epi = dfs['Episodes']
+            error_mask = (epi['PLACE'].isin(['P1','R2','R5'])) & (epi['PLACE_PROVIDER'] =='PR1')
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
@@ -2423,7 +2435,7 @@ def validate_562():
             return {}
         else:
             epi = dfs['Episodes']
-            epi_last = dfs['Episodes_last']  
+            epi_last = dfs['Episodes_last']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
@@ -2442,7 +2454,7 @@ def validate_562():
 
             error_list = error_cohort['index'].to_list()
             error_list = list(set(error_list))
-            error_list.sort()    
+            error_list.sort()
             return {'Episodes': error_list}
 
     return error, _validate

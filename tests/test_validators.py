@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_511():
+    fake_data = pd.DataFrame({
+      'NB_ADOPTR':['2','2',pd.NA,'2','2','1'],
+      'SEX_ADOPTR':['MM','FF','MM','M1','F1','F1'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_511()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1':[3,4]}
+
 def test_validate_440():
     fake_data = pd.DataFrame({
         'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],

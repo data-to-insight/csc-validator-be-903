@@ -1,6 +1,29 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_511():
+    error = ErrorDefinition(
+        code = '511',
+        description = 'If reporting that the number of person(s) adopting the looked after child is two adopters then the code should only be MM, FF or MF. MM = the adopting couple are both males; FF = the adopting couple are both females; MF = The adopting couple are male and female.',
+        affected_fields=['NB_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            mask = AD1['NB_ADOPTR'].eq('2') & AD1['SEX_ADOPTR'].isin(['M1','F1'])
+
+            validation_error_mask = mask
+            validation_error_locations = AD1.index[validation_error_mask]
+
+            return{'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_440():
     error = ErrorDefinition(
         code = '440',

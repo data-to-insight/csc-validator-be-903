@@ -11,7 +11,7 @@ def validate_452():
     def _validate(dfs):
         if 'Episodes' not in dfs:
           return {}
-        if 'Episodes_Last' not in dfs:
+        if 'Episodes_last' not in dfs:
           return {}
         else:
             episodes = dfs['Episodes']

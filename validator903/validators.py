@@ -40,6 +40,230 @@ def validate_386():
 
     return error, _validate
 
+def validate_363():
+    error = ErrorDefinition(
+        code = '363',
+        description = 'Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.',
+        affected_fields=['LS', 'DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        collection_end_str = dfs['metadata']['collection_end']
+
+        L2_eps = episodes[episodes['LS'] == 'L2'].copy()
+        L2_eps['original_index'] = L2_eps.index
+        L2_eps = L2_eps[L2_eps['DECOM'].notna()]
+
+        L2_eps.loc[L2_eps['DEC'].isna(), 'DEC'] = collection_end_str
+        L2_eps['DECOM'] = pd.to_datetime(L2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        L2_eps = L2_eps.dropna(subset=['DECOM'])
+        L2_eps['DEC'] = pd.to_datetime(L2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        L2_eps.sort_values(['CHILD', 'DECOM'])
+
+        L2_eps['index'] = pd.RangeIndex(0, len(L2_eps))
+        L2_eps['index+1'] = L2_eps['index'] + 1
+        L2_eps = L2_eps.merge(L2_eps, left_on='index', right_on='index+1',
+                              how='left', suffixes=[None, '_prev'])
+        L2_eps = L2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+        L2_eps['new_period'] = (
+            (L2_eps['DECOM'] > L2_eps['DEC_prev'])
+            | (L2_eps['CHILD'] != L2_eps['CHILD_prev'])
+        )
+
+        L2_eps['duration'] = (L2_eps['DEC'] - L2_eps['DECOM']).dt.days
+        L2_eps['period_id'] = L2_eps['new_period'].astype(int).cumsum()
+        L2_eps['period_duration'] = L2_eps.groupby('period_id')['duration'].transform(sum)
+
+        error_mask = L2_eps['period_duration'] > 7
+
+        return {'Episodes': L2_eps.loc[error_mask, 'original_index'].to_list()}
+
+    return error, _validate
+
+
+def validate_364():
+    error = ErrorDefinition(
+        code = '364',
+        description = 'Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits ' +
+                      'the time a child can be detained in custody in Local Authority (LA) accommodation.',
+        affected_fields=['LS','DECOM','DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        collection_end_str = dfs['metadata']['collection_end']
+
+        J2_eps = episodes[episodes['LS'] == 'J2'].copy()
+        J2_eps['original_index'] = J2_eps.index
+
+        J2_eps['DECOM'] = pd.to_datetime(J2_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        J2_eps = J2_eps[J2_eps['DECOM'].notna()]
+        J2_eps.loc[J2_eps['DEC'].isna(), 'DEC'] = collection_end_str
+        J2_eps['DEC'] = pd.to_datetime(J2_eps['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        J2_eps.sort_values(['CHILD', 'DECOM'])
+
+        J2_eps['index'] = pd.RangeIndex(0, len(J2_eps))
+        J2_eps['index_prev'] = J2_eps['index'] + 1
+        J2_eps = J2_eps.merge(J2_eps, left_on='index', right_on='index_prev',
+                              how='left', suffixes=[None, '_prev'])
+        J2_eps = J2_eps[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+        J2_eps['new_period'] = (
+            (J2_eps['DECOM'] > J2_eps['DEC_prev'])
+            | (J2_eps['CHILD'] != J2_eps['CHILD_prev'])
+        )
+
+        J2_eps['duration'] = (J2_eps['DEC'] - J2_eps['DECOM']).dt.days
+        J2_eps['period_id'] = J2_eps['new_period'].astype(int).cumsum()
+        J2_eps['period_duration'] = J2_eps.groupby('period_id')['duration'].transform(sum)
+
+        error_mask = J2_eps['period_duration'] > 21
+
+        return {'Episodes': J2_eps.loc[error_mask, 'original_index'].to_list()}
+
+    return error, _validate
+
+
+def validate_365():
+    error = ErrorDefinition(
+        code = '365',
+        description = 'Any individual short- term respite placement must not exceed 17 days.',
+        affected_fields=['LS', 'DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        episodes = dfs['Episodes']
+        collection_end_str = dfs['metadata']['collection_end']
+
+        episodes.loc[episodes['DEC'].isna(), 'DEC'] = collection_end_str
+        episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+        episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        over_17_days = episodes['DEC'] > episodes['DECOM'] + pd.DateOffset(days=17)
+        error_mask = (episodes['LS'] == 'V2') & over_17_days
+
+        return {'Episodes': episodes.index[error_mask].to_list()}
+
+    return error, _validate
+
+
+def validate_367():
+    error = ErrorDefinition(
+        code = '367',
+        description = 'The maximum amount of respite care allowable is 75 days in any 12-month period.',
+        affected_fields=['LS', 'DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+
+        episodes = dfs['Episodes']
+        V3_eps = episodes[episodes['LS'] == 'V3']
+
+        V3_eps = V3_eps.dropna(subset=['DECOM']) # missing DECOM should get fixed before looking for this error
+
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+        collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        V3_eps['DECOM_dt'] = pd.to_datetime(V3_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+        V3_eps['DEC_dt'] = pd.to_datetime(V3_eps['DEC'], format='%d/%m/%Y', errors='coerce')
+
+        # truncate episode start/end dates to collection start/end respectively
+        V3_eps.loc[V3_eps['DEC'].isna() | (V3_eps['DEC_dt'] > collection_end), 'DEC_dt'] = collection_end
+        V3_eps.loc[V3_eps['DECOM_dt'] < collection_start, 'DECOM_dt'] = collection_start
+
+        V3_eps['duration'] = (V3_eps['DEC_dt'] - V3_eps['DECOM_dt']).dt.days
+        V3_eps = V3_eps[V3_eps['duration'] > 0]
+
+        V3_eps['year_total_duration'] = V3_eps.groupby('CHILD')['duration'].transform(sum)
+
+        error_mask = V3_eps['year_total_duration'] > 75
+
+        return {'Episodes': V3_eps.index[error_mask].to_list()}
+
+    return error, _validate
+
+
+def validate_440():
+    error = ErrorDefinition(
+        code = '440',
+        description = 'Participation method indicates child was under 4 years old at the time of the review, but date of birth and review date indicates the child was 4 years old or over.',
+        affected_fields=['DOB','REVIEW','REVIEW_CODE'],
+    )
+
+    def _validate(dfs):
+        if 'Reviews' not in dfs:
+          return {}
+        else:
+            reviews = dfs['Reviews']
+            reviews['DOB'] = pd.to_datetime(reviews['DOB'],format='%d/%m/%Y',errors='coerce')
+            reviews['REVIEW'] = pd.to_datetime(reviews['REVIEW'],format='%d/%m/%Y',errors='coerce')
+
+            mask = reviews['REVIEW_CODE'].eq('PN0') & (reviews['REVIEW'] > reviews['DOB'] + pd.offsets.DateOffset(years=4))
+
+            validation_error_mask = mask
+            validation_error_locations = reviews.index[validation_error_mask]
+
+            return {'Reviews': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_445():
+    error = ErrorDefinition(
+        code = '445',
+        description = 'D1 is not a valid code for episodes starting after December 2005.',
+        affected_fields=['LS','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+          return {}
+        else:
+            episodes = dfs['Episodes']
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            max_decom_allowed = pd.to_datetime('31/12/2005', format='%d/%m/%Y', errors='coerce')
+
+            mask = episodes['LS'].eq('D1') & (episodes['DECOM'] > max_decom_allowed)
+            validation_error_mask = mask
+            validation_error_locations = episodes.index[validation_error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_446():
+    error = ErrorDefinition(
+        code = '446',
+        description = 'E1 is not a valid code for episodes starting before December 2005.',
+        affected_fields=['LS','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+          return {}
+        else:
+            episodes = dfs['Episodes']
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            min_decom_allowed = pd.to_datetime('01/12/2005', format='%d/%m/%Y', errors='coerce')
+
+            mask = episodes['LS'].eq('E1') & (episodes['DECOM'] < min_decom_allowed)
+            validation_error_mask = mask
+            validation_error_locations = episodes.index[validation_error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_208():
     error = ErrorDefinition(
         code = '208',
@@ -2355,6 +2579,122 @@ def validate_504():
             error_list = error_cohort['index'].unique().tolist()
             error_list.sort()
             return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_431():
+    error = ErrorDefinition(
+        code='431',
+        description='The reason for new episode is started to be looked after, but the previous episode ended on the same day.',
+        affected_fields=['RNE','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            epi.sort_values(['CHILD','DECOM'],inplace=True)
+
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+            epi['LAG_INDEX'] = epi['level_0'].shift(-1)
+
+            m_epi = epi.merge(epi,how='inner',left_on='level_0',right_on='LAG_INDEX',suffixes=['','_PREV'])
+
+            m_epi = m_epi[(m_epi['CHILD'] == m_epi['CHILD_PREV']) & (m_epi['RNE'] == 'S')]
+            error_mask = m_epi['DECOM'] <= m_epi['DEC_PREV']
+            error_list = m_epi['index'][error_mask].to_list()
+            error_list.sort()
+            return {'Episodes': error_list}
+
+    return error, _validate
+
+def validate_503_Generic(subval):
+    Gen_503_dict = {
+        "A": {
+            "Desc": "The reason for new episode in the first episode does not match open episode at end of last year.",
+            "Fields": 'RNE'},
+        "B": {"Desc": "The legal status in the first episode does not match open episode at end of last year.",
+              "Fields": 'LS'},
+        "C": {"Desc": "The category of need in the first episode does not match open episode at end of last year.",
+              "Fields": 'CIN'},
+        "D": {"Desc": "The placement type in the first episode does not match open episode at end of last year",
+              "Fields": 'PLACE'},
+        "E": {"Desc": "The placement provider in the first episode does not match open episode at end of last year.",
+              "Fields": 'PLACE_PROVIDER'},
+        "F": {"Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
+              "Fields": 'URN'},
+    }
+    error = ErrorDefinition(
+        code='503'+subval,
+        description=Gen_503_dict[subval]['Desc'],
+        affected_fields=[Gen_503_dict[subval]['Fields']],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_last = dfs['Episodes_last']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            epi.reset_index(inplace=True)
+
+            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+
+            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+
+            merged_co = min_decom.merge(max_last_decom, how='inner', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'])
+
+            this_one = Gen_503_dict[subval]['Fields']
+            pre_one = this_one + '_PRE'
+
+            err_mask = merged_co[this_one] != merged_co[pre_one]
+            err_list = merged_co['index'][err_mask].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+def validate_503A():
+    return validate_503_Generic('A')
+
+def validate_503B():
+    return validate_503_Generic('B')
+
+def validate_503C():
+    return validate_503_Generic('C')
+
+def validate_503D():
+    return validate_503_Generic('D')
+
+def validate_503E():
+    return validate_503_Generic('E')
+
+def validate_503F():
+    return validate_503_Generic('F')
+
+def validate_526():
+    error = ErrorDefinition(
+        code='526',
+        description='Child is missing a placement provider code for at least one episode.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            error_mask = ~epi['PLACE'].isin(['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']) & epi['PLACE_PROVIDER'].isna()
+            return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
 

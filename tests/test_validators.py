@@ -21,6 +21,167 @@ def test_validate_386():
 
     assert result == {'Episodes': [4]}
 
+
+def test_validate_363():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L2'},  # 0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'},  # 1
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L2'},  # 2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '03/01/2000', 'LS': 'L2'},  # 3 ^ Fa
+        {'CHILD': 2002, 'DECOM': '03/01/2000', 'DEC': '09/01/2001', 'LS': 'L2'},  # 4 v il!
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '07/01/2002', 'LS': 'L2'},  # 5
+        {'CHILD': 2002, 'DECOM': '10/01/2002', 'DEC': '11/01/2002', 'LS': 'X'},  # 6
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '17/01/2002', 'LS': 'L2'},  # 7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L2'},  # 8 (decom>dec)
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L2'},  # 9 Fail!
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L2'},  # 10 decom.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L2'},  # 11
+
+    ])
+
+    test_meta = {'collection_end': '01/04/2002'}
+
+    test_dfs = {
+        'Episodes': test_eps,
+        'metadata': test_meta
+    }
+
+    error_defn, error_func = validate_363()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 3, 4, 9]}
+
+def test_validate_364():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'J2'}, #0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'}, #1
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'J2'}, #2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '10/01/2000', 'LS': 'J2'}, #3 ^ Fa
+        {'CHILD': 2002, 'DECOM': '10/01/2000', 'DEC': '23/01/2001', 'LS': 'J2'}, #4 v il!
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '10/01/2002', 'LS': 'J2'}, #5
+        {'CHILD': 2002, 'DECOM': '10/01/2002', 'DEC': '11/01/2002', 'LS': 'X'}, #6
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '25/01/2002', 'LS': 'J2'}, #7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'J2'}, #8 DEC < DECOM
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'J2'},  # 9 Fail!
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'J2'},  # 10 decom.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'J2'},  # 11
+    ])
+
+    test_meta = {'collection_end': '01/04/2002'}
+
+    test_dfs = {
+        'Episodes': test_eps,
+        'metadata': test_meta
+    }
+
+    error_defn, error_func = validate_364()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 3, 4, 9]}
+
+
+def test_validate_365():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'V2'}, #0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'}, #1
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'V2'}, #2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '10/01/2000', 'LS': 'V2'}, #3
+        {'CHILD': 2002, 'DECOM': '10/01/2000', 'DEC': '23/01/2001', 'LS': 'X'}, #4
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '18/01/2002', 'LS': 'V2'}, #5 pass -17 days
+        {'CHILD': 2002, 'DECOM': '01/02/2002', 'DEC': '19/02/2002', 'LS': 'V2'}, #6 Fail! - 18 days
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '25/01/2002', 'LS': 'J2'}, #7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'J2'}, #8 pass - bigger problems: DEC < DECOM
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'V2'},  # 9 Fail! (DEC.isna --> collection_end )
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'V2'},  # 10 pass - bigger problems: no DECOM
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'V2'},  # 11 pass - bigger problems: no dates
+    ])
+
+    test_meta = {'collection_end': '01/04/2002'}
+
+    test_dfs = {
+        'Episodes': test_eps,
+        'metadata': test_meta
+    }
+
+    error_defn, error_func = validate_365()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [0, 2, 6, 9]}
+
+
+def test_validate_367():
+    test_eps = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/06/2000', 'LS': 'V3'}, #0 decom-->col_start
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '01/05/2000', 'LS': 'V3'}, #1 decom-->col_start
+        {'CHILD': 30003, 'DECOM': '01/04/2000', 'DEC': '01/05/2000', 'LS': 'V3'}, #2 ^ Fail!
+        {'CHILD': 30003, 'DECOM': '01/05/2000', 'DEC': '01/07/2000', 'LS': 'xx'}, #3 |
+        {'CHILD': 30003, 'DECOM': '01/06/2000', 'DEC': '01/07/2000', 'LS': 'V3'}, #4 | Fail!
+        {'CHILD': 30003, 'DECOM': '01/07/2000', 'DEC': '01/08/2000', 'LS': 'V3'}, #5 v Fail!
+        {'CHILD': 400004, 'DECOM': '01/08/2000', 'DEC': '01/07/2000', 'LS': 'V3'}, #6
+        {'CHILD': 400004, 'DECOM': '01/08/2000', 'DEC': '01/11/2000', 'LS': 'V3'}, #7 Fail!
+        {'CHILD': 555, 'DECOM': '01/07/2000', 'DEC': pd.NA, 'LS': 'V3'}, #8 Fail!
+    ])
+
+    test_meta = {'collection_start': '01/04/2000',
+                 'collection_end': '01/04/2001'}
+
+    test_dfs = {
+        'Episodes': test_eps,
+        'metadata': test_meta}
+
+    error_defn, error_func = validate_367()
+
+    result = error_func(test_dfs)
+
+    assert result == {'Episodes': [2, 4, 5, 7, 8]}
+
+
+def test_validate_440():
+    fake_data = pd.DataFrame({
+        'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],
+        'REVIEW':['31/12/2007','01/01/2007',pd.NA,'01/01/2013','01/01/2015','01/01/2014','01/01/2020'],
+        'REVIEW_CODE':['PN0','PN0','PN0','PN0','PN0','PN0','PN1'],
+    })
+
+    fake_dfs = {'Reviews': fake_data}
+    
+    error_defn, error_func = validate_440()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Reviews':[3,4]}
+
+def test_validate_445():
+    fake_data = pd.DataFrame({
+        'LS':['D1','D1','D1','D1','D1','C1'],
+        'DECOM':['01/11/2005','31/12/2005',pd.NA,'20/01/2006','01/10/2012','20/02/2005'],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_445()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[3,4]}
+
+def test_validate_446():
+    fake_data = pd.DataFrame({
+        'LS':['E1','E1','E1','E1','E1','C1'],
+        'DECOM':['01/12/2005','15/05/2012',pd.NA,'20/09/2004','01/10/2005','20/02/2005'],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+    
+    error_defn, error_func = validate_446()
+    
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[3,4]}
+
 def test_validate_208():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','103','104','105','106','108','109','110','111'],
@@ -1249,39 +1410,6 @@ def test_validate_566():
 
     assert error_func(fake_dfs) == {'Missing': [1, 5]}
 
-def test_validate_436():
-    fake_data = pd.DataFrame([
-    { 'CHILD' : '11', 'DECOM' : '03/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'R','PLACE_PROVIDER':'b'},  #0
-    { 'CHILD' : '11', 'DECOM' : '05/06/2020', 'RNE' : 'U', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'   },  #1
-    { 'CHILD' : '11', 'DECOM' : '06/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'   },  #2 Fails diff LS, same PLACE et. al
-    { 'CHILD' : '11', 'DECOM' : '08/06/2020', 'RNE' : 'U', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'TT','URN': 'a','PLACE_PROVIDER':'b'  },  #3
-    { 'CHILD' : '22', 'DECOM' : '05/06/2020', 'RNE' : 'U', 'LS' : 'P', 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #4
-    { 'CHILD' : '33', 'DECOM' : '06/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'E11', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #5
-    { 'CHILD' : '33', 'DECOM' : '07/06/2020', 'RNE' : 'B', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #6
-    { 'CHILD' : '44', 'DECOM' : '08/06/2020', 'RNE' : 'T', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #7
-    { 'CHILD' : '44', 'DECOM' : '09/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'E11', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #8 Fails same LS
-    { 'CHILD' : '44', 'DECOM' : '15/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #9 Fails same LS
-    { 'CHILD' : '55', 'DECOM' : '11/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },   #10
-    { 'CHILD' : '66', 'DECOM' : '12/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #11
-    { 'CHILD' : '66', 'DECOM' : '13/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #12
-    { 'CHILD' : '66', 'DECOM' : '14/06/2020', 'RNE' : 'B', 'LS' : 'X', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #13 Fails diff LS, same PLACE et. al
-    { 'CHILD' : '66', 'DECOM' : '15/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #14
-    { 'CHILD' : '77', 'DECOM' : '16/06/2020', 'RNE' : 'P', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #15
-    { 'CHILD' : '77', 'DECOM' : '17/06/2020', 'RNE' : 'B', 'LS' : 'P', 'PLACE': 'X1', 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  }, #16  Fails same PLACE et. al
-    { 'CHILD' : '77', 'DECOM' : '18/06/2020', 'RNE' : 'P', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #17
-    { 'CHILD' : '99', 'DECOM' : '31/06/2020', 'RNE' : 'P', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #18
-    { 'CHILD' : '12', 'DECOM' : pd.NA, 'RNE' : 'U', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #19
-    { 'CHILD' : pd.NA, 'DECOM' : pd.NA, 'RNE' : 'U', 'LS' : pd.NA, 'PLACE': pd.NA, 'PL_POST': 'X1','URN': 'a','PLACE_PROVIDER':'b'  },  #20
-    ])
-
-    fake_dfs = {'Episodes': fake_data}
-
-    error_defn, error_func = validate_436()
-
-    result = error_func(fake_dfs)
-
-    assert result == {'Episodes': [2,8,9,13,16]}
-
 def test_validate_570():
 
     fake_data = pd.DataFrame({
@@ -1351,24 +1479,62 @@ def test_validate_620():
 
     assert result == {'Header': [1,2]}
 
-def test_validate_225():
-
-    fake_data_epi = pd.DataFrame([
-    { 'CHILD' : '111', 'DECOM' : '01/06/2020' ,'RNE':'P', 'REC' : 'X1', 'PLACE' : 'U1', 'REASON_PLACE_CHANGE': pd.NA},  #0 Fails
-    { 'CHILD' : '111', 'DECOM' : '05/06/2020' ,'RNE':'P', 'REC' : 'E11', 'PLACE' : 'X1', 'REASON_PLACE_CHANGE': pd.NA}, #1
-    { 'CHILD' : '111', 'DECOM' : '06/06/2020' ,'RNE':'B', 'REC' : 'E3', 'PLACE' : 'X1', 'REASON_PLACE_CHANGE': pd.NA},  #2
-    { 'CHILD' : '123', 'DECOM' : '08/06/2020' ,'RNE':'P', 'REC' : 'X1', 'PLACE' : 'U1', 'REASON_PLACE_CHANGE': pd.NA},  #3 Fails
-    { 'CHILD' : '123', 'DECOM' : '10/06/2020' ,'RNE':'P', 'REC' : 'E3', 'PLACE' : 'X1', 'REASON_PLACE_CHANGE': pd.NA},  #4
-    { 'CHILD' : '333', 'DECOM' : '06/06/2020' ,'RNE':'T', 'REC' : 'X1', 'PLACE' : 'U1', 'REASON_PLACE_CHANGE': pd.NA},  #5
-    { 'CHILD' : '333', 'DECOM' : '07/06/2020' ,'RNE':'L', 'REC' : 'X1', 'PLACE' : 'X1', 'REASON_PLACE_CHANGE': 'CHANGE'},  #6 Passes as RPC not null
-    { 'CHILD' : '333', 'DECOM' : '08/06/2020' ,'RNE':'P', 'REC' : 'E3', 'PLACE' : 'U1', 'REASON_PLACE_CHANGE': pd.NA},  #7
-    { 'CHILD' : '444', 'DECOM' : '09/06/2020' ,'RNE':'U', 'REC' : 'X1', 'PLACE' : 'T1', 'REASON_PLACE_CHANGE': pd.NA},  #8
-    { 'CHILD' : '444', 'DECOM' : '15/06/2020' ,'RNE':'P', 'REC' : 'X1', 'PLACE' : 'X1', 'REASON_PLACE_CHANGE': pd.NA},  #9 Passes next place T3
-    { 'CHILD' : '444', 'DECOM' : '16/06/2020' ,'RNE':'P', 'REC' : 'E3', 'PLACE' : 'T3', 'REASON_PLACE_CHANGE': pd.NA},  #10
-    { 'CHILD' : '666', 'DECOM' : '17/06/2020' ,'RNE':'P', 'REC' : pd.NA, 'PLACE' : 'T4', 'REASON_PLACE_CHANGE': pd.NA}, #11
+def test_validate_431():
+    fake_data = pd.DataFrame([
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '01/06/2020', 'DEC' : '04/06/2020'  }, #0
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020'  }, #1
+    { 'CHILD' : '111', 'RNE': 'T', 'DECOM' : '06/06/2020', 'DEC' : '08/06/2020'  }, #2
+    { 'CHILD' : '111', 'RNE': 'S', 'DECOM' : '08/06/2020', 'DEC' : '05/06/2020'  }, #3  Fails
+    { 'CHILD' : '222', 'RNE': 'S', 'DECOM' : '05/06/2020', 'DEC' : '06/06/2020'  }, #4
+    { 'CHILD' : '333', 'RNE': 'S', 'DECOM' : '06/06/2020', 'DEC' : '07/06/2020'  }, #5
+    { 'CHILD' : '333', 'RNE': 'S', 'DECOM' : '10/06/2020', 'DEC' : pd.NA         }, #6
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '08/06/2020', 'DEC' : '09/06/2020'  }, #7
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '09/06/2020', 'DEC' : '10/06/2020'  }, #8  Fails
+    { 'CHILD' : '444', 'RNE': 'S', 'DECOM' : '15/06/2020', 'DEC' : pd.NA         }, #9
+    { 'CHILD' : '555', 'RNE': 'S', 'DECOM' : '11/06/2020', 'DEC' : '12/06/2020'  }, #10
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '12/06/2020', 'DEC' : '13/06/2020' }, #11
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '13/06/2020', 'DEC' : '14/06/2020' }, #12 Fails
+    { 'CHILD' : '6666', 'RNE': 'S', 'DECOM' : '14/06/2020', 'DEC' : '15/06/2020' }, #13 Fails
     ])
 
-    fake_dfs = {'Episodes' : fake_data_epi}
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_431()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 8, 12, 13]}
+
+
+def test_validate_225():
+    fake_data_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'RNE': 'P', 'REC': 'X1', 'PLACE': 'U1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 0 Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'RNE': 'P', 'REC': 'E11', 'PLACE': 'X1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'RNE': 'B', 'REC': 'E3', 'PLACE': 'X1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'RNE': 'P', 'REC': 'X1', 'PLACE': 'U1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 3 Fails
+        {'CHILD': '123', 'DECOM': '10/06/2020', 'RNE': 'P', 'REC': 'E3', 'PLACE': 'X1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 4
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'RNE': 'T', 'REC': 'X1', 'PLACE': 'U1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 5
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'RNE': 'L', 'REC': 'X1', 'PLACE': 'X1',
+         'REASON_PLACE_CHANGE': 'CHANGE'},  # 6 Passes as RPC not null
+        {'CHILD': '333', 'DECOM': '08/06/2020', 'RNE': 'P', 'REC': 'E3', 'PLACE': 'U1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 7
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'RNE': 'U', 'REC': 'X1', 'PLACE': 'T1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 8
+        {'CHILD': '444', 'DECOM': '15/06/2020', 'RNE': 'P', 'REC': 'X1', 'PLACE': 'X1',
+         'REASON_PLACE_CHANGE': pd.NA},  # 9 Passes next place T3
+        {'CHILD': '444', 'DECOM': '16/06/2020', 'RNE': 'P', 'REC': 'E3', 'PLACE': 'T3',
+         'REASON_PLACE_CHANGE': pd.NA},  # 10
+        {'CHILD': '666', 'DECOM': '17/06/2020', 'RNE': 'P', 'REC': pd.NA, 'PLACE': 'T4',
+         'REASON_PLACE_CHANGE': pd.NA},  # 11
+    ])
+
+    fake_dfs = {'Episodes': fake_data_epi}
 
     error_defn, error_func = validate_225()
 
@@ -1542,3 +1708,202 @@ def test_validate_504():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [1, 2, 6, 9]}
+
+def test_validate_503A():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'RNE': 'L'},  # 0  Min, Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'RNE': 'L'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'RNE': 'L'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'RNE': 'L'},  # 3  Min, Fails
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'RNE': 'L'},  # 4  Min
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'RNE': 'L'},  # 5  Min, Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'RNE': 'L'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'RNE': 'L'},  # 7  Min
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'RNE': 'S'}, #Max Different RNE
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'RNE': 'P'}, #Max Different RNE
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'RNE': 'L'}, #Max Same
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'RNE': 'R'}, #Max Different RNE
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'RNE': 'L'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'RNE': 'L'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'RNE': 'L'}, #Max different date so passes
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503A()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 3, 5]}
+
+def test_validate_503B():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'LS': 'L'},  # 0  Min
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'LS': 'L'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'LS': 'L'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'LS': 'L'},  # 3  Min, Fails
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'LS': 'L'},  # 4  Min
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'LS': 'L'},  # 5  Min, Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'LS': 'L'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'LS': 'L'},  # 7  Min
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'LS': 'L'}, #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'LS': 'E1'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'LS': 'L'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'LS': 'R'}, #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'LS': 'L'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'LS': 'L'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'LS': 'L'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503B()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 5]}
+
+def test_validate_503C():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'CIN': 'N1'},  # 0  Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'CIN': 'N2'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'CIN': 'N3'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'CIN': 'N4'},  # 3
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'CIN': 'N5'},  # 4  Fails
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'CIN': 'N6'},  # 5  Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'CIN': 'N7'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'CIN': 'N3'},  # 7
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'CIN': pd.NA}, #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'CIN': 'N4'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'CIN': 'L'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'CIN': pd.NA}, #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'CIN': 'L'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'CIN': 'L'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'CIN': 'L'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503C()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4, 5]}
+
+def test_validate_503D():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PLACE': 'T1'},  # 0  Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'PLACE': 'T2'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'PLACE': 'T3'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PLACE': 'T4'},  # 3  Fails
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PLACE': 'T5'},  # 4  Fails
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PLACE': 'T6'},  # 5  Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'PLACE': 'T7'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PLACE': 'T3'},  # 7
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PLACE': pd.NA}, #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PLACE': 'N4'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PLACE': 'L'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PLACE': pd.NA}, #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PLACE': 'L'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'PLACE': 'L'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'PLACE': 'L'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503D()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 3, 4, 5]}
+
+def test_validate_503E():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PLACE_PROVIDER': 'PR1'},  # 0  Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'PLACE_PROVIDER': 'PR2'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'PLACE_PROVIDER': 'PR3'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PLACE_PROVIDER': 'PR4'},  # 3
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PLACE_PROVIDER': 'PR5'},  # 4  Fails
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PLACE_PROVIDER': 'PR0'},  # 5  Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'PLACE_PROVIDER': 'PR1'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PLACE_PROVIDER': 'PR3'},  # 7
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PLACE_PROVIDER': pd.NA}, #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PLACE_PROVIDER': 'PR4'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PLACE_PROVIDER': 'PR2'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PLACE_PROVIDER': pd.NA}, #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PLACE_PROVIDER': 'PR1'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'PLACE_PROVIDER': 'PR0'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'PLACE_PROVIDER': 'PR2'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503E()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4, 5]}
+
+def test_validate_503F():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'URN': 'SC055123'},  # 0  Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'URN': 'SC055123'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'URN': 'SC055123'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'URN': 'SC055123'},  # 3
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'URN': 'SC055123'},  # 4
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'URN': 'SC055123'},  # 5  Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'URN': 'SC055123'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'URN': 'SC055123'},  # 7
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'URN': pd.NA},      #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'URN': 'SC055123'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'URN': 'SC055123'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'URN': pd.NA},      #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'URN': 'SC055123'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'URN': 'SC055123'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'URN': 'SC055123'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503F()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 5]}
+
+
+def test_validate_526():
+    fake_data = pd.DataFrame({
+        'PLACE':          ['E1',  'P0', 'T1',   'T3', 'P1',  'Z1',  'P0'],
+        'PLACE_PROVIDER': ['PR1', 'PR2', pd.NA, 'PR0', pd.NA, pd.NA, pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_526()
+
+    assert error_func(fake_dfs) == {'Episodes': [4, 6]}

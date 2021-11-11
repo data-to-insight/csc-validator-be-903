@@ -21,14 +21,20 @@ def validate_386():
             episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
             header['DOB18'] = header['DOB'] + pd.DateOffset(years=18)
 
-            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True).set_index('index')
+            episodes_merged = (
+                episodes
+                    .reset_index()
+                    .merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True)
+                    .set_index('index')
+                    .dropna(subset=['DOB18', 'DEC'])
+            )
 
             ceased_adopted = episodes_merged['REC'].str.upper().astype(str).isin(['E11','E12'])
             ceased_under_18 = episodes_merged['DOB18'] > episodes_merged['DEC']
 
-            error_mask = ceased_adopted &~ ceased_under_18
+            error_mask = ceased_adopted & ~ceased_under_18
 
-            error_locations = episodes.index[error_mask]
+            error_locations = episodes_merged.index[error_mask]
 
             return {'Episodes': error_locations.to_list()}
 

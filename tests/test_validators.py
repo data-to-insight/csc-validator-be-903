@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_516():
+    fake_data = pd.DataFrame({
+      'REC':['E45','E46',pd.NA,'E45','E46','E45','E45','E2','E2','E46','E46'],
+      'PLACE':['U1','U2','U3','Z1','S1','R1','U4','K2','K2','T1','U6'],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_516()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[3,4,5,9]}
+
 def test_validate_440():
     fake_data = pd.DataFrame({
         'DOB':['01/01/2004','01/01/2006','01/01/2007','01/01/2008','01/01/2010','01/01/2012','01/01/2014'],

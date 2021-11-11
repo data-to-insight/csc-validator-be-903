@@ -1,6 +1,31 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_452():
+    fake_data_previous = pd.DataFrame([
+        { 'CHILD': '101', 'RNE': 'S', 'DECOM': '01/04/2020', 'DEC': '04/06/2020', 'PL_POST': pd.NA, 'PL_LA': 'WAL'},
+        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': pd.NA, 'PL_POST': pd.NA, 'PL_LA': 'WAL'},
+        { 'CHILD': '103', 'RNE': 'P', 'DECOM': '03/03/2020', 'DEC': '10/07/2020', 'PL_POST': pd.NA, 'PL_LA': '816'},
+        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '10/07/2020', 'DEC': '09/12/2020', 'PL_POST': pd.NA, 'PL_LA': '816'},
+        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_POST': pd.NA, 'PL_LA': '356'},
+        ])
+
+    fake_data = pd.DataFrame([
+        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': '04/06/2021', 'PL_POST': pd.NA, 'PL_LA': 'WAL'},
+        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2021', 'DEC': pd.NA, 'PL_POST': pd.NA, 'PL_LA': 'WAL'},
+        { 'CHILD': '102', 'RNE': 'L', 'DECOM': '20/12/2020', 'DEC': '07/04/2021', 'PL_POST': pd.NA, 'PL_LA': '816'},#Ignore
+        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_POST': pd.NA, 'PL_LA': '816'},#Ignore
+        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_POST': pd.NA, 'PL_LA': 'CON'},#Fail
+        ])
+
+    fake_dfs = {'Episodes': fake_data, 'Episodes_last': fake_data_previous}
+
+    error_defn, error_func = validate_452()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[4]}
+
 def test_validate_386():
     fake_data = pd.DataFrame({
         'CHILD':['101','102','101','102','103','104'],
@@ -147,7 +172,7 @@ def test_validate_440():
     })
 
     fake_dfs = {'Reviews': fake_data}
-    
+
     error_defn, error_func = validate_440()
 
     result = error_func(fake_dfs)

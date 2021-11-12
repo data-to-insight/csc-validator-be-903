@@ -2981,8 +2981,8 @@ def validate_562():
 
 def validate_385():
     error = ErrorDefinition(
-          code = '385',
-          description = "Date episode ceased must be on or before the end of the current collection year.",
+          code='385',
+          description="Date episode ceased must be on or before the end of the current collection year.",
           affected_fields=['DEC'],
       )
     def _validate(dfs):
@@ -2990,12 +2990,12 @@ def validate_385():
           return {}
         else:
             epi = dfs['Episodes']
-            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
             epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
             error_mask = epi['DEC'] > collection_end
             error_list = epi.index[error_mask].to_list()
             return {'Episodes': error_list}
-
+      
     return error, _validate
 
 

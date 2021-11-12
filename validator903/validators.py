@@ -34,6 +34,40 @@ def validate_389():
 
     return error, _validate
 
+def validate_387():
+    error = ErrorDefinition(
+        code = '387',
+        description = 'Reason episode ceased is child moved into independent living arrangement, but the child is aged under 14.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            header['DOB14'] = header['DOB'] + pd.DateOffset(years=14)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True).set_index('index')
+
+            ceased_indep = episodes_merged['REC'].str.upper().astype(str).isin(['E5','E6'])
+            ceased_over_14 = episodes_merged['DOB14'] <= episodes_merged['DEC']
+            dec_present = episodes_merged['DEC'].notna()
+
+            error_mask = ceased_indep & ~ceased_over_14 & dec_present
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_452():
     error = ErrorDefinition(
         code = '452',

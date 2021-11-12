@@ -2913,6 +2913,10 @@ def validate_503_Generic(subval):
               "Fields": 'PLACE_PROVIDER'},
         "F": {"Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
               "Fields": 'URN'},
+        "G": {"Desc": "The distance in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_DISTANCE'},
+        "H": {"Desc": "The placement LA in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_LA'},
     }
     error = ErrorDefinition(
         code='503'+subval,
@@ -2942,7 +2946,11 @@ def validate_503_Generic(subval):
             this_one = Gen_503_dict[subval]['Fields']
             pre_one = this_one + '_PRE'
 
-            err_mask = merged_co[this_one] != merged_co[pre_one]
+            if subval == 'G':
+                err_mask = abs(merged_co[this_one].astype(float) - merged_co[pre_one].astype(float)) >= 0.2
+            else:
+                err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
+            
             err_list = merged_co['index'][err_mask].unique().tolist()
             err_list.sort()
             return {'Episodes': err_list}
@@ -2966,6 +2974,12 @@ def validate_503E():
 
 def validate_503F():
     return validate_503_Generic('F')
+
+def validate_503G():
+    return validate_503_Generic('G')
+
+def validate_503H():
+    return validate_503_Generic('H')
 
 def validate_526():
     error = ErrorDefinition(

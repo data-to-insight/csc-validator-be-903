@@ -1,7 +1,7 @@
 from validator903.validators import *
 import pandas as pd
 
-def test_validate_452_453():
+def test_validate_452_453_503G_503H():
     fake_data_previous = pd.DataFrame([
         { 'CHILD': '101', 'RNE': 'S', 'DECOM': '01/04/2020', 'DEC': '04/06/2020', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
         { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
@@ -19,7 +19,7 @@ def test_validate_452_453():
         { 'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore both
         { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 999.9, 'PL_LA': 'CON'},#Fail both
         { 'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': 165, 'PL_LA': 112},
-        { 'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': pd.NA, 'PL_LA': pd.NA},#Fail 452 only
+        { 'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': pd.NA, 'PL_LA': pd.NA},#Fail 452 and 503G only
         ])
 
     fake_dfs = {'Episodes': fake_data, 'Episodes_last': fake_data_previous}
@@ -30,7 +30,19 @@ def test_validate_452_453():
 
     assert result == {'Episodes':[4,6]}
 
+    error_defn, error_func = validate_503H()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[4,6]}
+
     error_defn, error_func = validate_453()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[4]}
+
+    error_defn, error_func = validate_503G()
 
     result = error_func(fake_dfs)
 

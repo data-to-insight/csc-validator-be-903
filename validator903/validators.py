@@ -2124,7 +2124,7 @@ def validate_153():
 
         validation_error_locations = oc3.index[validation_error]
 
-        return {'OC3': validation_error_locations.tolist()}
+        return {'OC3': validation_error_locations.to_list()}
 
     return error, _validate
 
@@ -2141,15 +2141,11 @@ def validate_166():
         else:
             review = dfs['Reviews']
 
-            mask = pd.to_datetime(review['REVIEW'], format='%d/%m/%Y', errors='coerce').notna()
+            error_mask = pd.to_datetime(review['REVIEW'], format='%d/%m/%Y', errors='coerce').isna()
 
-            na_location = review['REVIEW'].isna()
+            validation_error_locations = review.index[error_mask]
 
-            validation_error_mask = (~mask & ~na_location) | na_location
-            validation_error_locations = review.index[validation_error_mask]
-
-            return {'Reviews': validation_error_locations.tolist()}
-
+            return {'Reviews': validation_error_locations.to_list()}
     return error, _validate
 
 def validate_174():
@@ -2164,16 +2160,15 @@ def validate_174():
             return {}
         else:
             header = dfs['Header']
-            code_list=['1']
 
-            mask = header['SEX'].astype(str).isin(code_list)
-            na_location = header['MC_DOB'].isna()
+            child_is_male = header['SEX'].astype(str) == '1'
+            mc_dob_recorded = header['MC_DOB'].notna()
 
-            validation_error_mask = mask & ~na_location
-            validation_error_locations = header.index[validation_error_mask]
+            error_mask = child_is_male & mc_dob_recorded
 
-            return {'Header': validation_error_locations.tolist()}
+            validation_error_locations = header.index[error_mask]
 
+            return {'Header': validation_error_locations.to_list()}
     return error, _validate
 
 def validate_180():
@@ -2189,13 +2184,13 @@ def validate_180():
         else:
             oc2 = dfs['OC2']
 
-            mask = oc2['SDQ_SCORE'].astype(str).between('0','40')
+            oc2['SDQ_SCORE'] = pd.to_numeric(oc2['SDQ_SCORE'], errors='coerce')
 
-            validation_error_mask = ~mask
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = ~oc2['SDQ_SCORE'].isin(range(41))
 
-            return {'OC2': validation_error_locations.tolist()}
+            validation_error_locations = oc2.index[error_mask]
 
+            return {'OC2': validation_error_locations.to_list()}
     return error, _validate
 
 def validate_181():
@@ -2210,7 +2205,7 @@ def validate_181():
             return {}
         else:
             oc2 = dfs['OC2']
-            code_list = ['0','1']
+            code_list = ['0', '1']
 
             mask = (
               (oc2['CONVICTED'].astype(str).isin(code_list) | oc2['CONVICTED'].isna()) &
@@ -2243,14 +2238,13 @@ def validate_192():
         else:
             oc2 = dfs['OC2']
 
-            misuse_na = oc2['SUBSTANCE_MISUSE'].isna()
-            inter_na = oc2['INTERVENTION_RECEIVED'].isna()
+            misuse = oc2['SUBSTANCE_MISUSE'].astype(str) == '1'
+            intervention_blank = oc2['INTERVENTION_RECEIVED'].isna()
 
-            validation_error_mask = ~misuse_na & inter_na
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = misuse & intervention_blank
+            validation_error_locations = oc2.index[error_mask]
 
-            return {'OC2': validation_error_locations.tolist()}
-
+            return {'OC2': validation_error_locations.to_list()}
     return error, _validate
 
 def validate_193():
@@ -2266,11 +2260,11 @@ def validate_193():
         else:
             oc2 = dfs['OC2']
 
-            misuse_na = oc2['SUBSTANCE_MISUSE'].isna()
-            inter_na = oc2['INTERVENTION_RECEIVED'].isna() & oc2['INTERVENTION_OFFERED'].isna()
+            no_substance_misuse = oc2['SUBSTANCE_MISUSE'].isna() | (oc2['SUBSTANCE_MISUSE'].astype(str) == '0')
+            intervention_not_blank = oc2['INTERVENTION_RECEIVED'].notna() | oc2['INTERVENTION_OFFERED'].notna()
 
-            validation_error_mask = misuse_na & ~inter_na
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = no_substance_misuse & intervention_not_blank
+            validation_error_locations = oc2.index[error_mask]
 
             return {'OC2': validation_error_locations.tolist()}
 
@@ -2289,15 +2283,16 @@ def validate_197():
         else:
             oc2 = dfs['OC2']
 
-            score_na = oc2['SDQ_SCORE'].isna()
-            reason_na = oc2['SDQ_REASON'].isna()
+            sdq_filled_in = oc2['SDQ_SCORE'].notna()
+            reason_filled_in = oc2['SDQ_REASON'].notna()
 
-            validation_error_mask = ~score_na & ~reason_na
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = sdq_filled_in & reason_filled_in
+            validation_error_locations = oc2.index[error_mask]
 
             return {'OC2': validation_error_locations.tolist()}
 
     return error, _validate
+
 def validate_567():
     error = ErrorDefinition(
         code='567',

@@ -1969,7 +1969,8 @@ def test_validate_562():
     assert result == {'Episodes': [2, 5]}
 
 def test_validate_354():
-    fake_data = pd.DataFrame({'DECOM': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/2022'],})
+    fake_data = pd.DataFrame({'DECOM': ['01/01/2021', '19/02/2010', '38/04/2019', '01/01/2022',
+                                        '01/04/2021', '01/05/2021', pd.NA, '3rd Dec 1873'], })
 
     metadata = {'collection_end':'01/04/2021'}
 
@@ -1979,7 +1980,7 @@ def test_validate_354():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [3]}
+    assert result == {'Episodes': [3, 5]}
 
 def test_validate_385():
     fake_data = pd.DataFrame({

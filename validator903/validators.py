@@ -1,6 +1,39 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_389():
+    error = ErrorDefinition(
+        code = '389',
+        description = 'Reason episode ceased is that child transferred to care of adult social care services, but child is aged under 16.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'],format='%d/%m/%Y',errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+            header['DOB16'] = header['DOB'] + pd.DateOffset(years=16)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'), indicator=True).set_index('index')
+
+            ceased_asc = episodes_merged['REC'].str.upper().astype(str).isin(['E7'])
+            ceased_over_16 = episodes_merged['DOB16'] <= episodes_merged['DEC']
+
+            error_mask = ceased_asc & ~ceased_over_16
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_387():
     error = ErrorDefinition(
         code = '387',

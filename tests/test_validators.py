@@ -1,7 +1,6 @@
 from validator903.validators import *
 import pandas as pd
 
-
 def test_validate_523():
     fake_placed_adoption = pd.DataFrame({
         "DATE_PLACED": ['08/03/2020', '22/06/2020', '13/10/2022', '24/10/2021',
@@ -22,6 +21,29 @@ def test_validate_523():
     result = error_func(fake_dfs)
     assert result == {"AD1": [1, 2, 3], "PlacedAdoption": [1, 2, 3]}
 
+def test_validate_3001():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','101','102','103','102'],
+        'ACCOM':['Z1','Z2','T1',pd.NA,'Z1','Z3'],
+    })
+
+    fake_data_child = pd.DataFrame({
+        'CHILD':['101','102','103'],
+        'DOB':['16/03/2004','23/09/2003','31/12/2006'],
+    })
+
+    metadata = {
+        'collection_start': '01/04/2020',
+        'collection_end': '31/03/2021'
+    }
+
+    fake_dfs = {'OC3': fake_data, 'Header': fake_data_child, 'metadata': metadata}
+
+    error_defn, error_func = validate_3001()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3': [0,1]}
 
 def test_validate_389():
     fake_data = pd.DataFrame({

@@ -3,12 +3,13 @@ import pandas as pd
 
 def test_validate_557():
     test_episodes = pd.DataFrame([
-        {'CHILD': '11', 'PL': 'A3', 'LS': 'x', 'REC': 'x'}, # 0: Fail! (missing vals in PA)
-        {'CHILD': '202', 'PL': 'x', 'LS': 'D1', 'REC': 'x'}, # 1: PA filled in --ok
-        {'CHILD': '3003', 'PL': 'A3', 'LS': 'D1', 'REC': 'E12'}, # 2: E12 --ok
-        {'CHILD': '40004', 'PL': 'x', 'LS': 'E1', 'REC': 'E12'}, # 3: E12 --ok
-        {'CHILD': '5005', 'PL': 'A3', 'LS': 'x', 'REC': ''}, # 4: Fail! (not in PA)
-        {'CHILD': '606', 'PL': 'A3', 'LS': 'x', 'REC': ''},  # 5: Fail! (missing vals in PA)
+        {'CHILD': '11', 'PLACE': 'A3', 'LS': 'x', 'REC': 'x'}, # 0: Fail! (missing vals in PA)
+        {'CHILD': '202', 'PLACE': 'x', 'LS': 'D1', 'REC': 'x'}, # 1: PA filled in --ok
+        {'CHILD': '3003', 'PLACE': 'A4', 'LS': 'D1', 'REC': 'E12'}, # 2: E12 --ok
+        {'CHILD': '40004', 'PLACE': 'x', 'LS': 'E1', 'REC': 'E12'}, # 3: E12 --ok
+        {'CHILD': '5005', 'PLACE': 'A5', 'LS': 'x', 'REC': 'x'}, # 4: Fail! (not in PA)
+        {'CHILD': '606', 'PLACE': 'A6', 'LS': 'x', 'REC': 'x'},  # 5: Fail! (missing vals in PA)
+        {'CHILD': '77', 'PLACE': 'x', 'LS': 'x', 'REC': 'x'}, #6 --ok
     ])
 
     test_placed = pd.DataFrame([

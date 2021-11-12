@@ -9,7 +9,7 @@ def validate_557():
                       "but was not adopted and information on the decision that they should no longer be placed for " +
                       "adoption items has not been completed.",
           affected_fields=['DATE_PLACED_CEASED', 'REASON_PLACED_CEASED', # PlacedAdoption
-                           'PL', 'LS', 'REC'], # Episodes
+                           'PLACE', 'LS', 'REC'], # Episodes
       )
 
     def _validate(dfs):
@@ -24,7 +24,7 @@ def validate_557():
             eps = eps.reset_index()
             placed = placed.reset_index()
 
-            child_placed = eps['PL'].isin(['A3', 'A4', 'A5', 'A6'])
+            child_placed = eps['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])
             order_granted = eps['LS'].isin(['D1', 'E1'])
             not_adopted = ~eps['REC'].isin(['E11', 'E12']) & eps['REC'].notna()
 

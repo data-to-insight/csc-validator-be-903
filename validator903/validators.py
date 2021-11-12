@@ -1,6 +1,34 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_207():
+    error = ErrorDefinition(
+        code = '207',
+        description = 'Mother status for the current year disagrees with the mother status already recorded for this child.',
+        affected_fields=['MOTHER'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = header_merged['_merge'] == 'both'
+            mother_is_different = header_merged['MOTHER'].astype(str) != header_merged['MOTHER_last'].astype(str)
+            mother_was_true = header_merged['MOTHER_last'].astype(str) == '1'
+
+            error_mask = in_both_years & mother_is_different & mother_was_true
+
+            error_locations = header.index[error_mask]
+
+            return {'Header': error_locations.to_list()}
+
+    return error, _validate
+
 
 def validate_523():
     error = ErrorDefinition(
@@ -2995,7 +3023,7 @@ def validate_385():
             error_mask = epi['DEC'] > collection_end
             error_list = epi.index[error_mask].to_list()
             return {'Episodes': error_list}
-      
+
     return error, _validate
 
 

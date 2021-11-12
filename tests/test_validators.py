@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_207():
+    fake_data = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','106','108','109','110'],
+        'MOTHER':['1',0,'1',pd.NA,pd.NA,'1',pd.NA,'0','2'],
+    })
+
+    fake_data_prev = pd.DataFrame({
+        'CHILD':['101','102','103','104','105','107','108','109','110'],
+        'MOTHER':['1',1,'0',1,pd.NA,'1','0',pd.NA,'1'],
+    })
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
+
+    error_defn, error_func = validate_207()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1,3,8]}
+
 def test_validate_523():
     fake_placed_adoption = pd.DataFrame({
         "DATE_PLACED": ['08/03/2020', '22/06/2020', '13/10/2022', '24/10/2021',

@@ -5,7 +5,7 @@ def validate_453():
     error = ErrorDefinition(
         code = '453',
         description = 'Contradiction between placement distance in the last episode of the previous year and in the first episode of the current year.',
-        affected_fields=['PL_POST'],
+        affected_fields=['PL_DISTANCE'],
     )
 
     def _validate(dfs):
@@ -47,7 +47,7 @@ def validate_452():
     error = ErrorDefinition(
         code = '452',
         description = 'Contradiction between local authority of placement code in the last episode of the previous year and in the first episode of the current year.',
-        affected_fields=['PL_POST'],
+        affected_fields=['PL_LA'],
     )
 
     def _validate(dfs):

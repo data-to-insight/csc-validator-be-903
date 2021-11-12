@@ -3007,6 +3007,26 @@ def validate_562():
 
     return error, _validate
 
+def validate_354():
+    error = ErrorDefinition(
+          code = '354',
+          description = "Date episode ceased must be on or before the end of the current collection year.",
+          affected_fields=['DECOM'],
+      )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+          return {}
+        else:
+            epi = dfs['Episodes']
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            error_mask = epi['DECOM'] > collection_end
+            error_list = epi.index[error_mask].to_list()
+            return {'Episodes': error_list}
+
+    return error, _validate
+
+
 def validate_385():
     error = ErrorDefinition(
           code='385',

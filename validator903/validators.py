@@ -1,6 +1,55 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+
+def validate_557():
+    error = ErrorDefinition(
+          code='557',
+          description="Child for whom the decision was made that they should be placed for adoption has left care " +
+                      "but was not adopted and information on the decision that they should no longer be placed for " +
+                      "adoption items has not been completed.",
+          affected_fields=['DATE_PLACED_CEASED', 'REASON_PLACED_CEASED', # PlacedAdoption
+                           'PL', 'LS', 'REC'], # Episodes
+      )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            eps = dfs['Episodes']
+            placed = dfs['PlacedAdoption']
+
+            eps = eps.reset_index()
+            placed = placed.reset_index()
+
+            child_placed = eps['PL'].isin(['A3', 'A4', 'A5', 'A6'])
+            order_granted = eps['LS'].isin(['D1', 'E1'])
+            not_adopted = ~eps['REC'].isin(['E11', 'E12']) & eps['REC'].notna()
+
+            placed['ceased_incomplete'] = (
+                    placed['DATE_PLACED_CEASED'].isna() | placed['REASON_PLACED_CEASED'].isna()
+            )
+
+            eps = eps[(child_placed | order_granted) & not_adopted]
+
+            eps = eps.merge(placed, on='CHILD', how='left', suffixes=['_EP', '_PA'], indicator=True)
+
+            eps = eps[(eps['_merge'] == 'left_only') | eps['ceased_incomplete']]
+
+            EP_errors = eps['index_EP']
+            PA_errors = eps['index_PA'].dropna()
+
+            return {
+                'Episodes': EP_errors.to_list(),
+                'PlacedAdoption': PA_errors.to_list(),
+            }
+
+    return error, _validate
+
+
+
 def validate_207():
     error = ErrorDefinition(
         code = '207',

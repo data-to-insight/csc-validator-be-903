@@ -15,9 +15,9 @@ def test_validate_452_453_503G_503H():
     fake_data = pd.DataFrame([
         { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': '04/06/2021', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
         { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2021', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
-        { 'CHILD': '102', 'RNE': 'L', 'DECOM': '20/12/2020', 'DEC': '07/04/2021', 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore both
-        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore both
-        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 999.9, 'PL_LA': 'CON'},#Fail both
+        { 'CHILD': '102', 'RNE': 'L', 'DECOM': '20/12/2020', 'DEC': '07/04/2021', 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore all
+        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore all
+        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 999.9, 'PL_LA': 'CON'},#Fail all
         { 'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': 165, 'PL_LA': 112},
         { 'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': pd.NA, 'PL_LA': pd.NA},#Fail 452 and 503G only
         ])
@@ -2058,6 +2058,37 @@ def test_validate_503F():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 5]}
+
+def test_validate_503J():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PL_LOCATION': 'IN'},  # 0  Fails
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'PL_LOCATION': 'IN'},  # 1
+        {'CHILD': '111', 'DECOM': '06/06/2020', 'PL_LOCATION': 'IN'},  # 2
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PL_LOCATION': 'OUT'},  # 3
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PL_LOCATION': 'IN'},  # 4  Fails
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PL_LOCATION': 'OUT'},  # 5  Fails
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'PL_LOCATION': 'IN'},  # 6
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PL_LOCATION': 'OUT'},  # 7
+
+    ])
+
+    fake_epi_last = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'PL_LOCATION': pd.NA}, #Max
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'PL_LOCATION': 'OUT'}, #Max
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'PL_LOCATION': 'OUT'}, #Max
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'PL_LOCATION': pd.NA}, #Max
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'PL_LOCATION': 'IN'},
+        {'CHILD': '444', 'DECOM': '09/06/2020', 'PL_LOCATION': 'OUT'},
+        {'CHILD': '444', 'DECOM': '19/06/2020', 'PL_LOCATION': 'OUT'}, #Max
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Episodes_last': fake_epi_last}
+
+    error_defn, error_func = validate_503J()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 4, 5]}
 
 def test_validate_370():
     fake_epi = pd.DataFrame({

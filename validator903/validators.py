@@ -2917,6 +2917,8 @@ def validate_503_Generic(subval):
               "Fields": 'PL_DISTANCE'},
         "H": {"Desc": "The placement LA in first episode does not match open episode at end of last year.",
               "Fields": 'PL_LA'},
+        "J": {"Desc": "The placement location in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_LOCATION'},
     }
     error = ErrorDefinition(
         code='503'+subval,
@@ -2980,6 +2982,9 @@ def validate_503G():
 
 def validate_503H():
     return validate_503_Generic('H')
+
+def validate_503J():
+    return validate_503_Generic('J')
 
 def validate_526():
     error = ErrorDefinition(

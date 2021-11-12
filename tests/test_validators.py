@@ -1344,7 +1344,7 @@ def test_validate_174():
 
 def test_validate_180():
     fake_data = pd.DataFrame({
-        'SDQ_SCORE':    ['10', 41, '58', 72, '0', 40],
+        'SDQ_SCORE':    ['10', 41, '58', 72, '0', 40, 39.5, 20.0],
     })
 
     fake_dfs = {'OC2': fake_data}
@@ -1353,7 +1353,7 @@ def test_validate_180():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC2': [1, 2, 3]}
+    assert result == {'OC2': [1, 2, 3, 6]}
 
 def test_validate_181():
     fake_data = pd.DataFrame({
@@ -1391,9 +1391,9 @@ def test_validate_192():
 
 def test_validate_193():
     fake_data = pd.DataFrame({
-        'SUBSTANCE_MISUSE':      [ 0 , pd.NA,   0  ,  '1' , pd.NA, pd.NA],
-        'INTERVENTION_RECEIVED': [ 0 , pd.NA,  '1' ,   1  ,  '1' , pd.NA],
-        'INTERVENTION_OFFERED':  [ 0 , pd.NA,  '1' ,   1  , pd.NA,   0  ],
+        'SUBSTANCE_MISUSE':      [ 0 , pd.NA,   0  ,  '1' , pd.NA, pd.NA, 0],
+        'INTERVENTION_RECEIVED': [ 0 , pd.NA,  '1' ,   1  ,  '1' , pd.NA, pd.NA],
+        'INTERVENTION_OFFERED':  [ 0 , pd.NA,  '1' ,   1  , pd.NA,    0,  pd.NA],
     })
 
     fake_dfs = {'OC2': fake_data}
@@ -1402,7 +1402,7 @@ def test_validate_193():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC2': [4, 5]}
+    assert result == {'OC2': [0, 2, 4, 5]}
 
 def test_validate_197():
     fake_data = pd.DataFrame({

@@ -1,6 +1,40 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_551():
+    error = ErrorDefinition(
+        code='551',
+        description='Child has been placed for adoption but there is no date of the decision that the child should be placed for adoption.',
+        affected_fields=['DATE_PLACED', 'PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            placedAdoptions = dfs['PlacedAdoption']
+            
+            placedAdoptions['DATE_PLACED'] = pd.to_datetime(placedAdoptions['DATE_PLACED'], format='%d/%m/%Y',errors='coerce')
+
+            episodes = episodes.reset_index()
+
+            place_codes = ['A3','A4','A5','A6']
+
+            placeEpisodes = episodes[episodes['PLACE'].isin (place_codes)]
+
+            merged = placeEpisodes.reset_index().merge(placedAdoptions, how='left', on='CHILD', ).set_index('index')
+
+            episodes_with_errors = merged[merged['DATE_PLACED'] == 'NaN']
+
+            error_mask = episodes.index.isin(episodes_with_errors.index)
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_440():
     error = ErrorDefinition(
         code = '440',

@@ -1,6 +1,24 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_552():
+  fake_placed_adoption = pd.DataFrame({
+    'DATE_PLACED':['08/03/2020','22/06/2020','13/10/2022','24/10/2021', pd.NA, pd.NA, 'baddate/2021'],
+    "CHILD":['104','105','107','108','109','110','111'],
+  })
+  fake_episodes = pd.DataFrame({
+    'DECOM':['08/03/2020','22/07/2020','13/10/2021','22/06/2020','26/05/2018', pd.NA,'01/02/2013'],
+    "CHILD":['104','105','107','108','109','110','111'],
+    "PLACE":['A3', 'A4', 'A6', 'D5', 'A3','A5','A4']
+  })
+
+  fake_dfs = {"PlacedAdoption":fake_placed_adoption, "Episodes":fake_episodes}
+  # get the error function
+  error_defn, error_func = validate_552()
+  result = error_func(fake_dfs)
+  # check that result of function on provided data is as expected
+  assert result == {"PlacedAdoption":[2], "Episodes":[2]}
+
 def test_validate_551():
     fake_data_episodes = pd.DataFrame({
         'CHILD': ['0','A','B','C','D','E','F','G','H','I'],
@@ -444,7 +462,7 @@ def test_validate_530():
 
 
 def test_validate_571():
-    
+
     fake_data = pd.DataFrame({
         'MIS_START': ['08/03/2020', '22/06/2020', pd.NA, '13/10/2021', '10/24/2021'],
         'MIS_END': ['08/03/2020', pd.NA, '22/06/2020', '13/10/21', pd.NA],

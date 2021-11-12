@@ -3,6 +3,7 @@ import pytest
 from validator903.config import configured_errors, column_names
 import pandas as pd
 from validator903.types import ErrorDefinition
+from validator903.datastore import copy_datastore
 
 def test_all_configured_errors():
     codes = []
@@ -27,18 +28,21 @@ def test_all_configured_errors():
 def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_input_data):
     dummy_data = eval(data_choice)
     for error_code, error_func in configured_errors:
-        result = error_func(dummy_data)
+        dummy_data_copy = copy_datastore(dummy_data)
+
+        result = error_func(dummy_data_copy)
 
         for table_name, error_list in result.items():
-            assert table_name in dummy_data, f'Returned error table name {table_name} not recognized!'
+            assert table_name in dummy_data_copy, f'Returned error table name {table_name} not recognized!'
             assert isinstance(error_list, list), f'Returned list of error locations {error_list} is not a list (its a {type(error_list)})!'
             for error_location in error_list:
-                assert error_location in dummy_data[table_name].index, f'Location {error_location} not found in {table_name} index - check returned locations!'
+                assert error_location in dummy_data_copy[table_name].index, f'Location {error_location} not found in {table_name} index - check returned locations!'
 
 
 def test_has_correct_table_names(dummy_input_data):
     for error_code, error_func in configured_errors:
-        result = error_func(dummy_input_data)
+        dummy_input_data_copy = copy_datastore(dummy_input_data)
+        result = error_func(dummy_input_data_copy)
         assert len(result) > 0, f'Validator for {error_code} does not appear to operate on any configured table names - check spelling!'
-        assert all(r in dummy_input_data for r in result), f'Validator for {error_code} returns a wrong table name!'
+        assert all(r in dummy_input_data_copy for r in result), f'Validator for {error_code} returns a wrong table name!'
 

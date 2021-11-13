@@ -1,6 +1,52 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_453():
+    error = ErrorDefinition(
+        code = '453',
+        description = 'Contradiction between placement distance in the last episode of the previous year and in the first episode of the current year.',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+          return {}
+        if 'Episodes_last' not in dfs:
+          return {}
+        else:
+            episodes = dfs['Episodes']
+            episodes_last = dfs['Episodes_last']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'],format='%d/%m/%Y',errors='coerce')
+            episodes['PL_DISTANCE'] = pd.to_numeric(episodes['PL_DISTANCE'], errors='coerce')
+            episodes_last['PL_DISTANCE'] = pd.to_numeric(episodes_last['PL_DISTANCE'], errors='coerce')
+
+            # drop rows with missing DECOM before finding idxmin/max, as invalid/missing values can lead to errors
+            episodes = episodes.dropna(subset=['DECOM'])
+            episodes_last = episodes_last.dropna(subset=['DECOM'])
+
+            episodes_min = episodes.groupby('CHILD')['DECOM'].idxmin()
+            episodes_last_max = episodes_last.groupby('CHILD')['DECOM'].idxmax()
+
+            episodes = episodes[episodes.index.isin(episodes_min)]
+            episodes_last = episodes_last[episodes_last.index.isin(episodes_last_max)]
+
+            episodes_merged = episodes.reset_index().merge(episodes_last, how='left', on=['CHILD'], suffixes=('','_last'), indicator=True).set_index('index')
+
+            in_both_years = episodes_merged['_merge'] == 'both'
+            same_rne = episodes_merged['RNE'] == episodes_merged['RNE_last']
+            last_year_open = episodes_merged['DEC_last'].isna()
+            different_pl_dist = abs(episodes_merged['PL_DISTANCE'] - episodes_merged['PL_DISTANCE_last']) >= 0.2
+
+            error_mask = in_both_years & same_rne & last_year_open & different_pl_dist
+
+            validation_error_locations = episodes.index[error_mask]
+
+            return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_516():
     error = ErrorDefinition(
         code = '516',
@@ -467,7 +513,7 @@ def validate_452():
     error = ErrorDefinition(
         code = '452',
         description = 'Contradiction between local authority of placement code in the last episode of the previous year and in the first episode of the current year.',
-        affected_fields=['PL_POST'],
+        affected_fields=['PL_LA'],
     )
 
     def _validate(dfs):
@@ -493,7 +539,7 @@ def validate_452():
             in_both_years = episodes_merged['_merge'] == 'both'
             same_rne = episodes_merged['RNE'] == episodes_merged['RNE_last']
             last_year_open = episodes_merged['DEC_last'].isna()
-            different_pl_la = episodes_merged['PL_LA'] != episodes_merged['PL_LA_last']
+            different_pl_la = episodes_merged['PL_LA'].astype(str) != episodes_merged['PL_LA_last'].astype(str)
 
             error_mask = in_both_years & same_rne & last_year_open & different_pl_la
 
@@ -3497,6 +3543,12 @@ def validate_503_Generic(subval):
               "Fields": 'PLACE_PROVIDER'},
         "F": {"Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
               "Fields": 'URN'},
+        "G": {"Desc": "The distance in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_DISTANCE'},
+        "H": {"Desc": "The placement LA in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_LA'},
+        "J": {"Desc": "The placement location in first episode does not match open episode at end of last year.",
+              "Fields": 'PL_LOCATION'},
     }
     error = ErrorDefinition(
         code='503' + subval,
@@ -3526,7 +3578,11 @@ def validate_503_Generic(subval):
             this_one = Gen_503_dict[subval]['Fields']
             pre_one = this_one + '_PRE'
 
-            err_mask = merged_co[this_one] != merged_co[pre_one]
+            if subval == 'G':
+                err_mask = abs(merged_co[this_one].astype(float) - merged_co[pre_one].astype(float)) >= 0.2
+            else:
+                err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
+
             err_list = merged_co['index'][err_mask].unique().tolist()
             err_list.sort()
             return {'Episodes': err_list}
@@ -3556,6 +3612,15 @@ def validate_503E():
 
 def validate_503F():
     return validate_503_Generic('F')
+
+def validate_503G():
+    return validate_503_Generic('G')
+
+def validate_503H():
+    return validate_503_Generic('H')
+
+def validate_503J():
+    return validate_503_Generic('J')
 
 def validate_526():
     error = ErrorDefinition(

@@ -1,6 +1,33 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_441():
+    error = ErrorDefinition(
+        code = '441',
+        description = 'Participation method indicates child was 4 years old or over at the time of the review, but the date of birth and review date indicates the child was under 4 years old.',
+        affected_fields=['DOB','REVIEW','REVIEW_CODE'],
+    )
+
+    def _validate(dfs):
+        if 'Reviews' not in dfs:
+          return {}
+        else:
+            reviews = dfs['Reviews']
+            reviews['DOB'] = pd.to_datetime(reviews['DOB'],format='%d/%m/%Y',errors='coerce')
+            reviews['REVIEW'] = pd.to_datetime(reviews['REVIEW'],format='%d/%m/%Y',errors='coerce')
+            reviews = reviews.dropna(subset=['REVIEW', 'DOB'])
+
+            mask = reviews['REVIEW_CODE'].isin(['PN1', 'PN2', 'PN3', 'PN4', 'PN5', 'PN6', 'PN7']) & (reviews['REVIEW'] < reviews['DOB'] + pd.offsets.DateOffset(years=4))
+
+            validation_error_mask = mask
+
+            validation_error_locations = reviews.index[validation_error_mask]
+
+            return {'Reviews': validation_error_locations.tolist()}
+
+    return error, _validate
+
+
 def validate_184():
     error = ErrorDefinition(
         code='184',

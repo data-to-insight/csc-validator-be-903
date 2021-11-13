@@ -4,6 +4,7 @@ def test_create_datastore(dummy_input_data, dummy_postcodes):
     metadata = {
         'postcodes': dummy_postcodes,
         'collectionYear': '2019/20',
+        'localAuthority': 'test_LA'
     }
     ds = create_datastore(dummy_input_data, metadata)
 

@@ -15,7 +15,7 @@ def validate_511():
         else:
             AD1 = dfs['AD1']
 
-            mask = AD1['NB_ADOPTR'].eq('2') & AD1['SEX_ADOPTR'].isin(['M1','F1'])
+            mask = AD1['NB_ADOPTR'].astype(str).eq('2') & AD1['SEX_ADOPTR'].isin(['M1','F1'])
 
             validation_error_mask = mask
             validation_error_locations = AD1.index[validation_error_mask]

@@ -3,8 +3,10 @@ import pandas as pd
 
 def test_validate_511():
     fake_data = pd.DataFrame({
-      'NB_ADOPTR':['2','2',pd.NA,'2','2','1'],
-      'SEX_ADOPTR':['MM','FF','MM','M1','F1','F1'],
+      'NB_ADOPTR':['2','2',pd.NA,2,
+                   '2','1', 2, 1, 2],
+      'SEX_ADOPTR':['MM','FF','MM','M1','F1',
+                    'F1', 'F1', 'F1', pd.NA],
     })
 
     fake_dfs = {'AD1': fake_data}
@@ -13,7 +15,7 @@ def test_validate_511():
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1':[3,4]}
+    assert result == {'AD1':[3,4,6]}
 
 def test_validate_440():
     fake_data = pd.DataFrame({

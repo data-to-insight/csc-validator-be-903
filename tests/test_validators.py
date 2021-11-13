@@ -275,52 +275,66 @@ def test_validate_387():
 
     assert result == {'Episodes': [4]}
 
-def test_validate_452_453_503G_503H():
-    fake_data_previous = pd.DataFrame([
-        { 'CHILD': '101', 'RNE': 'S', 'DECOM': '01/04/2020', 'DEC': '04/06/2020', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
-        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
-        { 'CHILD': '103', 'RNE': 'P', 'DECOM': '03/03/2020', 'DEC': '10/07/2020', 'PL_DISTANCE': 10, 'PL_LA': '816'},
-        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '10/07/2020', 'DEC': '09/12/2020', 'PL_DISTANCE': 10, 'PL_LA': '816'},
-        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 185, 'PL_LA': '356'},
-        { 'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': '165', 'PL_LA': '112'},
-        { 'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': '165', 'PL_LA': '112'},
-        ])
 
-    fake_data = pd.DataFrame([
-        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': '04/06/2021', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
-        { 'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2021', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
-        { 'CHILD': '102', 'RNE': 'L', 'DECOM': '20/12/2020', 'DEC': '07/04/2021', 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore all
-        { 'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_DISTANCE': 10, 'PL_LA': '816'},#Ignore all
-        { 'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 999.9, 'PL_LA': 'CON'},#Fail all
-        { 'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': 165, 'PL_LA': 112},
-        { 'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': pd.NA, 'PL_LA': pd.NA},#Fail 452 and 503G only
-        ])
+# -------------------------------
+# Tests for 452, 453, 503G & 503H all use these dataframes:
 
-    fake_dfs = {'Episodes': fake_data, 'Episodes_last': fake_data_previous}
+fake_eps__452_453_503G_503H_prev = pd.DataFrame([
+    {'CHILD': '101', 'RNE': 'S', 'DECOM': '01/04/2020', 'DEC': '04/06/2020', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
+    {'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
+    {'CHILD': '103', 'RNE': 'P', 'DECOM': '03/03/2020', 'DEC': '10/07/2020', 'PL_DISTANCE': 10, 'PL_LA': '816'},
+    {'CHILD': '103', 'RNE': 'L', 'DECOM': '10/07/2020', 'DEC': '09/12/2020', 'PL_DISTANCE': 10, 'PL_LA': '816'},
+    {'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 185, 'PL_LA': '356'},
+    {'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': '165', 'PL_LA': '112'},
+    {'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': '165', 'PL_LA': '112'},
+])
 
+fake_eps__452_453_503G_503H = pd.DataFrame([
+    {'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2020', 'DEC': '04/06/2021', 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
+    {'CHILD': '101', 'RNE': 'P', 'DECOM': '04/06/2021', 'DEC': pd.NA, 'PL_DISTANCE': 400, 'PL_LA': 'WAL'},
+    {'CHILD': '102', 'RNE': 'L', 'DECOM': '20/12/2020', 'DEC': '07/04/2021', 'PL_DISTANCE': 10, 'PL_LA': '816'},
+    # Ignore all
+    {'CHILD': '103', 'RNE': 'L', 'DECOM': '02/02/2021', 'DEC': pd.NA, 'PL_DISTANCE': 10, 'PL_LA': '816'},  # Ignore all
+    {'CHILD': '104', 'RNE': 'B', 'DECOM': '28/03/2020', 'DEC': pd.NA, 'PL_DISTANCE': 999.9, 'PL_LA': 'CON'},  # Fail all
+    {'CHILD': '105', 'RNE': 'L', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'PL_DISTANCE': 165, 'PL_LA': 112},
+    {'CHILD': '106', 'RNE': 'S', 'DECOM': '04/11/2020', 'DEC': pd.NA, 'PL_DISTANCE': pd.NA, 'PL_LA': pd.NA},
+    # Fail 452 and 503G only
+])
+
+fake_dfs__452_453_503G_503H = {
+    'Episodes': fake_eps__452_453_503G_503H,
+    'Episodes_last': fake_eps__452_453_503G_503H_prev
+}
+
+def test_validate_452():
     error_defn, error_func = validate_452()
-
-    result = error_func(fake_dfs)
-
+    result = error_func(fake_dfs__452_453_503G_503H)
     assert result == {'Episodes':[4,6]}
 
+def test_validate_503H():
     error_defn, error_func = validate_503H()
 
-    result = error_func(fake_dfs)
+    result = error_func(fake_dfs__452_453_503G_503H)
 
     assert result == {'Episodes':[4,6]}
+
+def test_validate_453():
 
     error_defn, error_func = validate_453()
 
-    result = error_func(fake_dfs)
+    result = error_func(fake_dfs__452_453_503G_503H)
 
     assert result == {'Episodes':[4]}
+
+def test_validate_503G():
 
     error_defn, error_func = validate_503G()
 
-    result = error_func(fake_dfs)
+    result = error_func(fake_dfs__452_453_503G_503H)
 
     assert result == {'Episodes':[4]}
+
+# -------------------------------
 
 def test_validate_386():
     fake_data = pd.DataFrame({

@@ -22,6 +22,10 @@ def validate_453():
             episodes['PL_DISTANCE'] = pd.to_numeric(episodes['PL_DISTANCE'], errors='coerce')
             episodes_last['PL_DISTANCE'] = pd.to_numeric(episodes_last['PL_DISTANCE'], errors='coerce')
 
+            # drop rows with missing DECOM before finding idxmin/max, as invalid/missing values can lead to errors
+            episodes = episodes.dropna(subset=['DECOM'])
+            episodes_last = episodes_last.dropna(subset=['DECOM'])
+
             episodes_min = episodes.groupby('CHILD')['DECOM'].idxmin()
             episodes_last_max = episodes_last.groupby('CHILD')['DECOM'].idxmax()
 

@@ -1,6 +1,30 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_516():
+    error = ErrorDefinition(
+        code = '516',
+        description = 'The episode data submitted for this child does not show that he/she was with their former foster carer(s) during the year.If the code in the reason episode ceased is E45 or E46 the child must have a placement code of U1 to U6.',
+        affected_fields=['REC','PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+          return{}
+
+        else:
+            episodes = dfs['Episodes']
+            place_codes = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+            rec_codes = ['E45','E46']
+
+            error_mask = episodes['REC'].isin(rec_codes) & ~episodes['PLACE'].isin(place_codes)
+
+            validation_error_locations = episodes.index[error_mask]
+
+            return{'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_511():
     error = ErrorDefinition(
         code = '511',
@@ -3625,7 +3649,7 @@ def validate_376():
 def validate_379():
     return validate_370to376and379('379')
 
-    
+
 def validate_529():
     error = ErrorDefinition(
         code='529',

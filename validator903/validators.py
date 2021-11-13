@@ -2034,8 +2034,8 @@ def validate_159():
             return {}
         else:
             oc2 = dfs['OC2']
-            mask1 = oc2['SUBSTANCE_MISUSE'] == '1'
-            mask2 = oc2['INTERVENTION_RECEIVED'] == '0'
+            mask1 = oc2['SUBSTANCE_MISUSE'].astype(str) == '1'
+            mask2 = oc2['INTERVENTION_RECEIVED'].astype(str) == '0'
             mask3 = oc2['INTERVENTION_OFFERED'].isna()
 
             validation_error = mask1 & mask2 & mask3

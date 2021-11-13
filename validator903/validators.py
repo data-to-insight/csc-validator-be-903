@@ -15,12 +15,11 @@ def validate_524():
         else:
             AD1 = dfs['AD1']
 
-            mask = AD1['LS_ADOPTR'].eq('L12') & AD1['SEX_ADOPTR'].isin(['M1','F1','MF'])
+            error_mask = AD1['LS_ADOPTR'].eq('L12') & ~AD1['SEX_ADOPTR'].isin(['MM', 'FF'])
 
-            validation_error_mask = mask
-            validation_error_locations = AD1.index[validation_error_mask]
+            error_locations = AD1.index[error_mask]
 
-            return{'AD1': validation_error_locations.tolist()}
+            return{'AD1': error_locations.tolist()}
 
     return error, _validate
 

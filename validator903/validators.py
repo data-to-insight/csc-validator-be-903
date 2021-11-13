@@ -14,14 +14,12 @@ def validate_516():
 
         else:
             episodes = dfs['Episodes']
-            bad_place_codes = ['A3','A4','A5','A6','H5','K1','K2', 'P1', 'P2', 'P3', 'R1', 'R2', 'R3', 'R5', 'S1', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
+            place_codes = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
             rec_codes = ['E45','E46']
 
+            error_mask = episodes['REC'].isin(rec_codes) & ~episodes['PLACE'].isin(place_codes)
 
-            mask = episodes['REC'].isin(rec_codes) & episodes['PLACE'].isin(bad_place_codes)
-
-            validation_error_mask = mask
-            validation_error_locations = episodes.index[validation_error_mask]
+            validation_error_locations = episodes.index[error_mask]
 
             return{'Episodes': validation_error_locations.tolist()}
 

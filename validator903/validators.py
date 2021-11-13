@@ -3,8 +3,8 @@ from .types import ErrorDefinition
 
 def validate_612():
     error = ErrorDefinition(
-        code = '612',
-        description = "Date of birth field has been completed but mother field indicates child is not a mother.",
+        code='612',
+        description="Date of birth field has been completed but mother field indicates child is not a mother.",
         affected_fields=['SEX', 'MOTHER', 'MC_DOB'],
     )
 
@@ -14,10 +14,13 @@ def validate_612():
         else:
             header = dfs['Header']
 
-            mask = (header['MOTHER'].astype(str) == '0' | header['MOTHER'].isna()) & header['SEX'].astype(str) == '2' & header['MC_DOB'].isna()
+            error_mask = (
+                ((header['MOTHER'].astype(str) == '0') | header['MOTHER'].isna())
+                & (header['SEX'].astype(str) == '2')
+                & header['MC_DOB'].notna()
+            )
 
-            validation_error_mask = ~mask
-            validation_error_locations = header.index[validation_error_mask]
+            validation_error_locations = header.index[error_mask]
 
             return {'Header': validation_error_locations.tolist()}
     

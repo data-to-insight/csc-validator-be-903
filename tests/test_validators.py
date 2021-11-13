@@ -3,9 +3,12 @@ import pandas as pd
 
 def test_validate_612():
     fake_data = pd.DataFrame({
-        'SEX': [2, '2', '2', 2, 2], 
-        'MOTHER': ['0', '0', pd.NA, pd.NA, 1], 
-        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA, '19/02/2019'],
+        'SEX': [2, '2', '2', 2,
+                2, 1, 1, 1, '2'],
+        'MOTHER': ['0', '0', pd.NA, pd.NA,
+                   1, 0, 1, pd.NA, pd.NA],
+        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA,
+                   '19/02/2019', pd.NA, '12/10/2010', '21/3rd/yYyYyY', '21/3rd/yYyYyY'],
     })
 
     fake_dfs = {'Header': fake_data}
@@ -14,7 +17,7 @@ def test_validate_612():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [0, 1, 2]}
+    assert result == {'Header': [0, 1, 2, 8]}
 
 def test_validate_611():
     fake_data = pd.DataFrame({

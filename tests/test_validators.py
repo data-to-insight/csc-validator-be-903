@@ -1,6 +1,24 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_612():
+    fake_data = pd.DataFrame({
+        'SEX': [2, '2', '2', 2,
+                2, 1, 1, 1, '2'],
+        'MOTHER': ['0', '0', pd.NA, pd.NA,
+                   1, 0, 1, pd.NA, pd.NA],
+        'MC_DOB': ['19/02/2016', 'dd/mm/yyyy', '31/31/19', pd.NA,
+                   '19/02/2019', pd.NA, '12/10/2010', '21/3rd/yYyYyY', '21/3rd/yYyYyY'],
+    })
+
+    fake_dfs = {'Header': fake_data}
+
+    error_defn, error_func = validate_612()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [0, 1, 2, 8]}
+
 def test_validate_552():
   fake_placed_adoption = pd.DataFrame({
     'DATE_PLACED':['08/03/2020','22/06/2020','13/10/2022','24/10/2021', pd.NA, pd.NA, 'baddate/2021'],
@@ -1416,7 +1434,7 @@ def test_validate_411():
 
     error_defn, error_func = validate_411()
 
-    # Note 2 and 3 pass as the rule is specific 
+    # Note 2 and 3 pass as the rule is specific
     # about only checking that 'IN' is set correctly
     assert error_func(fake_dfs) == {'Episodes': [4]}
 

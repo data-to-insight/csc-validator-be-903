@@ -1,6 +1,31 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_612():
+    error = ErrorDefinition(
+        code='612',
+        description="Date of birth field has been completed but mother field indicates child is not a mother.",
+        affected_fields=['SEX', 'MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+
+            error_mask = (
+                ((header['MOTHER'].astype(str) == '0') | header['MOTHER'].isna())
+                & (header['SEX'].astype(str) == '2')
+                & header['MC_DOB'].notna()
+            )
+
+            validation_error_locations = header.index[error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+
+    return error, _validate
+
 
 def validate_552():
     """
@@ -2398,7 +2423,7 @@ def validate_630():
 
             # Form the episode dataframe which has an 'RNE' of 'S' in this financial year
             epi_has_rne_of_S_in_year = epi[(epi['RNE'] == 'S') & (epi['DECOM'] >= collection_start)]
-            # Merge to see 
+            # Merge to see
             # 1) which CHILD ids are missing from the PrevPerm file
             # 2) which CHILD are in the prevPerm file, but don't have the LA_PERM/DATE_PERM field completed where they should be
             # 3) which CHILD are in the PrevPerm file, but don't have the PREV_PERM field completed.

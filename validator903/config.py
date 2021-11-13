@@ -29,6 +29,7 @@ List of all configured errors for validation.
 These all should have return type (Error, Dict[str, DataFrame])
 """
 configured_errors = [
+    validate_552(),
     validate_101(),
     validate_102(),
     validate_103(),
@@ -49,6 +50,7 @@ configured_errors = [
     validate_146(),
     validate_147(),
     validate_149(),
+    validate_159(),
     validate_153(),
     validate_164(),
     validate_166(),
@@ -61,6 +63,7 @@ configured_errors = [
     validate_176(),
     validate_177(),
     validate_178(),
+    validate_184(),
     validate_179(),
     validate_180(),
     validate_181(),
@@ -88,6 +91,7 @@ configured_errors = [
     validate_420(),
     validate_452(),
     validate_611(),
+    validate_612(),
     validate_621(),
     validate_631(),
     validate_1004(),
@@ -145,6 +149,7 @@ configured_errors = [
     validate_526(),
     validate_445(),
     validate_446(),
+    validate_441(),
     validate_440(),
     validate_363(),
     validate_364(),
@@ -159,4 +164,8 @@ configured_errors = [
     validate_376(),
     validate_379(),
     validate_529(),
+    validate_557(),
+    validate_551(),
+    validate_524(),
+    validate_511(),
 ]

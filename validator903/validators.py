@@ -1,6 +1,274 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_511():
+    error = ErrorDefinition(
+        code = '511',
+        description = 'If reporting that the number of person(s) adopting the looked after child is two adopters then the code should only be MM, FF or MF. MM = the adopting couple are both males; FF = the adopting couple are both females; MF = The adopting couple are male and female.',
+        affected_fields=['NB_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            mask = AD1['NB_ADOPTR'].astype(str).eq('2') & AD1['SEX_ADOPTR'].isin(['M1','F1'])
+
+            validation_error_mask = mask
+            validation_error_locations = AD1.index[validation_error_mask]
+
+            return{'AD1': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_524():
+    error = ErrorDefinition(
+        code = '524',
+        description = 'If reporting legal status of adopters is L12 then the genders of adopters should be coded as MM or FF. MM = the adopting couple are both males. FF = the adopting couple are both females',
+        affected_fields=['LS_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            error_mask = AD1['LS_ADOPTR'].eq('L12') & ~AD1['SEX_ADOPTR'].isin(['MM', 'FF'])
+
+            error_locations = AD1.index[error_mask]
+
+            return{'AD1': error_locations.tolist()}
+
+    return error, _validate
+
+def validate_441():
+    error = ErrorDefinition(
+        code = '441',
+        description = 'Participation method indicates child was 4 years old or over at the time of the review, but the date of birth and review date indicates the child was under 4 years old.',
+        affected_fields=['DOB','REVIEW','REVIEW_CODE'],
+    )
+
+    def _validate(dfs):
+        if 'Reviews' not in dfs:
+          return {}
+        else:
+            reviews = dfs['Reviews']
+            reviews['DOB'] = pd.to_datetime(reviews['DOB'],format='%d/%m/%Y',errors='coerce')
+            reviews['REVIEW'] = pd.to_datetime(reviews['REVIEW'],format='%d/%m/%Y',errors='coerce')
+            reviews = reviews.dropna(subset=['REVIEW', 'DOB'])
+
+            mask = reviews['REVIEW_CODE'].isin(['PN1', 'PN2', 'PN3', 'PN4', 'PN5', 'PN6', 'PN7']) & (reviews['REVIEW'] < reviews['DOB'] + pd.offsets.DateOffset(years=4))
+
+            validation_error_mask = mask
+
+            validation_error_locations = reviews.index[validation_error_mask]
+
+            return {'Reviews': validation_error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_184():
+    error = ErrorDefinition(
+        code='184',
+        description='Date of decision that a child should be placed for adoption is before the child was born.',
+        affected_fields=['DATE_PLACED', # PlacedAdoptino
+                         'DOB'], # Header
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            child_record = dfs['Header']
+            placed_for_adoption = dfs['PlacedAdoption']
+
+            all_data = (placed_for_adoption
+                        .reset_index()
+                        .merge(child_record, how='left', on='CHILD', suffixes=[None, '_P4A']))
+
+            all_data['DATE_PLACED'] = pd.to_datetime(all_data['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+            all_data['DOB'] = pd.to_datetime(all_data['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            mask = (all_data['DATE_PLACED'] >= all_data['DOB']) | all_data['DATE_PLACED'].isna()
+
+            validation_error = ~mask
+
+            validation_error_locations = all_data[validation_error]['index'].unique()
+
+            return {'PlacedAdoption': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_612():
+    error = ErrorDefinition(
+        code='612',
+        description="Date of birth field has been completed but mother field indicates child is not a mother.",
+        affected_fields=['SEX', 'MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+
+            error_mask = (
+                ((header['MOTHER'].astype(str) == '0') | header['MOTHER'].isna())
+                & (header['SEX'].astype(str) == '2')
+                & header['MC_DOB'].notna()
+            )
+
+            validation_error_locations = header.index[error_mask]
+
+            return {'Header': validation_error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_552():
+    """
+  This error checks that the first adoption episode is after the last decision !
+  If there are multiple of either there may be unexpected results !
+  """
+
+    error = ErrorDefinition(
+        code="552",
+        description="Date of Decision to place a child for adoption should be on or prior to the date that the child was placed for adoption.",
+        # Field that defines date of decision to place a child for adoption is DATE_PLACED and the start of adoption is defined by DECOM with 'A' placement types.
+        affected_fields=['DATE_PLACED', 'DECOM'],
+    )
+
+    def _validate(dfs):
+        if ('PlacedAdoption' not in dfs) or ('Episodes' not in dfs):
+            return {}
+        else:
+            # get the required datasets
+            placed_adoption = dfs['PlacedAdoption']
+            episodes = dfs['Episodes']
+            # keep index values so that they stay the same when needed later on for error locations
+            placed_adoption.reset_index(inplace=True)
+            episodes.reset_index(inplace=True)
+
+            adoption_eps = episodes[episodes['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])].copy()
+            # find most recent adoption decision
+            placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y',
+                                                            errors='coerce')
+            # remove rows where either of the required values have not been filled.
+            placed_adoption = placed_adoption[placed_adoption['DATE_PLACED'].notna()]
+
+            placed_adoption_inds = placed_adoption.groupby('CHILD')['DATE_PLACED'].idxmax(skipna=True)
+            last_decision = placed_adoption.loc[placed_adoption_inds]
+
+            # first time child started adoption
+            adoption_eps["DECOM"] = pd.to_datetime(adoption_eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+            adoption_eps = adoption_eps[adoption_eps['DECOM'].notna()]
+
+            adoption_eps_inds = adoption_eps.groupby('CHILD')['DECOM'].idxmin(skipna=True)
+            # full information of first adoption
+            first_adoption = adoption_eps.loc[adoption_eps_inds]
+
+            # date of decision and date of start of adoption (DECOM) have to be put in one table
+            merged = first_adoption.merge(last_decision, on=['CHILD'], how='left', suffixes=['_EP', '_PA'])
+
+            # check to see if date of decision to place is less than or equal to date placed.
+            decided_after_placed = merged["DECOM"] < merged["DATE_PLACED"]
+
+            # find the corresponding location of error values per file.
+            episode_error_locs = merged.loc[decided_after_placed, 'index_EP']
+            placedadoption_error_locs = merged.loc[decided_after_placed, 'index_PA']
+
+            return {"PlacedAdoption": placedadoption_error_locs.to_list(), "Episodes": episode_error_locs.to_list()}
+
+    return error, _validate
+
+
+def validate_551():
+    error = ErrorDefinition(
+        code='551',
+        description='Child has been placed for adoption but there is no date of the decision that the child should be placed for adoption.',
+        affected_fields=['DATE_PLACED', 'PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            placedAdoptions = dfs['PlacedAdoption']
+
+            episodes = episodes.reset_index()
+
+            place_codes = ['A3', 'A4', 'A5', 'A6']
+
+            placeEpisodes = episodes[episodes['PLACE'].isin(place_codes)]
+
+            merged = placeEpisodes.merge(placedAdoptions, how='left', on='CHILD').set_index('index')
+
+            episodes_with_errors = merged[merged['DATE_PLACED'].isna()]
+
+            error_mask = episodes.index.isin(episodes_with_errors.index)
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
+
+def validate_557():
+    error = ErrorDefinition(
+          code='557',
+          description="Child for whom the decision was made that they should be placed for adoption has left care " +
+                      "but was not adopted and information on the decision that they should no longer be placed for " +
+                      "adoption items has not been completed.",
+          affected_fields=['DATE_PLACED_CEASED', 'REASON_PLACED_CEASED', # PlacedAdoption
+                           'PLACE', 'LS', 'REC'], # Episodes
+      )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        if 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            eps = dfs['Episodes']
+            placed = dfs['PlacedAdoption']
+
+            eps = eps.reset_index()
+            placed = placed.reset_index()
+
+            child_placed = eps['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])
+            order_granted = eps['LS'].isin(['D1', 'E1'])
+            not_adopted = ~eps['REC'].isin(['E11', 'E12']) & eps['REC'].notna()
+
+            placed['ceased_incomplete'] = (
+                    placed['DATE_PLACED_CEASED'].isna() | placed['REASON_PLACED_CEASED'].isna()
+            )
+
+            eps = eps[(child_placed | order_granted) & not_adopted]
+
+            eps = eps.merge(placed, on='CHILD', how='left', suffixes=['_EP', '_PA'], indicator=True)
+
+            eps = eps[(eps['_merge'] == 'left_only') | eps['ceased_incomplete']]
+
+            EP_errors = eps['index_EP']
+            PA_errors = eps['index_PA'].dropna()
+
+            return {
+                'Episodes': EP_errors.to_list(),
+                'PlacedAdoption': PA_errors.to_list(),
+            }
+
+    return error, _validate
+
+
+
 def validate_207():
     error = ErrorDefinition(
         code = '207',
@@ -1858,6 +2126,31 @@ def validate_119():
 
     return error, _validate
 
+def validate_159():
+    error = ErrorDefinition(
+        code='159',
+        description='If a child has been recorded as not receiving an intervention for their substance misuse problem, then the additional item on whether an intervention was offered should be completed as well.',
+        affected_fields=['SUBSTANCE_MISUSE','INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            mask1 = oc2['SUBSTANCE_MISUSE'].astype(str) == '1'
+            mask2 = oc2['INTERVENTION_RECEIVED'].astype(str) == '0'
+            mask3 = oc2['INTERVENTION_OFFERED'].isna()
+
+            validation_error = mask1 & mask2 & mask3
+            validation_error_locations = oc2.index[validation_error]
+
+
+            return {'OC2': validation_error_locations.tolist()}
+
+    return error, _validate
+
+
 
 def validate_142():
     error = ErrorDefinition(
@@ -2259,7 +2552,7 @@ def validate_630():
 
             # Form the episode dataframe which has an 'RNE' of 'S' in this financial year
             epi_has_rne_of_S_in_year = epi[(epi['RNE'] == 'S') & (epi['DECOM'] >= collection_start)]
-            # Merge to see 
+            # Merge to see
             # 1) which CHILD ids are missing from the PrevPerm file
             # 2) which CHILD are in the prevPerm file, but don't have the LA_PERM/DATE_PERM field completed where they should be
             # 3) which CHILD are in the PrevPerm file, but don't have the PREV_PERM field completed.
@@ -2545,6 +2838,7 @@ def validate_197():
             return {'OC2': validation_error_locations.tolist()}
 
     return error, _validate
+
 
 def validate_567():
     error = ErrorDefinition(

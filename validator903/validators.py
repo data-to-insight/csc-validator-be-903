@@ -5,20 +5,23 @@ def validate_184():
     error = ErrorDefinition(
         code='184',
         description='Date of decision that a child should be placed for adoption is before the child was born.',
-        affected_fields=['DATE_PLACED','DOB'],
+        affected_fields=['DATE_PLACED', # PlacedAdoptino
+                         'DOB'], # Header
     )
 
     def _validate(dfs):
-        if 'Header' not in dfs or 'AD1' not in dfs:
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
             return {}
         else:
             child_record = dfs['Header']
-            ad1 = dfs['AD1']
+            placed_for_adoption = dfs['PlacedAdoption']
 
-            all_data = ad1.reset_index().merge(child_record, how='left', on='CHILD')
+            all_data = (placed_for_adoption
+                        .reset_index()
+                        .merge(child_record, how='left', on='CHILD', suffixes=[None, '_P4A']))
 
-            all_data['DATE_PLACED'] = pd.to_datetime(all_data['DATE_PLACED'],format='%d/%m/%Y',errors='coerce')
-            all_data['DOB'] = pd.to_datetime(all_data['DOB'],format='%d/%m/%Y',errors='coerce')
+            all_data['DATE_PLACED'] = pd.to_datetime(all_data['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+            all_data['DOB'] = pd.to_datetime(all_data['DOB'], format='%d/%m/%Y', errors='coerce')
 
             mask = (all_data['DATE_PLACED'] >= all_data['DOB']) | all_data['DATE_PLACED'].isna()
 
@@ -26,8 +29,7 @@ def validate_184():
             
             validation_error_locations = all_data[validation_error]['index'].unique()
         
-            return {'AD1': validation_error_locations.tolist()}
-            
+            return {'PlacedAdoption': validation_error_locations.tolist()}
     
     return error, _validate
 

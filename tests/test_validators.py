@@ -6,18 +6,18 @@ def test_validate_184():
         'CHILD': ['111', '112', '113', '114'], 
         'DOB': ['01/10/2017', '31/05/2018', '10/03/2019', '19/08/2020'],
     })
-    fake_data_ad1 = pd.DataFrame({
+    fake_data_placed = pd.DataFrame({
         'CHILD': ['111', '112', '113', '114'], 
         'DATE_PLACED': ['01/10/2017', '10/02/2019', '10/02/2019', pd.NA],
     })
 
-    fake_dfs = {'Header': fake_data_header, 'AD1': fake_data_ad1}
+    fake_dfs = {'Header': fake_data_header, 'PlacedAdoption': fake_data_placed}
     
     error_defn, error_func = validate_184()
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [2]}
+    assert result == {'PlacedAdoption': [2]}
 
 def test_validate_1009():
     fake_data = pd.DataFrame({

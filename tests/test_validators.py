@@ -1202,6 +1202,25 @@ def test_validate_119():
 
     assert result == {'PlacedAdoption': [1, 2]}
 
+def test_validate_159():
+    fake_data = pd.DataFrame({
+        'SUBSTANCE_MISUSE': ['1', '1', '1', '1', 1,
+                             '1', pd.NA, pd.NA, 1, 0],
+        'INTERVENTION_RECEIVED': ['1', '0', '0', pd.NA, 0,
+                                  '1', '1', pd.NA, 0, 1],
+        'INTERVENTION_OFFERED': [pd.NA, '0', pd.NA, pd.NA, pd.NA,
+                                 '1', pd.NA, pd.NA, 0, 1],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_159()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [2, 4]}
+
+
 
 def test_validate_142():
     fake_data = pd.DataFrame([

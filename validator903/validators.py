@@ -1,6 +1,38 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_558():
+    error = ErrorDefinition(
+        code='558',
+        description='If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank. if the REC code is either E11 or E12 then the DATE PLACED CEASED date should not be provided',
+        affected_fields=['DATE_PLACED_CEASED', 'REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            placedAdoptions = dfs['PlacedAdoption']
+
+            episodes = episodes.reset_index()
+
+            rec_codes = ['E11', 'E12']
+
+            placeEpisodes = episodes[episodes['REC'].isin(rec_codes)]
+
+            merged = placeEpisodes.merge(placedAdoptions, how='left', on='CHILD').set_index('index')
+
+            episodes_with_errors = merged[merged['DATE_PLACED_CEASED'].notna()]
+
+            error_mask = episodes.index.isin(episodes_with_errors.index)
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_453():
     error = ErrorDefinition(
         code = '453',

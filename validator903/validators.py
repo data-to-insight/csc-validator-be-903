@@ -19,6 +19,7 @@ def validate_437():
             # drop rows with missing DECOM as invalid/missing values can lead to errors
             episodes = episodes.dropna(subset=['DECOM'])
 
+            episodes.sort_values('DECOM', inplace=True)
             episodes['NEXT_DECOM'] = episodes.groupby('CHILD')['DECOM'].shift(-1)
 
             ceased_e2_e15 = episodes['REC'].str.upper().astype(str).isin(['E2','E15'])

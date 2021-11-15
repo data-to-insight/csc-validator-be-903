@@ -1,6 +1,40 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_433():
+    error = ErrorDefinition(
+        code='433',
+        description='The reason for new episode suggests that this is a continuation episode, but the episode does not start on the same day as the last episode finished.',
+        affected_fields=['RNE','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+
+            # drop rows with missing DECOM and DEC as invalid/missing values can lead to errors
+            episodes = episodes.dropna(subset=['DECOM','DEC'])
+
+            episodes.sort_values(['DECOM','DEC'], inplace=True)
+            episodes['PREVIOUS_DEC'] = episodes.groupby('CHILD')['DEC'].shift(1)
+
+            rne_is_ongoing = episodes['RNE'].str.upper().astype(str).isin(['P','L','T','U','B'])
+            episode_dates_match = episodes['PREVIOUS_DEC'] == episodes['DECOM']
+            episode_no_previous = episodes['PREVIOUS_DEC'].isna()
+
+            error_mask = rne_is_ongoing & ~episode_dates_match & ~episode_no_previous
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_558():
     error = ErrorDefinition(
         code='558',

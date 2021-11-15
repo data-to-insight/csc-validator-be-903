@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_518():
+    fake_data = pd.DataFrame({
+      'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],
+      'SEX_ADOPTR':['MM','FF','MM','M1','MF','F1','xxxxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_518()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1':[3, 4, 6]}
+
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({
         'CHILD': ['0','A','B','C','D','E','F','G','H','I'],

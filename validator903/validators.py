@@ -1,6 +1,28 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_518():
+    error = ErrorDefinition(
+        code = '518',
+        description = 'If reporting legal status of adopters is L4 then the genders of adopters should be coded as MM or FF. MM = the adopting couple are both males. FF = the adopting couple are both females.',
+        affected_fields=['LS_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            error_mask = AD1['LS_ADOPTR'].eq('L4') & ~AD1['SEX_ADOPTR'].isin(['MM','FF'])
+
+            error_locations = AD1.index[error_mask]
+
+            return{'AD1': error_locations.tolist()}
+
+    return error, _validate 
+
 def validate_558():
     error = ErrorDefinition(
         code='558',

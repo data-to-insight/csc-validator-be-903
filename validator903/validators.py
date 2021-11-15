@@ -1,6 +1,32 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_547():
+    error = ErrorDefinition(
+        code = '547',
+        description = "Any child who has health promotion information completed must also have immunisation, teeth check, health assessment and substance misuse problem identified fields completed.",
+        affected_fields=['HEALTH_CHECK','IMMUNISATIONS','TEETH_CHECK','HEALTH_ASSESSMENT','SUBSTANCE_MISUSE'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            healthck = oc2['HEALTH_CHECK'].astype(str) == '1'
+            immunisations = oc2['IMMUNISATIONS'].isna()
+            teeth_ck = oc2['TEETH_CHECK'].isna()
+            health_ass = oc2['HEALTH_ASSESSMENT'].isna()
+            sub_misuse =oc2['SUBSTANCE_MISUSE'].isna()
+
+            error_mask = healthck & (immunisations | teeth_ck | health_ass | sub_misuse)
+            validation_error_locations = oc2.index[error_mask]
+
+            return {'OC2': validation_error_locations.to_list()}
+    
+    return error, _validate
+
 def validate_453():
     error = ErrorDefinition(
         code = '453',

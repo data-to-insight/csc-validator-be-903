@@ -3763,3 +3763,33 @@ def validate_529():
             return {'Episodes': epi.index[error_mask].to_list()}
 
     return error, _validate
+
+def validate_377():
+    error = ErrorDefinition(
+        code='377',
+        description='Only two temporary placements coded as being due to holiday of usual foster carer(s) are ' +
+                    'allowed in any 12- month period.',
+        affected_fields=['PLACE'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi.reset_index(inplace=True)
+
+            # RNE for T3 must be P or B  (See rule 380)
+            potent_cohort = epi[epi['RNE'].isin(['P', 'B']) & (epi['PLACE'] == 'T3')]
+
+            # Here I'm after the CHILD ids where there are more than 2 T3 placements.
+            count_them = potent_cohort.groupby('CHILD')['CHILD'].count().to_frame(name='cc')
+            count_them.reset_index(inplace=True)
+            count_them = count_them[count_them['cc'] > 2]
+
+            err_coh = potent_cohort[potent_cohort['CHILD'].isin(count_them['CHILD'].to_list())]
+            err_list = err_coh['index'].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate

@@ -3778,7 +3778,7 @@ def validate_377():
             epi = dfs['Episodes']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             epi.reset_index(inplace=True)
-
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
             # RNE for T3 must be P or B  (See rule 380)
             potent_cohort = epi[epi['RNE'].isin(['P', 'B']) & (epi['PLACE'] == 'T3')]
 

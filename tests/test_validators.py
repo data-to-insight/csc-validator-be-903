@@ -1,6 +1,38 @@
 from validator903.validators import *
 import pandas as pd
 
+# -------------------------------
+# Tests for 205A-205D all use these dataframes:
+
+fake_uasc_205 = pd.DataFrame([
+    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Pass B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '16/06/2021'},#Fail B
+])
+
+fake_uasc_prev_205 = pd.DataFrame([
+    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': '20/01/2020'},#Pass A
+    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020'},#Fail A
+    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021'},#Fail A
+    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Pass B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '04/11/2023'},#Fail B
+])
+
+metadata_205 = {
+        'collection_start': '01/04/2020',
+        'collection_end': '31/03/2021'
+    }
+
+fake_dfs_205 = {
+    'UASC': fake_uasc_205,
+    'UASC_last': fake_uasc_prev_205,
+    'metadata': metadata_205
+}
+
+def test_validate_205A():
+    error_defn, error_func = validate_205A()
+    result = error_func(fake_dfs_205)
+    assert result == {'UASC_last':[1,2]}
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

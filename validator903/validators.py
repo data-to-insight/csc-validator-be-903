@@ -3860,17 +3860,17 @@ def validate_1012():
             oc2 = dfs['OC2']
 
             err_ado = ado.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
             err_mis = mis.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
             err_rev = rev.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
             err_ad1 = ad1.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
             err_pre = pre.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
             err_oc2 = oc2.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].tolist()
+                .query("_merge == 'left_only'")['index'].unique().tolist()
 
             return {'PlacedAdoption': err_ado, 'Missing': err_mis,
                     'Reviews': err_rev, 'AD1': err_ad1, 'PrevPerm': err_pre, 'OC2': err_oc2}

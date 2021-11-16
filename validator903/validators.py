@@ -3778,16 +3778,17 @@ def validate_377():
             epi = dfs['Episodes']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             epi.reset_index(inplace=True)
-            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
-            # RNE for T3 must be P or B  (See rule 380)
-            potent_cohort = epi[epi['RNE'].isin(['P', 'B']) & (epi['PLACE'] == 'T3')]
+
+            potent_cohort = epi[epi['PLACE'] == 'T3']
 
             # Here I'm after the CHILD ids where there are more than 2 T3 placements.
             count_them = potent_cohort.groupby('CHILD')['CHILD'].count().to_frame(name='cc')
             count_them.reset_index(inplace=True)
             count_them = count_them[count_them['cc'] > 2]
 
-            err_coh = potent_cohort[potent_cohort['CHILD'].isin(count_them['CHILD'].to_list())]
+            err_coh = epi[epi['CHILD'].isin(count_them['CHILD'])]
+            err_coh = err_coh[err_coh['PLACE'] == 'T3']
+
             err_list = err_coh['index'].unique().tolist()
             err_list.sort()
             return {'Episodes': err_list}

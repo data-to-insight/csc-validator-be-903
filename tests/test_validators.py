@@ -15,6 +15,20 @@ def test_validate_518():
 
     assert result == {'AD1':[3, 4, 6]}
 
+def test_validate_517():
+    fake_data = pd.DataFrame({
+      'LS_ADOPTR':['L3','L1',pd.NA,'L3','L3','L4','L3'],
+      'SEX_ADOPTR':['MF','MF','MM','M1','FF','F1','xxxxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_517()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1':[3, 4, 6]}
+
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({
         'CHILD': ['0','A','B','C','D','E','F','G','H','I'],

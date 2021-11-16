@@ -17,9 +17,6 @@ def validate_433():
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
             episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
 
-            # drop rows with missing DECOM and DEC as invalid/missing values can lead to errors
-            episodes = episodes.dropna(subset=['DECOM','DEC'])
-
             episodes.sort_values(['DECOM','DEC'], inplace=True)
             episodes['PREVIOUS_DEC'] = episodes.groupby('CHILD')['DEC'].shift(1)
 

@@ -17,7 +17,7 @@ def test_validate_433():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [4]}
+    assert result == {'Episodes': [4,5]}
 
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({

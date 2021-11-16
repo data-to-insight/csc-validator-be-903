@@ -18,7 +18,7 @@ def validate_547():
             immunisations = oc2['IMMUNISATIONS'].isna()
             teeth_ck = oc2['TEETH_CHECK'].isna()
             health_ass = oc2['HEALTH_ASSESSMENT'].isna()
-            sub_misuse =oc2['SUBSTANCE_MISUSE'].isna()
+            sub_misuse = oc2['SUBSTANCE_MISUSE'].isna()
 
             error_mask = healthck & (immunisations | teeth_ck | health_ass | sub_misuse)
             validation_error_locations = oc2.index[error_mask]

@@ -2755,3 +2755,20 @@ def test_validate_377():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
+
+def test_validate_1012():
+    fake_epi = pd.DataFrame({'CHILD': ['111', '222', '333', '444', '555', '555', '666', '666'], })
+    fake_ado = pd.DataFrame({'CHILD': ['777', '222', '333', '444', '555', '666'], })  # err at 0
+    fake_mis = pd.DataFrame({'CHILD': ['111', '888', '333', '444', '555', '666'], })  # err at 1
+    fake_rev = pd.DataFrame({'CHILD': ['111', '222', '999', '444', '555', '666'], })  # err at 2
+    fake_ad1 = pd.DataFrame({'CHILD': ['111', '222', '333', '1010', '555', '666'], })  # err at 3
+    fake_pre = pd.DataFrame({'CHILD': ['111', '222', '333', '444', '1111', '666'], })  # err at 4
+    fake_oc2 = pd.DataFrame({'CHILD': ['111', '222', '333', '444', '555', '1212'], })  # err at 5
+
+    fake_dfs = {'Episodes': fake_epi, 'PlacedAdoption': fake_ado, 'Missing': fake_mis, 'Reviews': fake_rev,
+                'AD1': fake_ad1, 'PrevPerm': fake_pre, 'OC2': fake_oc2}
+
+    error_defn, error_func = validate_1012()
+
+    assert error_func(fake_dfs) == {'PlacedAdoption': [0], 'Missing': [1],
+                                    'Reviews': [2], 'AD1': [3], 'PrevPerm': [4], 'OC2': [5]}

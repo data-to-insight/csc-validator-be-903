@@ -3838,3 +3838,41 @@ def validate_377():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_1012():
+    error = ErrorDefinition(
+        code='1012',
+        description='No other data should be returned for OC3 children who had no episodes in the current year',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs or 'Missing' not in dfs or 'Reviews' not in dfs \
+                or 'AD1' not in dfs or 'PrevPerm' not in dfs or 'OC2' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            ado = dfs['PlacedAdoption']
+            mis = dfs['Missing']
+            rev = dfs['Reviews']
+            ad1 = dfs['AD1']
+            pre = dfs['PrevPerm']
+            oc2 = dfs['OC2']
+
+            err_ado = ado.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+            err_mis = mis.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+            err_rev = rev.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+            err_ad1 = ad1.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+            err_pre = pre.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+            err_oc2 = oc2.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
+                .query("_merge == 'left_only'")['index'].tolist()
+
+            return {'PlacedAdoption': err_ado, 'Missing': err_mis,
+                    'Reviews': err_rev, 'AD1': err_ad1, 'PrevPerm': err_pre, 'OC2': err_oc2}
+
+    return error, _validate

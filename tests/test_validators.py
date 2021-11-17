@@ -2771,4 +2771,4 @@ def test_validate_602():
 
     error_defn, error_func = validate_602()
 
-    assert error_func(fake_dfs) == {'AD1': [1, 3, 4, 7, 8]}
+    assert error_func(fake_dfs) == {'AD1': [1, 4, 7, 8]}

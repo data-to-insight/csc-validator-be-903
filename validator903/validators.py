@@ -14,22 +14,18 @@ def validate_433():
         else:
             episodes = dfs['Episodes']
 
-            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
-            episodes['DEC'] = pd.to_datetime(episodes['DEC'],format='%d/%m/%Y',errors='coerce')
+            episodes['original_index'] = episodes.index
+            episodes.sort_values(['CHILD', 'DECOM', 'DEC'], inplace=True)
+            episodes[['PREVIOUS_DEC', 'PREVIOUS_CHILD']] = episodes[['DEC', 'CHILD']].shift(1)
 
-            # drop rows with missing DECOM and DEC as invalid/missing values can lead to errors
-            episodes = episodes.dropna(subset=['DECOM','DEC'])
+            rne_is_ongoing = episodes['RNE'].str.upper().astype(str).isin(['P', 'L', 'T', 'U', 'B'])
+            date_mismatch = episodes['PREVIOUS_DEC'] != episodes['DECOM']
+            missing_date = episodes['PREVIOUS_DEC'].isna() | episodes['DECOM'].isna()
+            same_child = episodes['PREVIOUS_CHILD'] == episodes['CHILD']
 
-            episodes.sort_values(['DECOM','DEC'], inplace=True)
-            episodes['PREVIOUS_DEC'] = episodes.groupby('CHILD')['DEC'].shift(1)
+            error_mask = rne_is_ongoing & (date_mismatch | missing_date) & same_child
 
-            rne_is_ongoing = episodes['RNE'].str.upper().astype(str).isin(['P','L','T','U','B'])
-            episode_dates_match = episodes['PREVIOUS_DEC'] == episodes['DECOM']
-            episode_no_previous = episodes['PREVIOUS_DEC'].isna()
-
-            error_mask = rne_is_ongoing & ~episode_dates_match & ~episode_no_previous
-
-            error_locations = episodes.index[error_mask]
+            error_locations = episodes['original_index'].loc[error_mask].sort_values()
 
             return {'Episodes': error_locations.to_list()}
 

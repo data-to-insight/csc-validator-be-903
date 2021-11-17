@@ -3,12 +3,12 @@ import pandas as pd
 
 def test_validate_433():
     fake_data_episodes = pd.DataFrame([
-        {'CHILD': '101', 'DECOM': '20/10/2021', 'RNE': 'S', 'DEC': '20/11/2021'}, #Ignore
-        {'CHILD': '102', 'DECOM': '19/11/2021', 'RNE': 'P', 'DEC': pd.NA}, #Okay
-        {'CHILD': '102', 'DECOM': '17/06/2021', 'RNE': 'P', 'DEC': '19/11/2021'},
-        {'CHILD': '103', 'DECOM': '04/04/2020', 'RNE': 'B', 'DEC': '12/09/2020'},
-        {'CHILD': '103', 'DECOM': '11/09/2020', 'RNE': 'B', 'DEC': '06/05/2021'},
-        {'CHILD': '103', 'DECOM': '07/05/2021', 'RNE': 'B', 'DEC': pd.NA}, 
+        {'CHILD': '101', 'DECOM': '20/10/2021', 'RNE': 'S', 'DEC': '20/11/2021'},  # 0: Ignore
+        {'CHILD': '102', 'DECOM': '19/11/2021', 'RNE': 'P', 'DEC': pd.NA},  # 1 [102:2nd]
+        {'CHILD': '102', 'DECOM': '17/06/2021', 'RNE': 'P', 'DEC': '19/11/2021'},  # 2 [102:1st]
+        {'CHILD': '103', 'DECOM': '04/04/2020', 'RNE': 'B', 'DEC': '12/09/2020'},  # 3 [103:1st]
+        {'CHILD': '103', 'DECOM': '11/09/2020', 'RNE': 'B', 'DEC': '06/05/2021'},  # 4 [103:2nd] ]Fail!
+        {'CHILD': '103', 'DECOM': '07/05/2021', 'RNE': 'B', 'DEC': pd.NA},  # 5 [103:3rd] Fail!
     ])
 
     fake_dfs = {'Episodes': fake_data_episodes}
@@ -17,7 +17,7 @@ def test_validate_433():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [4]}
+    assert result == {'Episodes': [4, 5]}
 
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({

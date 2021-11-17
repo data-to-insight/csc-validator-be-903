@@ -3838,3 +3838,34 @@ def validate_377():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_364():
+    error = ErrorDefinition(
+        code='364',
+        description='Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits the ' +
+                    'time a child can be detained in custody in Local Authority (LA) accommodation.',
+        affected_fields=['LS', 'DECOM', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            epi.reset_index(inplace=True)
+            epi_ls_j2 = epi[epi['LS'] == 'J2']
+            epi_ls_j2['DEC'].fillna(collection_end, inplace=True)
+
+            epi_ls_j2['DAYS_DIF'] = (epi_ls_j2['DEC'] - epi_ls_j2['DECOM']).dt.days
+
+            sum_frame = epi_ls_j2.groupby(['CHILD'])['DAYS_DIF'].sum().to_frame(name='SUM').query(
+                "SUM > 21").reset_index()
+
+            err_list = epi_ls_j2.merge(sum_frame, on='CHILD', how='inner')['index'].unique().tolist()
+            return {'Episodes': err_list}
+
+    return error, _validate

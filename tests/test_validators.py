@@ -2755,3 +2755,23 @@ def test_validate_377():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
+
+def test_validate_364():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'DEC': '22/06/2020', 'DECOM': '01/06/2020', 'LS': 'J2'},  # 0
+        {'CHILD': '222', 'DEC': '23/06/2020', 'DECOM': '01/06/2020', 'LS': 'J2'},  # 1
+        {'CHILD': '333', 'DEC': '22/06/2020', 'DECOM': '01/06/2020', 'LS': 'J2'},  # 2
+        {'CHILD': '444', 'DEC': '23/06/2020', 'DECOM': '01/06/2020', 'LS': 'U2'},  # 3
+        {'CHILD': '555', 'DEC': pd.NA       , 'DECOM': '01/06/2020', 'LS': 'J2'},  # 4
+        {'CHILD': '666', 'DEC': '05/06/2020', 'DECOM': '01/06/2020', 'LS': 'J2'},  # 5
+        {'CHILD': '666', 'DEC': '23/06/2020', 'DECOM': '01/06/2020', 'LS': 'J2'},  # 6
+    ])
+    metadata = {'collection_end': '31/03/2021'}
+
+    fake_dfs = {'Episodes': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_364()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1, 4, 5, 6]}

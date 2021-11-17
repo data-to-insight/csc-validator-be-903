@@ -1,6 +1,19 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_133():
+    fake_data = pd.DataFrame({
+      'ACCOM':['B1','B2',pd.NA,'S2','K1','X','1'],
+    })
+
+    fake_dfs = {'OC3': fake_data}
+
+    error_defn, error_func = validate_133()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3':[5, 6]}
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

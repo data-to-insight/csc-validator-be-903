@@ -1,6 +1,29 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_133():
+    error = ErrorDefinition(
+        code = '133',
+        description = 'Data entry for accommodation after leaving care is invalid. If reporting on a childs accommodation after leaving care the data entry must be valid',
+        affected_fields=['ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+          return{}
+
+        else:
+            oc3 = dfs['OC3']
+            valid_codes = ['B1', 'B2', 'C1', 'C2', 'D1', 'D2', 'E1', 'E2', 'G1', 'G2', 'H1', 'H2', 'K1', 'K2', 'R1', 'R2', 'S2', 'T1', 'T2', 'U1', 'U2', 'V1', 'V2', 'W1', 'W2', 'X2', 'Y1', 'Y2', 'Z1', 'Z2', '0' ]
+
+            error_mask = ~oc3['ACCOM'].isna() & ~oc3['ACCOM'].isin(valid_codes)
+
+            error_locations = oc3.index[error_mask]
+
+            return{'OC3': error_locations.tolist()}
+
+    return error, _validate
+
 def validate_518():
     error = ErrorDefinition(
         code = '518',

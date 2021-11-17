@@ -39,6 +39,44 @@ def validate_205A():
 
     return error, _validate
 
+def validate_205B():
+    error = ErrorDefinition(
+        code = '205B',
+        description = 'Child previously identified as UASC is also UASC this year, but date UASC ceased in both years does not support this.',
+        affected_fields=['DUC'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+
+            uasc['DOB'] = pd.to_datetime(uasc['DOB'],format='%d/%m/%Y',errors='coerce')
+            uasc['DUC'] = pd.to_datetime(uasc['DUC'],format='%d/%m/%Y',errors='coerce')
+            uasc_last['DOB'] = pd.to_datetime(uasc_last['DOB'],format='%d/%m/%Y',errors='coerce')
+            uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'],format='%d/%m/%Y',errors='coerce')
+            uasc_last['DOB18'] = uasc_last['DOB'] + pd.offsets.DateOffset(years=18)
+
+            uasc_merged = uasc.reset_index().merge(uasc_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+
+            in_both_years = uasc_merged['_merge'] == 'both'
+            uasc_current_duc = (uasc_merged['DUC'] >= collection_start) & (uasc_merged['DUC'] <= collection_end)
+            uasc_last_duc = uasc_merged['DUC_last'] == uasc_merged['DOB18']
+            uasc_duc_matches = uasc_merged['DUC'] == uasc_merged['DUC_last']
+
+            error_mask = in_both_years & (~uasc_current_duc | ~uasc_duc_matches | ~uasc_last_duc)
+
+            error_locations = uasc.index[error_mask]
+
+            return {'UASC': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_518():
     error = ErrorDefinition(
         code = '518',

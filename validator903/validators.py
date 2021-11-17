@@ -3851,7 +3851,7 @@ def validate_602():
         else:
             epi = dfs['Episodes']
             ad1 = dfs['AD1']
-            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
 

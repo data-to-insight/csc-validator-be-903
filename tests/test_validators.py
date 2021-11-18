@@ -1,6 +1,31 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_451():
+  fake_data = pd.DataFrame({
+    'CHILD':['101','102','101','102','103','104'],
+    'REC':['E11','E12','X1',pd.NA,'E11','E11'],
+    'DEC':['15/03/2021','17/06/2020','20/03/2020',pd.NA,'23/08/2020',pd.NA],
+    'LS':['J2','X','J2','D1','D','D1']})
+  fake_dfs = {'Episodes':fake_data}
+  error_defn, error_func = validate_451()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[3]}
+
+def test_validate_519():
+  fake_data = pd.DataFrame({
+  'LS_ADOPTR':['L2','L4',pd.NA,'L2','L2','L2','L4'],
+  'SEX_ADOPTR':['MM','FF','MM','M1','MF',pd.NA,'xxxxx'],
+  })
+
+  fake_dfs = {'AD1': fake_data}
+
+  error_defn, error_func = validate_519()
+
+  result = error_func(fake_dfs)
+
+  assert result == {'AD1':[3,4,5]}
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

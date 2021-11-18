@@ -9,7 +9,8 @@ These are used in two places:
 """
 column_names = {
     'Header': ['CHILD', 'SEX', 'DOB', 'ETHNIC', 'UPN', 'MOTHER', 'MC_DOB'],
-    'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE', 'HOME_POST', 'PL_POST', 'URN'],
+    'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE',
+                 'HOME_POST', 'PL_POST', 'URN'],
     'Reviews': ['CHILD', 'DOB', 'REVIEW', 'REVIEW_CODE'],
     'UASC': ['CHILD', 'SEX', 'DOB', 'DUC'],
     'OC2': ['CHILD', 'DOB', 'SDQ_SCORE', 'SDQ_REASON', 'CONVICTED', 'HEALTH_CHECK',
@@ -23,12 +24,13 @@ column_names = {
     'Missing': ['CHILD', 'DOB', 'MISSING', 'MIS_START', 'MIS_END'],
 }
 
+
 """
 List of all configured errors for validation.
 
 These all should have return type (Error, Dict[str, DataFrame])
 """
-configured_errors = [
+configured_errors = sorted([
     validate_552(),
     validate_101(),
     validate_102(),
@@ -191,4 +193,5 @@ configured_errors = [
     validate_575(),
     validate_133(),
     validate_1012(),
-]
+])
+errors = {e[0].code: e for e in configured_errors}

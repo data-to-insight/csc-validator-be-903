@@ -19,16 +19,11 @@ def dummy_input_files():
         'missing.csv': 'Missing',
     }
 
-@pytest.fixture
-def dummy_postcodes():
-    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
-    return pd.read_csv(file_path)
 
 @pytest.fixture
-def dummy_metadata(dummy_postcodes):
+def dummy_metadata():
     return {
         'collectionYear': '2019/20',
-        'postcodes': dummy_postcodes,
         'localAuthority': 'test_LA',
     }
 

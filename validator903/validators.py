@@ -1,4 +1,6 @@
 import pandas as pd
+
+from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
 def validate_158():
@@ -2262,17 +2264,15 @@ def validate_392c():
         if 'Episodes' not in dfs:
             return {}
         else:
-            if 'postcodes' not in dfs['metadata']:
-                return {'Episodes': []}
-
             episodes = dfs['Episodes']
-            postcode_list = set(dfs['metadata']['postcodes']['pcd'])
 
-            is_valid = lambda x: str(x).replace(' ', '') in postcode_list
             home_provided = episodes['HOME_POST'].notna()
-            home_valid = episodes['HOME_POST'].apply(is_valid)
+            home_details = merge_postcodes(episodes, "HOME_POST")
+            home_valid = home_details['pcd'].notna()
+
             pl_provided = episodes['PL_POST'].notna()
-            pl_valid = episodes['PL_POST'].apply(is_valid)
+            pl_details = merge_postcodes(episodes, "PL_POST")
+            pl_valid = pl_details['pcd'].notna()
 
             error_mask = (home_provided & ~home_valid) | (pl_provided & ~pl_valid)
 

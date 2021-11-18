@@ -1316,7 +1316,7 @@ def test_validate_116():
     assert result == {'PlacedAdoption': [2, 3]}
 
 
-def test_validate_392c(dummy_postcodes):
+def test_validate_392c():
     fake_data = pd.DataFrame({
         'HOME_POST': [
             'AB1 0JD',
@@ -1334,7 +1334,7 @@ def test_validate_392c(dummy_postcodes):
         ],
     })
 
-    fake_dfs = {'Episodes': fake_data, 'metadata': {'postcodes': dummy_postcodes}}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_392c()
 

@@ -1,6 +1,16 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_520():
+  fake_ad1 = pd.DataFrame({
+    'LS_ADOPTR':['L11','L11',pd.NA,'L4','L11','L1','L4'],
+    'SEX_ADOPTR':['MM','FF','MM','M1','MF','F1','xxxxx'],
+  })
+  fake_dfs = {'AD1': fake_ad1}
+  error_defn, error_func = validate_520()
+  result = error_func(fake_dfs)
+  assert result == {'AD1':[0,1]}
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

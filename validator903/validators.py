@@ -1,6 +1,23 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_384():
+  error = ErrorDefinition(
+    code = '384',
+    description = 'A child receiving respite care cannot be in a long-term foster placement ',
+    affected_fields = ['PLACE', 'LS']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      # Where <LS> = 'V3' or 'V4' then <PL> must not be 'U1' or 'U4'
+      mask = ((episodes['LS']=='V3')|(episodes['LS']=='V4') )& ((episodes['PLACE']=='U1')|(episodes['PLACE']=='U4'))
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.to_list()}
+  return error, _validate
+
 def validate_547():
     error = ErrorDefinition(
         code = '547',

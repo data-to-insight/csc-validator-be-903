@@ -3838,3 +3838,33 @@ def validate_377():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_575():
+    error = ErrorDefinition(
+        code='575',
+        description='If the placement from which the child goes missing/away from placement without ' +
+                    'authorisation ends, the missing/away from placement without authorisation period in ' +
+                    'the missing module must also have an end date.',
+        affected_fields=['MIS_END'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            mis = dfs['Missing']
+
+            mis.reset_index(inplace=True)
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            mis['MIS_START'] = pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
+
+            m_coh = epi.merge(mis, how='inner', on='CHILD') \
+                .query("(MIS_START >= DECOM) & (MIS_START <= DEC) & MIS_END.isnull() & DEC.notnull()")
+
+            err_list = m_coh['index'].unique().tolist()
+            err_list.sort()
+            return {'Missing': err_list}
+
+    return error, _validate

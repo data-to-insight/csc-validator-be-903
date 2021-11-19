@@ -4,7 +4,7 @@ import pandas as pd
 def test_validate_345():
   fake_data_oc3 = pd.DataFrame({
       'CHILD': ['A', 'B', 'C', 'D', 'E'],
-      'IN_TOUCH': ['No', 'Yes','YES' , pd.NA, 'Yes'],
+      'IN_TOUCH': ['No', 'YES','YES' , pd.NA, 'Yes'],
       'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
       'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX'],
     })

@@ -1,6 +1,18 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_344():
+  fake_data_oc3 = pd.DataFrame({
+      'CHILD': ['A', 'B', 'C', 'D', 'E'],
+      'IN_TOUCH': ['DIED', 'Yes','RHOM' , pd.NA, 'DIED'],
+      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX'],
+    })
+  fake_dfs = {'OC3': fake_data_oc3}
+  error_defn, error_func = validate_344()
+  result = error_func(fake_dfs)
+  assert result == {'OC3':[2,4]}
+
 def test_validate_547():
 
     fake_data = pd.DataFrame({

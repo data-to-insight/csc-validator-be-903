@@ -1,6 +1,23 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_344():
+  error = ErrorDefinition(
+    code = '344',
+    description = 'The record shows the young person has died or returned home to live with parent(s) or someone with parental responsibility for a continuous period of 6 months or more, but activity and/or accommodation on leaving care have been completed.',
+    affected_fields = ['IN_TOUCH', 'ACTIV', 'ACCOM']
+  )
+  def _validate(dfs):
+    if 'OC3' not in dfs:
+      return {}
+    else:
+      oc3 = dfs['OC3']
+      # If <IN_TOUCH> = 'DIED' or 'RHOM' then <ACTIV> and <ACCOM> should not be provided
+      mask = ((oc3['IN_TOUCH']=='DIED')|(oc3['IN_TOUCH']=='RHOM')) & (oc3['ACTIV'].notna()|oc3['ACCOM'].notna())
+      error_locations = oc3.index[mask]
+      return {'OC3': error_locations.to_list()}
+  return error, _validate
+
 def validate_547():
     error = ErrorDefinition(
         code = '547',

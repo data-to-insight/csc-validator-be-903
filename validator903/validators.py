@@ -8,18 +8,18 @@ def validate_635():
     affected_fields = ['LA_PERM','DATE_PERM','PREV_PERM']
   )
 
-  def _validate(dfs):
-    if 'PrevPerm' not in dfs:
-      return {}
-    else:
-      prev_perm = dfs['PrevPerm']
-      # raise and error if either LA_PERM or DATE_PERM are present, yet PREV_PERM is absent.
-      mask = ((prev_perm['LA_PERM'].notna() | prev_perm['DATE_PERM'].notna()) & prev_perm['PREV_PERM'].isna())
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        else:
+            prev_perm = dfs['PrevPerm']
+            # raise and error if either LA_PERM or DATE_PERM are present, yet PREV_PERM is absent.
+            mask = ((prev_perm['LA_PERM'].notna() | prev_perm['DATE_PERM'].notna()) & prev_perm['PREV_PERM'].isna())
 
-      error_locations = prev_perm.index[mask]
-      return {'PrevPerm': error_locations.to_list()}
+            error_locations = prev_perm.index[mask]
+        return {'PrevPerm': error_locations.to_list()}
 
-  return error, _validate
+    return error, _validate
 
 
 def validate_550():

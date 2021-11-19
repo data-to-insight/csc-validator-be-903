@@ -2,17 +2,17 @@ from validator903.validators import *
 import pandas as pd
 
 def test_validate_635():
-  fake_data_prevperm = pd.DataFrame({
+    fake_data_prevperm = pd.DataFrame({
         'CHILD': ['2', '4', '5', '6', '7', '8'],
         'PREV_PERM': ['Z1', pd.NA, pd.NA, 'Z1', pd.NA, 'P1'],
         'LA_PERM': [pd.NA, '352', pd.NA, '352', pd.NA, '352'],
         'DATE_PERM': [pd.NA, pd.NA, '01/05/2000', pd.NA, pd.NA, '05/05/2020'],
     })
 
-  fake_dfs = {'PrevPerm':fake_data_prevperm}
-  error_defn, error_func = validate_635()
-  result = error_func(fake_dfs)
-  assert result == {'PrevPerm':[1,2]}
+    fake_dfs = {'PrevPerm':fake_data_prevperm}
+    error_defn, error_func = validate_635()
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm':[1,2]}
 
 
 def test_validate_518():

@@ -2755,3 +2755,26 @@ def test_validate_377():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
+
+def test_validate_576():
+    fake_mis_l = pd.DataFrame([
+        {'CHILD': '111', 'MIS_START': '07/02/2020', 'MIS_END': '07/02/2020'},  # 0
+        {'CHILD': '222', 'MIS_START': '07/02/2020', 'MIS_END': pd.NA},  # 1
+        {'CHILD': '333', 'MIS_START': '03/02/2020', 'MIS_END': '07/02/2020'},  # 2
+        {'CHILD': '444', 'MIS_START': '07/02/2020', 'MIS_END': pd.NA},  # 3
+        {'CHILD': '555', 'MIS_START': '01/02/2020', 'MIS_END': pd.NA},  # 4
+        {'CHILD': '666', 'MIS_START': '13/02/2020', 'MIS_END': '07/02/2020'},  # 5
+    ])
+    fake_mis = pd.DataFrame([
+        {'CHILD': '111', 'MIS_START': '07/02/2020'},  # 0
+        {'CHILD': '222', 'MIS_START': '08/02/2020'},  # 1 Fails
+        {'CHILD': '333', 'MIS_START': '03/02/2020'},  # 2
+        {'CHILD': '444', 'MIS_START': pd.NA},         # 3 Fails
+        {'CHILD': '555', 'MIS_START': '01/02/2020'},  # 4
+        {'CHILD': '666', 'MIS_START': '13/02/2020'},  # 5
+    ])
+    fake_dfs = {'Missing_last': fake_mis_l, 'Missing': fake_mis}
+
+    error_defn, error_func = validate_576()
+
+    assert error_func(fake_dfs) == {'Missing': [1, 3]}

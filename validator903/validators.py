@@ -2,11 +2,11 @@ import pandas as pd
 from .types import ErrorDefinition
 
 def validate_635():
-  error = ErrorDefinition(
+    error = ErrorDefinition(
     code = '635',
     description = 'There are entries for date of order and local authority code where previous permanence option was arranged but previous permanence code is Z1',
     affected_fields = ['LA_PERM','DATE_PERM','PREV_PERM']
-  )
+    )
 
     def _validate(dfs):
         if 'PrevPerm' not in dfs:

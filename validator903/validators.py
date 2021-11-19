@@ -3847,7 +3847,6 @@ def validate_426():
         affected_fields=['LS'],
     )
     def _validate(dfs):
-
         if 'Episodes' not in dfs:
             return {}
         else:
@@ -3863,6 +3862,23 @@ def validate_426():
 
             err_list = err_l1 + err_l2
             err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+def validate_382():
+    error = ErrorDefinition(
+        code='382',
+        description='A child receiving respite care cannot be in a temporary placement.',
+        affected_fields=['LS', 'PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            err_list = epi.query("LS.isin(['V3', 'V4']) & PLACE.isin(['T0', 'T1', 'T2', 'T3', 'T4'])").index.tolist()
             return {'Episodes': err_list}
 
     return error, _validate

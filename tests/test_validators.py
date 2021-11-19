@@ -2776,3 +2776,20 @@ def test_validate_426():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 3, 6, 7, 8]}
+
+def test_validate_382():
+    fake_data = pd.DataFrame([
+        {'PLACE': 'T0', 'LS': 'V3'},  # 0
+        {'PLACE': 'R4', 'LS': 'V3'},  # 1
+        {'PLACE': 'T1', 'LS': 'X3'},  # 2
+        {'PLACE': 'T2', 'LS': 'V4'},  # 3
+        {'PLACE': 'T3', 'LS': 'V4'},  # 4
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_382()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 3, 4]}

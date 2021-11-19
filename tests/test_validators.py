@@ -1,6 +1,17 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_398():
+  fake_data = pd.DataFrame({    
+      'HOME_POST': ['AB1 0JD','invalid','AB1 0JD','invalid','AB10JD',],
+      'LS': ['V3', 'U1', 'V4', 'T1', 'U1'],
+      'PL_POST': ['AB1 0JD','AB1 0JD',pd.NA,'invalid','AB1 0JD',],
+  })
+  fake_dfs = {'Episodes':fake_data}
+  error_defn, error_func = validate_398()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,2]}
+  
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

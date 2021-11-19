@@ -1,6 +1,22 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_398():
+  error = ErrorDefinition(
+    code = '398', 
+    description = 'Distance field completed but child looked after under legal status V3 or V4.',
+    affected_fields = ['LS', 'HOME_POST', 'PL_POST']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      mask = ((episodes['LS']=='V3')|(episodes['LS']=='V4')) & (episodes['HOME_POST'].notna()|episodes['PL_POST'].notna())
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.to_list()}
+  return error, _validate
+
 def validate_518():
     error = ErrorDefinition(
         code = '518',

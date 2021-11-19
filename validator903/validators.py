@@ -1,6 +1,27 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+
+def validate_550():
+    error = ErrorDefinition(
+        code = '550',
+        description = 'A placement provider code of PR0 can only be associated with placement P1.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+      if 'Episodes' not in dfs:
+        return {}
+      else:
+        episodes = dfs['Episodes']
+
+        mask = (episodes['PLACE'] != 'P1') & episodes['PLACE_PROVIDER'].eq('PR0')
+
+        validation_error_locations = episodes.index[mask]
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_518():
     error = ErrorDefinition(
         code = '518',

@@ -155,6 +155,7 @@ configured_errors = [
     validate_446(),
     validate_441(),
     validate_440(),
+    validate_550(),
     validate_516(),
     validate_363(),
     validate_364(),

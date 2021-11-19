@@ -2715,6 +2715,19 @@ def test_validate_526():
 
     assert error_func(fake_dfs) == {'Episodes': [4, 6]}
 
+def test_validate_550():
+    fake_data = pd.DataFrame({
+        'PLACE':          ['P1', 'P0', 'T1', 'T3', 'T1', 'P1', 'P0'],
+        'PLACE_PROVIDER': ['PR0', 'PR2', 'PR4', 'PR0', pd.NA, 'PR0', 'PR0'],
+     })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_550()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 6]}
 def test_validate_529():
     fake_data = pd.DataFrame({
         'PLACE_PROVIDER': ['PR0', 'PR1', 'PR3', 'PR3', pd.NA, 'PR3'],

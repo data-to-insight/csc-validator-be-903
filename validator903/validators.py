@@ -15,7 +15,7 @@ def validate_550():
       else:
         episodes = dfs['Episodes']
           
-        mask = (episodes['PLACE'].neq('P1')) &episodes['PLACE_PROVIDER'].eq('PR0')
+        mask = (episodes['PLACE'] != 'P1') & episodes['PLACE_PROVIDER'].eq('PR0')
 
         validation_error_locations = episodes.index[mask]
         return {'Episodes': validation_error_locations.tolist()} 

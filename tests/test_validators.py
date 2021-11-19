@@ -1,6 +1,29 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_547():
+
+    fake_data = pd.DataFrame({
+        'HEALTH_CHECK': [pd.NA, 1, '1', 1,
+                        '1', 0, 1, pd.NA],
+        'IMMUNISATIONS': [pd.NA, pd.NA, pd.NA, 1,
+                          pd.NA, pd.NA, 1, pd.NA],
+        'TEETH_CHECK': [pd.NA, pd.NA, pd.NA, '1',
+                        '1',  pd.NA, 1, '1'],
+        'HEALTH_ASSESSMENT': [pd.NA, pd.NA, pd.NA, 0,
+                              '1', pd.NA, 1, 0],
+        'SUBSTANCE_MISUSE': [pd.NA, pd.NA, pd.NA, 0,
+                             pd.NA, pd.NA, 1, '1'],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_547()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 4]}
+
 def test_validate_635():
     fake_data_prevperm = pd.DataFrame({
         'CHILD': ['2', '4', '5', '6', '7', '8'],

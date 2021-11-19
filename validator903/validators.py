@@ -3847,7 +3847,7 @@ def validate_580():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs:
+        if 'Episodes' not in dfs or 'Missing' not in dfs:
             return {}
         else:
             epi = dfs['Episodes']

@@ -13,7 +13,35 @@ def test_validate_635():
   error_defn, error_func = validate_635()
   result = error_func(fake_dfs)
   assert result == {'PrevPerm':[1,2]}
-  
+
+
+def test_validate_518():
+    fake_data = pd.DataFrame({
+      'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],
+      'SEX_ADOPTR':['MM','FF','MM','M1','MF','F1','xxxxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_518()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1':[3, 4, 6]}
+
+def test_validate_517():
+    fake_data = pd.DataFrame({
+      'LS_ADOPTR':['L3','L1',pd.NA,'L3','L3','L4','L3'],
+      'SEX_ADOPTR':['MF','MF','MM','M1','FF','F1','xxxxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_517()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1':[3, 4, 6]}
 
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({
@@ -2701,6 +2729,19 @@ def test_validate_526():
 
     assert error_func(fake_dfs) == {'Episodes': [4, 6]}
 
+def test_validate_550():
+    fake_data = pd.DataFrame({
+        'PLACE':          ['P1', 'P0', 'T1', 'T3', 'T1', 'P1', 'P0'],
+        'PLACE_PROVIDER': ['PR0', 'PR2', 'PR4', 'PR0', pd.NA, 'PR0', 'PR0'],
+     })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_550()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 6]}
 def test_validate_529():
     fake_data = pd.DataFrame({
         'PLACE_PROVIDER': ['PR0', 'PR1', 'PR3', 'PR3', pd.NA, 'PR3'],
@@ -2714,3 +2755,30 @@ def test_validate_529():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2,5]}
+
+def test_validate_377():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'RNE': 'P', 'DECOM': '01/06/2020', 'PLACE': 'T3'},  # 0 ^
+        {'CHILD': '111', 'RNE': 'P', 'DECOM': '05/06/2020', 'PLACE': 'P3'},  # 1
+        {'CHILD': '111', 'RNE': 'T', 'DECOM': '06/06/2020', 'PLACE': 'T3'},  # 2
+        {'CHILD': '111', 'RNE': 'B', 'DECOM': '08/06/2020', 'PLACE': 'T3'},  # 3 v
+        {'CHILD': '222', 'RNE': 'B', 'DECOM': '05/06/2020', 'PLACE': 'T3'},  # 4 -
+        {'CHILD': '333', 'RNE': 'B', 'DECOM': '06/06/2020', 'PLACE': 'T3'},  # 5 ^
+        {'CHILD': '333', 'RNE': 'U', 'DECOM': '10/06/2020', 'PLACE': 'T3'},  # 6 v
+        {'CHILD': '444', 'RNE': 'B', 'DECOM': '07/06/2020', 'PLACE': 'T3'},  # 7 ^
+        {'CHILD': '444', 'RNE': 'B', 'DECOM': '08/06/2020', 'PLACE': 'oo'},  # 8
+        {'CHILD': '444', 'RNE': 'T', 'DECOM': '09/06/2020', 'PLACE': 'T3'},  # 9
+        {'CHILD': '444', 'RNE': 'B', 'DECOM': '15/06/2020', 'PLACE': 'T3'},  # 10 v
+        {'CHILD': '6666', 'RNE': 'P', 'DECOM': '11/06/2020', 'PLACE': 'oo'},  # 11 ^
+        {'CHILD': '6666', 'RNE': 'P', 'DECOM': '12/06/2020', 'PLACE': 'T3'},  # 12
+        {'CHILD': '6666', 'RNE': 'P', 'DECOM': '13/06/2020', 'PLACE': 'T3'},  # 13
+        {'CHILD': '6666', 'RNE': 'P', 'DECOM': '14/06/2020', 'PLACE': 'T3'},  # 14 v
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_377()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}

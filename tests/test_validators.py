@@ -1,6 +1,93 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_565():
+
+  fake_data = pd.DataFrame([
+    {'MISSING': 'M', 'MIS_START': pd.NA},  # 0
+    {'MISSING': pd.NA, 'MIS_START': '07/02/2020'},  # 1
+    {'MISSING': 'A', 'MIS_START': '03/02/2020'},  # 2
+    {'MISSING': pd.NA, 'MIS_START': pd.NA},  # 3
+    {'MISSING': 'M', 'MIS_START': pd.NA},  # 4
+    {'MISSING': 'A', 'MIS_START': '13/02/2020'},  # 5
+    ])
+
+  fake_dfs = {'Missing': fake_data}
+
+  error_defn, error_func = validate_565()
+
+  assert error_func(fake_dfs) == {'Missing': [1]}
+
+def test_validate_433():
+    fake_data_episodes = pd.DataFrame([
+        {'CHILD': '101', 'DECOM': '20/10/2021', 'RNE': 'S', 'DEC': '20/11/2021'},  # 0: Ignore
+        {'CHILD': '102', 'DECOM': '19/11/2021', 'RNE': 'P', 'DEC': pd.NA},  # 1 [102:2nd]
+        {'CHILD': '102', 'DECOM': '17/06/2021', 'RNE': 'P', 'DEC': '19/11/2021'},  # 2 [102:1st]
+        {'CHILD': '103', 'DECOM': '04/04/2020', 'RNE': 'B', 'DEC': '12/09/2020'},  # 3 [103:1st]
+        {'CHILD': '103', 'DECOM': '11/09/2020', 'RNE': 'B', 'DEC': '06/05/2021'},  # 4 [103:2nd] ]Fail!
+        {'CHILD': '103', 'DECOM': '07/05/2021', 'RNE': 'B', 'DEC': pd.NA},  # 5 [103:3rd] Fail!
+    ])
+
+    fake_dfs = {'Episodes': fake_data_episodes}
+
+    error_defn, error_func = validate_433()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [4, 5]}
+
+def test_validate_437():
+    fake_data_episodes = pd.DataFrame({
+        'CHILD': ['101','102','102','103','103','103','104','104','104','104','105','105'],
+        'DECOM': ['20/10/2021','19/11/2021','17/06/2021','04/04/2020','11/09/2020','07/05/2021','15/02/2020','09/04/2020','24/09/2020','30/06/2021',pd.NA,'20/12/2020'],
+        'REC': ['E2','E15','X1','X1','E15',pd.NA,'X1','E4a','X1',pd.NA,'E2','X1'],
+    })
+
+    fake_dfs = {'Episodes': fake_data_episodes}
+
+    error_defn, error_func = validate_437()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [4]}
+
+def test_validate_547():
+
+    fake_data = pd.DataFrame({
+        'HEALTH_CHECK': [pd.NA, 1, '1', 1,
+                        '1', 0, 1, pd.NA],
+        'IMMUNISATIONS': [pd.NA, pd.NA, pd.NA, 1,
+                          pd.NA, pd.NA, 1, pd.NA],
+        'TEETH_CHECK': [pd.NA, pd.NA, pd.NA, '1',
+                        '1',  pd.NA, 1, '1'],
+        'HEALTH_ASSESSMENT': [pd.NA, pd.NA, pd.NA, 0,
+                              '1', pd.NA, 1, 0],
+        'SUBSTANCE_MISUSE': [pd.NA, pd.NA, pd.NA, 0,
+                             pd.NA, pd.NA, 1, '1'],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_547()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 4]}
+
+def test_validate_635():
+    fake_data_prevperm = pd.DataFrame({
+        'CHILD': ['2', '4', '5', '6', '7', '8'],
+        'PREV_PERM': ['Z1', pd.NA, pd.NA, 'Z1', pd.NA, 'P1'],
+        'LA_PERM': [pd.NA, '352', pd.NA, '352', pd.NA, '352'],
+        'DATE_PERM': [pd.NA, pd.NA, '01/05/2000', pd.NA, pd.NA, '05/05/2020'],
+    })
+
+    fake_dfs = {'PrevPerm':fake_data_prevperm}
+    error_defn, error_func = validate_635()
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm':[1,2]}
+
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],
@@ -2715,6 +2802,19 @@ def test_validate_526():
 
     assert error_func(fake_dfs) == {'Episodes': [4, 6]}
 
+def test_validate_550():
+    fake_data = pd.DataFrame({
+        'PLACE':          ['P1', 'P0', 'T1', 'T3', 'T1', 'P1', 'P0'],
+        'PLACE_PROVIDER': ['PR0', 'PR2', 'PR4', 'PR0', pd.NA, 'PR0', 'PR0'],
+     })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_550()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 6]}
 def test_validate_529():
     fake_data = pd.DataFrame({
         'PLACE_PROVIDER': ['PR0', 'PR1', 'PR3', 'PR3', pd.NA, 'PR3'],

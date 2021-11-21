@@ -1,6 +1,22 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_565():
+  error = ErrorDefinition(
+    code = '565',
+    description = 'The date that the child started to be missing or away from placement without authorisation has been completed but whether the child was missing or away from placement without authorisation has not been completed.',
+    affected_fields = ['MISSING', 'MIS_START']
+  )
+  def _validate(dfs):
+    if 'Missing' not in dfs:
+      return {}
+    else:
+      missing = dfs['Missing']
+      mask = missing['MIS_START'].notna() & missing['MISSING'].isna()
+      error_locations = missing.index[mask]
+      return {'Missing': error_locations.to_list()}
+  return error, _validate
+
 def validate_433():
     error = ErrorDefinition(
         code='433',

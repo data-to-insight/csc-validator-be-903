@@ -17,6 +17,180 @@ def validate_565():
       return {'Missing': error_locations.to_list()}
   return error, _validate
 
+def validate_433():
+    error = ErrorDefinition(
+        code='433',
+        description='The reason for new episode suggests that this is a continuation episode, but the episode does not start on the same day as the last episode finished.',
+        affected_fields=['RNE','DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+
+            episodes['original_index'] = episodes.index
+            episodes.sort_values(['CHILD', 'DECOM', 'DEC'], inplace=True)
+            episodes[['PREVIOUS_DEC', 'PREVIOUS_CHILD']] = episodes[['DEC', 'CHILD']].shift(1)
+
+            rne_is_ongoing = episodes['RNE'].str.upper().astype(str).isin(['P', 'L', 'T', 'U', 'B'])
+            date_mismatch = episodes['PREVIOUS_DEC'] != episodes['DECOM']
+            missing_date = episodes['PREVIOUS_DEC'].isna() | episodes['DECOM'].isna()
+            same_child = episodes['PREVIOUS_CHILD'] == episodes['CHILD']
+
+            error_mask = rne_is_ongoing & (date_mismatch | missing_date) & same_child
+
+            error_locations = episodes['original_index'].loc[error_mask].sort_values()
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_437():
+    error = ErrorDefinition(
+        code='437',
+        description='Reason episode ceased is child has died or is aged 18 or over but there are further episodes.',
+        affected_fields=['REC'],
+    )
+
+    #!# potential false negatives, as this only operates on the current year's data
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+
+            episodes.sort_values(['CHILD', 'DECOM'], inplace=True)
+            episodes[['NEXT_DECOM', 'NEXT_CHILD']] = episodes[['DECOM', 'CHILD']].shift(-1)
+
+            # drop rows with missing DECOM as invalid/missing values can lead to errors
+            episodes = episodes.dropna(subset=['DECOM'])
+
+            ceased_e2_e15 = episodes['REC'].str.upper().astype(str).isin(['E2','E15'])
+            has_later_episode = episodes['CHILD'] == episodes['NEXT_CHILD']
+
+            error_mask = ceased_e2_e15 & has_later_episode
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
+def validate_547():
+    error = ErrorDefinition(
+        code = '547',
+        description = "Any child who has health promotion information completed must also have immunisation, teeth check, health assessment and substance misuse problem identified fields completed.",
+        affected_fields=['HEALTH_CHECK','IMMUNISATIONS','TEETH_CHECK','HEALTH_ASSESSMENT','SUBSTANCE_MISUSE'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+
+            healthck = oc2['HEALTH_CHECK'].astype(str) == '1'
+            immunisations = oc2['IMMUNISATIONS'].isna()
+            teeth_ck = oc2['TEETH_CHECK'].isna()
+            health_ass = oc2['HEALTH_ASSESSMENT'].isna()
+            sub_misuse = oc2['SUBSTANCE_MISUSE'].isna()
+
+            error_mask = healthck & (immunisations | teeth_ck | health_ass | sub_misuse)
+            validation_error_locations = oc2.index[error_mask]
+
+            return {'OC2': validation_error_locations.to_list()}
+
+    return error, _validate
+
+def validate_635():
+    error = ErrorDefinition(
+    code = '635',
+    description = 'There are entries for date of order and local authority code where previous permanence option was arranged but previous permanence code is Z1',
+    affected_fields = ['LA_PERM','DATE_PERM','PREV_PERM']
+    )
+
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        else:
+            prev_perm = dfs['PrevPerm']
+            # raise and error if either LA_PERM or DATE_PERM are present, yet PREV_PERM is absent.
+            mask = ((prev_perm['LA_PERM'].notna() | prev_perm['DATE_PERM'].notna()) & prev_perm['PREV_PERM'].isna())
+
+            error_locations = prev_perm.index[mask]
+        return {'PrevPerm': error_locations.to_list()}
+
+    return error, _validate
+
+
+def validate_550():
+    error = ErrorDefinition(
+        code = '550',
+        description = 'A placement provider code of PR0 can only be associated with placement P1.',
+        affected_fields=['PLACE','PLACE_PROVIDER'],
+    )
+
+    def _validate(dfs):
+      if 'Episodes' not in dfs:
+        return {}
+      else:
+        episodes = dfs['Episodes']
+
+        mask = (episodes['PLACE'] != 'P1') & episodes['PLACE_PROVIDER'].eq('PR0')
+
+        validation_error_locations = episodes.index[mask]
+        return {'Episodes': validation_error_locations.tolist()}
+
+    return error, _validate
+
+def validate_518():
+    error = ErrorDefinition(
+        code = '518',
+        description = 'If reporting legal status of adopters is L4 then the genders of adopters should be coded as MM or FF. MM = the adopting couple are both males. FF = the adopting couple are both females.',
+        affected_fields=['LS_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            error_mask = AD1['LS_ADOPTR'].eq('L4') & ~AD1['SEX_ADOPTR'].isin(['MM','FF'])
+
+            error_locations = AD1.index[error_mask]
+
+            return{'AD1': error_locations.tolist()}
+
+    return error, _validate
+
+def validate_517():
+    error = ErrorDefinition(
+        code = '517',
+        description = 'If reporting legal status of adopters is L3 then the genders of adopters should be coded as MF. MF = the adopting couple are male and female.',
+        affected_fields=['LS_ADOPTR','SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+          return{}
+
+        else:
+            AD1 = dfs['AD1']
+
+            error_mask = AD1['LS_ADOPTR'].eq('L3') & ~AD1['SEX_ADOPTR'].isin(['MF'])
+
+            error_locations = AD1.index[error_mask]
+
+            return{'AD1': error_locations.tolist()}
+
+    return error, _validate
+
 def validate_558():
     error = ErrorDefinition(
         code='558',
@@ -3777,5 +3951,36 @@ def validate_529():
             code_list_placement_type = ['A3', 'A4', 'A5', 'A6', 'K1', 'K2', 'P1', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6' ]
             error_mask = epi['PLACE'].isin(code_list_placement_type) & (epi['PLACE_PROVIDER'] =='PR3')
             return {'Episodes': epi.index[error_mask].to_list()}
+
+    return error, _validate
+
+def validate_377():
+    error = ErrorDefinition(
+        code='377',
+        description='Only two temporary placements coded as being due to holiday of usual foster carer(s) are ' +
+                    'allowed in any 12- month period.',
+        affected_fields=['PLACE'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi.reset_index(inplace=True)
+
+            potent_cohort = epi[epi['PLACE'] == 'T3']
+
+            # Here I'm after the CHILD ids where there are more than 2 T3 placements.
+            count_them = potent_cohort.groupby('CHILD')['CHILD'].count().to_frame(name='cc')
+            count_them.reset_index(inplace=True)
+            count_them = count_them[count_them['cc'] > 2]
+
+            err_coh = epi[epi['CHILD'].isin(count_them['CHILD'])]
+            err_coh = err_coh[err_coh['PLACE'] == 'T3']
+
+            err_list = err_coh['index'].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
 
     return error, _validate

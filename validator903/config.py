@@ -90,6 +90,7 @@ configured_errors = [
     validate_411(),
     validate_420(),
     validate_433(),
+    validate_437(),
     validate_452(),
     validate_453(),
     validate_611(),

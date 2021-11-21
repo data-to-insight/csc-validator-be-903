@@ -31,6 +31,39 @@ def validate_433():
 
     return error, _validate
 
+def validate_437():
+    error = ErrorDefinition(
+        code='437',
+        description='Reason episode ceased is child has died or is aged 18 or over but there are further episodes.',
+        affected_fields=['REC'],
+    )
+
+    #!# potential false negatives, as this only operates on the current year's data
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
+
+            episodes.sort_values(['CHILD', 'DECOM'], inplace=True)
+            episodes[['NEXT_DECOM', 'NEXT_CHILD']] = episodes[['DECOM', 'CHILD']].shift(-1)
+
+            # drop rows with missing DECOM as invalid/missing values can lead to errors
+            episodes = episodes.dropna(subset=['DECOM'])
+
+            ceased_e2_e15 = episodes['REC'].str.upper().astype(str).isin(['E2','E15'])
+            has_later_episode = episodes['CHILD'] == episodes['NEXT_CHILD']
+
+            error_mask = ceased_e2_e15 & has_later_episode
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_547():
     error = ErrorDefinition(
         code = '547',

@@ -4043,6 +4043,34 @@ def validate_377():
 
     return error, _validate
 
+def validate_580():
+    error = ErrorDefinition(
+        code='580',
+        description='Child is missing when cease being looked after but reason episode ceased not ‘E8’.',
+        affected_fields=['REC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            mis = dfs['Missing']
+            mis['MIS_END'] = pd.to_datetime(mis['MIS_END'], format='%d/%m/%Y', errors='coerce')
+            mis['DOB'] = pd.to_datetime(mis['DOB'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            epi.reset_index(inplace=True)
+            mis['BD18'] = mis['DOB'] + pd.DateOffset(years=18)
+
+            m_coh = mis.merge(epi, how='inner', on='CHILD')
+            m_coh = m_coh.query("(MISSING == 'M') & (BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
+            err_list = m_coh.query("REC != 'E8'")['index'].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
 def validate_575():
     error = ErrorDefinition(
         code='575',

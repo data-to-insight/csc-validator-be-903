@@ -4064,7 +4064,7 @@ def validate_580():
             mis['BD18'] = mis['DOB'] + pd.DateOffset(years=18)
 
             m_coh = mis.merge(epi, how='inner', on='CHILD')
-            m_coh = m_coh.query("(BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
+            m_coh = m_coh.query("(MISSING == 'M') & (BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
             err_list = m_coh.query("REC != 'E8'")['index'].unique().tolist()
             err_list.sort()
             return {'Episodes': err_list}

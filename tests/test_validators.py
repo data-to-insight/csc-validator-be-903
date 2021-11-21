@@ -2901,17 +2901,18 @@ def test_validate_580():
         {'CHILD': '333', 'DEC': '06/06/2020', 'REC': 'E5'},  # 3 fails
         {'CHILD': '444', 'DEC': '07/06/2020', 'REC': 'E8'},  # 4
         {'CHILD': '555', 'DEC': '19/06/2020', 'REC': 'E4'},  # 5 fails
-
+        {'CHILD': '777', 'DEC': '19/06/2020', 'REC': 'E4'},  # 6
     ])
 
     fake_mis = pd.DataFrame([
-        {'CHILD': '111', 'MIS_END': '01/06/2020', 'DOB': '01/06/2002'},  #
-        {'CHILD': '123', 'MIS_END': '08/06/2020', 'DOB': '08/06/2002'},  #
-        {'CHILD': '222', 'MIS_END': '05/06/2020', 'DOB': '05/06/2002'},  #
-        {'CHILD': '333', 'MIS_END': '06/06/2020', 'DOB': '06/06/2002'},  #
-        {'CHILD': '444', 'MIS_END': '08/06/2020', 'DOB': '08/06/2002'},  #
-        {'CHILD': '444', 'MIS_END': '09/06/2020', 'DOB': '09/06/2002'},  #
-        {'CHILD': '555', 'MIS_END': '19/06/2020', 'DOB': '19/06/2002'},  #
+        {'CHILD': '111', 'MISSING': 'M', 'MIS_END': '01/06/2020', 'DOB': '01/06/2002'},  #
+        {'CHILD': '123', 'MISSING': 'M', 'MIS_END': '08/06/2020', 'DOB': '08/06/2002'},  #
+        {'CHILD': '222', 'MISSING': 'M', 'MIS_END': '05/06/2020', 'DOB': '05/06/2002'},  #
+        {'CHILD': '333', 'MISSING': 'M', 'MIS_END': '06/06/2020', 'DOB': '06/06/2002'},  #
+        {'CHILD': '444', 'MISSING': 'M', 'MIS_END': '08/06/2020', 'DOB': '08/06/2002'},  #
+        {'CHILD': '444', 'MISSING': 'M', 'MIS_END': '09/06/2020', 'DOB': '09/06/2002'},  #
+        {'CHILD': '555', 'MISSING': 'M', 'MIS_END': '19/06/2020', 'DOB': '19/06/2002'},  #
+        {'CHILD': '777', 'MISSING': 'A', 'MIS_END': '19/06/2020', 'DOB': '19/06/2002'},  #
     ])
 
     fake_dfs = {'Episodes': fake_epi, 'Missing': fake_mis}

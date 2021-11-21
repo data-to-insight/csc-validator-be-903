@@ -3984,3 +3984,32 @@ def validate_377():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_1012():
+    error = ErrorDefinition(
+        code='1012',
+        description='No other data should be returned for OC3 children who had no episodes in the current year',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+
+        epi = dfs['Episodes']
+
+        error_dict = {}
+        for table in ['PlacedAdoption', 'Missing', 'Reviews', 'AD1', 'PrevPerm', 'OC2']:
+            if table in dfs.keys():
+                df = dfs[table]
+                error_dict[table] = (
+                    df
+                    .reset_index()
+                    .merge(epi, how='left', on='CHILD', indicator=True)
+                    .query("_merge == 'left_only'")
+                    ['index'].unique()
+                    .tolist()
+                )
+        return error_dict
+
+    return error, _validate

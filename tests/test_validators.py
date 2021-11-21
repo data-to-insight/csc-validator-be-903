@@ -2768,7 +2768,14 @@ def test_validate_1012():
     fake_dfs = {'Episodes': fake_epi, 'PlacedAdoption': fake_ado, 'Missing': fake_mis, 'Reviews': fake_rev,
                 'AD1': fake_ad1, 'PrevPerm': fake_pre, 'OC2': fake_oc2}
 
+    fake_dfs_partial = {'Episodes': fake_epi,
+                'AD1': fake_ad1, 'PrevPerm': fake_pre, 'OC2': fake_oc2}
+
     error_defn, error_func = validate_1012()
 
     assert error_func(fake_dfs) == {'PlacedAdoption': [0], 'Missing': [1],
                                     'Reviews': [2], 'AD1': [3], 'PrevPerm': [4], 'OC2': [5]}
+
+    assert error_func(fake_dfs_partial) == {'AD1': [3], 'PrevPerm': [4], 'OC2': [5]}
+
+

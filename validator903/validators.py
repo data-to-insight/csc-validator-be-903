@@ -3847,32 +3847,23 @@ def validate_1012():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs or 'Missing' not in dfs or 'Reviews' not in dfs \
-                or 'AD1' not in dfs or 'PrevPerm' not in dfs or 'OC2' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
-        else:
-            epi = dfs['Episodes']
-            ado = dfs['PlacedAdoption']
-            mis = dfs['Missing']
-            rev = dfs['Reviews']
-            ad1 = dfs['AD1']
-            pre = dfs['PrevPerm']
-            oc2 = dfs['OC2']
 
-            err_ado = ado.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
-            err_mis = mis.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
-            err_rev = rev.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
-            err_ad1 = ad1.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
-            err_pre = pre.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
-            err_oc2 = oc2.reset_index().merge(epi, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
+        epi = dfs['Episodes']
 
-            return {'PlacedAdoption': err_ado, 'Missing': err_mis,
-                    'Reviews': err_rev, 'AD1': err_ad1, 'PrevPerm': err_pre, 'OC2': err_oc2}
+        error_dict = {}
+        for table in ['PlacedAdoption', 'Missing', 'Reviews', 'AD1', 'PrevPerm', 'OC2']:
+            if table in dfs.keys():
+                df = dfs[table]
+                error_dict[table] = (
+                    df
+                    .reset_index()
+                    .merge(epi, how='left', on='CHILD', indicator=True)
+                    .query("_merge == 'left_only'")
+                    ['index'].unique()
+                    .tolist()
+                )
+        return error_dict
 
     return error, _validate

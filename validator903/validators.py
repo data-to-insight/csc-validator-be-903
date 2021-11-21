@@ -8,6 +8,7 @@ def validate_437():
         affected_fields=['REC'],
     )
 
+    #!# potential false negatives, as this only operates on the current year's data
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}

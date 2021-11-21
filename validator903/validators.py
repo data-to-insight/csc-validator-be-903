@@ -16,14 +16,14 @@ def validate_437():
 
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'],format='%d/%m/%Y',errors='coerce')
 
+            episodes.sort_values(['CHILD', 'DECOM'], inplace=True)
+            episodes[['NEXT_DECOM', 'NEXT_CHILD']] = episodes[['DECOM', 'CHILD']].shift(-1)
+
             # drop rows with missing DECOM as invalid/missing values can lead to errors
             episodes = episodes.dropna(subset=['DECOM'])
 
-            episodes.sort_values('DECOM', inplace=True)
-            episodes['NEXT_DECOM'] = episodes.groupby('CHILD')['DECOM'].shift(-1)
-
             ceased_e2_e15 = episodes['REC'].str.upper().astype(str).isin(['E2','E15'])
-            has_later_episode = episodes['NEXT_DECOM'].notna()
+            has_later_episode = episodes['CHILD'] == episodes['NEXT_CHILD']
 
             error_mask = ceased_e2_e15 & has_later_episode
 

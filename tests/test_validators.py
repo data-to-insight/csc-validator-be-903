@@ -2893,6 +2893,37 @@ def test_validate_377():
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
+def test_validate_575():
+    fake_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'DEC': '10/06/2020'},  # 0
+        {'CHILD': '123', 'DECOM': '08/06/2020', 'DEC': '10/06/2020'},  # 1
+        {'CHILD': '222', 'DECOM': '05/06/2020', 'DEC': '10/06/2020'},  # 2
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'DEC': pd.NA},         # 3
+        {'CHILD': '333', 'DECOM': '07/06/2020', 'DEC': '10/06/2020'},  # 4
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'DEC': '10/06/2020'},  # 5
+        {'CHILD': '444', 'DECOM': '08/06/2020', 'DEC': pd.NA},         # 6
+
+    ])
+
+    fake_mis = pd.DataFrame([
+        {'CHILD': '111', 'MIS_START': '01/06/2020', 'MIS_END': '05/06/2020'}, # 0
+        {'CHILD': '123', 'MIS_START': '08/06/2020', 'MIS_END': pd.NA},        # 1 Fail
+        {'CHILD': '222', 'MIS_START': '05/06/2020', 'MIS_END': '05/06/2020'}, # 2
+        {'CHILD': '333', 'MIS_START': '06/06/2020', 'MIS_END': pd.NA},        # 3
+        {'CHILD': '444', 'MIS_START': '08/06/2020', 'MIS_END': '05/06/2020'}, # 4
+        {'CHILD': '444', 'MIS_START': '09/06/2020', 'MIS_END': pd.NA},        # 5 Fail
+        {'CHILD': '444', 'MIS_START': '19/06/2020', 'MIS_END': '05/06/2020'}, # 6
+    ])
+
+    fake_dfs = {'Episodes': fake_epi, 'Missing': fake_mis}
+
+    error_defn, error_func = validate_575()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Missing': [1, 5]}
+
+
 def test_validate_1012():
     fake_epi = pd.DataFrame({'CHILD': ['111', '222', '333', '444', '555', '555', '666', '666'], })
     fake_ado = pd.DataFrame({'CHILD': ['777', '222', '333', '444', '555', '666'], })  # err at 0

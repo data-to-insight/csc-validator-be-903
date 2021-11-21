@@ -3954,6 +3954,41 @@ def validate_529():
 
     return error, _validate
 
+def validate_383():
+    error = ErrorDefinition(
+        code='383',
+        description='A child in a temporary placement must subsequently return to his/her normal placement.',
+        affected_fields=['PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
+
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+            epi['LAG_INDEX'] = epi['level_0'].shift(-1)
+            epi['LEAD_INDEX'] = epi['level_0'].shift(1)
+
+            m_epi = epi.merge(epi, how='inner', left_on='level_0', right_on='LAG_INDEX', suffixes=['', '_TOP'])
+            m_epi = m_epi.merge(epi, how='inner', left_on='level_0', right_on='LEAD_INDEX', suffixes=['', '_BOTM'])
+            m_epi = m_epi[m_epi['CHILD'] == m_epi['CHILD_TOP']]
+            m_epi = m_epi[m_epi['CHILD'] == m_epi['CHILD_BOTM']]
+            m_epi = m_epi[m_epi['PLACE'].isin(['T0', 'T1', 'T2', 'T3', 'T4'])]
+
+            mask1 = m_epi['RNE_BOTM'] != 'P'
+            mask2 = m_epi['PLACE_BOTM'] != m_epi['PLACE_TOP']
+            err_mask = mask1 | mask2
+            err_list = m_epi['index'][err_mask].unique().tolist()
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
 def validate_377():
     error = ErrorDefinition(
         code='377',

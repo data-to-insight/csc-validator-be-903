@@ -4065,30 +4065,20 @@ def validate_377():
 
     return error, _validate
 
-def validate_426():
-    error = ErrorDefinition(
-        code='426',
-        description='A child receiving respite care cannot be recorded under a legal status of V3 and V4 in ' +
-                    'the same year.',
-        affected_fields=['LS'],
-    )
-    def _validate(dfs):
 
+def validate_382():
+    error = ErrorDefinition(
+        code='382',
+        description='A child receiving respite care cannot be in a temporary placement.',
+        affected_fields=['LS', 'PLACE'],
+    )
+
+    def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
         else:
             epi = dfs['Episodes']
-            epi_v3 = epi[epi['LS'] == 'V3']
-            epi_v4 = epi[epi['LS'] == 'V4']
-
-            m_coh = epi_v3.merge(epi_v4, on='CHILD', how='inner')
-            err_child = m_coh['CHILD'].unique().tolist()
-
-            err_l1 = epi_v3[epi_v3['CHILD'].isin(err_child)].index.tolist()
-            err_l2 = epi_v4[epi_v4['CHILD'].isin(err_child)].index.tolist()
-
-            err_list = err_l1 + err_l2
-            err_list.sort()
+            err_list = epi.query("LS.isin(['V3', 'V4']) & PLACE.isin(['T0', 'T1', 'T2', 'T3', 'T4'])").index.tolist()
             return {'Episodes': err_list}
 
     return error, _validate

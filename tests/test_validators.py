@@ -2907,26 +2907,22 @@ def test_validate_377():
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
-def test_validate_426():
+def test_validate_382():
     fake_data = pd.DataFrame([
-        {'CHILD': '111', 'LS': 'V3'},  # 0
-        {'CHILD': '111', 'LS': 'V3'},  # 1
-        {'CHILD': '222', 'LS': 'V3'},  # 2 Fail
-        {'CHILD': '222', 'LS': 'V4'},  # 3 Fail
-        {'CHILD': '222', 'LS': 'X1'},  # 4
-        {'CHILD': '444', 'LS': 'V3'},  # 5
-        {'CHILD': '555', 'LS': 'V4'},  # 6 Fail
-        {'CHILD': '555', 'LS': 'V3'},  # 7 Fail
-        {'CHILD': '555', 'LS': 'V3'},  # 8 Fail
+        {'PLACE': 'T0', 'LS': 'V3'},  # 0
+        {'PLACE': 'R4', 'LS': 'V3'},  # 1
+        {'PLACE': 'T1', 'LS': 'X3'},  # 2
+        {'PLACE': 'T2', 'LS': 'V4'},  # 3
+        {'PLACE': 'T3', 'LS': 'V4'},  # 4
     ])
 
     fake_dfs = {'Episodes': fake_data}
 
-    error_defn, error_func = validate_426()
+    error_defn, error_func = validate_382()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [2, 3, 6, 7, 8]}
+    assert result == {'Episodes': [0, 3, 4]}
 
 
 def test_validate_602():

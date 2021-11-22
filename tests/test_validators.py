@@ -2907,6 +2907,30 @@ def test_validate_377():
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
+def test_validate_602():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666', '888'],
+        'DEC': ['08/06/2020', '09/07/2020', '09/08/2020', '25/03/2021', '22/03/2020', '25/04/2021', pd.NA],
+        'REC': ['E11', 'oo', 'T4', 'E11', 'oo', pd.NA, 'E11'],
+    })
+    fake_ad1 = pd.DataFrame({
+        'CHILD': ['111', '123', '222', '333', '345', '444', '555', '666', '777'],
+        'DATE_INT': [pd.NA, 'xx', pd.NA, pd.NA, 'xx', 'oo', pd.NA, 'xx', 'xx']
+    })
+
+    other_than_DATE_INT = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+
+    fake_ad1[other_than_DATE_INT] = pd.NA
+
+    metadata = {'collection_start': '01/04/2020', 'collection_end': '31/03/2021'}
+
+    fake_dfs = {'Episodes': fake_epi, 'AD1': fake_ad1, 'metadata': metadata}
+
+    error_defn, error_func = validate_602()
+
+    assert error_func(fake_dfs) == {'AD1': [1, 4, 7, 8]}
+
+
 def test_validate_580():
     fake_epi = pd.DataFrame([
         {'CHILD': '111', 'DEC': '01/06/2020', 'REC': 'E7'},  # 0 fails

@@ -4065,6 +4065,39 @@ def validate_377():
 
     return error, _validate
 
+def validate_602():
+    error = ErrorDefinition(
+        code='602',
+        description='The episode data submitted for this child does not show that he/she was adopted during the year.',
+        affected_fields=['CHILD'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            ad1 = dfs['AD1']
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            mask1 = (epi['DEC'] <= collection_end) & (epi['DEC'] >= collection_start)
+            mask2 = epi['REC'].isin(['E11', 'E12'])
+            adoption_eps = epi[mask1 & mask2]
+
+            adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+
+            err_list = (ad1
+                        .merge(adoption_eps, how='left', on='CHILD', indicator=True)
+                        .query("_merge == 'left_only'")
+                        .dropna(subset=adoption_fields, how='all')
+                        .index
+                        .to_list())
+
+            return {'AD1': err_list}
+
+    return error, _validate
+
 def validate_580():
     error = ErrorDefinition(
         code='580',

@@ -3857,10 +3857,17 @@ def validate_602():
 
             mask1 = (epi['DEC'] <= collection_end) & (epi['DEC'] >= collection_start)
             mask2 = epi['REC'].isin(['E11', 'E12'])
-            epi_no_e11_e12 = epi[mask1 | mask2]
+            adoption_eps = epi[mask1 & mask2]
 
-            err_list = ad1.reset_index().merge(epi_no_e11_e12, how='left', on='CHILD', indicator=True) \
-                .query("_merge == 'left_only'")['index'].unique().tolist()
+            adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+
+            err_list = (ad1
+                        .merge(adoption_eps, how='left', on='CHILD', indicator=True)
+                        .query("_merge == 'left_only'")
+                        .dropna(subset=adoption_fields, how='all')
+                        .index
+                        .to_list())
+
             return {'AD1': err_list}
 
     return error, _validate

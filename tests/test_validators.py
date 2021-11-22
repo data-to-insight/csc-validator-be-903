@@ -2901,7 +2901,7 @@ def test_validate_580():
         {'CHILD': '333', 'DEC': '06/06/2020', 'REC': 'E5'},  # 3 fails
         {'CHILD': '444', 'DEC': '07/06/2020', 'REC': 'E8'},  # 4
         {'CHILD': '555', 'DEC': '19/06/2020', 'REC': 'E4'},  # 5 fails
-        {'CHILD': '777', 'DEC': '19/06/2020', 'REC': 'E4'},  # 6
+        {'CHILD': '777', 'DEC': '19/06/2020', 'REC': 'E4'},  # 6 fails
     ])
 
     fake_mis = pd.DataFrame([
@@ -2921,7 +2921,7 @@ def test_validate_580():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [0, 1, 3, 5]}
+    assert result == {'Episodes': [0, 1, 3, 5, 6]}
 
 
 def test_validate_575():

@@ -3905,3 +3905,28 @@ def validate_377():
             return {'Episodes': err_list}
 
     return error, _validate
+
+ # For Error 303 there is currently no UASC field in Header file as this is in XLM version and only coding CSV currently, currently rule passes all time if Date field entered 
+def validate_303():
+    error = ErrorDefinition(
+        code = '303',
+        description = "If date Unaccompanied Asylum-Seeking Child (UASC) status ceased is not null, UASC status must be coded 1.",
+        affected_fields=['DUC']
+        #,'UASC'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']
+            uascdatechk = uasc['DUC'].isna()
+            #uascchk = uasc['UASC'].astype(str) == '1'
+            
+            error_mask = uascdatechk 
+            #& uascchk
+            validation_error_locations = uasc.index[error_mask]
+            
+            return {'UASC': validation_error_locations.tolist()}
+
+    return error, _validate

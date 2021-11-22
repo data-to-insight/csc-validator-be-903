@@ -2765,6 +2765,7 @@ def test_validate_550():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [3, 6]}
+    
 def test_validate_529():
     fake_data = pd.DataFrame({
         'PLACE_PROVIDER': ['PR0', 'PR1', 'PR3', 'PR3', pd.NA, 'PR3'],
@@ -2805,3 +2806,19 @@ def test_validate_377():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
+
+
+# For Error 303 there is currently no UASC field in Header file as this is in XLM version and only coding CSV currently, currently rule passes all time if Date field entered 
+def test_validate_303():
+    fake_data = pd.DataFrame({
+        #'UASC': [pd.NA, 1, '1', 1, '1'],
+        'DUC': [pd.NA,'04/04/2021', '01/06/2020', pd.NA, '10/04/2020', '01/03/2021']
+    })
+
+    fake_dfs = {'UASC': fake_data}
+
+    error_defn, error_func = validate_303()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'UASC': [0, 3]}

@@ -4129,3 +4129,26 @@ def validate_1012():
         return error_dict
 
     return error, _validate
+
+def validate_331():
+    error = ErrorDefinition(
+        code='331',
+        description='Date of matching child and adopter(s) should be the same as, or prior to, the date of placement of adoption.',
+        affected_fields=['DATE_MATCH'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            adt = dfs['AD1']
+            plac = dfs['PlacedAdoption']
+            adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'], format='%d/%m/%Y', errors='coerce')
+            plac['DATE_PLACED'] = pd.to_datetime(plac['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+
+            # A child cannot be placed for adoption before the child has been matched with prospective adopter(s). 
+            mask = adt['DATE_MATCH'].notna() & plac['DATE_PLACED'].notna() & (plac['DATE_PLACED'] >= adt['DATE_MATCH'])
+            
+            return {'AD1': adt.index[mask].to_list()}
+
+    return error, _validate

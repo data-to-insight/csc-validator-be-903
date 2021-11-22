@@ -2977,4 +2977,18 @@ def test_validate_1012():
 
     assert error_func(fake_dfs_partial) == {'AD1': [3], 'PrevPerm': [4], 'OC2': [5]}
 
+def test_validate_331():
+    fake_adt = pd.DataFrame({
+        'DATE_MATCH':['01/06/2020', '02/06/2020','03/06/2020','04/06/2020', pd.NA]
+        })
+    fake_ado = pd.DataFrame({
+        'Date_Placed':['05/06/2020', pd.NA, '01/06/2020','02/06/2020','05/06/2020']
+        })
 
+    fake_dfs = {'AD1': fake_adt, 'PlacedAdoption': fake_ado}
+
+    error_defn, error_func = validate_331()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 3, 4]}

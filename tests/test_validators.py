@@ -2776,7 +2776,7 @@ def test_validate_553():
          'REASON_PLACED_CEASED': 'A'},
         {'CHILD': '555', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': pd.NA,        #4 err ceased null
          'REASON_PLACED_CEASED': 'A'},
-        {'CHILD': '777', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': '01/06/2020', #5 err ceased null
+        {'CHILD': '777', 'DATE_PLACED': pd.NA, 'DATE_PLACED_CEASED': '01/06/2020', #5 err ceased null
          'REASON_PLACED_CEASED': pd.NA},
     ])
     fake_dfs = {'Episodes': fake_epi, 'PlacedAdoption': fake_sho}
@@ -2807,7 +2807,7 @@ def test_validate_555():
          'REASON_PLACED_CEASED': 'A'},
         {'CHILD': '123', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': '01/06/2020', # 4
          'REASON_PLACED_CEASED': 'A'},
-        {'CHILD': '984', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': '01/06/2020', # 5
+        {'CHILD': '984', 'DATE_PLACED': pd.NA, 'DATE_PLACED_CEASED': '01/06/2020', # 5
          'REASON_PLACED_CEASED': 'A'},
     ])
     fake_dfs = {'Episodes': fake_epi, 'PlacedAdoption': fake_sho}

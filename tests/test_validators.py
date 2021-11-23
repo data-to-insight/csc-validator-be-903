@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_563():
+  fake_placed = pd.DataFrame([
+    {'CHILD': '11', 'DATE_PLACED_CEASED': pd.NA, 'REASON_PLACED_CEASED': pd.NA, 'DATE_PLACED':'26/05/2000'},#0
+    {'CHILD': '202', 'DATE_PLACED_CEASED': '01/02/2003', 'REASON_PLACED_CEASED': 'invalid dont matter', 'DATE_PLACED':'26/05/2000'},#1
+    {'CHILD': '3003', 'DATE_PLACED_CEASED': pd.NA, 'REASON_PLACED_CEASED': pd.NA, 'DATE_PLACED':'26/05/2000'},#2
+    {'CHILD': '40004', 'DATE_PLACED_CEASED': '26/05/2001', 'REASON_PLACED_CEASED': 'some sample reason', 'DATE_PLACED':pd.NA}, # 3: Fail
+    {'CHILD': '606', 'DATE_PLACED_CEASED': pd.NA, 'REASON_PLACED_CEASED': pd.NA, 'DATE_PLACED':'26/05/2000'},#4
+    ])
+
+  fake_dfs = {'PlacedAdoption': fake_placed}
+  error_defn, error_func = validate_563()
+  result = error_func(fake_dfs)
+  assert result == {'PlacedAdoption':[3]}
+
+
 def test_validate_544():
     fake_data = pd.DataFrame({
         'CONVICTED':[ pd.NA, 1, '1', 1, '1', 1, '1', 1, '1', 1],

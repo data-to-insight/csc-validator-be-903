@@ -133,6 +133,21 @@ def test_validate_635():
     assert result == {'PrevPerm':[1,2]}
 
 
+def test_validate_217():
+    fake_data = pd.DataFrame({
+        'PLACE': ['A3', 'A5', 'A3', pd.NA, 'U1', 'A3', 'A5', 'A5'],
+        'DECOM': ['01/04/2015', '31/12/2015', '20/01/2016', pd.NA, '01/10/2017', '20/02/2016', '01/01/2017', '01/04/2013'],
+        'RNE':['S', 'T', 'U', pd.NA, 'X', 'X', 'X', 'X'],
+    })
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_217()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [5, 6]}
+
 def test_validate_518():
     fake_data = pd.DataFrame({
       'LS_ADOPTR':['L4','L4',pd.NA,'L4','L4','L1','L4'],

@@ -186,6 +186,7 @@ configured_errors = [
     validate_518(),
     validate_517(),
     validate_345(),
+    validate_384(),
     validate_390(),
     validate_398(),
     validate_451(),

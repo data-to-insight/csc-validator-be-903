@@ -1,6 +1,24 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_378():
+  error = ErrorDefinition(
+    code = '378',
+    description = 'A child who is placed with parent(s) cannot be looked after under a single period of accommodation under Section 20 of the Children Act 1989.',
+    affected_fields = ['PLACE', 'LS']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      # the & sign supercedes the ==, so brackets are necessary here
+      mask = (episodes['PLACE']=='P1') & (episodes['LS']=='V2')
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.to_list()}
+  return error, _validate
+
+
 def validate_398():
   error = ErrorDefinition(
     code = '398',

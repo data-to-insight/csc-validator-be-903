@@ -1,6 +1,24 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_544():
+    fake_data = pd.DataFrame({
+        'CONVICTED':[ pd.NA, 1, '1', 1, '1', 1, '1', 1, '1', 1],
+        'IMMUNISATIONS':[ pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, 1],
+        'TEETH_CHECK':[pd.NA, pd.NA, pd.NA, pd.NA, '1', pd.NA, pd.NA, pd.NA, pd.NA, 1],
+        'HEALTH_ASSESSMENT':[pd.NA, pd.NA, pd.NA, pd.NA, '1', pd.NA, pd.NA, pd.NA, pd.NA, 1],
+        'SUBSTANCE_MISUSE':[pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, 1],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_544()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 2, 3, 4, 5, 6, 7, 8]}
+
+
 def test_validate_158():
     fake_data = pd.DataFrame({
       'INTERVENTION_RECEIVED':['1', pd.NA, '0', '1', '1', '0'],

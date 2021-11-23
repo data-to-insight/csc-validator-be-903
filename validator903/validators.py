@@ -1,6 +1,37 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_442():
+  error = ErrorDefinition(
+    code = '442',
+    description = 'Unique Pupil Number (UPN) field is not completed.',
+    affected_fields = ['UPN', 'LS']
+  )
+  def _validate(dfs):
+    if ('Episodes' not in dfs) or ('Header' not in dfs):
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+
+      code_list = ['V3', 'V4']
+
+      # merge left on episodes to get all children for which episodes have been recorded even if they do not exist on the header.
+      merged = episodes.merge(header, on=['CHILD'], how='left', suffixes=['_eps', '_er'])
+      # Where any episode present, with an <LS> not = 'V3' or 'V4' then <UPN> must be provided
+      mask = (~merged['LS'].isin(code_list)) & merged['UPN'].isna()
+      episode_error_locs = merged.loc[mask, 'index_eps']
+      header_error_locs = merged.loc[mask, 'index_er']
+
+      return {'Episodes': episode_error_locs.tolist(),
+              # Select unique values since many episodes are joined to one header
+              # and multiple errors will be raised for the same index.
+              'Header': header_error_locs.dropna().unique().tolist()}
+  return error, _validate
+
 def validate_344():
   error = ErrorDefinition(
     code = '344',

@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_442():
+  fake_data_episodes = pd.DataFrame({
+  'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+  'LS':[pd.NA,'L4',pd.NA,'L4','L1','V4','V3', 'XO'],
+  })
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101','102', '103', '104', '105', '106', '108'],
+      'UPN': [pd.NA, 'H801200001001', 'UN1', 'UN2', pd.NA, 'UN3', pd.NA],
+  })
+  fake_dfs = {'Episodes':fake_data_episodes, 'Header': fake_data_header}
+  error_defn, error_func = validate_442()
+  result = error_func(fake_dfs)
+
+  assert result == {'Episodes': [0, 4, 7], 'Header': [0, 4]}
+
 def test_validate_344():
   fake_data_oc3 = pd.DataFrame({
       'CHILD': ['A', 'B', 'C', 'D', 'E'],

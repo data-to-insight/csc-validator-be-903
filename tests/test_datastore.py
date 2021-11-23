@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from qlacref_postcodes import Postcodes
-from validator903.datastore import create_datastore, _add_postcode_derived_fields, merge_postcodes
+from validator903.datastore import create_datastore, _add_postcode_derived_fields, merge_postcodes, postcodes
 
 
 def test_postcode_key():
@@ -14,25 +13,24 @@ def test_postcode_key():
     .qlacref/id_rsa.pub and make sure everything is set up correctly. To run this project more securely, please
     provide the environment variable 'QLACREF_PC_KEY' with a verified public key for the postcode data.
     """
-    pc = Postcodes()
-    pc.load_postcodes('A')
-    assert pc.dataframe.shape[0] > 10000
+    postcodes.load_postcodes('Z')
+    assert postcodes.dataframe.shape[0] > 100
 
 
-def test_create_datastore(dummy_input_data):
+def test_create_datastore(dummy_empty_input):
     metadata = {
         'collectionYear': '2019/20',
         'localAuthority': 'test_LA'
     }
-    ds = create_datastore(dummy_input_data, metadata)
+    ds = create_datastore(dummy_empty_input, metadata)
 
     assert ds['metadata'] == metadata
 
 
 def test_add_postcodes():
-    df = pd.DataFrame([['AB30 1GX', 'AB30 1ZJ']], columns=["HOME_POST", "PL_POST"])
+    df = pd.DataFrame([['ZE1 0AA', 'ZE3 9JX']], columns=["HOME_POST", "PL_POST"])
     _add_postcode_derived_fields(df, '')
-    assert df.PL_DISTANCE[0] == 0.8
+    assert df.PL_DISTANCE[0] == 20.1
 
 
 @pytest.mark.parametrize("postcode, expected", [

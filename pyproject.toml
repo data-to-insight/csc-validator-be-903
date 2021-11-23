@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quality-lac-data-validator"
-version = "0.2.0-alpha.1"
+version = "0.2.0-alpha.2"
 description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
 authors = [
     "Mark Waddoups <mark.waddoups@socialfinance.org.uk>",

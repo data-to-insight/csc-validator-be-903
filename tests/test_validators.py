@@ -13,7 +13,8 @@ def test_validate_442():
   fake_dfs = {'Episodes':fake_data_episodes, 'Header': fake_data_header}
   error_defn, error_func = validate_442()
   result = error_func(fake_dfs)
-  assert result == {'Episodes':[0,4], 'Header':[0,4]}
+
+  assert result == {'Episodes':[0,4], 'Header':[4]}
 
 def test_validate_133():
     fake_data = pd.DataFrame({

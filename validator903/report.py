@@ -231,7 +231,7 @@ def _create_child_summary(child_report: pd.DataFrame) -> pd.DataFrame:
     df['Error Fields'] = df['Fields'].apply(lambda x: ", ".join(x))
     logger.debug("Child Summary - Setting Affected Values")
     df['Affected Values'] = df[['Fields', 'Context']].apply(
-        lambda row: ", ".join([f"{f}: {row.Context[f]}" for f in row.Fields]),
+        lambda row: ", ".join([f"{f}: {row.Context[f]}" for f in row.Fields if f in row.Context]),
         axis=1
     )
     logger.debug("Child Summary - Setting Locator Hints")

@@ -7,14 +7,6 @@
         "version": 1,
         "index": 21
       }
-    ],
-    "tests/test_validators.py": [
-      {
-        "id": "d25faebb-69b5-46c3-8490-2b9ccda9ce63",
-        "line": 3,
-        "version": 485,
-        "index": 58
-      }
     ]
   }
 }

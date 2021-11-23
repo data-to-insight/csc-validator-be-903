@@ -1,6 +1,38 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_1010():
+    error = ErrorDefinition(
+        code = '1010',
+        description = 'This child has no episodes loaded for current year even though there was an open episode of care at the end of the previous year, and care leaver data has been entered.',
+        affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs or 'OC3' not in dfs:
+          return{}
+
+        else:
+            episodes = dfs['Episodes']
+            episodes_last = dfs['Episodes_last']
+            oc3 = dfs['OC3']
+
+            last_year_closed = ~ episodes_last['DEC'].isna()
+            index_last_year_closed = episodes_last[last_year_closed].index
+            episodes_last.drop(index_last_year_closed, inplace=True)
+
+            has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
+            has_open_episode_last = oc3['CHILD'].isin(episodes_last['CHILD'])
+
+
+            error_mask = ~has_current_episodes & has_open_episode_last
+
+            validation_error_locations = oc3.index[error_mask]
+
+            return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_158():
     error = ErrorDefinition(
         code='158',

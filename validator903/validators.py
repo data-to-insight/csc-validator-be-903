@@ -1,6 +1,23 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_390():
+  error = ErrorDefinition(
+    code = '390',
+    description = 'Reason episode ceased is adopted but child has not been previously placed for adoption.',
+    affected_fields = ['PLACE', 'REC']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      #If <REC> = 'E11' or 'E12' then <PL> must be one of 'A3', 'A4', 'A5' or 'A6'
+      mask = ((episodes['REC']=='E11')|(episodes['REC']=='E12')) & ~((episodes['PLACE']=='A3')|(episodes['PLACE']=='A4')|(episodes['PLACE']=='A5')|(episodes['PLACE']=='A6'))
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.to_list()}
+  return error, _validate
+
 def validate_378():
   error = ErrorDefinition(
     code = '378',

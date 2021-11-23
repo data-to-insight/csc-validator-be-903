@@ -1,6 +1,28 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_158():
+    error = ErrorDefinition(
+        code='158',
+        description='If a child has been recorded as receiving an intervention for their substance misuse problem, then the additional item on whether an intervention was offered should be left blank.',
+        affected_fields=['INTERVENTION_RECEIVED','INTERVENTION_OFFERED'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+
+        else:
+            oc2 = dfs['OC2']
+
+            error_mask = oc2['INTERVENTION_RECEIVED'].astype(str).eq('1') & oc2['INTERVENTION_OFFERED'].notna()
+
+            error_locations = oc2.index[error_mask]
+
+            return{'OC2': error_locations.tolist()}
+
+    return error, _validate
+
 def validate_133():
     error = ErrorDefinition(
         code = '133',
@@ -4043,6 +4065,57 @@ def validate_377():
 
     return error, _validate
 
+
+def validate_382():
+    error = ErrorDefinition(
+        code='382',
+        description='A child receiving respite care cannot be in a temporary placement.',
+        affected_fields=['LS', 'PLACE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            err_list = epi.query("LS.isin(['V3', 'V4']) & PLACE.isin(['T0', 'T1', 'T2', 'T3', 'T4'])").index.tolist()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+def validate_602():
+    error = ErrorDefinition(
+        code='602',
+        description='The episode data submitted for this child does not show that he/she was adopted during the year.',
+        affected_fields=['CHILD'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            ad1 = dfs['AD1']
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            mask1 = (epi['DEC'] <= collection_end) & (epi['DEC'] >= collection_start)
+            mask2 = epi['REC'].isin(['E11', 'E12'])
+            adoption_eps = epi[mask1 & mask2]
+
+            adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+
+            err_list = (ad1
+                        .merge(adoption_eps, how='left', on='CHILD', indicator=True)
+                        .query("_merge == 'left_only'")
+                        .dropna(subset=adoption_fields, how='all')
+                        .index
+                        .to_list())
+
+            return {'AD1': err_list}
+
+    return error, _validate
+
 def validate_580():
     error = ErrorDefinition(
         code='580',
@@ -4064,7 +4137,7 @@ def validate_580():
             mis['BD18'] = mis['DOB'] + pd.DateOffset(years=18)
 
             m_coh = mis.merge(epi, how='inner', on='CHILD')
-            m_coh = m_coh.query("(MISSING == 'M') & (BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
+            m_coh = m_coh.query("(BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
             err_list = m_coh.query("REC != 'E8'")['index'].unique().tolist()
             err_list.sort()
             return {'Episodes': err_list}

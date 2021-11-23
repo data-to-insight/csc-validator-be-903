@@ -1,6 +1,20 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_158():
+    fake_data = pd.DataFrame({
+      'INTERVENTION_RECEIVED':['1', pd.NA, '0', '1', '1', '0'],
+      'INTERVENTION_OFFERED':[pd.NA, '1', '0', '1', '0', '1'],
+    })
+
+    fake_dfs = {'OC2': fake_data}
+
+    error_defn, error_func = validate_158()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2':[3, 4]}
+
 def test_validate_133():
     fake_data = pd.DataFrame({
       'ACCOM':['B1','B2',pd.NA,'S2','K1','X','1'],
@@ -2893,6 +2907,48 @@ def test_validate_377():
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
+def test_validate_382():
+    fake_data = pd.DataFrame([
+        {'PLACE': 'T0', 'LS': 'V3'},  # 0
+        {'PLACE': 'R4', 'LS': 'V3'},  # 1
+        {'PLACE': 'T1', 'LS': 'X3'},  # 2
+        {'PLACE': 'T2', 'LS': 'V4'},  # 3
+        {'PLACE': 'T3', 'LS': 'V4'},  # 4
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_382()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 3, 4]}
+
+
+def test_validate_602():
+    fake_epi = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444', '555', '666', '888'],
+        'DEC': ['08/06/2020', '09/07/2020', '09/08/2020', '25/03/2021', '22/03/2020', '25/04/2021', pd.NA],
+        'REC': ['E11', 'oo', 'T4', 'E11', 'oo', pd.NA, 'E11'],
+    })
+    fake_ad1 = pd.DataFrame({
+        'CHILD': ['111', '123', '222', '333', '345', '444', '555', '666', '777'],
+        'DATE_INT': [pd.NA, 'xx', pd.NA, pd.NA, 'xx', 'oo', pd.NA, 'xx', 'xx']
+    })
+
+    other_than_DATE_INT = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+
+    fake_ad1[other_than_DATE_INT] = pd.NA
+
+    metadata = {'collection_start': '01/04/2020', 'collection_end': '31/03/2021'}
+
+    fake_dfs = {'Episodes': fake_epi, 'AD1': fake_ad1, 'metadata': metadata}
+
+    error_defn, error_func = validate_602()
+
+    assert error_func(fake_dfs) == {'AD1': [1, 4, 7, 8]}
+
+
 def test_validate_580():
     fake_epi = pd.DataFrame([
         {'CHILD': '111', 'DEC': '01/06/2020', 'REC': 'E7'},  # 0 fails
@@ -2901,7 +2957,7 @@ def test_validate_580():
         {'CHILD': '333', 'DEC': '06/06/2020', 'REC': 'E5'},  # 3 fails
         {'CHILD': '444', 'DEC': '07/06/2020', 'REC': 'E8'},  # 4
         {'CHILD': '555', 'DEC': '19/06/2020', 'REC': 'E4'},  # 5 fails
-        {'CHILD': '777', 'DEC': '19/06/2020', 'REC': 'E4'},  # 6
+        {'CHILD': '777', 'DEC': '19/06/2020', 'REC': 'E4'},  # 6 fails
     ])
 
     fake_mis = pd.DataFrame([
@@ -2921,7 +2977,7 @@ def test_validate_580():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [0, 1, 3, 5]}
+    assert result == {'Episodes': [0, 1, 3, 5, 6]}
 
 
 def test_validate_575():

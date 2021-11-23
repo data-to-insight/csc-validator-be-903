@@ -1,6 +1,37 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_634():
+  error =ErrorDefinition(
+    code = '634',
+    description = 'There are entries for previous permanence options, but child has not started to be looked after from 1 April 2016 onwards.',
+    affected_fields = ['LA_PERM', 'PREV_PERM','DATE_PERM','DECOM']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'PrevPerm' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      prevperm = dfs['PrevPerm']
+      # convert date field to appropriate format
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      reference_date = pd.to_datetime('01/04/2016', format='%d/%m/%Y', errors='coerce')
+      # the maximum date has the highest possibility of satisfying the condition
+      episodes['LAST_DECOM'] = episodes.groupby('CHILD')['DECOM'].transform('max')
+
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      prevperm.reset_index(inplace=True)
+      merged = prevperm.merge(episodes, on='CHILD', how='left', suffixes=['_prev', '_eps'])
+      # If <PREV_PERM> or <LA_PERM> or <DATE_PERM> provided, then at least 1 episode must have a <DECOM> later than 01/04/2016
+      mask = (merged['PREV_PERM'].notna() | merged['DATE_PERM'].notna() | merged['LA_PERM'].notna()) & (merged['LAST_DECOM']< reference_date)
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      prevperm_error_locs = merged.loc[mask, 'index_prev']
+      
+      #return {'PrevPerm':prevperm_error_locs}
+      return {'Episodes':eps_error_locs, 'PrevPerm':prevperm_error_locs}
+  return error, _validate
+  
 def validate_158():
     error = ErrorDefinition(
         code='158',

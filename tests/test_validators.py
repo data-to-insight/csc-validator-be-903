@@ -1,6 +1,27 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_634():
+  fake_data_prevperm = pd.DataFrame({
+      'CHILD': ['101', '102', '103', '6', '7', '8'], 
+      'PREV_PERM': ['Z1', pd.NA, pd.NA, 'Z1', pd.NA, 'P1'],
+      'LA_PERM': [pd.NA, '352', pd.NA, '352', pd.NA, '352'],
+      'DATE_PERM': [pd.NA, pd.NA, '01/05/2000', pd.NA, pd.NA, '05/05/2020'],
+      # last 3 rows will disappear after merging on CHILD
+  })
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '101', 'DECOM': '20/10/2011',},  # 0
+      {'CHILD': '102', 'DECOM': '19/11/2021',},  # 1
+      {'CHILD': '102', 'DECOM': '17/06/2001',},  # 2
+      {'CHILD': '103', 'DECOM': '04/04/2002',},  # 3
+      {'CHILD': '103', 'DECOM': '11/09/2015',},  # 4
+      {'CHILD': '103', 'DECOM': '01/03/2016',},  # 5 
+  ])
+  fake_dfs = {'PrevPerm':fake_data_prevperm,'Episodes':fake_data_episodes}
+  error_defn, error_func = validate_634()
+  result = error_func(fake_dfs)
+  assert result == {'PrevPerm':[0,2], 'Episodes':[0, 3, 4, 5]}
+  
 def test_validate_158():
     fake_data = pd.DataFrame({
       'INTERVENTION_RECEIVED':['1', pd.NA, '0', '1', '1', '0'],

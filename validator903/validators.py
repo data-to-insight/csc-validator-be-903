@@ -1,6 +1,23 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_345():
+  error = ErrorDefinition(
+    code = '345',
+    description = 'The data collection record shows the local authority is in touch with this young person, but activity and/or accommodation data items are zero.',
+    affected_fields = ['IN_TOUCH', 'ACTIV', 'ACCOM']
+  )
+  def _validate(dfs):
+    if 'OC3' not in dfs:
+      return {}
+    else:
+      oc3 = dfs['OC3']
+      # If <IN_TOUCH> = 'Yes' then <ACTIV> and <ACCOM> must be provided
+      mask = (oc3['IN_TOUCH']=='YES') & (oc3['ACTIV'].isna()|oc3['ACCOM'].isna())
+      error_locations = oc3.index[mask]
+      return {'OC3': error_locations.to_list()}
+  return error, _validate
+
 def validate_384():
   error = ErrorDefinition(
     code = '384',

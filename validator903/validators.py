@@ -17,6 +17,22 @@ def validate_398():
       return {'Episodes':error_locations.to_list()}
   return error, _validate
 
+def validate_451():
+  error = ErrorDefinition(
+    code = '451',
+    description = 'Child is still freed for adoption, but freeing orders could not be applied for since 30 December 2005.',
+    affected_fields = ['DEC', 'REC', 'LS']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      mask = episodes['DEC'].isna() & episodes['REC'].isna() & (episodes['LS']=='D1')
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.to_list()}
+  return error, _validate
+
 def validate_519():
   error = ErrorDefinition(
     code = '519',

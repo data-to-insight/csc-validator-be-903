@@ -1,7 +1,7 @@
 from validator903.validators import *
 import pandas as pd
 
-def test_validate_1010():
+def test_validate_1002():
     fake_episodes_prev = pd.DataFrame({
       'CHILD': ['101','101','102','102','103'],
       'DEC': ['20/06/2020', pd.NA, pd.NA, '14/03/2021', '06/08/2020']
@@ -13,16 +13,16 @@ def test_validate_1010():
     })
 
     fake_oc3 = pd.DataFrame({
-      'CHILD': ['101','102','103']
+      'CHILD': ['101','102','103','104']
     })
 
     fake_dfs = {'Episodes': fake_episodes, 'Episodes_last': fake_episodes_prev, 'OC3': fake_oc3}
 
-    erro_defn, error_func = validate_1010()
+    erro_defn, error_func = validate_1002()
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [1]}
+    assert result == {'OC3': [3]}
 
 def test_validate_158():
     fake_data = pd.DataFrame({

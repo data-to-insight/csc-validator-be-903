@@ -1,10 +1,11 @@
 import pandas as pd
 from .types import ErrorDefinition
 
-def validate_1010():
+#!# big potential false positives, as this only operates on the current and previous year data
+def validate_1002():
     error = ErrorDefinition(
-        code = '1010',
-        description = 'This child has no episodes loaded for current year even though there was an open episode of care at the end of the previous year, and care leaver data has been entered.',
+        code = '1002',
+        description = 'This child has no previous episodes of care, therefore should not have care leaver information recorded. [NOTE: This only tests the current and previous year data loaded into the tool]',
         affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
     )
 
@@ -17,15 +18,10 @@ def validate_1010():
             episodes_last = dfs['Episodes_last']
             oc3 = dfs['OC3']
 
-            last_year_closed = ~ episodes_last['DEC'].isna()
-            index_last_year_closed = episodes_last[last_year_closed].index
-            episodes_last.drop(index_last_year_closed, inplace=True)
-
             has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
-            has_open_episode_last = oc3['CHILD'].isin(episodes_last['CHILD'])
+            has_previous_episodes = oc3['CHILD'].isin(episodes_last['CHILD'])
 
-
-            error_mask = ~has_current_episodes & has_open_episode_last
+            error_mask = ~has_current_episodes & ~has_previous_episodes
 
             validation_error_locations = oc3.index[error_mask]
 

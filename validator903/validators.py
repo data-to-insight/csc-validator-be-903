@@ -4235,6 +4235,6 @@ def validate_432():
             err_list = err_co['index'].unique().tolist()
             err_list.sort()
 
-            return {'Episode': err_list}
+            return {'Episodes': err_list}
 
     return error, _validate

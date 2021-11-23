@@ -4091,6 +4091,69 @@ def validate_377():
 
     return error, _validate
 
+def validate_553():
+    error = ErrorDefinition(
+        code='553',
+        description='Placement order has been granted but there is no date of decision that the child should ' +
+                    'be placed for adoption.',
+        affected_fields=['CHILD', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            sho = dfs['PlacedAdoption']
+            sho.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            epi_has_e1 = epi[epi['LS'] == 'E1']
+            merge_w_sho = epi_has_e1.merge(sho, how='left', on='CHILD', suffixes=['_EP', '_PA'], indicator=True)
+
+            # E1 episodes without a corresponding PlacedAdoption entry
+            err_list_epi = merge_w_sho.query("(_merge == 'left_only')")['index_EP'].unique().tolist()
+
+            # Open E1 Episodes where DATE_PLACED_CEASED or REASON_PLACED_CEASED is filled in
+            epi_open_e1 = epi[(epi['LS'] == 'E1') & epi['DEC'].isna()]
+            merge_w_sho2 = epi_open_e1.merge(sho, how='inner', on='CHILD', suffixes=['_EP', '_PA'])
+            err_list_sho = merge_w_sho2['index_PA'][merge_w_sho2['DATE_PLACED_CEASED'].notna()
+                                                    | merge_w_sho2['REASON_PLACED_CEASED'].notna()]
+            err_list_sho = err_list_sho.unique().tolist()
+            return {'Episodes': err_list_epi, 'PlacedAdoption': err_list_sho}
+
+    return error, _validate
+
+def validate_555():
+    error = ErrorDefinition(
+        code='555',
+        description='Freeing order has been granted but there is no date of decision that the child should ' +
+                    'be placed for adoption.',
+        affected_fields=['CHILD', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED'],
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            sho = dfs['PlacedAdoption']
+            sho.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            # D1 episodes without a corresponding PlacedAdoption entry
+            epi_has_d1 = epi[epi['LS'] == 'D1']
+            merge_w_sho = epi_has_d1.merge(sho, how='left', on='CHILD', suffixes=['_EP', '_PA'], indicator=True)
+            err_list_epi = merge_w_sho.query("_merge == 'left_only'")['index_EP'].unique().tolist()
+
+            # Open D1 Episodes where DATE_PLACED_CEASED or REASON_PLACED_CEASED is filled in
+            epi_open_d1 = epi[(epi['LS'] == 'D1') & epi['DEC'].isna()]
+            merge_w_sho2 = epi_open_d1.merge(sho, how='inner', on='CHILD', suffixes=['_EP', '_PA'])
+            err_list_sho = merge_w_sho2['index_PA'][merge_w_sho2['DATE_PLACED_CEASED'].notna()
+                                                    | merge_w_sho2['REASON_PLACED_CEASED'].notna()]
+            err_list_sho = err_list_sho.unique().tolist()
+            return {'Episodes': err_list_epi, 'PlacedAdoption': err_list_sho}
+
+    return error, _validate
+
 
 def validate_382():
     error = ErrorDefinition(

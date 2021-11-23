@@ -25,8 +25,11 @@ def validate_442():
       mask = (~merged['LS'].isin(code_list)) & merged['UPN'].isna()
       episode_error_locs = merged.loc[mask, 'index_eps']
       header_error_locs = merged.loc[mask, 'index_er']
-      return {'Episodes':episode_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}
-      # Select unique values since many episodes are joined to one header and multiple errors will be raised for the same index.
+
+      return {'Episodes': episode_error_locs.tolist(),
+              # Select unique values since many episodes are joined to one header
+              # and multiple errors will be raised for the same index.
+              'Header': header_error_locs.dropna().unique().tolist()}
   return error, _validate
 
 def validate_133():

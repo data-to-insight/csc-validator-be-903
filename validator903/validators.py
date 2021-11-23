@@ -2338,12 +2338,15 @@ def validate_388():
 
             df['DECOM_NEXT_EPISODE'] = df.groupby(['CHILD'])['DECOM'].shift(-1)
 
-            grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            # The max DECOM for each child is also the one with no next episode
+            # And we also add the skipna option
+            # grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            no_next = df.DECOM_NEXT_EPISODE.isna() & df.CHILD.notna()
 
             # Dataframe with the maximum DECOM removed
-            max_decom_removed = df.loc[~df.index.isin(grouped_decom_by_child), :]
+            max_decom_removed = df[~no_next]
             # Dataframe with the maximum DECOM only
-            max_decom_only = df.loc[df.index.isin(grouped_decom_by_child), :]
+            max_decom_only = df[no_next]
 
             # Case 1: If reason episode ceased is coded X1 there must be a subsequent episode
             #        starting on the same day.
@@ -2506,10 +2509,10 @@ def validate_142():
 
             df['DECOM'] = df['DECOM'].fillna('01/01/1901')  # Watch for potential future issues
 
-            index_of_last_episodes = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
             df['DECOM'] = df['DECOM'].replace('01/01/1901', pd.NA)
 
-            ended_episodes_df = df.loc[~df.index.isin(index_of_last_episodes), :]
+            last_episodes = df.sort_values('DECOM').reset_index().groupby(['CHILD'])['index'].last()
+            ended_episodes_df = df.loc[~df.index.isin(last_episodes)]
 
             ended_episodes_df = ended_episodes_df[(ended_episodes_df['DEC'].isna() | ended_episodes_df['REC'].isna()) &
                                                   ended_episodes_df['CHILD'].notna() & ended_episodes_df[

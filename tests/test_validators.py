@@ -1,6 +1,19 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_522():
+    fake_placed_data = pd.DataFrame([
+        {'CHILD': '11', 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': '26/05/2000'},  # 0
+        {'CHILD': '202', 'DATE_PLACED_CEASED': '01/02/2003', 'DATE_PLACED': '26/05/2000'}, # 1
+        {'CHILD': '3003', 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA}, # 2
+        {'CHILD': '40004', 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': '01/02/2003'}, # 3
+        {'CHILD': '606', 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2000'},  # 4
+    ])
+    fake_dfs = {'PlacedAdoption':fake_placed_data}
+    error_defn, error_func = validate_522()
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption':[1]}
+
 def test_validate_563():
   fake_placed = pd.DataFrame([
     {'CHILD': '11', 'DATE_PLACED_CEASED': pd.NA, 'REASON_PLACED_CEASED': pd.NA, 'DATE_PLACED':'26/05/2000'},#0

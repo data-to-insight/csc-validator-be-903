@@ -1,6 +1,27 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_522():
+  error = ErrorDefinition(
+    code = '522',
+    description = 'Date of decision that the child should be placed for adoption must be on or before the date that a child should no longer be placed for adoption.',
+    affected_fields = ['DATE_PLACED', 'DATE_PLACED_CEASED']
+  )
+  def _validate(dfs):
+    if 'PlacedAdoption' not in dfs:
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      # Convert to datetimes
+      placed_adoption['DATE_PLACED_CEASED'] = pd.to_datetime(placed_adoption['DATE_PLACED_CEASED'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+      # Boolean mask
+      mask = placed_adoption['DATE_PLACED_CEASED'] > placed_adoption['DATE_PLACED']
+
+      error_locations = placed_adoption.index[mask]
+      return {'PlacedAdoption':error_locations.to_list()}
+  return error, _validate
+
 def validate_563():
   error = ErrorDefinition(
     code = '563',

@@ -29,7 +29,7 @@ def validate_634():
       prevperm_error_locs = merged.loc[mask, 'index_prev']
       
       #return {'PrevPerm':prevperm_error_locs}
-      return {'Episodes':eps_error_locs, 'PrevPerm':prevperm_error_locs}
+      return {'Episodes':eps_error_locs.unique().tolist(), 'PrevPerm':prevperm_error_locs.unique().tolist()}
   return error, _validate
   
 def validate_158():

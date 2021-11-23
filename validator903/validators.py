@@ -4172,6 +4172,9 @@ def validate_575():
             err_list.sort()
             return {'Missing': err_list}
 
+            return {'Episodes': Episodes_errs,
+                    'AD1': AD1_errs}
+
     return error, _validate
 
 def validate_1012():
@@ -4207,21 +4210,38 @@ def validate_331():
     error = ErrorDefinition(
         code='331',
         description='Date of matching child and adopter(s) should be the same as, or prior to, the date of placement of adoption.',
-        affected_fields=['DATE_MATCH'],
+        affected_fields=['DATE_MATCH', #  AD1
+                         'DECOM', 'REC'], #  Episodes
     )
 
     def _validate(dfs):
-        if 'AD1' not in dfs:
+        if 'AD1' not in dfs or 'Episodes' not in dfs:
             return {}
         else:
             adt = dfs['AD1']
-            plac = dfs['PlacedAdoption']
-            adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'], format='%d/%m/%Y', errors='coerce')
-            plac['DATE_PLACED'] = pd.to_datetime(plac['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+            eps = dfs['Episodes']
 
-            # A child cannot be placed for adoption before the child has been matched with prospective adopter(s). 
-            mask = adt['DATE_MATCH'].notna() & plac['DATE_PLACED'].notna() & (plac['DATE_PLACED'] >= adt['DATE_MATCH'])
-            
-            return {'AD1': adt.index[mask].to_list()}
+            # Save indexes of each table so we can retreive the original positions in each for our error rows
+            adt['AD1_index'] = adt.index
+            eps['Episodes_index'] = eps.index
+
+            adt['DATE_MATCH'] = pd.to_datetime(adt['DATE_MATCH'], format='%d/%m/%Y', errors='coerce')
+            eps['DECOM'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            # Only keep the episodes where <Adopted> = 'Y'
+            adoption_eps = eps[eps['REC'].isin(['E11', 'E12'])]
+
+            # Merge AD1 and Episodes so we can compare DATE_MATCH and DECOM
+            adoption_eps = adoption_eps.merge(adt, on='CHILD')
+
+            # A child cannot be placed for adoption before the child has been matched with prospective adopter(s).
+            error_mask = adoption_eps['DATE_MATCH'] < adoption_eps['DECOM']
+
+            # Get the rows of each table where the dates clash
+            AD1_errs = list(adoption_eps.loc[error_mask, 'AD1_index'].unique())
+            Episodes_errs = list(adoption_eps.loc[error_mask, 'Episodes_index'].unique())
+
+            return {'AD1': AD1_errs,
+                    'Episodes': Episodes_errs}
 
     return error, _validate

@@ -3035,16 +3035,28 @@ def test_validate_1012():
 
 def test_validate_331():
     fake_adt = pd.DataFrame({
-        'DATE_MATCH':['01/06/2020', '02/06/2020','03/06/2020','04/06/2020', pd.NA]
+        'CHILD': ['111', '222', '333', '444',
+                  '555', '66'],
+        'DATE_MATCH': ['01/01/2020', '02/06/2020', '11/11/2020', pd.NA,
+                       '01/02/2020', '04/06/2020']
         })
-    fake_ado = pd.DataFrame({
-        'Date_Placed':['05/06/2020', pd.NA, '01/06/2020','02/06/2020','05/06/2020']
+    fake_eps = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444',
+                  '555', '555', '555',
+                  '66', '66', '66', '66'],
+        'DECOM': ['01/01/2020', '01/06/2020', '12/12/2020', '01/02/2020',
+                  '01/01/2020', '01/02/2020', '05/06/2020',
+                  '01/01/2020', '01/02/2020', '05/06/2020', '06/07/2020'],
+        'REC': ['E12', 'E11', 'E12', 'E11',
+                'xX', 'E11', 'E12',
+                'Xx', 'oO', 'E11', 'Oo']
         })
 
-    fake_dfs = {'AD1': fake_adt, 'PlacedAdoption': fake_ado}
+    fake_dfs = {'AD1': fake_adt, 'Episodes': fake_eps}
 
     error_defn, error_func = validate_331()
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [2, 3, 4]}
+    assert result == {'AD1': [2, 4, 5],
+                      'Episodes': [2, 6, 9]}

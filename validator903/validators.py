@@ -1,6 +1,23 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_520():
+  error = ErrorDefinition(
+    code = '520',
+    description = 'Data entry on the legal status of adopters shows different gender married couple but data entry on genders of adopters shows it as a same gender couple.',
+    affected_fields = ['LS_ADOPTR', 'SEX_ADOPTR']
+  )
+  def _validate(dfs):
+    if 'AD1' not in dfs:
+      return {}
+    else:
+      ad1 = dfs['AD1']
+      # check condition
+      mask = (ad1['LS_ADOPTR']=='L11') & (ad1['SEX_ADOPTR'] != 'MF')
+      error_locations = ad1.index[mask]
+      return {'AD1':error_locations.to_list()}
+  return error, _validate
+
 def validate_522():
   error = ErrorDefinition(
     code = '522',

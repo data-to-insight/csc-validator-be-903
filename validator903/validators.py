@@ -22,6 +22,23 @@ def validate_522():
       return {'PlacedAdoption':error_locations.to_list()}
   return error, _validate
 
+def validate_563():
+  error = ErrorDefinition(
+    code = '563',
+    description = 'The child should no longer be placed for adoption but the date of the decision that the child should be placed for adoption is blank',
+    affected_fields = ['DATE_PLACED', 'REASON_PLACED_CEASED', 'DATE_PLACED_CEASED'],
+  )
+
+  def _validate(dfs):
+    if 'PlacedAdoption' not in dfs:
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      mask = placed_adoption['REASON_PLACED_CEASED'].notna() & placed_adoption['DATE_PLACED_CEASED'].notna() & placed_adoption['DATE_PLACED'].isna()
+      error_locations = placed_adoption.index[mask]
+      return {'PlacedAdoption': error_locations.to_list()}
+  return error, _validate
+
 def validate_544():
     error = ErrorDefinition(
         code = '544',

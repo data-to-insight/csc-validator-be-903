@@ -13,9 +13,10 @@ def validate_634():
     else:
       episodes = dfs['Episodes']
       prevperm = dfs['PrevPerm']
+      collection_start = dfs['metadata']['collection_start']
       # convert date field to appropriate format
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-      reference_date = pd.to_datetime('01/04/2016', format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
       # the maximum date has the highest possibility of satisfying the condition
       episodes['LAST_DECOM'] = episodes.groupby('CHILD')['DECOM'].transform('max')
 
@@ -24,7 +25,7 @@ def validate_634():
       prevperm.reset_index(inplace=True)
       merged = prevperm.merge(episodes, on='CHILD', how='left', suffixes=['_prev', '_eps'])
       # If <PREV_PERM> or <LA_PERM> or <DATE_PERM> provided, then at least 1 episode must have a <DECOM> later than 01/04/2016
-      mask = (merged['PREV_PERM'].notna() | merged['DATE_PERM'].notna() | merged['LA_PERM'].notna()) & (merged['LAST_DECOM']< reference_date)
+      mask = (merged['PREV_PERM'].notna() | merged['DATE_PERM'].notna() | merged['LA_PERM'].notna()) & (merged['LAST_DECOM'] < collection_start)
       eps_error_locs = merged.loc[mask, 'index_eps']
       prevperm_error_locs = merged.loc[mask, 'index_prev']
       

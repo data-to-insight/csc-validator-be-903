@@ -1,6 +1,32 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_525():
+  error = ErrorDefinition(
+    code ='525',
+    description='A child for whom the decision to be placed for adoption has been reversed cannot be adopted during the year.',
+    affected_fields=['DATE_PLACED_CEASED', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+  )
+  def _validate(dfs):
+    if 'PlacedAdoption' not in dfs or 'AD1' not in dfs:
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      ad1 = dfs['AD1']
+      # prepare to merge
+      placed_adoption.reset_index(inplace=True)
+      ad1.reset_index(inplace=True)
+
+      merged = placed_adoption.merge(ad1, on='CHILD', how='left', suffixes=['_placed', '_ad1'])
+      # If <DATE_PLACED_CEASED> not Null, then <DATE_INT>; <DATE_MATCH>; <FOSTER_CARE>; <NB_ADOPTR>; <SEX_ADOPTR>; and <LS_ADOPTR> should not be provided
+      mask = merged['DATE_PLACED_CEASED'].notna() & (merged['DATE_INT'].notna()|merged['DATE_MATCH'].notna()|merged['FOSTER_CARE'].notna()|merged['NB_ADOPTR'].notna()|merged['SEX_ADOPTR'].notna()|merged['LS_ADOPTR'].notna())
+      # error locations
+      pa_error_locs = merged.loc[mask, 'index_placed']
+      ad_error_locs = merged.loc[mask, 'index_ad1']
+      # return result
+      return {'PlacedAdoption':pa_error_locs.tolist(), 'AD1':ad_error_locs.tolist()}
+  return error, _validate
+
 def validate_158():
     error = ErrorDefinition(
         code='158',

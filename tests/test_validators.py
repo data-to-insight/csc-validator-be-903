@@ -3033,4 +3033,30 @@ def test_validate_1012():
 
     assert error_func(fake_dfs_partial) == {'AD1': [3], 'PrevPerm': [4], 'OC2': [5]}
 
+def test_validate_331():
+    fake_adt = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444',
+                  '555', '66'],
+        'DATE_MATCH': ['01/01/2020', '02/06/2020', '11/11/2020', pd.NA,
+                       '01/02/2020', '04/06/2020']
+        })
+    fake_eps = pd.DataFrame({
+        'CHILD': ['111', '222', '333', '444',
+                  '555', '555', '555',
+                  '66', '66', '66', '66'],
+        'DECOM': ['01/01/2020', '01/06/2020', '12/12/2020', '01/02/2020',
+                  '01/01/2020', '01/02/2020', '05/06/2020',
+                  '01/01/2020', '01/02/2020', '05/06/2020', '06/07/2020'],
+        'REC': ['E12', 'E11', 'E12', 'E11',
+                'xX', 'E11', 'E12',
+                'Xx', 'oO', 'E11', 'Oo']
+        })
 
+    fake_dfs = {'AD1': fake_adt, 'Episodes': fake_eps}
+
+    error_defn, error_func = validate_331()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [2, 4, 5],
+                      'Episodes': [2, 6, 9]}

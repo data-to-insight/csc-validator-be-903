@@ -2938,7 +2938,8 @@ def test_validate_602():
 
     other_than_DATE_INT = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
 
-    fake_ad1[other_than_DATE_INT] = pd.NA
+    for c in other_than_DATE_INT:
+        fake_ad1[c] = pd.NA
 
     metadata = {'collection_start': '01/04/2020', 'collection_end': '31/03/2021'}
 

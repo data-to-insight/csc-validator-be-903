@@ -12,6 +12,20 @@ def test_validate_451():
   result = error_func(fake_dfs)
   assert result == {'Episodes':[3]}
 
+def test_validate_519():
+  fake_data = pd.DataFrame({
+  'LS_ADOPTR':['L2','L4',pd.NA,'L2','L2','L2','L4'],
+  'SEX_ADOPTR':['MM','FF','MM','M1','MF',pd.NA,'xxxxx'],
+  })
+
+  fake_dfs = {'AD1': fake_data}
+
+  error_defn, error_func = validate_519()
+
+  result = error_func(fake_dfs)
+
+  assert result == {'AD1':[3,4,5]}
+
 def test_validate_520():
   fake_ad1 = pd.DataFrame({
     'LS_ADOPTR':['L11','L11',pd.NA,'L4','L11','L1','L4'],

@@ -3,8 +3,15 @@ import pandas as pd
 
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
-      'CHILD': ['101','101','102','102','103'],
-      'DEC': ['20/06/2020', pd.NA, pd.NA, '14/03/2021', '06/08/2020']
+        'CHILD': ['101','101',
+                  '102','102',
+                  '103', '103', '103'],
+        'DEC': ['20/06/2020', pd.NA,  # ok - has current episodes
+                pd.NA, '14/03/2021',  # ok - 'open' episode not latest by DECOM
+                '01/01/2020', pd.NA, '01/05/2020'],  # Fail!
+        'DECOM': ['01/01/2020', '11/11/2020',
+                  '03/10/2020', '11/11/2020',
+                  '01/01/2020', '11/11/2020', '01/02/2020']
     })
 
     fake_episodes = pd.DataFrame({
@@ -22,7 +29,7 @@ def test_validate_1010():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [1]}
+    assert result == {'OC3': [2]}
 
 def test_validate_158():
     fake_data = pd.DataFrame({

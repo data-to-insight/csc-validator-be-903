@@ -1534,7 +1534,7 @@ def test_validate_116():
     assert result == {'PlacedAdoption': [2, 3]}
 
 
-def test_validate_392c(dummy_postcodes):
+def test_validate_392c():
     fake_data = pd.DataFrame({
         'HOME_POST': [
             'AB1 0JD',
@@ -1552,7 +1552,7 @@ def test_validate_392c(dummy_postcodes):
         ],
     })
 
-    fake_dfs = {'Episodes': fake_data, 'metadata': {'postcodes': dummy_postcodes}}
+    fake_dfs = {'Episodes': fake_data}
 
     error_defn, error_func = validate_392c()
 
@@ -3218,7 +3218,8 @@ def test_validate_602():
 
     other_than_DATE_INT = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
 
-    fake_ad1[other_than_DATE_INT] = pd.NA
+    for c in other_than_DATE_INT:
+        fake_ad1[c] = pd.NA
 
     metadata = {'collection_start': '01/04/2020', 'collection_end': '31/03/2021'}
 

@@ -1,5 +1,5 @@
 # Quality LAC data beta: Python validator
-[![Run on Repl.it](https://repl.it/badge/github/SocialFinanceDigitalLabs/quality-lac-data-beta-validator)](https://repl.it/github/SocialFinanceDigitalLabs/quality-lac-data-beta-validator)
+[![Run on Repl.it](https://repl.it/badge/github/kws/quality-lac-data-beta-validator)](https://repl.it/github/kws/quality-lac-data-beta-validator)
 
 Python-side code for the Quality LAC Data Beta frontend
 

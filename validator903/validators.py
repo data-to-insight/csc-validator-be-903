@@ -10,18 +10,21 @@ def validate_1002():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs or 'Episodes_last' not in dfs or 'OC3' not in dfs:
-          return{}
+        if 'Episodes' not in dfs or 'OC3' not in dfs:
+            return {}
 
         else:
             episodes = dfs['Episodes']
-            episodes_last = dfs['Episodes_last']
             oc3 = dfs['OC3']
 
-            has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
-            has_previous_episodes = oc3['CHILD'].isin(episodes_last['CHILD'])
-
-            error_mask = ~has_current_episodes & ~has_previous_episodes
+            if 'Episodes_last' in dfs:
+                episodes_last = dfs['Episodes_last']
+                has_previous_episodes = oc3['CHILD'].isin(episodes_last['CHILD'])
+                has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
+                error_mask = ~has_current_episodes & ~has_previous_episodes
+            else:
+                has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
+                error_mask = ~has_current_episodes
 
             validation_error_locations = oc3.index[error_mask]
 

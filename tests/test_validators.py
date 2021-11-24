@@ -3363,3 +3363,28 @@ def test_validate_331():
 
     assert result == {'AD1': [2, 4, 5],
                       'Episodes': [2, 6, 9]}
+
+def test_validate_362():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'DEC': '04/06/2020', 'LS': 'L2'},  # 0  CHANGE |a
+        {'CHILD': '111', 'DECOM': '04/06/2020', 'DEC': '05/06/2020', 'LS': 'L2'},  # 1         |a Passes as <=21
+        {'CHILD': '111', 'DECOM': '06/07/2020', 'DEC': '07/07/2020', 'LS': 'E2'},  # 2
+        {'CHILD': '111', 'DECOM': '08/09/2020', 'DEC': '09/10/2020', 'LS': 'L2'},  # 3  CHANGE |b  Fail
+        {'CHILD': '111', 'DECOM': '09/10/2020', 'DEC': '12/11/2020', 'LS': 'L2'},  # 4         |b  Fail
+        {'CHILD': '333', 'DECOM': '06/06/2020', 'DEC': '10/06/2020', 'LS': 'L2'},  # 5  CHANGE |c  Fail
+        {'CHILD': '333', 'DECOM': '10/06/2020', 'DEC': '12/10/2020', 'LS': 'L2'},  # 6         |c  Fail
+        {'CHILD': '444', 'DECOM': '07/06/2020', 'DEC': '08/07/2020', 'LS': 'L2'},  # 7  CHANGE |d  Fail
+        {'CHILD': '444', 'DECOM': '08/08/2020', 'DEC': '09/08/2020', 'LS': 'E4'},  # 8
+        {'CHILD': '444', 'DECOM': '09/08/2020', 'DEC': '15/08/2020', 'LS': 'L2'},  # 9  CHANGE |e  Fail
+        {'CHILD': '444', 'DECOM': '15/08/2020', 'DEC': pd.NA, 'LS': 'L2'},         # 10        |e  Fail
+        {'CHILD': '555', 'DECOM': '15/03/2021', 'DEC': pd.NA, 'LS': 'L2'},         # 11 CHANGE |f  Passes as <=21
+    ])
+    metadata = {'collection_end': '31/03/2021'}
+
+    fake_dfs = {'Episodes': fake_data, 'metadata': metadata}
+
+    error_defn, error_func = validate_362()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 4, 5, 6, 7, 9, 10]}

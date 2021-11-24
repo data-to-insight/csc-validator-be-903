@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_399():
+  fake_data_episodes = pd.DataFrame({
+  'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+  'LS':[pd.NA,'V4','V3','L4','L1','V4','V3', 'XO'],
+  })
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+      'MOTHER': ['0', '0', pd.NA, pd.NA, 1, 0, 1, pd.NA],
+  })
+  fake_data_reviews = pd.DataFrame({
+      'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+      'REVIEW':['31/12/2008','01/01/2012',pd.NA,'01/01/2009','01/01/2012','01/01/2017','01/01/2021','01/01/2015'],
+      'REVIEW_CODE':['PN1','PN2',pd.NA,'PN4','PN5','PN6', 'PN7','PN0'],
+  })
+  fake_dfs = {'Header':fake_data_header, 'Reviews':fake_data_reviews, 'Episodes':fake_data_episodes}
+  error_defn, error_func = validate_399()
+  result = error_func(fake_dfs)
+  assert result == {'Header':[1,5,6], 'Reviews':[1,5,6], 'Episodes':[1,5,6]}
+
 def test_validate_634():
     fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '6', '7', '8'],

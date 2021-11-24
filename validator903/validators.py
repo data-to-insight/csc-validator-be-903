@@ -1,6 +1,42 @@
 import pandas as pd
 from .types import ErrorDefinition
 
+def validate_399():
+  error = ErrorDefinition(
+    code='399',
+    description = 'Mother field, review field or participation field are completed but child is looked after under legal status V3 or V4.',
+    affected_fields = ['MOTHER', 'LS', 'REVIEW', 'REVIEW_CODE']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs or 'Reviews' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+      reviews = dfs['Reviews']
+      code_list = ['V3', 'V4']
+      
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      reviews.reset_index(inplace=True)
+
+      first_merge = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+      # TODO if suffixes are added in this second merged, it fails. check why
+      merged = first_merge.merge(reviews, on='CHILD', how='left',)
+
+      # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEW_CODE> should not be provided
+      mask = merged['LS'].isin(code_list) & (merged['MOTHER'].notna()|merged['REVIEW'].notna()|merged['REVIEW_CODE'].notna())
+      
+      # Error locations
+      eps_errors = merged.loc[mask, 'index_eps']
+      header_errors = merged.loc[mask, 'index_er']
+      revs_errors = merged.loc[mask, 'index']
+
+      return {'Episodes':eps_errors.tolist(), 'Header':header_errors.tolist(), 'Reviews':revs_errors.tolist()}
+
+  return error, _validate
+
 def validate_442():
   error = ErrorDefinition(
     code = '442',

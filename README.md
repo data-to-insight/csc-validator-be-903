@@ -14,7 +14,7 @@ We believe that a tool that highlights and helps fixing data errors would be val
 ## About this project
 
 The aim of this project is to deliver a tool to relieve some of the pain-points
-of [reporting and quality][qlac-blog] in children's services data. This project 
+of [reporting and quality][qlac-blog] in children's services data. This project
 focuses in particular on data on looked after children (LAC) and the
 [SSDA903][dfe-903] return.
 
@@ -26,17 +26,17 @@ The project consists of a number of related pieces of work:
 * [Local Authority Reference Data][qlac-ref-la]
 * [Postcode Reference Data][qlac-ref-pc]
 
-The core parts consist of a [Python][python] validator engine and rules using 
+The core parts consist of a [Python][python] validator engine and rules using
 [Pandas][pandas] with [Poetry][poetry] for dependency management. The is targeted
-to run either standalone, or in [pyodide][pyodide] in the browser for a zero-install 
+to run either standalone, or in [pyodide][pyodide] in the browser for a zero-install
 deployment with offline capabilities.
 
 It provides methods of finding the validation errors defined by the DfE in 903 data.
-The validator needs to be provided with a set of input files for the current year and, 
-optionally, the previous year. These files are coerced into a common format and sent to 
+The validator needs to be provided with a set of input files for the current year and,
+optionally, the previous year. These files are coerced into a common format and sent to
 each of the validator rules in turn. The validators report on rows not meeting the rules
-and a report is provided highlight errors for each row and which fields were included in 
-the checks. 
+and a report is provided highlight errors for each row and which fields were included in
+the checks.
 
 ## Data pipeline
 
@@ -64,7 +64,7 @@ project
 ```
 
 Most of the work from contributors will be in `validators.py` and the associates testing files under
-tests. Please do not submit a pull-request without a comprehensive test. 
+tests. Please do not submit a pull-request without a comprehensive test.
 
 ### Development
 
@@ -80,7 +80,7 @@ Validators are simple functions, usually called `validate_XXX()` which take no a
 return a tuple of an `ErrorDefinition` and a test function. The test function itself takes
 a single argument, the *datastore*, which is a [Mapping][py-mapping] (a dict-like) following the structure below.
 
-The following is the expected structure for the input data that is given to each validator (the `dfs` object). 
+The following is the expected structure for the input data that is given to each validator (the `dfs` object).
 You should assume that not all of these keys are present and handle that appropriately.
 
 Any XML uploads are converted into CSV form to give the same inputs.

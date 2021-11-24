@@ -130,5 +130,7 @@ dmypy.json
 
 # Custom additions
 .vscode
-scripts/
-!scripts/create_postcode_db.py
+scripts/*.csv
+scripts/*.zip
+
+*.xlsx

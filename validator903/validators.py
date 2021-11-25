@@ -25,7 +25,7 @@ def validate_407():
       header.reset_index(inplace=True)
       merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
 
-      # Where <REC> = ‘J1’ or ‘J2’ or ‘J3’ then <DOB> should <= to 10 years prior to <DEC>
+      # If <REC> = ‘E45’ or ‘E46’ or ‘E47’ or ‘E48’ then <DOB> must be < 18 years prior to <DEC>
       mask = merged['REC'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=18) < merged['DEC'])
       # That is, raise error if DEC > DOB + 10years
 

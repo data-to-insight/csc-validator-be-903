@@ -1,6 +1,40 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_407():
+  fake_data_eps = pd.DataFrame([
+      {'CHILD': 101, 'DEC': '01/01/2009', 'REC': 'E45'},  # 0 pass
+      {'CHILD': 102, 'DEC': '01/01/2001', 'REC': 'A3'},  # 1
+      {'CHILD': 103, 'DEC': '20/12/2001', 'REC': 'E15'},  # 2 
+      {'CHILD': 104, 'DEC': '03/01/2019', 'REC': 'E46'},  # 3 fail
+      {'CHILD': 105, 'DEC': '03/04/2008', 'REC': 'E48'},  # 4 pass
+      {'CHILD': 106, 'DEC': '01/01/2002', 'REC': 'X2'},  # 5
+      {'CHILD': 107, 'DEC': '10/01/2002', 'REC': 'E11'},  # 6
+      {'CHILD': 108, 'DEC': '11/02/2020', 'REC': 'E48'},  # 7 fail
+      {'CHILD': 109, 'DEC': '25/01/2002','REC': 'X1'},  # 8
+      {'CHILD': 110, 'DEC': '25/01/2002','REC': 'E47'},  # 9
+      {'CHILD': 111, 'DEC': pd.NA, 'REC': 'E45'},  # 10 ignored by dropna
+      {'CHILD': 112, 'DEC': '25/01/2002', 'REC': 'E46'},  # 11 ignored by dropna
+  ])
+  fake_data_header = pd.DataFrame([
+      {'CHILD': 101, 'DOB': '01/01/2000', },  # 0
+      {'CHILD': 102, 'DOB': '01/01/2001', },  # 1
+      {'CHILD': 103, 'DOB': '20/12/2001', },  # 2 
+      {'CHILD': 104, 'DOB': '01/01/2000', },  # 3
+      {'CHILD': 105, 'DOB': '03/01/2000', },  # 4 
+      {'CHILD': 106, 'DOB': '01/01/2002', },  # 5
+      {'CHILD': 107, 'DOB': '10/01/2002', },  # 6
+      {'CHILD': 108, 'DOB': '11/01/2002', },  # 7
+      {'CHILD': 109, 'DOB': '25/01/2002',},  # 8
+      {'CHILD': 110, 'DOB': '25/01/2002',},  # 9
+      {'CHILD': 111, 'DOB': '25/01/2002',},  # 10 
+      {'CHILD': 112, 'DOB': pd.NA,} # 11
+  ])
+  fake_dfs = {'Episodes':fake_data_eps, 'Header':fake_data_header}
+  error_defn, error_func = validate_407()
+  result =  error_func(fake_dfs)
+  assert result == {'Episodes':[3,7] , 'Header':[3,7]} 
+
 def test_validate_634():
     fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '6', '7', '8'],

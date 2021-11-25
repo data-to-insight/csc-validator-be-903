@@ -3,6 +3,40 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
+def validate_407():
+  error = ErrorDefinition(
+    code = '407',
+    description = 'Reason episode ceased is Special Guardianship Order, but child has reached age 18.',
+    affected_fields = ['DEC', 'DOB', 'REC']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+      code_list = ['E45','E46','E47','E48']
+
+      # convert dates to datetime format
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+
+      # Where <REC> = ‘J1’ or ‘J2’ or ‘J3’ then <DOB> should <= to 10 years prior to <DEC>
+      mask = merged['REC'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=18) < merged['DEC'])
+      # That is, raise error if DEC > DOB + 10years
+
+      # error locations
+      header_error_locs = merged.loc[mask, 'index_er']
+      episode_error_locs = merged.loc[mask, 'index_eps']
+      # one to many join implies use .unique on the 'one'
+      return {'Episodes':episode_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}
+
+  return error, _validate
+
 def validate_442():
   error = ErrorDefinition(
     code = '442',

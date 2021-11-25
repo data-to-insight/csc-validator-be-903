@@ -1339,7 +1339,7 @@ def validate_365():
         episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
         over_17_days = episodes['DEC'] > episodes['DECOM'] + pd.DateOffset(days=17)
-        error_mask = (episodes['LS'] == 'V2') & over_17_days
+        error_mask = (episodes['LS'] == 'V3') & over_17_days
 
         return {'Episodes': episodes.index[error_mask].to_list()}
 

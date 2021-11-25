@@ -1,6 +1,45 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validators_1007():
+  fake_data_oc3 = pd.DataFrame({
+      'CHILD': ['A', 'B', 'C', 'D', 'E'],
+      'DOB':['01/01/2001','01/01/2016','20/12/1997','01/01/2000','03/01/2000',],
+      'IN_TOUCH': ['DIED', 'Yes','RHOM' , pd.NA, 'DIED'],
+      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX'],
+    })
+  fake_data_episodes = pd.DataFrame({
+    'CHILD':['A', 'B', 'C', 'D', 'E'],
+    'REC':[pd.NA,'E12','X1',pd.NA,'E11'],
+    'DEC':['15/03/2021',pd.NA,'20/03/2020',pd.NA,'23/08/2020'],
+    })
+  metadata = {
+      'collection_end': '31/03/2018'
+  }
+
+  fake_dfs = {'Episodes':fake_data_episodes, 'OC3': fake_data_oc3, 'metadata':metadata}
+  error_defn, error_func = validate_1007()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,3], 'OC3':[0,3]}
+
+
+def test_validate_189():
+  fake_data_oc2 = pd.DataFrame({
+      'SDQ_REASON': ['SDQ2', 'sdq2', '', pd.NA, pd.NA],
+      'SDQ_SCORE':    ['10', pd.NA, '58', 72, pd.NA ],
+      'DOB':['01/01/2001','01/01/2016','20/12/1997','01/01/2000','03/01/2000',],
+      'CHILD': [101,102,103,104,105]
+      })
+
+  fake_dfs = {'OC2':fake_data_oc2,
+              'metadata': {'collection_start': '01/04/2017'}
+              }
+
+  error_defn, error_func = validate_189()
+  result =  error_func(fake_dfs)
+  assert result == {'OC2':[2,3]}
+
 def test_validate_634():
     fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '6', '7', '8'],

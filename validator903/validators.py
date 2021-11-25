@@ -4696,10 +4696,12 @@ def validate_362():
 
             # Throw out anything <= 21 days.
             grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
-            grp_len_l2 = grp_len_l2.query("DAY_DIF > 21")
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 21").copy()
 
             # Inner join back to the err_co and get the original index out.
-            err_final = err_co.merge(grp_len_l2, how='inner', on=['CHILD', 'FLOWS'], suffixes=['', '_IG'])
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
 
             err_list = err_final['index'].unique().tolist()
             err_list.sort()
@@ -4754,10 +4756,12 @@ def validate_361():
 
             # Throw out anything <= 3 days.
             grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
-            grp_len_l2 = grp_len_l2.query("DAY_DIF > 3")
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 3").copy()
 
             # Inner join back to the err_co and get the original index out.
-            err_final = err_co.merge(grp_len_l2, how='inner', on=['CHILD', 'FLOWS'], suffixes=['', '_IG'])
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
 
             err_list = err_final['index'].unique().tolist()
             err_list.sort()

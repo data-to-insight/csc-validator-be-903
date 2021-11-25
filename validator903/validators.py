@@ -3,6 +3,46 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
+def validate_1010():
+    error = ErrorDefinition(
+        code = '1010',
+        description = 'This child has no episodes loaded for current year even though there was an open episode of '
+                      + 'care at the end of the previous year, and care leaver data has been entered.',
+        affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Episodes_last' not in dfs or 'OC3' not in dfs:
+          return{}
+
+        else:
+            episodes = dfs['Episodes']
+            episodes_last = dfs['Episodes_last']
+            oc3 = dfs['OC3']
+
+            # convert DECOM to datetime, drop missing/invalid sort by CHILD then DECOM,
+            episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes_last = episodes_last.dropna(subset=['DECOM']).sort_values(['CHILD', 'DECOM'], ascending=True)
+
+            # Keep only the final episode for each child (ie where the following row has a different CHILD value)
+            episodes_last = episodes_last[
+                episodes_last['CHILD'].shift(-1) != episodes_last['CHILD']
+            ]
+            # Keep only the final episodes that were still open
+            episodes_last = episodes_last[episodes_last['DEC'].isna()]
+
+            # The remaining children ought to have episode data in the current year if they are in OC3
+            has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
+            has_open_episode_last = oc3['CHILD'].isin(episodes_last['CHILD'])
+
+            error_mask = ~has_current_episodes & has_open_episode_last
+
+            validation_error_locations = oc3.index[error_mask]
+
+            return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_525():
   error = ErrorDefinition(
     code ='525',

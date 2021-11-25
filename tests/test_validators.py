@@ -5,25 +5,17 @@ def test_validate_189():
   fake_data_oc2 = pd.DataFrame({
       'SDQ_REASON': ['SDQ2', 'sdq2', '', pd.NA, pd.NA],
       'SDQ_SCORE':    ['10', pd.NA, '58', 72, pd.NA ],
+      'DOB':['01/01/2001','01/01/2016','20/12/1997','01/01/2000','03/01/2000',],
       'CHILD': [101,102,103,104,105]
-    })
-  fake_data_header = pd.DataFrame([
-      {'CHILD': 101, 'DOB': '01/01/2001', },  # 0 pass
-      {'CHILD': 102, 'DOB': '01/01/2016', },  # 1 pass
-      {'CHILD': 103, 'DOB': '20/12/1997', },  # 2 fail
-      {'CHILD': 104, 'DOB': '01/01/2000', },  # 3 fail
-      {'CHILD': 105, 'DOB': '03/01/2000', },  # 4 pass
-  ])
+      })
 
-  fake_dfs = {'OC2':fake_data_oc2, 
-              'Header':fake_data_header,
+  fake_dfs = {'OC2':fake_data_oc2,
               'metadata': {'collection_start': '01/04/2017'}
               }
 
   error_defn, error_func = validate_189()
   result =  error_func(fake_dfs)
-  assert result == {'OC2':[2,3] , 'Header':[2,3]}
-
+  assert result == {'OC2':[2,3]}
 
 def test_validate_634():
     fake_data_prevperm = pd.DataFrame({

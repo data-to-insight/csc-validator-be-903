@@ -10,27 +10,21 @@ def validate_189():
     affected_fields = ['DOB', 'SDQ_SCORE', 'SDQ_REASON']
   )
   def _validate(dfs):
-    if 'OC2' not in dfs or 'Header' not in dfs:
+    if 'OC2' not in dfs:
       return {}
     else:
       oc2 = dfs['OC2']
-      header = dfs['Header']
       collection_start = dfs['metadata']['collection_start']
 
       # datetime format allows appropriate comparison between dates
-      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
-      # prepare to merge
-      header.reset_index(inplace=True)
-      oc2.reset_index(inplace=True)
-      merged = oc2.merge(header, on='CHILD', how='left', suffixes=['_oc2', '_er'])
       # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
-      mask = ((merged['DOB'] + pd.offsets.DateOffset(years=17)) < collection_start) & (merged['SDQ_REASON'].notna()|merged['SDQ_SCORE'].notna())
+      mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) < collection_start) & (oc2['SDQ_REASON'].notna()|oc2['SDQ_SCORE'].notna())
       # That is, raise error if collection_start > DOB + 17years
-      header_error_locs = merged.loc[mask, 'index_er']
-      oc_error_locs = merged.loc[mask, 'index_oc2']
-      return {'Header':header_error_locs.tolist(), 'OC2':oc_error_locs.tolist()}
+      oc_error_locs = oc2.index[mask]
+      return {'OC2':oc_error_locs.tolist()}
   return error, _validate
 
 def validate_442():

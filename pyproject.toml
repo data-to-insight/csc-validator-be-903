@@ -1,8 +1,13 @@
 [tool.poetry]
-name = "903 Validator"
-version = "0.1.0"
+name = "quality-lac-data-validator"
+version = "0.2.0-alpha.2"
 description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
-authors = ["Mark Waddoups <mark.waddoups@socialfinance.org.uk>"]
+authors = [
+    "Mark Waddoups <mark.waddoups@socialfinance.org.uk>",
+    "Michael Ogunkolade <michael.ogunkolade@socialfinance.org.uk>",
+    "Kaj Siebert <kaj.siebert@socialfinance.org.uk>",
+]
+repository = "https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta-validator"
 license = "MIT"
 packages = [
     { include = "validator903" },
@@ -10,12 +15,16 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pandas = "^1.0.0"
-numpy = "^1.17.0"
+pandas = "1.0.5" # These are fixed to match versions available for pyodide
+numpy = "1.17.5"
+openpyxl = "^3.0.9"
+quality-lac-data-ref-authorities = "2021.4a6"
+quality-lac-data-ref-postcodes = "^2021.8a3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
 pytest-mock = "^3.6.1"
+coverage = "^6.1.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

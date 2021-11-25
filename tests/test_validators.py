@@ -1,6 +1,29 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_215():
+  fake_data_oc2 = pd.DataFrame({
+      'CHILD': ['A', 'B', 'C', 'D', 'E'],
+      'IMMUNISATIONS': ['1', pd.NA, '1', pd.NA, '1'],
+      'TEETH_CHECK': ['1', pd.NA, '1', '1', '1'],
+      'HEALTH_ASSESSMENT': ['1', pd.NA, '1', pd.NA, '1'],
+      'SUBSTANCE_MISUSE': [pd.NA, pd.NA, '1', '1', '1'],
+      'CONVICTED': [pd.NA, pd.NA, '1', '1', pd.NA],
+      'HEALTH_CHECK': [pd.NA, pd.NA, '1', '1', pd.NA],
+      'INTERVENTION_RECEIVED': ['1', pd.NA, '1', '1', pd.NA],
+      'INTERVENTION_OFFERED': [pd.NA, '1', '1', '1', pd.NA],
+    })
+  fake_data_oc3 = pd.DataFrame({
+      'CHILD': ['A', 'B', 'C', 'D', 'E'],
+      'IN_TOUCH': ['DIED', 'Yes','RHOM' , pd.NA, pd.NA],
+      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+      'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+    })
+  fake_dfs = {'OC3':fake_data_oc3, 'OC2':fake_data_oc2}
+  error_defn, error_func = validate_215()
+  result = error_func(fake_dfs)
+  assert result == {'OC3':[0,1,2,3], 'OC2':[0,1,2,3]}
+
 def test_validate_399():
   fake_data_episodes = pd.DataFrame({
   'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],

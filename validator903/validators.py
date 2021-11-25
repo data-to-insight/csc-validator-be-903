@@ -3,6 +3,30 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
+def validate_189():
+  error = ErrorDefinition(
+    code = '189',
+    description = 'Child is aged 17 years or over at the beginning of the year, but an Strengths and Difficulties (SDQ) score or a reason for no Strengths and Difficulties (SDQ) score has been completed.',
+    affected_fields = ['DOB', 'SDQ_SCORE', 'SDQ_REASON']
+  )
+  def _validate(dfs):
+    if 'OC2' not in dfs:
+      return {}
+    else:
+      oc2 = dfs['OC2']
+      collection_start = dfs['metadata']['collection_start']
+
+      # datetime format allows appropriate comparison between dates
+      oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+
+      # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
+      mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) < collection_start) & (oc2['SDQ_REASON'].notna()|oc2['SDQ_SCORE'].notna())
+      # That is, raise error if collection_start > DOB + 17years
+      oc_error_locs = oc2.index[mask]
+      return {'OC2':oc_error_locs.tolist()}
+  return error, _validate
+
 def validate_226():
     error = ErrorDefinition(
     code = '226',

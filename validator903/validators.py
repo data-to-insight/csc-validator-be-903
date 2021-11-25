@@ -2,26 +2,31 @@ import pandas as pd
 from .types import ErrorDefinition
 
 def validate_226():
-  error = ErrorDefinition(
+    error = ErrorDefinition(
     code = '226',
     description = 'Reason for placement change is not required.',
     affected_fields = ['REASON_PLACE_CHANGE', 'PLACE']
-  )
-  def _validate(dfs):
-    if 'Episodes' not in dfs:
-      return {}
-    else:
-      episodes = dfs['Episodes']
-      code_list = ['T0', 'T1', 'T2', 'T3', 'T4']
-      # create column to see previous REASON_PLACE_CHANGE
-      episodes['PREVIOUS_REASON'] = episodes.groupby('CHILD')['REASON_PLACE_CHANGE'].shift(1)
-      # If <PL> = 'T0'; 'T1'; 'T2'; 'T3' or 'T4' then <REASON_PLACE_CHANGE> should be null in current episode and current episode - 1
-      mask = episodes['PLACE'].isin(code_list) & (episodes['REASON_PLACE_CHANGE'].notna() | episodes['PREVIOUS_REASON'].notna() )
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
 
-      # error locations
-      error_locs = episodes.index[mask]
-      return {'Episodes':error_locs.tolist()}
-  return error, _validate
+            code_list = ['T0', 'T1', 'T2', 'T3', 'T4']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            # create column to see previous REASON_PLACE_CHANGE
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+            episodes['PREVIOUS_REASON'] = episodes.groupby('CHILD')['REASON_PLACE_CHANGE'].shift(1)
+            # If <PL> = 'T0'; 'T1'; 'T2'; 'T3' or 'T4' then <REASON_PLACE_CHANGE> should be null in current episode and current episode - 1
+            mask = episodes['PLACE'].isin(code_list) & (episodes['REASON_PLACE_CHANGE'].notna() | episodes['PREVIOUS_REASON'].notna() )
+
+            # error locations
+            error_locs = episodes.index[mask]
+        return {'Episodes':error_locs.tolist()}
+    return error, _validate
 
 def validate_442():
   error = ErrorDefinition(

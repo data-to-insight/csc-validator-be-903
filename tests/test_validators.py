@@ -1,6 +1,26 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_226():
+    fake_data_epi = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/01/2020', 'PLACE': 'U1', 'REASON_PLACE_CHANGE': 'XXX'},  # 0
+        {'CHILD': '111', 'DECOM': '11/01/2020', 'PLACE': 'T1', 'REASON_PLACE_CHANGE': pd.NA},  # 1 Fail
+        {'CHILD': '111', 'DECOM': '22/01/2020', 'PLACE': 'X1', 'REASON_PLACE_CHANGE': pd.NA},  # 2
+        {'CHILD': '123', 'DECOM': '01/01/2020', 'PLACE': 'U1', 'REASON_PLACE_CHANGE': pd.NA},  # 3
+        {'CHILD': '123', 'DECOM': '11/01/2020', 'PLACE': 'X1', 'REASON_PLACE_CHANGE': pd.NA},  # 4
+        {'CHILD': '333', 'DECOM': '01/01/2020', 'PLACE': 'T2', 'REASON_PLACE_CHANGE': pd.NA},  # 5
+        {'CHILD': '333', 'DECOM': '22/01/2020', 'PLACE': 'X1', 'REASON_PLACE_CHANGE': 'CHANGE'}, # 6
+        {'CHILD': '333', 'DECOM': '11/01/2020', 'PLACE': 'U1', 'REASON_PLACE_CHANGE': pd.NA},  # 7
+        {'CHILD': '444', 'DECOM': '22/01/2020', 'PLACE': 'T1', 'REASON_PLACE_CHANGE': 'XXX'},  # 8 Fail
+        {'CHILD': '444', 'DECOM': '11/01/2020', 'PLACE': 'X1', 'REASON_PLACE_CHANGE': pd.NA},  # 9
+        {'CHILD': '444', 'DECOM': '01/01/2020', 'PLACE': 'T3', 'REASON_PLACE_CHANGE': pd.NA},  # 10 Pass
+        {'CHILD': '666', 'DECOM': '01/01/2020', 'PLACE': 'T4', 'REASON_PLACE_CHANGE': pd.NA},  # 11 Pass
+    ])
+    fake_dfs = {'Episodes': fake_data_epi}
+    error_defn, error_func = validate_226()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [1, 8]}
+
 def test_validate_358():
   fake_data_eps = pd.DataFrame([
       {'CHILD': 101, 'DECOM': '01/01/2009', 'LS': 'J3'},  # 0 pass

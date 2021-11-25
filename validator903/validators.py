@@ -27,6 +27,101 @@ def validate_189():
       return {'OC2':oc_error_locs.tolist()}
   return error, _validate
 
+def validate_226():
+    error = ErrorDefinition(
+    code = '226',
+    description = 'Reason for placement change is not required.',
+    affected_fields = ['REASON_PLACE_CHANGE', 'PLACE']
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+
+            code_list = ['T0', 'T1', 'T2', 'T3', 'T4']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            # create column to see previous REASON_PLACE_CHANGE
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+            episodes['PREVIOUS_REASON'] = episodes.groupby('CHILD')['REASON_PLACE_CHANGE'].shift(1)
+            # If <PL> = 'T0'; 'T1'; 'T2'; 'T3' or 'T4' then <REASON_PLACE_CHANGE> should be null in current episode and current episode - 1
+            mask = episodes['PLACE'].isin(code_list) & (episodes['REASON_PLACE_CHANGE'].notna() | episodes['PREVIOUS_REASON'].notna() )
+
+            # error locations
+            error_locs = episodes.index[mask]
+        return {'Episodes':error_locs.tolist()}
+    return error, _validate
+
+def validate_358():
+  error = ErrorDefinition(
+    code = '358',
+    description = 'Child with this legal status should not be under 10.',
+    affected_fields = ['DECOM', 'DOB', 'LS']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+      code_list = ['J1', 'J2', 'J3']
+
+      # convert dates to datetime format
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+
+      # Where <LS> = ‘J1’ or ‘J2’ or ‘J3’ then <DOB> should <= to 10 years prior to <DECOM>
+      mask = merged['LS'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=10) < merged['DECOM'])
+      # That is, raise error if DECOM > DOB + 10years
+
+      # error locations
+      header_error_locs = merged.loc[mask, 'index_er']
+      episode_error_locs = merged.loc[mask, 'index_eps']
+      # one to many join implies use .unique on the 'one'
+      return {'Episodes':episode_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}
+
+  return error, _validate
+
+def validate_407():
+  error = ErrorDefinition(
+    code = '407',
+    description = 'Reason episode ceased is Special Guardianship Order, but child has reached age 18.',
+    affected_fields = ['DEC', 'DOB', 'REC']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+      code_list = ['E45','E46','E47','E48']
+
+      # convert dates to datetime format
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+
+      # If <REC> = ‘E45’ or ‘E46’ or ‘E47’ or ‘E48’ then <DOB> must be < 18 years prior to <DEC>
+      mask = merged['REC'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=18) < merged['DEC'])
+      # That is, raise error if DEC > DOB + 10years
+
+      # error locations
+      header_error_locs = merged.loc[mask, 'index_er']
+      episode_error_locs = merged.loc[mask, 'index_eps']
+      # one to many join implies use .unique on the 'one'
+      return {'Episodes':episode_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}
+
+  return error, _validate
+
 def validate_442():
   error = ErrorDefinition(
     code = '442',
@@ -1295,7 +1390,7 @@ def validate_365():
         episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
         over_17_days = episodes['DEC'] > episodes['DECOM'] + pd.DateOffset(days=17)
-        error_mask = (episodes['LS'] == 'V2') & over_17_days
+        error_mask = (episodes['LS'] == 'V3') & over_17_days
 
         return {'Episodes': episodes.index[error_mask].to_list()}
 
@@ -4673,5 +4768,123 @@ def validate_331():
 
             return {'AD1': AD1_errs,
                     'Episodes': Episodes_errs}
+
+    return error, _validate
+
+def validate_362():
+    error = ErrorDefinition(
+        code='362',
+        description='Emergency protection order (EPO) lasted longer than 21 days',
+        affected_fields=['DECOM', 'LS', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            epi['LAG'] = epi['level_0'] - 1
+
+            epi['DEC'].fillna(collection_end, inplace=True)
+
+            err_co = epi.merge(epi, how='left', left_on='level_0', right_on='LAG', suffixes=['', '_NEXT']) \
+                .query("LS == 'L2'")
+
+            # Create a partition "FLOWS" for two or more separate flow sequences of L2 code dates within the same child.
+            # when the dec / decom_next dates stop flowing or the child id changes
+            # the cumsum is incremented this can then be used as the partition.
+            err_co['FLOWS'] = (err_co['DEC'] == err_co['DECOM_NEXT']) & (err_co['CHILD'] == err_co['CHILD_NEXT'])
+            err_co['FLOWS'] = err_co['FLOWS'].shift(1)
+            err_co['FLOWS'].fillna(False, inplace=True)
+            err_co['FLOWS'] = ~err_co['FLOWS']
+            err_co['FLOWS'] = err_co['FLOWS'].astype(int).cumsum()
+
+            # Calc the min decom and max dec in each group so the days between them can be calculated.
+            grp_decom = err_co.groupby(['CHILD', 'FLOWS'])['DECOM'].min().to_frame(name='MIN_DECOM').reset_index()
+            grp_dec = err_co.groupby(['CHILD', 'FLOWS'])['DEC'].max().to_frame(name='MAX_DEC').reset_index()
+            grp_len_l2 = grp_decom.merge(grp_dec, how='inner', on=['CHILD', 'FLOWS'])
+
+            # Throw out anything <= 21 days.
+            grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 21").copy()
+
+            # Inner join back to the err_co and get the original index out.
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
+
+            err_list = err_final['index'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+
+def validate_361():
+    error = ErrorDefinition(
+        code='361',
+        description='Police protection legal status lasted longer than maximum 72 hours allowed ' +
+                    'in the Children Act 1989.',
+        affected_fields=['DECOM', 'LS', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            epi['LAG'] = epi['level_0'] - 1
+
+            epi['DEC'].fillna(collection_end, inplace=True)
+
+            err_co = epi.merge(epi, how='left', left_on='level_0', right_on='LAG', suffixes=['', '_NEXT']) \
+                .query("LS == 'L1'")
+
+            # Create a partition "FLOWS" for two or more separate flow sequences of L2 code dates within the same child.
+            # when the dec / decom_next dates stop flowing or the child id changes
+            # the cumsum is incremented this can then be used as the partition.
+            err_co['FLOWS'] = (err_co['DEC'] == err_co['DECOM_NEXT']) & (err_co['CHILD'] == err_co['CHILD_NEXT'])
+            err_co['FLOWS'] = err_co['FLOWS'].shift(1)
+            err_co['FLOWS'].fillna(False, inplace=True)
+            err_co['FLOWS'] = ~err_co['FLOWS']
+            err_co['FLOWS'] = err_co['FLOWS'].astype(int).cumsum()
+
+            # Calc the min decom and max dec in each group so the days between them can be calculated.
+            grp_decom = err_co.groupby(['CHILD', 'FLOWS'])['DECOM'].min().to_frame(name='MIN_DECOM').reset_index()
+            grp_dec = err_co.groupby(['CHILD', 'FLOWS'])['DEC'].max().to_frame(name='MAX_DEC').reset_index()
+            grp_len_l2 = grp_decom.merge(grp_dec, how='inner', on=['CHILD', 'FLOWS'])
+
+            # Throw out anything <= 3 days.
+            grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 3").copy()
+
+            # Inner join back to the err_co and get the original index out.
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
+
+            err_list = err_final['index'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
 
     return error, _validate

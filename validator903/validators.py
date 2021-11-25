@@ -4651,3 +4651,121 @@ def validate_331():
                     'Episodes': Episodes_errs}
 
     return error, _validate
+
+def validate_362():
+    error = ErrorDefinition(
+        code='362',
+        description='Emergency protection order (EPO) lasted longer than 21 days',
+        affected_fields=['DECOM', 'LS', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            epi['LAG'] = epi['level_0'] - 1
+
+            epi['DEC'].fillna(collection_end, inplace=True)
+
+            err_co = epi.merge(epi, how='left', left_on='level_0', right_on='LAG', suffixes=['', '_NEXT']) \
+                .query("LS == 'L2'")
+
+            # Create a partition "FLOWS" for two or more separate flow sequences of L2 code dates within the same child.
+            # when the dec / decom_next dates stop flowing or the child id changes
+            # the cumsum is incremented this can then be used as the partition.
+            err_co['FLOWS'] = (err_co['DEC'] == err_co['DECOM_NEXT']) & (err_co['CHILD'] == err_co['CHILD_NEXT'])
+            err_co['FLOWS'] = err_co['FLOWS'].shift(1)
+            err_co['FLOWS'].fillna(False, inplace=True)
+            err_co['FLOWS'] = ~err_co['FLOWS']
+            err_co['FLOWS'] = err_co['FLOWS'].astype(int).cumsum()
+
+            # Calc the min decom and max dec in each group so the days between them can be calculated.
+            grp_decom = err_co.groupby(['CHILD', 'FLOWS'])['DECOM'].min().to_frame(name='MIN_DECOM').reset_index()
+            grp_dec = err_co.groupby(['CHILD', 'FLOWS'])['DEC'].max().to_frame(name='MAX_DEC').reset_index()
+            grp_len_l2 = grp_decom.merge(grp_dec, how='inner', on=['CHILD', 'FLOWS'])
+
+            # Throw out anything <= 21 days.
+            grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 21").copy()
+
+            # Inner join back to the err_co and get the original index out.
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
+
+            err_list = err_final['index'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+
+def validate_361():
+    error = ErrorDefinition(
+        code='361',
+        description='Police protection legal status lasted longer than maximum 72 hours allowed ' +
+                    'in the Children Act 1989.',
+        affected_fields=['DECOM', 'LS', 'DEC'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+
+            epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+
+            epi.sort_values(['CHILD', 'DECOM'], inplace=True)
+            epi.reset_index(inplace=True)
+            epi.reset_index(inplace=True)
+
+            epi['LAG'] = epi['level_0'] - 1
+
+            epi['DEC'].fillna(collection_end, inplace=True)
+
+            err_co = epi.merge(epi, how='left', left_on='level_0', right_on='LAG', suffixes=['', '_NEXT']) \
+                .query("LS == 'L1'")
+
+            # Create a partition "FLOWS" for two or more separate flow sequences of L2 code dates within the same child.
+            # when the dec / decom_next dates stop flowing or the child id changes
+            # the cumsum is incremented this can then be used as the partition.
+            err_co['FLOWS'] = (err_co['DEC'] == err_co['DECOM_NEXT']) & (err_co['CHILD'] == err_co['CHILD_NEXT'])
+            err_co['FLOWS'] = err_co['FLOWS'].shift(1)
+            err_co['FLOWS'].fillna(False, inplace=True)
+            err_co['FLOWS'] = ~err_co['FLOWS']
+            err_co['FLOWS'] = err_co['FLOWS'].astype(int).cumsum()
+
+            # Calc the min decom and max dec in each group so the days between them can be calculated.
+            grp_decom = err_co.groupby(['CHILD', 'FLOWS'])['DECOM'].min().to_frame(name='MIN_DECOM').reset_index()
+            grp_dec = err_co.groupby(['CHILD', 'FLOWS'])['DEC'].max().to_frame(name='MAX_DEC').reset_index()
+            grp_len_l2 = grp_decom.merge(grp_dec, how='inner', on=['CHILD', 'FLOWS'])
+
+            # Throw out anything <= 3 days.
+            grp_len_l2['DAY_DIF'] = (grp_len_l2['MAX_DEC'] - grp_len_l2['MIN_DECOM']).dt.days
+            grp_len_l2 = grp_len_l2.query("DAY_DIF > 3").copy()
+
+            # Inner join back to the err_co and get the original index out.
+            err_co['MERGE_KEY'] = err_co['CHILD'].astype(str) + err_co['FLOWS'].astype(str)
+            grp_len_l2['MERGE_KEY'] = grp_len_l2['CHILD'].astype(str) + grp_len_l2['FLOWS'].astype(str)
+            err_final = err_co.merge(grp_len_l2, how='inner', on=['MERGE_KEY'], suffixes=['', '_IG'])
+
+            err_list = err_final['index'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate

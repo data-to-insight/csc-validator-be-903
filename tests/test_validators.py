@@ -3626,3 +3626,29 @@ def test_validate_361():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 1, 5, 6, 7, 9, 10, 11]}
+
+def test_validate_435():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 0
+        {'CHILD': '111', 'DECOM': '03/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX3'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 1
+        {'CHILD': '111', 'DECOM': '04/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX3'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 2 Fail all the same
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 3
+        {'CHILD': '222', 'DECOM': '07/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR4'},                     # 4
+        {'CHILD': '222', 'DECOM': '08/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 5
+        {'CHILD': '222', 'DECOM': '09/06/2020', 'RNE': 'P', 'LS': 'L3', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 6 Fail dif LS
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_435()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 6]}

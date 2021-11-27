@@ -1,6 +1,22 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_209():
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101','102', '103', '104', '105', '106', '107'],
+      'UPN': [pd.NA, 'H801200001001', 'UN1', 'UN2', pd.NA, 'UN1', pd.NA],
+      'DOB': ['01/01/2020', '11/11/2020', '03/10/2015', '11/11/2020', '01/01/2020', '11/11/2020', '01/02/2020']
+  })
+  metadata = {
+    'collection_start': '01/04/2025',
+  }
+  fake_dfs = {'Header': fake_data_header, 'metadata':metadata}
+
+  error_defn, error_func = validate_209()
+  result = error_func(fake_dfs)
+
+  assert result == {'Header': [2]} 
+
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
         'CHILD': ['101','101',

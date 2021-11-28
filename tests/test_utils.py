@@ -28,7 +28,7 @@ def test_add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER():
 
 
 def test_add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER():
-    collection_start '01/04/1980'
+    collection_start =  '01/04/1980'
 
     eps = pd.DataFrame([
         {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},

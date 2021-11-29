@@ -4080,9 +4080,9 @@ def validate_193():
     return error, _validate
 
 
-def validate_197():
+def validate_197a():
     error = ErrorDefinition(
-        code='197',
+        code='197a',
         description="Reason for no Strengths and Difficulties (SDQ) score is not required if Strengths and Difficulties Questionnaire score is filled in.",
         affected_fields=['SDQ_SCORE', 'SDQ_REASON'],
     )

@@ -88,18 +88,24 @@ def test_validate_525():
   assert result == {'PlacedAdoption':[1,2,3], 'AD1':[1,2,3]}
 
 def test_validate_335():
-  fake_data_eps = pd.DataFrame({
-    'PLACE':['A5','U2','A3','Z1','A3','R1','A5','K2',],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_data_ad1 = pd.DataFrame({
-    'FOSTER_CARE': [0, 1, '0', '1', 2, 'former foster carer', '', pd.NA],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_dfs = {'Episodes':fake_data_eps, 'AD1':fake_data_ad1}
-  error_defn, error_func = validate_335()
-  result = error_func(fake_dfs)
-  assert result == {'Episodes':[2], 'AD1':[2]}
+    fake_data_eps = pd.DataFrame({
+        'PLACE':['A2', '--', 'A1', '--',
+                 'A4', '--', 'A5', 'A3'],
+        'REC': ['E1', 'E1', 'E1', 'E12',
+                'E11', 'E1', '--', 'E12'],
+        'CHILD': ['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_data_ad1 = pd.DataFrame({
+        'FOSTER_CARE': [0, 1, '0', '1',
+                        2, 'former foster carer', '', pd.NA],
+        'CHILD':['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_dfs = {'Episodes':fake_data_eps, 'AD1': fake_data_ad1}
+    error_defn, error_func = validate_335()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [0], 'AD1': [0]}
 
 
 def test_validate_215():
@@ -1210,19 +1216,18 @@ def test_validate_386():
 
 def test_validate_363():
     test_eps = pd.DataFrame([
-        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L2'},  # 0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L3'},  # 0 Fail!
         {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'},  # 1
-        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L2'},  # 2 Fail!
-        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '03/01/2000', 'LS': 'L2'},  # 3 ^ Fa
-        {'CHILD': 2002, 'DECOM': '03/01/2000', 'DEC': '09/01/2001', 'LS': 'L2'},  # 4 v il!
-        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '07/01/2002', 'LS': 'L2'},  # 5
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L3'},  # 2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '03/01/2000', 'LS': 'L3'},  # 3 ^ Fa
+        {'CHILD': 2002, 'DECOM': '03/01/2000', 'DEC': '09/01/2001', 'LS': 'L3'},  # 4 v il!
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '07/01/2002', 'LS': 'L3'},  # 5
         {'CHILD': 2002, 'DECOM': '10/01/2002', 'DEC': '11/01/2002', 'LS': 'X'},  # 6
-        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '17/01/2002', 'LS': 'L2'},  # 7
-        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L2'},  # 8 (decom>dec)
-        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L2'},  # 9 Fail!
-        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L2'},  # 10 decom.isNA
-        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L2'},  # 11
-
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '17/01/2002', 'LS': 'L3'},  # 7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L3'},  # 8 (decom>dec)
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L3'},  # 9 Fail!
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L3'},  # 10 decom.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L3'},  # 11
     ])
 
     test_meta = {'collection_end': '01/04/2002'}

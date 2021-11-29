@@ -52,18 +52,24 @@ def test_validate_525():
   assert result == {'PlacedAdoption':[1,2,3], 'AD1':[1,2,3]}
 
 def test_validate_335():
-  fake_data_eps = pd.DataFrame({
-    'PLACE':['A5','U2','A3','Z1','A3','R1','A5','K2',],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_data_ad1 = pd.DataFrame({
-    'FOSTER_CARE': [0, 1, '0', '1', 2, 'former foster carer', '', pd.NA],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_dfs = {'Episodes':fake_data_eps, 'AD1':fake_data_ad1}
-  error_defn, error_func = validate_335()
-  result = error_func(fake_dfs)
-  assert result == {'Episodes':[2], 'AD1':[2]}
+    fake_data_eps = pd.DataFrame({
+        'PLACE':['A2', '--', 'A1', '--',
+                 'A4', '--', 'A5', 'A3'],
+        'REC': ['E1', 'E1', 'E1', 'E12',
+                'E11', 'E1', '--', 'E12'],
+        'CHILD': ['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_data_ad1 = pd.DataFrame({
+        'FOSTER_CARE': [0, 1, '0', '1',
+                        2, 'former foster carer', '', pd.NA],
+        'CHILD':['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_dfs = {'Episodes':fake_data_eps, 'AD1': fake_data_ad1}
+    error_defn, error_func = validate_335()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [0], 'AD1': [0]}
 
 
 def test_validate_215():

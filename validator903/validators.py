@@ -259,33 +259,37 @@ def validate_525():
   return error, _validate
 
 def validate_335():
-  error = ErrorDefinition(
-    code = '335',
-    description = 'Child is not adopted by a former foster carer(s) but has a last placement code of A3 or A5.',
-    affected_fields = ['PLACE', 'FOSTER_CARE']
-  )
-  def _validate(dfs):
-    if 'Episodes' not in dfs or 'AD1' not in dfs:
-      return {}
-    else:
-      episodes = dfs['Episodes']
-      ad1 = dfs['AD1']
-      code_list = ['A3', 'A5']
+    error = ErrorDefinition(
+      code = '335',
+      description = 'Child is not adopted by a former foster carer(s) but has a last placement code of A3 or A5.',
+      affected_fields = ['PLACE', 'FOSTER_CARE']
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            ad1 = dfs['AD1']
+            code_list = ['A3', 'A5']
 
-      # prepare to merge
-      episodes.reset_index(inplace=True)
-      ad1.reset_index(inplace=True)
-      merged = episodes.merge(ad1, on='CHILD', how='left', suffixes=['_eps', '_ad1'])
+            # prepare to merge
+            episodes.reset_index(inplace=True)
+            ad1.reset_index(inplace=True)
+            merged = episodes.merge(ad1, on='CHILD', how='left', suffixes=['_eps', '_ad1'])
 
-      # Where <PL> = 'A3' or 'A5' <FOSTER_CARE> should not be '0'
-      mask = merged['PLACE'].isin(code_list) & (merged['FOSTER_CARE']=='0')
-      eps_error_locs = merged.loc[mask, 'index_eps']
-      ad1_error_locs = merged.loc[mask, 'index_ad1']
+            # Where <PL> = 'A3' or 'A5' <FOSTER_CARE> should not be '0'
+            mask = (
+                merged['REC'].isin(['E1', 'E11', 'E12']) & (
+                    (merged['PLACE'].isin(['A2', 'A3', 'A5']) & (merged['FOSTER_CARE'].astype(str) == '0'))
+                  | (merged['PLACE'].isin(['A1', 'A4', 'A6']) & (merged['FOSTER_CARE'].astype(str) == '1'))
+                )
+            )
+            eps_error_locs = merged.loc[mask, 'index_eps']
+            ad1_error_locs = merged.loc[mask, 'index_ad1']
 
-      # use .unique since join is many to one
-      return {'Episodes':eps_error_locs.tolist(), 'AD1':ad1_error_locs.unique().tolist()}
-
-  return error, _validate
+            # use .unique since join is many to one
+            return {'Episodes':eps_error_locs.tolist(), 'AD1':ad1_error_locs.unique().tolist()}
+    return error, _validate
 
 def validate_215():
   error = ErrorDefinition(

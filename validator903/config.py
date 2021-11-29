@@ -224,6 +224,7 @@ configured_errors = sorted([
     validate_407(),
     validate_335(),
     validate_435(),
+    validate_607(),
 ])
 
 errors = {e[0].code: e for e in configured_errors}

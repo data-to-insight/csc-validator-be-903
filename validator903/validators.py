@@ -289,6 +289,41 @@ def validate_607():
     return error, _validate
 
 
+
+def validate_210():
+    error = ErrorDefinition(
+        code='210',
+        description='Children looked after for more than a week at 31 March should not have an unknown Unique Pupil Number (UPN) code of UN4.',
+        affected_fields=['UPN', 'DECOM']
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+            collection_end = dfs['metadata']['collection_end']
+            # convert to datetime
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+            yr = collection_end.year
+            reference_date = ref_date = pd.to_datetime('24/03/' + str(yr), format='%d/%m/%Y', errors='coerce')
+            # prepare to merge
+            episodes.reset_index(inplace=True)
+            header.reset_index(inplace=True)
+            # the logical way is to merge left on UPN but that will be a one to many merge and may not go as well as a many to one merge that we've been doing.
+            merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+            # If <UPN> = 'UN4' then no episode <DECOM> must be >` = 24/03/YYYY Note: YYYY refers to the current collection year.
+            mask = (merged['UPN'] == 'UN4') & (merged['DECOM'] >= reference_date)
+            # error locations
+            error_locs_header = merged.loc[mask, 'index_er']
+            error_locs_eps = merged.loc[mask, 'index_eps']
+            return {'Episodes': error_locs_eps.tolist(), 'Header': error_locs_header.unique().tolist()}
+
+    return error, _validate
+
+
 def validate_1010():
     error = ErrorDefinition(
         code='1010',
@@ -385,7 +420,7 @@ def validate_335():
             # Where <PL> = 'A3' or 'A5' <FOSTER_CARE> should not be '0'
             mask = (
                     merged['REC'].isin(['E1', 'E11', 'E12']) & (
-                    (merged['PLACE'].isin(['A2', 'A3', 'A5']) & (merged['FOSTER_CARE'].astype(str) == '0'))
+                    (merged['PLACE'].isin(['A2', 'A3', 'A5']) & (merged['FOSTER_CARE'] .astype(str)== '0'))
                     | (merged['PLACE'].isin(['A1', 'A4', 'A6']) & (merged['FOSTER_CARE'].astype(str) == '1'))
             )
             )

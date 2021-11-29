@@ -1,6 +1,34 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_210():
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['111', '123', '333', '444', '667'],
+      'UPN': [ 'UN4', pd.NA, 'UN3', 'UN4', 'UN4',],
+  })
+  fake_data_epi = pd.DataFrame([
+      {'CHILD': '111', 'DECOM': '01/01/2020',},  # 0
+      {'CHILD': '111', 'DECOM': '11/01/2020',},  # 1
+      {'CHILD': '111', 'DECOM': '30/03/2020',},  # 2 fail
+      {'CHILD': '123', 'DECOM': '01/01/2020',},  # 3
+      {'CHILD': '123', 'DECOM': '11/01/2020',},  # 4
+      {'CHILD': '333', 'DECOM': '01/01/2020',},  # 5
+      {'CHILD': '333', 'DECOM': '22/01/2020',}, # 6
+      {'CHILD': '333', 'DECOM': '11/01/2020',},  # 7
+      {'CHILD': '444', 'DECOM': '22/01/2020',},  # 8
+      {'CHILD': '444', 'DECOM': '25/03/2020',},  # 9 fail
+      {'CHILD': '444', 'DECOM': '01/01/2020',},  # 10
+      {'CHILD': '667', 'DECOM': '01/01/2020',},  # 11
+  ])
+  metadata = {
+      'collection_end': '31/03/2020'
+  }
+
+  fake_dfs = {'Episodes':fake_data_epi, 'Header':fake_data_header, 'metadata':metadata}
+  error_defn, error_func = validate_210()
+  result = error_func(fake_dfs)
+  assert result ==  {'Episodes':[2,9], 'Header':[0,3]}
+
 
 def test_validate_209():
     fake_data_header = pd.DataFrame({

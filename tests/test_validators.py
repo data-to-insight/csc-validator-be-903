@@ -1,6 +1,37 @@
 from validator903.validators import *
 import pandas as pd
 
+
+def test_validate_198():
+    metadata = {'collection_start': '01/04/1980'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({'CHILD': ['999999', '1', '2', '3', '9999', '8'],
+                        'SDQ_REASON': ['!!!!!', pd.NA, 'OO', '!!', pd.NA, '!!']})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_198()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, 3, 5]}
+
 def test_validate_607():
   fake_data_eps = pd.DataFrame([
       {'CHILD':101,'DEC':'01/01/2021','REC':pd.NA,'LS':'L1',}, # 0 Ignore: REC is null

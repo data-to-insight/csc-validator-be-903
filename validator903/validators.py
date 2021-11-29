@@ -2,8 +2,29 @@ import pandas as pd
 
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
-from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
+from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
+def validate_198():
+    error = ErrorDefinition(
+        code='198',
+        description="Child has not been looked after continuously for at least 12 months at 31 March but a reason "
+                    "for no Strengths and Difficulties (SDQ) score has been completed. ",
+        affected_fields=['SDQ_REASON'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'OC2' not in dfs:
+            return {}
+
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        error_mask = oc2['SDQ_REASON'].notna() & ~oc2['CONTINUOUSLY_LOOKED_AFTER']
+
+        error_locs = oc2.index[error_mask].to_list()
+
+        return {'OC2': error_locs}
+    return error, _validate
 
 def validate_185():
     error = ErrorDefinition(

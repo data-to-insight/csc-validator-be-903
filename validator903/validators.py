@@ -1737,7 +1737,7 @@ def validate_363():
         episodes = dfs['Episodes']
         collection_end_str = dfs['metadata']['collection_end']
 
-        L2_eps = episodes[episodes['LS'] == 'L2'].copy()
+        L2_eps = episodes[episodes['LS'] == 'L3'].copy()
         L2_eps['original_index'] = L2_eps.index
         L2_eps = L2_eps[L2_eps['DECOM'].notna()]
 

@@ -3,6 +3,17 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
+def validate_525():
+  error = ErrorDefinition(
+    code ='625',
+    description = 'Date of birth of the first child is beyond the end of this reporting year or the date the child ceased to be looked after.',
+    affected_fields = ['MC_DOB', 'DEC']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs:
+      return {}
+    else:
+      
 def validate_1010():
     error = ErrorDefinition(
         code = '1010',

@@ -1,6 +1,26 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_625():
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101', '102', '103'],
+      'MC_DOB': ['01/11/2021', '19/12/2016', pd.NA],
+      # 0 MC_DOB > collection_end FAIL
+      # 1 MC_DOB < collection_end but > DEC of latest episode FAIL
+      # 2 MC_DOB not provided IGNORE
+  })
+  fake_data_episodes = pd.DataFrame({
+    'CHILD': ['101','101', '102','102', '103', '103', '103'],
+    'DEC': ['02/12/2021', '11/11/2012','03/10/2014', '11/11/2015', '01/01/2020', '11/11/2020', '01/02/2020']
+  })
+  metadata = {
+    'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'metadata':metadata, 'Episodes':fake_data_episodes, 'Header':fake_data_header}
+  error_defn, error_func = validate_625()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,1,2,3], 'Header':[0,1]}
+
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
         'CHILD': ['101','101',

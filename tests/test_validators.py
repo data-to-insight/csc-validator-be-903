@@ -1185,7 +1185,7 @@ def test_validate_363():
         {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L3'},  # 8 (decom>dec)
         {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L3'},  # 9 Fail!
         {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L3'},  # 10 decom.isNA
-        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L2'},  # 11
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L3'},  # 11
     ])
 
     test_meta = {'collection_end': '01/04/2002'}

@@ -192,6 +192,46 @@ def validate_191():
     return error, _validate
 
 
+def validate_607():
+  error = ErrorDefinition(
+    code = '607',
+    description = 'Child ceased to be looked after in the year, but mother field has not been completed.',
+    affected_fields = ['DEC', 'REC', 'MOTHER', 'LS', 'SEX']
+  )
+  def _validate(dfs):
+    if 'Header' not in dfs or 'Episodes' not in dfs:
+      return {}
+    else:
+      header = dfs['Header']
+      episodes = dfs['Episodes']
+      collection_start = dfs['metadata']['collection_start']
+      collection_end = dfs['metadata']['collection_end']
+      code_list = ['V3', 'V4']
+
+      # convert to datetiime format
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      # TODO Reevaluate if this should be a left merge:The priority is to see all the fields where MOTHER was filled. However, how practical is a one to many join in our case?.
+      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
+
+      # CEASED_TO_BE_LOOKED_AFTER = DEC is not null and REC is filled but not equal to X1
+      CEASED_TO_BE_LOOKED_AFTER = merged['DEC'].notna() & ((merged['REC']!='X1') & merged['REC'].notna())
+      # and <LS> not = ‘V3’ or ‘V4’
+      check_LS = ~(merged['LS'].isin(code_list))
+      # and <DEC> is in <CURRENT_COLLECTION_YEAR
+      check_DEC = (collection_start <= merged['DEC']) & (merged['DEC'] <= collection_end)
+      # Where <CEASED_TO_BE_LOOKED_AFTER> = ‘Y’, and <LS> not = ‘V3’ or ‘V4’ and <DEC> is in <CURRENT_COLLECTION_YEAR> and <SEX> = ‘2’ then <MOTHER> should be provided.
+      mask = CEASED_TO_BE_LOOKED_AFTER & check_LS & check_DEC & (merged['SEX']=='2') & (merged['MOTHER'].isna())
+      header_error_locs = merged.loc[mask, 'index_er']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}
+  return error, _validate
+  
 def validate_1010():
     error = ErrorDefinition(
         code = '1010',

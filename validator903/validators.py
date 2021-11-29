@@ -29,7 +29,7 @@ def validate_210():
             # the logical way is to merge left on UPN but that will be a one to many merge and may not go as well as a many to one merge that we've been doing.
             merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
             # If <UPN> = 'UN4' then no episode <DECOM> must be >` = 24/03/YYYY Note: YYYY refers to the current collection year.
-            mask = (merged['UPN'] == 'UN4') & (merged['DECOM'] > reference_date)
+            mask = (merged['UPN'] == 'UN4') & (merged['DECOM'] >= reference_date)
             # error locations
             error_locs_header = merged.loc[mask, 'index_er']
             error_locs_eps = merged.loc[mask, 'index_eps']

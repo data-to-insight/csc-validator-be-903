@@ -4,7 +4,8 @@ import pandas as pd
 from validator903.config import column_names 
 from validator903.datastore import create_datastore
 
-@pytest.fixture
+
+@pytest.fixture(scope="session")
 def dummy_input_files():
     return  {
         'header.csv': 'Header',
@@ -19,22 +20,16 @@ def dummy_input_files():
         'missing.csv': 'Missing',
     }
 
-@pytest.fixture
-def dummy_postcodes():
-    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
-    return pd.read_csv(file_path)
 
-@pytest.fixture
-def dummy_metadata(dummy_postcodes):
+@pytest.fixture(scope="session")
+def dummy_metadata():
     return {
         'collectionYear': '2019/20',
-        'postcodes': dummy_postcodes,
         'localAuthority': 'test_LA',
     }
 
 
-
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_input_data(dummy_input_files, dummy_metadata):
     file_path = os.path.join(os.path.dirname(__file__), 'fake_data')
 
@@ -48,7 +43,7 @@ def dummy_input_data(dummy_input_files, dummy_metadata):
     return create_datastore(out, dummy_metadata)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_empty_input(dummy_metadata):
     out = {
         table_name: pd.DataFrame(columns=c)

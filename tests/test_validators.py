@@ -22,11 +22,11 @@ def test_validate_607():
     {'CHILD':103,'SEX':'2', 'MOTHER':pd.NA},  # 2 Ignore: LS is V3
     {'CHILD':104,'SEX':'2', 'MOTHER':pd.NA},  # 3 Ignore: DEC out of range
     {'CHILD':105,'SEX':'2', 'MOTHER':pd.NA},  # 4 FAIL
-    {'CHILD':108,'SEX':'1', 'MOTHER':pd.NA},  # 7 
-    {'CHILD':109,'SEX':'2', 'MOTHER':'0'},  # 8 Ignore: REC is X1
-    {'CHILD':110,'SEX':'2', 'MOTHER':pd.NA},  # 9 FAIL
-    {'CHILD':111,'SEX':'2', 'MOTHER':'0'},  # 10 Ignore : DEC is null
-    {'CHILD':112,'SEX':'2', 'MOTHER':'1'},  # 11 
+    {'CHILD':108,'SEX':'1', 'MOTHER':pd.NA},  # 5 
+    {'CHILD':109,'SEX':'2', 'MOTHER':'0'},  # 6 Ignore: REC is X1
+    {'CHILD':110,'SEX':'2', 'MOTHER':pd.NA},  # 7 FAIL
+    {'CHILD':111,'SEX':'2', 'MOTHER':'0'},  # 8 Ignore : DEC is null
+    {'CHILD':112,'SEX':'2', 'MOTHER':'1'},  # 9 
   ])
   metadata = {
       'collection_start': '01/04/2020',
@@ -35,7 +35,7 @@ def test_validate_607():
   fake_dfs = {'Header': fake_data_header, 'Episodes':fake_data_eps, 'metadata':metadata}
   error_defn, error_func = validate_607()
   result = error_func(fake_dfs)
-  assert result == {'Header':[4,9] , 'Episodes':[4,5,6,9]}
+  assert result == {'Header':[4,7] , 'Episodes':[4,5,6,9]}
 
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({

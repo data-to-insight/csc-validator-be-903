@@ -25,8 +25,8 @@ def validate_607():
       collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
 
       # prepare to merge
-      episodes.reset_index()
-      header.reset_index()
+      episodes.reset_index(inplace=True)
+      header.reset_index(inplace=True)
       # TODO Reevaluate if this should be a left merge:The priority is to see all the fields where MOTHER was filled. However, how practical is a one to many join in our case?.
       merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
 
@@ -35,9 +35,9 @@ def validate_607():
       # and <LS> not = ‘V3’ or ‘V4’
       check_LS = ~(merged['LS'].isin(code_list))
       # and <DEC> is in <CURRENT_COLLECTION_YEAR
-      check_DEC = collection_start <= merged['DEC'] <= collection_end
+      check_DEC = (collection_start <= merged['DEC']) & (merged['DEC'] <= collection_end)
       # Where <CEASED_TO_BE_LOOKED_AFTER> = ‘Y’, and <LS> not = ‘V3’ or ‘V4’ and <DEC> is in <CURRENT_COLLECTION_YEAR> and <SEX> = ‘2’ then <MOTHER> should be provided.
-      mask = CEASED_TO_BE_LOOKED_AFTER & check_LS & check_DEC & (merged['SEX']=='2') & merged['MOTHER'].isna()
+      mask = CEASED_TO_BE_LOOKED_AFTER & check_LS & check_DEC & (merged['SEX']=='2') & (merged['MOTHER'].isna())
       header_error_locs = merged.loc[mask, 'index_er']
       eps_error_locs = merged.loc[mask, 'index_eps']
       return {'Episodes':eps_error_locs.tolist(), 'Header':header_error_locs.unique().tolist()}

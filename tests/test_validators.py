@@ -1,6 +1,41 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_1001():
+    fake_episodes_prev = pd.DataFrame([
+      {'CHILD': '101', 'LS': 'C2', 'DECOM': '15/06/2016', 'DEC': '20/12/2020', 'REC': 'E17'},#Pass
+      {'CHILD': '102', 'LS': 'C1', 'DECOM': '08/10/2017', 'DEC': '03/03/2018', 'REC': 'E4a'},#Fail
+      {'CHILD': '102', 'LS': 'V4', 'DECOM': '06/03/2018', 'DEC': '12/08/2020', 'REC': 'E4a'},#Fail
+      {'CHILD': '103', 'LS': 'C1', 'DECOM': '11/05/2015', 'DEC': '07/04/2019', 'REC': 'E12'},#Ignore
+      {'CHILD': '104', 'LS': 'C1', 'DECOM': '26/11/2017', 'DEC': '19/07/2020', 'REC': 'X1'},#Pass
+    ])
+
+    fake_episodes = pd.DataFrame([
+      {'CHILD': '104', 'LS': 'C2', 'DECOM': '19/07/2020', 'DEC': '02/03/2021', 'REC': 'E13'},#Pass
+    ])
+
+    fake_oc3 = pd.DataFrame({
+      'CHILD': ['101','102','103','104']
+    })
+
+    fake_header = pd.DataFrame({
+      'CHILD': ['101','102','103','104'],
+      'DOB': ['20/12/2003',
+      '14/06/2003',
+      '08/09/2002',
+      '01/03/2003']
+    })
+
+    erro_defn, error_func = validate_1001()
+
+    fake_dfs = {'Episodes': fake_episodes, 'Episodes_last': fake_episodes_prev, 'OC3': fake_oc3, 'Header': fake_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 2]}
+
+    fake_dfs = {'Episodes': fake_episodes, 'OC3': fake_oc3, 'Header': fake_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [0, 1, 2]}
+
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
         'CHILD': ['101','101',

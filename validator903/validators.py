@@ -3,6 +3,88 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
+#!# big potential false positives, as this only operates on the current and previous year data
+def validate_1001():
+    error = ErrorDefinition(
+        code = '1001',
+        description = 'The episodes recorded for this young person suggest they are not a relevant or a former relevant child and therefore should not have care leaver information completed. [NOTE: This only tests the current and previous year data loaded into the tool]',
+        affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'OC3' not in dfs or 'Header' not in dfs:
+            return {}
+
+        else:
+            episodes = dfs['Episodes']
+            oc3 = dfs['OC3']
+            header = dfs['Header']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            header['DOB14'] = header['DOB'] + pd.DateOffset(years=14)
+            header['DOB16'] = header['DOB'] + pd.DateOffset(years=16)
+
+            if 'Episodes_last' in dfs:
+              episodes_last = dfs['Episodes_last']
+
+              episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+              episodes_last['DEC'] = pd.to_datetime(episodes_last['DEC'], format='%d/%m/%Y', errors='coerce')
+
+              # Drop rows missing start OR end date to avoid errors - only completed care periods matter for this and other errors are handled elsewhere.
+              episodes = episodes.dropna(subset=['DECOM', 'DEC'])
+              # Drop rows missing start OR end date to avoid errors - those lacking end dates in previous year *should* be in current year episodes above and we don't want to double-count.
+              episodes_last = episodes_last.dropna(subset=['DECOM', 'DEC'])
+
+              #Combine current previous episodes files into one long list.
+              episodes = pd.concat([episodes,episodes_last], ignore_index=True)
+
+            else:
+              # Drop rows missing start OR end date to avoid errors - only completed care periods matter for this and other errors are handled elsewhere.
+              episodes = episodes.dropna(subset=['DECOM', 'DEC'])
+
+
+            # Work out how long child has been in care since 14th and 16th birthdays.
+            episodes_merged = episodes.reset_index().merge(header[['CHILD', 'DOB', 'DOB14', 'DOB16']], how='left', on=['CHILD'], suffixes=('','_header'), indicator=True).set_index('index')
+
+            v3v4_ls = episodes_merged['LS'].str.upper().isin(['V3','V4'])
+            index_v3v4_ls = episodes_merged[v3v4_ls].index
+            episodes_merged.drop(index_v3v4_ls, inplace=True)
+
+            episodes_merged['DECOM14'] = episodes_merged[["DECOM", "DOB14"]].max(axis=1)
+            episodes_merged['DECOM16'] = episodes_merged[["DECOM", "DOB16"]].max(axis=1)
+
+            episodes_merged['DURATION14'] = (episodes_merged['DEC'] - episodes_merged['DECOM14']).dt.days.clip(lower=0)
+            episodes_merged['DURATION16'] = (episodes_merged['DEC'] - episodes_merged['DECOM16']).dt.days.clip(lower=0)
+
+            episodes_merged['TOTAL14'] = episodes_merged.groupby('CHILD')['DURATION14'].transform(sum)
+            episodes_merged['TOTAL16'] = episodes_merged.groupby('CHILD')['DURATION16'].transform(sum)
+
+            has_care_after_14 = episodes_merged.loc[episodes_merged['TOTAL14'] >= 91]
+            has_care_after_16 = episodes_merged.loc[episodes_merged['TOTAL16'] >= 1]
+
+            valid_care_leaver = (oc3['CHILD'].isin(has_care_after_14['CHILD'])) & (oc3['CHILD'].isin(has_care_after_16['CHILD']))
+
+
+            #Find out if child has been adopted
+            episodes_max = episodes.groupby('CHILD')['DECOM'].idxmax()
+            episodes_max = episodes.loc[episodes_max] 
+            episodes_adopted = episodes_max[episodes_max['REC'].str.upper().isin(['E11','E12'])]
+            ended_adopted = oc3['CHILD'].isin(episodes_adopted['CHILD'])
+
+
+            #Work out final cohort
+
+            error_mask = ended_adopted | ~valid_care_leaver
+
+            validation_error_locations = oc3.index[error_mask]
+
+            return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_1010():
     error = ErrorDefinition(
         code = '1010',

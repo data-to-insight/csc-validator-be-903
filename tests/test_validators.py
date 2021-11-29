@@ -2391,7 +2391,7 @@ def test_validate_193():
 
     assert result == {'OC2': [0, 2, 4, 5]}
 
-def test_validate_197():
+def test_validate_197a():
     fake_data = pd.DataFrame({
         'SDQ_SCORE':  [  0  , pd.NA,  10  ,  '1' , pd.NA],
         'SDQ_REASON': ['XXX', pd.NA, pd.NA, 'XXX', 'XXX'],
@@ -2399,7 +2399,7 @@ def test_validate_197():
 
     fake_dfs = {'OC2': fake_data}
 
-    error_defn, error_func = validate_197()
+    error_defn, error_func = validate_197a()
 
     result = error_func(fake_dfs)
 

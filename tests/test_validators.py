@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_188():
+  fake_data_oc2 = pd.DataFrame({
+    'SDQ_REASON': ['SDQ2', 'sdq2', '', pd.NA, pd.NA],
+    'SDQ_SCORE':  ['10', pd.NA, '58', 72, pd.NA ],
+    'DOB':['01/01/2001','01/01/2000','20/12/1997','01/01/2000','03/01/2000',],
+    'CHILD': [101,102,103,104,105]
+    })
+  metadata = {
+      'collection_end': '31/03/2003'
+  }
+  fake_dfs = {'OC2':fake_data_oc2, 'metadata':metadata}
+  error_defn, error_func = validate_188()
+  result = error_func(fake_dfs)
+  assert result == {'OC2':[0,1,3]}
+
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
         'CHILD': ['101','101',

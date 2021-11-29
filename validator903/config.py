@@ -214,6 +214,7 @@ configured_errors = sorted([
     validate_217(),
     validate_519(),
     validate_378(),
+    validate_1007(),
     validate_215(),
     validate_399(),
     validate_189(),

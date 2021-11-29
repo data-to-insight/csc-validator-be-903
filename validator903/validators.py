@@ -641,6 +641,45 @@ def validate_407():
     return error, _validate
 
 
+def validate_1007():
+  error = ErrorDefinition(
+    code = '1007',
+    description = 'Care leaver information is not required for 17- or 18-year olds who are still looked after.',
+    affected_fields = ['DEC','REC','DOB','IN_TOUCH', 'ACTIV', 'ACCOM']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'OC3' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      oc3 = dfs['OC3']
+      collection_end = dfs['metadata']['collection_end']
+
+      # convert dates to datetime format
+      oc3['DOB'] = pd.to_datetime(oc3['DOB'], format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      oc3.reset_index(inplace=True)
+      merged = episodes.merge(oc3, on='CHILD', how='left', suffixes=['_eps', '_oc3'])
+
+      # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC> not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
+      check_age = (merged['DOB'] + pd.offsets.DateOffset(years=17) <= collection_end) & (merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
+      # That is, check that 17<=age<19
+      check_dec_rec = merged['REC'].isna() | merged['DEC'].isna()
+      # if either DEC or REC are absent
+      mask = check_age & check_dec_rec & (merged['IN_TOUCH'].notna()|merged['ACTIV'].notna()|merged['ACCOM'].notna())
+      # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
+
+      # error locations
+      oc3_error_locs = merged.loc[mask, 'index_oc3']
+      episode_error_locs = merged.loc[mask, 'index_eps']
+      # one to many join implies use .unique on the 'one'
+      return {'Episodes':episode_error_locs.tolist(), 'OC3':oc3_error_locs.unique().tolist()}
+
+  return error, _validate
+
 def validate_442():
     error = ErrorDefinition(
         code='442',

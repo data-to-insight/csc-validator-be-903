@@ -2,6 +2,195 @@ import pandas as pd
 
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
+from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
+
+
+def validate_185():
+    error = ErrorDefinition(
+        code='185',
+        description="Child has not been looked after continuously for at least 12 months at " +
+                    "31 March but a Strengths and Difficulties (SDQ) score has been completed.",
+        affected_fields=['SDQ_SCORE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'OC2' not in dfs:
+            return {}
+
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        error_mask = oc2['SDQ_SCORE'].notna() & ~oc2['CONTINUOUSLY_LOOKED_AFTER']
+
+        error_locs = oc2.index[error_mask].to_list()
+
+        return {'OC2': error_locs}
+    return error, _validate
+
+
+def validate_186():
+    error = ErrorDefinition(
+        code='186',
+        description="Children aged 4 or over at the start of the year and children aged under 17 at the " +
+                    "end of the year and who have been looked after for at least 12 months continuously " +
+                    "should have a Strengths and Difficulties (SDQ) score completed.",
+        affected_fields=['SDQ_SCORE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'OC2' not in dfs:
+            return {}
+
+        oc2 = dfs['OC2']
+
+        collection_start_str = dfs['metadata']['collection_start']
+        collection_end_str = dfs['metadata']['collection_end']
+
+        collection_start = pd.to_datetime(collection_start_str, format='%d/%m/%Y', errors='coerce')
+        collection_end = pd.to_datetime(collection_end_str, format='%d/%m/%Y', errors='coerce')
+        oc2['DOB_dt'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        oc2['4th_bday'] = oc2['DOB_dt'] + pd.DateOffset(years=4)
+        oc2['17th_bday'] = oc2['DOB_dt'] + pd.DateOffset(years=17)
+        error_mask = (
+            (oc2['4th_bday'] <= collection_start)
+            & (oc2['17th_bday'] > collection_end)
+            & oc2['CONTINUOUSLY_LOOKED_AFTER']
+            & oc2['SDQ_SCORE'].isna()
+        )
+
+        oc2_errors = oc2.loc[error_mask].index.to_list()
+
+        return {'OC2': oc2_errors}
+    return error, _validate
+
+
+def validate_187():
+    error = ErrorDefinition(
+        code='187',
+        description="Child cannot be looked after continuously for 12 months at " +
+                    "31 March (OC2) and have any of adoption or care leavers returns completed.",
+        affected_fields=['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR',  # OC3
+                         'IN_TOUCH', 'ACTIV', 'ACCOM'],  # AD1
+    )
+
+    def _validate(dfs):
+        if (
+                'OC3' not in dfs
+                or 'AD1' not in dfs
+                or 'Episodes' not in dfs
+        ):
+            return {}
+
+        # add 'CONTINUOUSLY_LOOKED_AFTER' column
+        ad1, oc3 = add_CLA_column(dfs, ['AD1', 'OC3'])
+
+        # OC3
+        should_be_blank = ['IN_TOUCH', 'ACTIV', 'ACCOM']
+        oc3_mask = oc3['CONTINUOUSLY_LOOKED_AFTER'] & oc3[should_be_blank].notna().any(axis=1)
+        oc3_error_locs = oc3[oc3_mask].index.to_list()
+
+        # AD1
+        should_be_blank = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+        ad1_mask = ad1['CONTINUOUSLY_LOOKED_AFTER'] & ad1[should_be_blank].notna().any(axis=1)
+        ad1_error_locs = ad1[ad1_mask].index.to_list()
+
+        return {'AD1': ad1_error_locs,
+                'OC3': oc3_error_locs}
+    return error, _validate
+
+
+def validate_188():
+    error = ErrorDefinition(
+        code='188',
+        description="Child is aged under 4 years at the end of the year, "
+                    "but a Strengths and Difficulties (SDQ) score or a reason "
+                    "for no SDQ score has been completed. ",
+        affected_fields=['SDQ_SCORE', 'SDQ_REASON'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+
+        oc2 = dfs['OC2']
+
+        collection_end_str = dfs['metadata']['collection_end']
+
+        collection_end = pd.to_datetime(collection_end_str, format='%d/%m/%Y', errors='coerce')
+        oc2['DOB_dt'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+
+        oc2['4th_bday'] = oc2['DOB_dt'] + pd.DateOffset(years=4)
+        error_mask = (
+            (oc2['4th_bday'] > collection_end)
+            & oc2[['SDQ_SCORE', 'SDQ_REASON']].notna().any(axis=1)
+        )
+
+        oc2_errors = oc2.loc[error_mask].index.to_list()
+
+        return {'OC2': oc2_errors}
+    return error, _validate
+
+
+
+
+def validate_190():
+    error = ErrorDefinition(
+        code='190',
+        description="Child has not been looked after continuously for at least 12 months at 31 March but one or more "
+                    "data items relating to children looked after for 12 months have been completed.",
+        affected_fields=['CONVICTED', 'HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                         'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
+,  # AD1
+    )
+
+    def _validate(dfs):
+        if (
+                'OC2' not in dfs
+                or 'Episodes' not in dfs
+        ):
+            return {}
+
+        # add 'CONTINUOUSLY_LOOKED_AFTER' column
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        should_be_blank = ['CONVICTED', 'HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                           'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
+
+        mask = ~oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2[should_be_blank].notna().any(axis=1)
+        error_locs = oc2[mask].index.to_list()
+
+        return {'OC2': error_locs}
+    return error, _validate
+
+
+def validate_191():
+    error = ErrorDefinition(
+        code='191',
+        description="Child has been looked after continuously for at least 12 months at 31 March but one or more "
+                    "data items relating to children looked after for 12 months have been left blank.",
+        affected_fields=['IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT', 'SUBSTANCE_MISUSE'],  # OC2
+    )
+
+    def _validate(dfs):
+        if (
+                'OC2' not in dfs
+                or 'Episodes' not in dfs
+        ):
+            return {}
+
+        # add 'CONTINUOUSLY_LOOKED_AFTER' column
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        should_be_present = ['IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT', 'SUBSTANCE_MISUSE']
+
+        mask = oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2[should_be_present].isna().any(axis=1)
+        error_locs = oc2[mask].index.to_list()
+
+        return {'OC2': error_locs}
+    return error, _validate
+
 
 def validate_607():
   error = ErrorDefinition(
@@ -227,7 +416,7 @@ def validate_189():
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
             # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
-            mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) < collection_start) & (
+            mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) <= collection_start) & (
                         oc2['SDQ_REASON'].notna() | oc2['SDQ_SCORE'].notna())
             # That is, raise error if collection_start > DOB + 17years
             oc_error_locs = oc2.index[mask]

@@ -4,28 +4,28 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
 def validate_209():
-  error = ErrorDefinition(
+    error = ErrorDefinition(
     code = '209',
     description = 'Child looked after is of school age and should not have an unknown Unique Pupil Number (UPN) code of UN1.',
     affected_fields = ['UPN', 'DOB']
-  )
-  def _validate(dfs):
-    if 'Header' not in dfs:
-     return {}
-    else:
-      header = dfs['Header']
-      collection_start = dfs['metadata']['collection_start']
-      # convert to datetime
-      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
-      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
-      yr = collection_start.year - 1
-      reference_date = pd.to_datetime('31/08/'+str(yr), format='%d/%m/%Y', errors='coerce')
-      # If <DOB> >= 4 years prior to 31/08/YYYY then <UPN> should not be 'UN1' Note: YYYY in this instance refers to the year prior to the collection start (for collection year 2019-2020, it would be looking at the 31/08/2018).
-      mask = (reference_date >= (header['DOB']+pd.offsets.DateOffset(years=4))) & (header['UPN']=='UN1')
-      # error locations
-      error_locs_header = header.index[mask]
-      return {'Header':error_locs_header.tolist()}
-  return error, _validate
+    )
+    def _validate(dfs):
+        if 'Header' not in dfs:
+           return {}
+        else:
+            header = dfs['Header']
+            collection_start = dfs['metadata']['collection_start']
+            # convert to datetime
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            yr = collection_start.year - 1
+            reference_date = pd.to_datetime('31/08/'+str(yr), format='%d/%m/%Y', errors='coerce')
+            # If <DOB> >= 4 years prior to 31/08/YYYY then <UPN> should not be 'UN1' Note: YYYY in this instance refers to the year prior to the collection start (for collection year 2019-2020, it would be looking at the 31/08/2018).
+            mask = (reference_date >= (header['DOB']+pd.offsets.DateOffset(years=4))) & (header['UPN']=='UN1')
+            # error locations
+            error_locs_header = header.index[mask]
+            return {'Header':error_locs_header.tolist()}
+    return error, _validate
 
 def validate_1010():
     error = ErrorDefinition(

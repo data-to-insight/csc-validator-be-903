@@ -17,6 +17,73 @@ def test_validate_209():
 
     assert result == {'Header': [2]}
 
+
+def test_validate_198():
+    metadata = {'collection_start': '01/04/1980'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({'CHILD': ['999999', '1', '2', '3', '9999', '8'],
+                        'SDQ_REASON': ['!!!!!', pd.NA, 'OO', '!!', pd.NA, '!!']})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_198()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, 3, 5]}
+
+def test_validate_607():
+  fake_data_eps = pd.DataFrame([
+      {'CHILD':101,'DEC':'01/01/2021','REC':pd.NA,'LS':'L1',}, # 0 Ignore: REC is null
+      {'CHILD':102,'DEC':'01/01/2001','REC':'A3','LS':'V4',},  # 1 Ignore: LS is V4
+      {'CHILD':103,'DEC':'20/12/2001','REC':'E15','LS':'V3',},  # 2 Ignore: LS is V3
+      {'CHILD':104,'DEC':'03/01/2020','REC':'E46','LS':'L4',},  # 3 Ignore: DEC out of range
+      {'CHILD':105,'DEC':'03/04/2020','REC':'E48','LS':'L1',},  # 4 FAIL
+      {'CHILD':105,'DEC':'01/07/2020','REC':'X2','LS': 'XO',},  # 5 FAIL
+      {'CHILD':105,'DEC':'10/01/2021','REC':'E11','LS':'L4',},  # 6 FAIL
+      {'CHILD':108,'DEC':'11/02/2021','REC':'E48','LS':'L1',},  # 7
+      {'CHILD':109,'DEC':'25/01/2002','REC':'X1','LS': 'XO',},  # 8 Ignore: REC is X1
+      {'CHILD':110,'DEC':'25/01/2021','REC':'E47','LS':pd.NA,},  # 9
+      {'CHILD':111,'DEC':pd.NA,'REC': 'E45','LS':'L4',},  # 10 Ignore : DEC is null
+      {'CHILD':112,'DEC':'25/08/2020','REC':'E46','LS': 'XO',},  # 11
+  ])
+  fake_data_header = pd.DataFrame([
+    {'CHILD':101,'SEX':'2', 'MOTHER': pd.NA},  # 0 FAIL Ignore: REC is null
+    {'CHILD':102,'SEX':'2', 'MOTHER':'0'},  # 1 Ignore: LS is V4
+    {'CHILD':103,'SEX':'2', 'MOTHER':pd.NA},  # 2 Ignore: LS is V3
+    {'CHILD':104,'SEX':'2', 'MOTHER':pd.NA},  # 3 Ignore: DEC out of range
+    {'CHILD':105,'SEX':'2', 'MOTHER':pd.NA},  # 4 FAIL
+    {'CHILD':108,'SEX':'1', 'MOTHER':pd.NA},  # 5
+    {'CHILD':109,'SEX':'2', 'MOTHER':'0'},  # 6 Ignore: REC is X1
+    {'CHILD':110,'SEX':'2', 'MOTHER':pd.NA},  # 7 FAIL
+    {'CHILD':111,'SEX':'2', 'MOTHER':'0'},  # 8 Ignore : DEC is null
+    {'CHILD':112,'SEX':'2', 'MOTHER':'1'},  # 9
+  ])
+  metadata = {
+      'collection_start': '01/04/2020',
+      'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'Header': fake_data_header, 'Episodes':fake_data_eps, 'metadata':metadata}
+  error_defn, error_func = validate_607()
+  result = error_func(fake_dfs)
+  assert result == {'Header':[4,7] , 'Episodes':[4,5,6,9]}
+
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({
         'CHILD': ['101','101',
@@ -68,18 +135,24 @@ def test_validate_525():
   assert result == {'PlacedAdoption':[1,2,3], 'AD1':[1,2,3]}
 
 def test_validate_335():
-  fake_data_eps = pd.DataFrame({
-    'PLACE':['A5','U2','A3','Z1','A3','R1','A5','K2',],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_data_ad1 = pd.DataFrame({
-    'FOSTER_CARE': [0, 1, '0', '1', 2, 'former foster carer', '', pd.NA],
-    'CHILD':['10', '11', '12', '13', '14', '15', '16', '17']
-  })
-  fake_dfs = {'Episodes':fake_data_eps, 'AD1':fake_data_ad1}
-  error_defn, error_func = validate_335()
-  result = error_func(fake_dfs)
-  assert result == {'Episodes':[2], 'AD1':[2]}
+    fake_data_eps = pd.DataFrame({
+        'PLACE':['A2', '--', 'A1', '--',
+                 'A4', '--', 'A5', 'A3'],
+        'REC': ['E1', 'E1', 'E1', 'E12',
+                'E11', 'E1', '--', 'E12'],
+        'CHILD': ['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_data_ad1 = pd.DataFrame({
+        'FOSTER_CARE': [0, 1, '0', '1',
+                        2, 'former foster carer', '', pd.NA],
+        'CHILD':['10', '11', '12', '13',
+                 '14', '15', '16', '17']
+    })
+    fake_dfs = {'Episodes':fake_data_eps, 'AD1': fake_data_ad1}
+    error_defn, error_func = validate_335()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [0], 'AD1': [0]}
 
 
 def test_validate_215():
@@ -124,21 +197,6 @@ def test_validate_399():
   result = error_func(fake_dfs)
   assert result == {'Header':[1,5,6], 'Reviews':[1,5,6], 'Episodes':[1,5,6]}
 
-def test_validate_189():
-  fake_data_oc2 = pd.DataFrame({
-      'SDQ_REASON': ['SDQ2', 'sdq2', '', pd.NA, pd.NA],
-      'SDQ_SCORE':    ['10', pd.NA, '58', 72, pd.NA ],
-      'DOB':['01/01/2001','01/01/2016','20/12/1997','01/01/2000','03/01/2000',],
-      'CHILD': [101,102,103,104,105]
-      })
-
-  fake_dfs = {'OC2':fake_data_oc2,
-              'metadata': {'collection_start': '01/04/2017'}
-              }
-
-  error_defn, error_func = validate_189()
-  result =  error_func(fake_dfs)
-  assert result == {'OC2':[2,3]}
 
 def test_validate_226():
     fake_data_epi = pd.DataFrame([
@@ -606,6 +664,247 @@ def test_validate_558():
 
     assert result == {'Episodes': [5,6,8]}
 
+
+def test_validate_185():
+    metadata = {'collection_start': '01/04/1980'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({'CHILD': ['999999', '1', '2', '3', '9999', '8'],
+                        'SDQ_SCORE': ['!!!!!', pd.NA, 'OO', '!!', pd.NA, '!!']})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_185()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, 3, 5]}
+
+def test_validate_186():
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5555', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({'CHILD': ['999999', '1', '2', '3',
+                                  '9999', '8', '5555'],
+                        'DOB': ['01/01/1974', '01/04/1976', '01/01/1978', '01/01/1974',
+                                '01/01/1974', '01/01/1974', '01/01/1955'],
+                        'SDQ_SCORE': ['OO', pd.NA, 'OO', 'OO',
+                                      pd.NA, pd.NA, pd.NA]})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_186()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, ]}
+
+
+def test_validate_187():
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3333', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6666', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6666', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc3 = pd.DataFrame({
+        'CHILD':
+            ['9999999999', '1', '2', '3333',
+             '99999999', '8888', '5'],
+        'IN_TOUCH':
+            ['OK', '!!!', pd.NA, 'OK',
+             pd.NA, pd.NA, pd.NA],
+    })
+    other_oc3_cols = ['ACTIV', 'ACCOM']
+    oc3 = oc3.assign(**{col: pd.NA for col in other_oc3_cols})
+
+    ad1 = pd.DataFrame({
+        'CHILD':
+            ['1', '2', '3333', '7777',
+                 '99999999', '8888', '5'],
+        'DATE_INT':
+            [pd.NA, pd.NA, 'OK', 'OK',
+             pd.NA, pd.NA, '!!!'],
+    })
+
+    other_ad1_cols = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+    ad1 = ad1.assign(**{col: pd.NA for col in other_ad1_cols})
+
+    fake_dfs = {'Episodes': eps,
+                'OC3': oc3,
+                'AD1': ad1,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_187()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC3': [1, ],
+                      'AD1': [6, ]}
+
+def test_validate_188():
+    metadata = {'collection_end': '31/03/1981'}
+
+    oc2 = pd.DataFrame({
+        'CHILD': ['0', '1', '2', '3', '4'],
+        'DOB': ['01/01/1970', '01/01/1980', '01/01/1970', '31/03/1977', '01/04/1977'],
+        'SDQ_SCORE': ['OK', '!!!', pd.NA, 'OK', '!!!']
+    })
+
+    oc2['SDQ_REASON'] = pd.NA
+
+    fake_dfs = {'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_188()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 4]}
+
+
+def test_validate_189():
+    metadata = {'collection_start': '01/04/1980'}
+
+    oc2 = pd.DataFrame({
+        'CHILD': ['0', '1', '2', '3'],
+        'DOB': ['01/04/1963', '02/04/1963', '01/01/1970', '31/03/1960'],
+        'SDQ_SCORE': ['!!!', 'OK', pd.NA, pd.NA],
+        'SDQ_REASON': [pd.NA, pd.NA, pd.NA, pd.NA]
+    })
+
+    fake_dfs = {'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_189()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, ]}
+
+def test_validate_190():
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3333', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6666', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6666', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({
+        'CHILD':
+            ['9999999999', '1', '2', '3333',
+             '99999999', '8888', '5'],
+        'CONVICTED':
+            ['!!!', 'OK', pd.NA, pd.NA,
+             pd.NA, '!!!', 'OK'],
+    })
+    other_oc2_cols = ['HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                      'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
+    oc2 = oc2.assign(**{col: pd.NA for col in other_oc2_cols})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_190()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [0, 5]}
+
+def test_validate_191():
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3333', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6666', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},  # !! - False
+        {'CHILD': '6666', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
+        {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+    ])
+
+    oc2 = pd.DataFrame({
+        'CHILD':
+            ['9999999999', '1', '2', '3333',
+             '99999999', '8888', '5'],
+        'IMMUNISATIONS':
+            ['OK', pd.NA, 'OK', pd.NA,
+             pd.NA, 'OK', pd.NA],
+    })
+    other_oc2_cols = ['HEALTH_CHECK', 'CONVICTED', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                      'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
+    oc2 = oc2.assign(**{col: 'Filled In!' for col in other_oc2_cols})
+
+    fake_dfs = {'Episodes': eps,
+                'OC2': oc2,
+                'metadata': metadata}
+
+    error_defn, error_func = validate_191()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 6]}
+
+
 def test_validate_516():
     fake_data = pd.DataFrame({
       'REC':['E45','E46',pd.NA,'E45',
@@ -964,19 +1263,18 @@ def test_validate_386():
 
 def test_validate_363():
     test_eps = pd.DataFrame([
-        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L2'},  # 0 Fail!
+        {'CHILD': 101, 'DECOM': '01/01/2000', 'DEC': '01/01/2001', 'LS': 'L3'},  # 0 Fail!
         {'CHILD': 101, 'DECOM': '01/01/2001', 'DEC': '20/12/2001', 'LS': 'X'},  # 1
-        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L2'},  # 2 Fail!
-        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '03/01/2000', 'LS': 'L2'},  # 3 ^ Fa
-        {'CHILD': 2002, 'DECOM': '03/01/2000', 'DEC': '09/01/2001', 'LS': 'L2'},  # 4 v il!
-        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '07/01/2002', 'LS': 'L2'},  # 5
+        {'CHILD': 101, 'DECOM': '20/12/2001', 'DEC': '12/01/2002', 'LS': 'L3'},  # 2 Fail!
+        {'CHILD': 2002, 'DECOM': '01/01/2000', 'DEC': '03/01/2000', 'LS': 'L3'},  # 3 ^ Fa
+        {'CHILD': 2002, 'DECOM': '03/01/2000', 'DEC': '09/01/2001', 'LS': 'L3'},  # 4 v il!
+        {'CHILD': 2002, 'DECOM': '01/01/2002', 'DEC': '07/01/2002', 'LS': 'L3'},  # 5
         {'CHILD': 2002, 'DECOM': '10/01/2002', 'DEC': '11/01/2002', 'LS': 'X'},  # 6
-        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '17/01/2002', 'LS': 'L2'},  # 7
-        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L2'},  # 8 (decom>dec)
-        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L2'},  # 9 Fail!
-        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L2'},  # 10 decom.isNA
-        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L2'},  # 11
-
+        {'CHILD': 2002, 'DECOM': '11/01/2002', 'DEC': '17/01/2002', 'LS': 'L3'},  # 7
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': '10/03/2001', 'LS': 'L3'},  # 8 (decom>dec)
+        {'CHILD': 30003, 'DECOM': '25/01/2002', 'DEC': pd.NA, 'LS': 'L3'},  # 9 Fail!
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': '25/01/2002', 'LS': 'L3'},  # 10 decom.isNA
+        {'CHILD': 30003, 'DECOM': pd.NA, 'DEC': pd.NA, 'LS': 'L3'},  # 11
     ])
 
     test_meta = {'collection_end': '01/04/2002'}
@@ -2407,7 +2705,7 @@ def test_validate_193():
 
     assert result == {'OC2': [0, 2, 4, 5]}
 
-def test_validate_197():
+def test_validate_197a():
     fake_data = pd.DataFrame({
         'SDQ_SCORE':  [  0  , pd.NA,  10  ,  '1' , pd.NA],
         'SDQ_REASON': ['XXX', pd.NA, pd.NA, 'XXX', 'XXX'],
@@ -2415,7 +2713,7 @@ def test_validate_197():
 
     fake_dfs = {'OC2': fake_data}
 
-    error_defn, error_func = validate_197()
+    error_defn, error_func = validate_197a()
 
     result = error_func(fake_dfs)
 
@@ -3642,3 +3940,29 @@ def test_validate_361():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [0, 1, 5, 6, 7, 9, 10, 11]}
+
+def test_validate_435():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 0
+        {'CHILD': '111', 'DECOM': '03/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX3'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 1
+        {'CHILD': '111', 'DECOM': '04/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX3'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 2 Fail all the same
+        {'CHILD': '111', 'DECOM': '05/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 3
+        {'CHILD': '222', 'DECOM': '07/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR4'},                     # 4
+        {'CHILD': '222', 'DECOM': '08/06/2020', 'RNE': 'P', 'LS': 'L1', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 5
+        {'CHILD': '222', 'DECOM': '09/06/2020', 'RNE': 'P', 'LS': 'L3', 'PL_POST': 'XX1'
+            , 'URN': 'SC112', 'PLACE': 'R1', 'PLACE_PROVIDER': 'PR1'},                     # 6 Fail dif LS
+    ])
+
+    fake_dfs = {'Episodes': fake_data}
+
+    error_defn, error_func = validate_435()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 6]}

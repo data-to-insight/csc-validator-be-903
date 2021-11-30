@@ -13,15 +13,15 @@ def test_validate_118():
       {'CHILD': '102', 'LS': 'L1','DECOM': '03/01/2021'},  # 3 fail
       {'CHILD': '102', 'LS': 'L1','DECOM': '03/04/2022'},  # 4 
       {'CHILD': '103', 'LS': 'X2','DECOM': '01/01/2019'},  # 5 pass
-      {'CHILD': '105', 'LS': 'L1','DECOM': '01/01/2019'},  # 6 nans drop this
+      {'CHILD': '105', 'LS': 'L1','DECOM': '01/01/2019'},  # 6 drop.na drops this child
   ])
   metadata = {
       'collection_start': '01/04/2020',
   }
-  fake_dfs = {'metadata':metadata, 'Episodes':fake_data_episodes, 'PlacedAdoption':fake_placed_adoption}
-  error_defn, error_func = validate_188()
+  fake_dfs = {'Episodes':fake_data_episodes, 'PlacedAdoption':fake_placed_adoption, 'metadata':metadata,}
+  error_defn, error_func = validate_118()
   result = error_func(fake_dfs)
-  assert result == {'Episodes':[3,], 'PLacedAdoption':[0]}
+  assert result == {'Episodes':[3,], 'PLacedAdoption':[0,1]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({

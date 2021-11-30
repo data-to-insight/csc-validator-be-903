@@ -9,6 +9,7 @@ authors = [
 ]
 repository = "https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta-validator"
 license = "MIT"
+readme = "README.md"
 packages = [
     { include = "validator903" },
 ]
@@ -18,8 +19,8 @@ python = "^3.8"
 pandas = "1.0.5" # These are fixed to match versions available for pyodide
 numpy = "1.17.5"
 openpyxl = "^3.0.9"
-quality-lac-data-ref-authorities = "2021.4a6"
-quality-lac-data-ref-postcodes = "^2021.8a3"
+quality-lac-data-ref-authorities = "2021.4"
+quality-lac-data-ref-postcodes = "^2021.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

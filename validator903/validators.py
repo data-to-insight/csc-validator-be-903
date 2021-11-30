@@ -9,7 +9,7 @@ def validate_352():
     error = ErrorDefinition(
         code='352',
         description='Child who started to be looked after was aged 18 or over.',
-        affected_fields=['DECOM'],
+        affected_fields=['DECOM', 'RNE'],
     )
 
     def _validate(dfs):

@@ -21,7 +21,8 @@ def test_validate_118():
   fake_dfs = {'Episodes':fake_data_episodes, 'PlacedAdoption':fake_placed_adoption, 'metadata':metadata,}
   error_defn, error_func = validate_118()
   result = error_func(fake_dfs)
-  assert result == {'Episodes':[3,], 'PLacedAdoption':[0,1]}
+  #assert result == {'Episodes':[3,], 'PLacedAdoption':[0,1]}
+  assert result == {'Episodes':[0], 'PLacedAdoption':[0]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({

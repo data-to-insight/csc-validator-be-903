@@ -1,8 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_391():
+    fake_data_oc3 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2002', '03/01/2004', ],
+        'IN_TOUCH': ['DIED', 'Yes', 'RHOM', pd.NA, pd.NA],
+        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+    })
+    metadata = {
+        'collection_end': '31/03/2018'
+    }
+
+    fake_dfs = {'OC3': fake_data_oc3, 'metadata': metadata}
+    error_defn, error_func = validate_391()
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 3]}
 
 def test_validators_1007():
+  # TODO change name to test_validate_1007()
     fake_data_oc3 = pd.DataFrame({
         'CHILD': ['A', 'B', 'C', 'D', 'E'],
         'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2000', '03/01/2000', ],

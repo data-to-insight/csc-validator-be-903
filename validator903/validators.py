@@ -8,7 +8,7 @@ def validate_117():
   error = ErrorDefinition(
     code ='117',
     description = 'Date of decision that a child should/should no longer be placed for adoption is beyond the current collection year or after the child ceased to be looked after.',
-    affected_fields = ['DATE_PLACED_CEASED', 'DATE_PLACED', 'DEC', 'REC'],
+    affected_fields = ['DATE_PLACED_CEASED', 'DATE_PLACED', 'DEC', 'REC', 'DECOM'],
   ) 
   def _validate(dfs):
     if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
@@ -22,16 +22,18 @@ def validate_117():
       placed_adoption['DATE_PLACED_CEASED'] = pd.to_datetime(placed_adoption['DATE_PLACED_CEASED'], format='%d/%m/%Y', errors='coerce')
       placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
       collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
-      
+      # Drop nans
+      episodes = episodes.dropna(subset=['DECOM'])
       # prepare to merge
       placed_adoption.reset_index(inplace=True)
       episodes.reset_index(inplace=True)
       # latest episodes
-      eps_last_indices = episodes.groupby('CHILD')['DEC'].idxmax()
-      latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
-      merged = latest_episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps','_pa'])
+      #eps_last_indices = episodes.groupby('CHILD')['DECOM'].idxmax()
+      #latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
+      #merged = latest_episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps','_pa'])
+      merged = episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps','_pa'])
       # If provided <DATE_PLACED> and/or <DATE_PLACED_CEASED> must not be > <COLLECTION_END_DATE> or <DEC> of latest episode where <REC> not = 'X1'
-      mask = (merged['REC']!='X1') & (max(merged['DATE_PLACED'], merged['DATE_PLACED_CEASED']) > min(collection_end, merged['DEC']))
+      mask = (merged['REC']!='X1') & ((max(merged['DATE_PLACED'], merged['DATE_PLACED_CEASED'])) > min(collection_end, merged['DEC']))
       pa_error_locs = merged.loc[mask, 'index_pa']
       eps_error_locs = merged.loc[mask, 'index_eps']
       return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.unique().tolist()}

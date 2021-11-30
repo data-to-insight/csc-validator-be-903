@@ -13,17 +13,17 @@ def test_validate_117():
       {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019'},  # 4 Fail DATE_PLACED > collection_end Ignored
   ])
   fake_data_eps = pd.DataFrame([
-      {'CHILD': 101, 'DEC': '01/01/2009', 'REC': 'E45'},  # 0 
-      {'CHILD': 102, 'DEC': '01/01/2001', 'REC': 'A3'},  # 1
-      {'CHILD': 102, 'DEC': '20/12/2001', 'REC': 'E15'},  # 2
-      {'CHILD': 102, 'DEC': '03/01/2019', 'REC': 'E46'},  # 3 Fail
-      {'CHILD': 102, 'DEC': '03/04/2008', 'REC': 'E48'},  # 4 
-      {'CHILD': 103, 'DEC': '01/01/2002', 'REC': 'X2'},  # 5
-      {'CHILD': 104, 'DEC': '10/01/2002', 'REC': 'E11'},  # 6
-      {'CHILD': 104, 'DEC': '11/02/2010', 'REC': 'X1'},  # 7 Fail Ignored
-      {'CHILD': 104, 'DEC': '25/01/2002', 'REC': 'X1'},  # 8 Ignored REC is X1
-      {'CHILD': 105, 'DEC': '25/01/2002', 'REC': 'E47'},  # 9
-      {'CHILD': 105, 'DEC': pd.NA, 'REC': 'E45'},  # 10 
+      {'CHILD': 101, 'DEC': '01/01/2009', 'REC': 'E45', 'DECOM': '01/01/2009'},  # 0 
+      {'CHILD': 102, 'DEC': '01/01/2001', 'REC': 'A3','DECOM': '01/01/2001'},  # 1
+      {'CHILD': 102, 'DEC': '20/12/2001', 'REC': 'E15','DECOM': '20/12/2001'},  # 2
+      {'CHILD': 102, 'DEC': '03/01/2019', 'REC': 'E46','DECOM': '03/01/2019'},  # 3 Fail
+      {'CHILD': 102, 'DEC': '03/04/2008', 'REC': 'E48','DECOM': '03/04/2008'},  # 4 
+      {'CHILD': 103, 'DEC': '01/01/2002', 'REC': 'X2','DECOM': '01/01/2002'},  # 5
+      {'CHILD': 104, 'DEC': '10/01/2002', 'REC': 'E11','DECOM': '10/01/2002'},  # 6
+      {'CHILD': 104, 'DEC': '11/02/2010', 'REC': 'X1','DECOM': '11/02/2010'},  # 7 Fail Ignored
+      {'CHILD': 104, 'DEC': '25/01/2002', 'REC': 'X1','DECOM': '25/01/2002'},  # 8 Ignored REC is X1
+      {'CHILD': 105, 'DEC': '25/01/2002', 'REC': 'E47','DECOM': '25/01/2002'},  # 9
+      {'CHILD': 105, 'DEC': pd.NA, 'REC': 'E45','DECOM': pd.NA},  # 10 
   ])
   # TODO: in  the scenario where the REC of the latest episodes is X1, should the episode before the lastest be considered instead?. This will entail filtering by X1 before doing idxmax. Is this what this rule means?.
 

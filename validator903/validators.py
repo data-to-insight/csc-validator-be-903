@@ -5,6 +5,40 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_352():
+    error = ErrorDefinition(
+        code='352',
+        description='Child who started to be looked after was aged 18 or over.',
+        affected_fields=['DECOM'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            header['DOB18'] = header['DOB'] + pd.DateOffset(years=18)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'),
+                                                           indicator=True).set_index('index')
+
+            care_start = episodes_merged['RNE'].str.upper().astype(str).isin(['S'])
+            started_over_18 = episodes_merged['DOB18'] <= episodes_merged['DECOM']
+
+            error_mask = care_start & started_over_18
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_209():
     error = ErrorDefinition(
         code='209',

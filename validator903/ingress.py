@@ -87,7 +87,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:
             name = file_name
-        elif 'Last year' in file_data['description']:
+        elif 'Prev year' in file_data['description']:
             name = file_name + '_last'
         else:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')

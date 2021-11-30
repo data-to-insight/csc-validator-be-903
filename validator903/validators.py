@@ -3,7 +3,7 @@ import pandas as pd
 from .datastore import merge_postcodes
 from .types import ErrorDefinition
 
-def validate_525():
+def validate_625():
   error = ErrorDefinition(
     code ='625',
     description = 'Date of birth of the first child is beyond the end of this reporting year or the date the child ceased to be looked after.',
@@ -13,7 +13,28 @@ def validate_525():
     if 'Episodes' not in dfs or 'Header' not in dfs:
       return {}
     else:
-      
+      episodes = dfs['Episodes']
+      header = dfs['Header']
+      collection_end = dfs['metadata']['collection_end']
+
+      # datetime conversion
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+      header['MC_DOB'] = pd.to_datetime(header['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      # prepare to merge
+      header.reset_index(inplace=True)
+      episodes.reset_index(inplace=True)
+      # latest episodes
+      eps_last_indices = episodes.groupby('CHILD')['DEC'].idxmax()
+      latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
+      merged = latest_episodes.merge(header, on='CHILD', how='left', suffixes=['_eps','_er'])
+      # If provided <MC_DOB> must not be > <COLLECTION_END> or <DEC> of latest episode
+      mask = (merged['MC_DOB']>collection_end) | (merged['MC_DOB']>merged['DEC'])
+      header_error_locs = merged.loc[mask, 'index_er']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      return {'Header':header_error_locs.unique().tolist(), 'Episodes':eps_error_locs.tolist()}
+  return error, _validate
+
 def validate_1010():
     error = ErrorDefinition(
         code = '1010',

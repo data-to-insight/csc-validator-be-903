@@ -19,7 +19,7 @@ def test_validate_625():
   fake_dfs = {'metadata':metadata, 'Episodes':fake_data_episodes, 'Header':fake_data_header}
   error_defn, error_func = validate_625()
   result = error_func(fake_dfs)
-  assert result == {'Episodes':[0,1,2,3], 'Header':[0,1]}
+  assert result == {'Episodes':[0,3], 'Header':[0,1]}
 
 def test_validate_1010():
     fake_episodes_prev = pd.DataFrame({

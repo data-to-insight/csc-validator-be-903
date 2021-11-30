@@ -3480,6 +3480,7 @@ def validate_134():
         else:
             oc3 = dfs['OC3']
             ad1 = dfs['AD1']
+            ad1['ad1_index'] = ad1.index
 
             all_data = ad1.merge(oc3, how='left', on='CHILD')
 
@@ -3488,6 +3489,7 @@ def validate_134():
                     all_data['ACTIV'].isna() &
                     all_data['ACCOM'].isna()
             )
+
             na_ad1_data = (
                     all_data['DATE_INT'].isna() &
                     all_data['DATE_MATCH'].isna() &
@@ -3498,9 +3500,9 @@ def validate_134():
             )
 
             validation_error = ~na_oc3_data & ~na_ad1_data
-            validation_error_locations = ad1.index[validation_error]
+            validation_error_locations = all_data.loc[validation_error, 'ad1_index'].unique()
 
-            return {'OC3': validation_error_locations.tolist()}
+            return {'AD1': validation_error_locations.tolist()}
 
     return error, _validate
 

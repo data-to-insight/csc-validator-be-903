@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_434():
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD':'111', 'RNE':'L', 'LS':'L1', 'PL_POST':'XX1', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 0 no prev
+      {'CHILD':'111',  'RNE':'P', 'LS':'L1', 'PL_POST': 'XX3', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 1
+      {'CHILD':'111',  'RNE':'L', 'LS':'L1', 'PL_POST':'XX3', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 2 fail LS
+      {'CHILD':'111',  'RNE':'P', 'LS':'L1', 'PL_POST': 'XX1', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 3
+
+      {'CHILD':'222',  'RNE':'P', 'LS':'L3', 'PL_POST':'XX1', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR4'},  # 4
+      {'CHILD':'222', 'RNE':'L', 'LS':'L1', 'PL_POST':'XX1', 'URN':'SC112', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 5 pass
+      {'CHILD':'222', 'RNE':'L', 'LS':'L3', 'PL_POST':'XX1', 'URN':'SC111', 'PLACE':'R1', 'PLACE_PROVIDER':'PR1'},  # 6 fail URN
+  ])
+  fake_dfs = {'Episodes':fake_data_episodes}
+  error_defn , error_func = validate_434()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[2,6]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({

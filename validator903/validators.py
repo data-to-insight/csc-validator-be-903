@@ -4,6 +4,31 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_434():
+  error = ErrorDefinition(
+    code = '434',
+    description = "Reason for new episode is that child's legal status has changed but not the placement, but this is not reflected in the episode data.",
+    affected_fields = ['RNE', 'LS', 'PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+
+      # create columns of previous values
+      for col in ['LS','PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']:
+        new_column = 'PREV_'+ col
+        episodes[new_column] = episodes.groupby('CHILD')[col].shift(1)
+      
+      current = [episodes['PLACE'], episodes['PL_POST'], episodes['URN'], episodes['PLACE_PROVIDER'],]
+      previous = [episodes['PREV_PLACE'], episodes['PREV_PL_POST'], episodes['PREV_URN'], episodes['PREV_PLACE_PROVIDER'],]
+      
+      mask = (episodes['RNE']=='L') & ((episodes['LS']==episodes['PREV_LS']) | (current != previous))
+      # error locations
+      error_locs = episodes.index[mask]
+      return {'Episodes':error_locs.tolist()}
+  return error, _validate
 
 def validate_209():
     error = ErrorDefinition(

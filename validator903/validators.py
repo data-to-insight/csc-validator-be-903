@@ -17,6 +17,7 @@ def validate_118():
       placed_adoption = dfs['PlacedAdoption']
       episodes = dfs['Episodes']
       collection_start = dfs['metadata']['collection_start']
+      code_list =  ['V3','V4']
 
       # datetime
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
@@ -24,7 +25,7 @@ def validate_118():
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
       # <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
-      filter_by_ls = episodes[(episodes['LS']!='V3') | (episodes['LS']!='V4')]
+      filter_by_ls = episodes[~(episodes['LS'].isin(code_list))]
       earliest_episode_idxs = filter_by_ls.groupby('CHILD')['DECOM'].idxmin()
       earliest_episodes = episodes[episodes.index.isin(earliest_episode_idxs)]
 
@@ -35,7 +36,7 @@ def validate_118():
       # merge
       merged = earliest_episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps', '_pa'])
 
-      # drop irrelavant rows
+      # drop rows where DATE_PLACED_CEASED is not provided
       merged = merged.dropna(subset=['DATE_PLACED_CEASED'])
       # If provided <DATE_PLACED_CEASED> must not be prior to <COLLECTION_START_DATE> or <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
       mask = (merged['DATE_PLACED_CEASED'] < merged['DECOM']) | (merged['DATE_PLACED_CEASED'] < collection_start)

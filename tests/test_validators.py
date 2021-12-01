@@ -4130,3 +4130,26 @@ def test_validate_435():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 6]}
+
+def test_validate_392B():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': 'XX1'}, #0
+        {'CHILD': '222', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': pd.NA}, #1
+        {'CHILD': '222', 'LS': 'V3', 'HOME_POST': pd.NA, 'PL_POST': 'XX1'}, #2
+        {'CHILD': '333', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': pd.NA}, #3
+        {'CHILD': '333', 'LS': 'V4', 'HOME_POST': 'XX1', 'PL_POST': 'XX1'}, #4
+        {'CHILD': '345', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': pd.NA}, #5
+        {'CHILD': '444', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': 'XX1'}, #6
+        {'CHILD': '444', 'LS': 'V3', 'HOME_POST': pd.NA, 'PL_POST': pd.NA}, #7
+    ])
+    fake_uasc = pd.DataFrame([{'CHILD': '111'}, ])
+    fake_uasc_l = pd.DataFrame([{'CHILD': '444'}, ])
+
+    fake_dfs = {'Episodes': fake_data, 'UASC': fake_uasc, 'UASC_last': fake_uasc_l}
+
+    error_defn, error_func = validate_392B()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1, 3, 5]}
+

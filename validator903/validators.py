@@ -5641,3 +5641,32 @@ def validate_435():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_392B():
+    error = ErrorDefinition(
+        code='392B',
+        description='Child is looked after but no postcodes are recorded.',
+        affected_fields=['HOME_POST', 'PL_POST'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'UASC' not in dfs or 'UASC_last' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            uas = dfs['UASC']
+            uas_l = dfs['UASC_last']
+            epi['orig_idx'] = epi.index
+
+            err_co = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+            err_co.drop(['_merge'], axis=1, inplace=True)
+            err_co = err_co.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+
+            err_co = err_co.query("(~LS.isin(['V3','V4'])) & (HOME_POST.isna() | PL_POST.isna())")
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
+

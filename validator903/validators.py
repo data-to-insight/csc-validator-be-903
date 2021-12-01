@@ -5641,3 +5641,30 @@ def validate_435():
             return {'Episodes': err_list}
 
     return error, _validate
+
+def validate_624():
+    error = ErrorDefinition(
+        code='624',
+        description="Date of birth of the first child contradicts the date of birth of the first child previously " +
+                    "recorded.",
+        affected_fields=['SDQ_SCORE'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']
+            hea_pre = dfs['Header_last']
+            hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            hea_pre['MC_DOB'] = pd.to_datetime(hea_pre['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            hea['orig_idx'] = hea.index
+
+            err_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE']) \
+                .query("MC_DOB_PRE.notna() & MC_DOB != MC_DOB_PRE")
+
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+            return {'Header': err_list}
+
+    return error, _validate

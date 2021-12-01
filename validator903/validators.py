@@ -434,7 +434,7 @@ def validate_525():
 def validate_335():
     error = ErrorDefinition(
         code='335',
-        description='Child is not adopted by a former foster carer(s) but has a last placement code of A3 or A5.',
+        description='The current foster value (0) suggests that child is not adopted by current foster carer, but last placement is A2, A3, or A5. Or the current foster value (1) suggests that child is adopted by current foster carer, but last placement is A1, A4 or A6.',
         affected_fields=['PLACE', 'FOSTER_CARE']
     )
 
@@ -444,14 +444,13 @@ def validate_335():
         else:
             episodes = dfs['Episodes']
             ad1 = dfs['AD1']
-            code_list = ['A3', 'A5']
 
             # prepare to merge
             episodes.reset_index(inplace=True)
             ad1.reset_index(inplace=True)
             merged = episodes.merge(ad1, on='CHILD', how='left', suffixes=['_eps', '_ad1'])
 
-            # Where <PL> = 'A3' or 'A5' <FOSTER_CARE> should not be '0'
+            # Where <PL> = 'A2', 'A3' or 'A5' and <DEC> = 'E1', 'E11', 'E12' <FOSTER_CARE> should not be '0'; Where <PL> = ‘A1’, ‘A4’ or ‘A6’ and <REC> = ‘E1’, ‘E11’, ‘E12’ <FOSTER_CARE> should not be ‘1’.
             mask = (
                     merged['REC'].isin(['E1', 'E11', 'E12']) & (
                     (merged['PLACE'].isin(['A2', 'A3', 'A5']) & (merged['FOSTER_CARE'] .astype(str)== '0'))

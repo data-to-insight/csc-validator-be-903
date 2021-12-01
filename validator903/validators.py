@@ -24,7 +24,7 @@ def validate_434():
       current = [episodes['PLACE'], episodes['PL_POST'], episodes['URN'], episodes['PLACE_PROVIDER'],]
       previous = [episodes['PREV_PLACE'], episodes['PREV_PL_POST'], episodes['PREV_URN'], episodes['PREV_PLACE_PROVIDER'],]
       
-      mask = (episodes['RNE']=='L') & ((episodes['LS']==episodes['PREV_LS']) | (current != previous))
+      mask = (episodes['RNE']=='L') & ((episodes['LS']==episodes['PREV_LS']) | (episodes['PLACE'] != episodes['PREV_PLACE']) | (episodes['PL_POST'] != episodes['PREV_PL_POST']) | (episodes['URN'] != episodes['PREV_URN']) | (episodes['PLACE_PROVIDER'] != episodes['PREV_PLACE_PROVIDER']))
       # error locations
       error_locs = episodes.index[mask]
       return {'Episodes':error_locs.tolist()}

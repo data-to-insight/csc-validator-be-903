@@ -4197,19 +4197,15 @@ def validate_181():
             oc2 = dfs['OC2']
             code_list = ['0', '1']
 
-            mask = (
-                    (oc2['CONVICTED'].astype(str).isin(code_list) | oc2['CONVICTED'].isna()) &
-                    (oc2['HEALTH_CHECK'].astype(str).isin(code_list) | oc2['HEALTH_CHECK'].isna()) &
-                    (oc2['IMMUNISATIONS'].astype(str).isin(code_list) | oc2['IMMUNISATIONS'].isna()) &
-                    (oc2['TEETH_CHECK'].astype(str).isin(code_list) | oc2['TEETH_CHECK'].isna()) &
-                    (oc2['HEALTH_ASSESSMENT'].astype(str).isin(code_list) | oc2['HEALTH_ASSESSMENT'].isna()) &
-                    (oc2['SUBSTANCE_MISUSE'].astype(str).isin(code_list) | oc2['SUBSTANCE_MISUSE'].isna()) &
-                    (oc2['INTERVENTION_RECEIVED'].astype(str).isin(code_list) | oc2['INTERVENTION_RECEIVED'].isna()) &
-                    (oc2['INTERVENTION_OFFERED'].astype(str).isin(code_list) | oc2['INTERVENTION_OFFERED'].isna())
-            )
+            fields_of_interest = ['CONVICTED', 'HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                                  'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
 
-            validation_error_mask = ~mask
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = (
+                    oc2[fields_of_interest].notna()
+                    & ~oc2[fields_of_interest].astype(str).isin(['0', '1'])
+            ).any(axis=1)
+
+            validation_error_locations = oc2.index[error_mask]
 
             return {'OC2': validation_error_locations.tolist()}
 

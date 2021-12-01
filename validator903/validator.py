@@ -29,6 +29,9 @@ class Validator:
         logger.info('Creating Data Store...')
         data_store = create_datastore(self.dfs, self.metadata)
 
+        checks_that_failed_to_run = []
+        checks_skipped_coz_missing_tables = []
+
         ds_results = copy_datastore(data_store)
         for error, test_func in configured_errors:
             if error.code in error_codes:
@@ -38,5 +41,14 @@ class Validator:
                     result: Dict[str, List[Any]] = test_func(ds_copy)
                 except Exception as e:
                     logger.exception(f"Error check {error.code} failed to run!")
+                    checks_that_failed_to_run.append(error.code)
                     continue
+
+                if result == {}:
+                    checks_skipped_coz_missing_tables.append(error.code)
+
+                for table, values in result.items():
+                    if len(values) > 0:
+                        logger.debug(f"Test {error.code} found {len(values)} errors")
+                        ds_results[table].loc[values, f'ERR_{error.code}'] = True
         return ds_results

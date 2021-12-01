@@ -4150,5 +4150,5 @@ def test_validate_624():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [2, 3]}
+    assert result == {'Header': [2, 3]}
 

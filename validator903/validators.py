@@ -4,6 +4,39 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_460():
+    error = ErrorDefinition(
+        code='460',
+        description='Reason episode ceased is that child stayed with current carers at age 18 (or above), but child is aged under 18.',
+        affected_fields=['DEC', 'REC'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            header['DOB18'] = header['DOB'] + pd.DateOffset(years=18)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'),
+                                                           indicator=True).set_index('index')
+
+            care_ended = episodes_merged['REC'].str.upper().astype(str).isin(['E17'])
+            ended_under_18 = episodes_merged['DOB18'] > episodes_merged['DEC']
+
+            error_mask = care_ended & ended_under_18
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
 
 def validate_352():
     error = ErrorDefinition(

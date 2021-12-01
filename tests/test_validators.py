@@ -522,7 +522,7 @@ def test_validate_519():
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [3, 4, 5]}
+    assert result == {'AD1': [3, 5]}
 
 
 def test_validate_520():

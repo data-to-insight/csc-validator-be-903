@@ -1,6 +1,25 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_336():
+    fake_data_episodes = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/01/2020', 'PLACE': 'U1',},  # 0
+        {'CHILD': '111', 'DECOM': '11/01/2020', 'PLACE': 'T1',},  # 1 
+        {'CHILD': '111', 'DECOM': '22/01/2020', 'PLACE': 'A3',},  # 2 fail
+        {'CHILD': '123', 'DECOM': '01/01/2020', 'PLACE': 'U1',},  # 3
+        {'CHILD': '123', 'DECOM': '11/01/2020', 'PLACE': 'A5',},  # 4 pass
+        {'CHILD': '333', 'DECOM': '01/01/2020', 'PLACE': 'T2',},  # 5
+        {'CHILD': '333', 'DECOM': '22/01/2020', 'PLACE': 'A3',},  # 6 fail
+        {'CHILD': '333', 'DECOM': '11/01/2020', 'PLACE': 'U1',},  # 7
+        {'CHILD': '444', 'DECOM': '22/01/2020', 'PLACE': 'A5',},  # 8  ignored no previous episode
+        {'CHILD': '444', 'DECOM': '11/01/2020', 'PLACE': 'X1',},  # 9
+        {'CHILD': '444', 'DECOM': '01/01/2020', 'PLACE': 'A3',},  # 10 fail
+        {'CHILD': '666', 'DECOM': '01/01/2020', 'PLACE': 'A5',},  # 11 ignored no previous episode
+    ])
+    fake_dfs = {'Episodes':fake_data_episodes}
+    error_defn, error_func = validate_336()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes':[2,6,10,]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({

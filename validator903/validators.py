@@ -4,6 +4,30 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_336():
+  error = ErrorDefinition(
+    code = '336',
+    description = 'Child does not have a foster placement immediately prior to being placed for adoption.',
+    affected_fields = ['PLACE']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      place_code_list = ['A3', 'A4']
+      prev_code_list = ['A3', 'A4', 'A5', 'A6', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+
+      # new column that contains place of previous episode
+      episodes['PREVIOUS_PLACE'] = episodes.groupby('CHILD')['PLACE'].shift(1)
+      
+      # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of 'A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6'
+      mask = (episodes['PLACE'].isin(place_code_list)) & (~episodes['PREVIOUS_PLACE'].isin(prev_code_list))
+      # error locations
+      error_locs = episodes.index[mask]
+      return {'Episodes':error_locs.tolist()}
+  return error, _validate
+
 
 def validate_209():
     error = ErrorDefinition(

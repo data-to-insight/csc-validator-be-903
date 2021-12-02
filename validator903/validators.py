@@ -3839,6 +3839,7 @@ def validate_377():
 
     return error, _validate
 
+#!# Potential false negatives - if child has no missing periods in current year's Missing table nothing is flagged!
 def validate_576():
     error = ErrorDefinition(
         code='576',

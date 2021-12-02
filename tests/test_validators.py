@@ -8,8 +8,8 @@ def test_validate_118():
   })
   fake_data_episodes = pd.DataFrame([
       {'CHILD': '101', 'LS': 'L1', 'DECOM': '01/01/2019'},  # 0 Fail DATE_PLACED_CEASED is before collection_start
-      {'CHILD': '102', 'LS': 'X0','DECOM': '01/01/2019'},  # 1 
-      {'CHILD': '102', 'LS': 'V3','DECOM': '20/12/2020'},  # 2 
+      {'CHILD': '102', 'LS': 'V3','DECOM': '01/01/2022'},  # 1 skip fail because LS is V3
+      {'CHILD': '102', 'LS': 'X0','DECOM': '20/12/2020'},  # 2 fail
       {'CHILD': '102', 'LS': 'L1','DECOM': '03/01/2021'},  # 3
       {'CHILD': '102', 'LS': 'L1','DECOM': '03/04/2022'},  # 4 
       {'CHILD': '103', 'LS': 'X2','DECOM': '01/01/2019'},  # 5 pass
@@ -21,9 +21,7 @@ def test_validate_118():
   fake_dfs = {'Episodes':fake_data_episodes, 'PlacedAdoption':fake_placed_adoption, 'metadata':metadata,}
   error_defn, error_func = validate_118()
   result = error_func(fake_dfs)
-  #assert result == {'Episodes':[3,], 'PLacedAdoption':[0,1]}
-  #assert result == {'Episodes':[0,3], 'PLacedAdoption':[0,1]}
-  assert result == {'Episodes':[0], 'PlacedAdoption':[0]}
+  assert result == {'Episodes':[0,2], 'PlacedAdoption':[0,1]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({

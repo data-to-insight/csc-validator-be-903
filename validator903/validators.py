@@ -21,10 +21,29 @@ def validate_165():
       collection_end = dfs['metadata']['collection_end']
       valid_values = ['0','1']
 
-      # merged = header.merge()
-      value_validity = header['MOTHER'].notna() & ~header['MOTHER'].isin(valid_values)
-      no_value_female = header['MOTHER'].isna() & (header['SEX']=='1')
-      mask = value_validity | no_value_female
+      # prepare to merge
+      oc3.reset_index(inplace=True)
+      header.reset_index(inplace=True)
+      episodes.reset_index(inplace=True)
+
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+      episodes['EPS'] = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end)
+      episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('count')
+
+      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD', how='left')
+
+      # Raise error if provided <MOTHER> is not a valid value. 
+      value_validity = merged['MOTHER'].notna() & ~merged['MOTHER'].isin(valid_values)
+      # If not provided
+      female = (merged['SEX']=='1')
+      eps_in_year = (merged['EPS_COUNT']>0)
+      none_provided = (merged['ACTIV'].isna()& merged['ACCOM'].isna()& merged['IN_TOUCH'].isna())
+      # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
+      mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
+      # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
       error_locations = header.index[mask]
       return {'Header':error_locations.tolist()}
   return error, _validate

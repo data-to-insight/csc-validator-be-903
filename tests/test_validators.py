@@ -46,7 +46,7 @@ def test_validate_165():
   result = error_func(fake_dfs)
   assert result == {'Header': [2,3,4,5,7,8,9],}
   # assert result == {'Header': [2,3,5,8],}
-  # assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
+  assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
 
 def test_validate_352():
     fake_data = pd.DataFrame({

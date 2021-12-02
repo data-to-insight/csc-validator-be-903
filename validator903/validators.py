@@ -4,6 +4,47 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_118():
+  error = ErrorDefinition(
+    code = '118', 
+    description = 'Date of decision that a child should no longer be placed for adoption is before the current collection year or before the date the child started to be looked after.',
+    affected_fields = ['DECOM', 'DECOM', 'LS']
+  )
+  def _validate(dfs):
+    if ('PlacedAdoption' not in dfs) or ('Episodes' not in dfs):
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      episodes = dfs['Episodes']
+      collection_start = dfs['metadata']['collection_start']
+      code_list =  ['V3','V4']
+
+      # datetime
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption['DATE_PLACED_CEASED'] = pd.to_datetime(placed_adoption['DATE_PLACED_CEASED'], format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+
+      # <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
+      filter_by_ls = episodes[~(episodes['LS'].isin(code_list))]
+      earliest_episode_idxs = filter_by_ls.groupby('CHILD')['DECOM'].idxmin()
+      earliest_episodes = episodes[episodes.index.isin(earliest_episode_idxs)]
+
+      #prepare to merge
+      placed_adoption.reset_index(inplace=True)
+      earliest_episodes.reset_index(inplace=True)
+    
+      # merge
+      merged = earliest_episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps', '_pa'])
+
+      # drop rows where DATE_PLACED_CEASED is not provided
+      merged = merged.dropna(subset=['DATE_PLACED_CEASED'])
+      # If provided <DATE_PLACED_CEASED> must not be prior to <COLLECTION_START_DATE> or <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
+      mask = (merged['DATE_PLACED_CEASED'] < merged['DECOM']) | (merged['DATE_PLACED_CEASED'] < collection_start)
+      # error locations
+      pa_error_locs = merged.loc[mask, 'index_pa']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.unique().tolist()}
+  return error, _validate
 
 def validate_352():
     error = ErrorDefinition(

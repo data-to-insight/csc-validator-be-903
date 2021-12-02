@@ -21,7 +21,10 @@ def validate_165():
       collection_end = dfs['metadata']['collection_end']
       valid_values = ['0','1']
 
-      mask = header['MOTHER'].notna() & ~header['MOTHER'].isin(valid_values)
+      # merged = header.merge()
+      value_validity = header['MOTHER'].notna() & ~header['MOTHER'].isin(valid_values)
+      no_value_female = header['MOTHER'].isna() & (header['SEX']=='1')
+      mask = value_validity | no_value_female
       error_locations = header.index[mask]
       return {'Header':error_locations.tolist()}
   return error, _validate

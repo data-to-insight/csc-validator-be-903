@@ -8,7 +8,7 @@ def validate_117():
   error = ErrorDefinition(
     code ='117',
     description = 'Date of decision that a child should/should no longer be placed for adoption is beyond the current collection year or after the child ceased to be looked after.',
-    affected_fields = ['DATE_PLACED_CEASED', 'DATE_PLACED', 'DEC', 'REC', 'DECOM'],
+    affected_fields = ['DATE_PLACED_CEASED', 'DATE_PLACED', 'DEC', 'REC'],
   ) 
   def _validate(dfs):
     if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:

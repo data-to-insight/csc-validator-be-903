@@ -44,8 +44,10 @@ def validate_117():
             # latest episodes
             merged = episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps', '_pa'])
             mask = (
-                (merged[p4a_cols].max(axis=1) > collection_end)
-                | (merged[p4a_cols].max(axis=1) > merged['DEC'])
+                (merged['DATE_PLACED'] > collection_end)
+                | (merged['DATE_PLACED'] > merged['DEC'])
+                | (merged['DATE_PLACED_CEASED'] > collection_end)
+                | (merged['DATE_PLACED_CEASED'] > merged['DEC'])
             )
             # If provided <DATE_PLACED> and/or <DATE_PLACED_CEASED> must not be > <COLLECTION_END_DATE> or <DEC> of latest episode where <REC> not = 'X1'
             pa_error_locs = merged.loc[mask, 'index_pa']

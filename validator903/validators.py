@@ -5,6 +5,36 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+#!# not sure what this rule is actually supposed to be getting at - description is confusing
+def validate_197B():
+    error = ErrorDefinition(
+        code='197B',
+        description="SDQ score or reason for no SDQ should be reported for 4- or 17-year-olds.",
+        affected_fields=['SDQ_REASON', 'DOB'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        oc2 = add_CLA_column(dfs, 'OC2')
+
+        start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+        endo = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+
+        ERRRR = (
+            (
+                (oc2['DOB'] + pd.DateOffset(years=4) == start)  # ???
+                | (oc2['DOB'] + pd.DateOffset(years=17) == start)
+            )
+            & oc2['CONTINUOUSLY_LOOKED_AFTER']
+            & oc2['SDQ_SCORE'].isna()
+            & oc2['SDQ_REASON'].isna()
+        )
+
+        return {'OC2': oc2[ERRRR].index.to_list()}
+    return error, _validate
+
 def validate_157():
     error = ErrorDefinition(
         code='157',

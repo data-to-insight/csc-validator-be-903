@@ -1,0 +1,95 @@
+{
+  "test_ok": {
+    "input": {
+      "CHILD": 123456,
+      "Table": "Episodes",
+      "RowID": 1,
+      "Code": "E1",
+      "Context": {
+        "F1": "V1",
+        "F2": "V2"
+      },
+      "Fields": [
+        "F1",
+        "F2"
+      ],
+      "Description": "A bad error",
+      "Child Error Count": 1,
+      "Error Type Count": 1
+    },
+    "output": {
+      "Child": 123456,
+      "Affected Table": "Episodes",
+      "Error Row": 1,
+      "Error Code": "E1",
+      "Error Description": "A bad error",
+      "Error Fields": "F1, F2",
+      "Affected Values": "F1: V1, F2: V2",
+      "Locator Hints": "",
+      "Errors for Child": 1,
+      "Errors of Type": 1
+    }
+  },
+  "test_missing_context": {
+    "input": {
+      "CHILD": 123456,
+      "Table": "Episodes",
+      "RowID": 1,
+      "Code": "E1",
+      "Context": {
+        "F1": "V1"
+      },
+      "Fields": [
+        "F1",
+        "F2"
+      ],
+      "Description": "A bad error",
+      "Child Error Count": 1,
+      "Error Type Count": 1
+    },
+    "output": {
+      "Child": 123456,
+      "Affected Table": "Episodes",
+      "Error Row": 1,
+      "Error Code": "E1",
+      "Error Description": "A bad error",
+      "Error Fields": "F1, F2",
+      "Affected Values": "F1: V1",
+      "Locator Hints": "",
+      "Errors for Child": 1,
+      "Errors of Type": 1
+    }
+  },
+  "test_locator_hints": {
+    "input": {
+      "CHILD": 123456,
+      "Table": "Episodes",
+      "RowID": 1,
+      "Code": "E1",
+      "Context": {
+        "F1": "V1",
+        "F2": "V2",
+        "DECOM": "2021-01-01"
+      },
+      "Fields": [
+        "F1",
+        "F2"
+      ],
+      "Description": "A bad error",
+      "Child Error Count": 1,
+      "Error Type Count": 1
+    },
+    "output": {
+      "Child": 123456,
+      "Affected Table": "Episodes",
+      "Error Row": 1,
+      "Error Code": "E1",
+      "Error Description": "A bad error",
+      "Error Fields": "F1, F2",
+      "Affected Values": "F1: V1, F2: V2",
+      "Locator Hints": "DECOM: 2021-01-01",
+      "Errors for Child": 1,
+      "Errors of Type": 1
+    }
+  }
+}

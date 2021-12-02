@@ -9,7 +9,8 @@ These are used in two places:
 """
 column_names = {
     'Header': ['CHILD', 'SEX', 'DOB', 'ETHNIC', 'UPN', 'MOTHER', 'MC_DOB'],
-    'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE', 'HOME_POST', 'PL_POST', 'URN'],
+    'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE',
+                 'HOME_POST', 'PL_POST', 'URN'],
     'Reviews': ['CHILD', 'DOB', 'REVIEW', 'REVIEW_CODE'],
     'UASC': ['CHILD', 'SEX', 'DOB', 'DUC'],
     'OC2': ['CHILD', 'DOB', 'SDQ_SCORE', 'SDQ_REASON', 'CONVICTED', 'HEALTH_CHECK',
@@ -23,12 +24,35 @@ column_names = {
     'Missing': ['CHILD', 'DOB', 'MISSING', 'MIS_START', 'MIS_END'],
 }
 
+every_single_error_code = "101,102,103,104,105,112,113,114,115,116,117,118,119,120,131,132,133,134,141,142,143,144," \
+                          "145,146,147,148,149,151,153,157,158,159,164,165,166,167,168,169,171,174,175,176,177,178," \
+                          "179,180,181,182,185,186,187,188,189,190,191,192,193,196,197,198,199,1000,1001,1002,1004," \
+                          "1005,1006,1007,1008,1009,1010,1011,1012,1014,1015,NoE,357,388,502,184,1003,202,203,204," \
+                          "205A,205B,205C,205D,207,208,209,210,213,214,215,217,218,219,221,224,225,226,227,228,229," \
+                          "301,302,303,304,331,333,334,335,336,344,345,351,352,353,354,355,356,358,359,361,362,363," \
+                          "364,365,366,367,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387," \
+                          "389,390,391,392a,392b,392c,393,398,399,3001,406,407,408,411,420,426,431,432,433,434,435," \
+                          "436,437,440,441,442,445,446,451,452,453,501,504,511,514,516,517,518,519,520,521,522,523," \
+                          "524,525,526,527,528,529,530,531,542,543,544,545,546,547,550,551,552,553,554,555,556,557," \
+                          "558,559,560,561,562,563,564,565,566,567,570,571,574,575,576,577,578,579,580,586,601,602," \
+                          "607,611,612,620,621,624,625,626,628,630,631,632,633,634,635,503A,503B,503C,503D,503E,503F," \
+                          "503G,503H,503J,460,197A,197B,222"
+every_single_error_code = sorted(tuple(every_single_error_code.lower().split(',')))
+
+stage_1_error_codes = "101,102,103,104,105,112,113,114,115,116,117,118,119,120,131,132,133,134,141,142,143,144,145," \
+                      "146,147,148,149,151,153,157,158,159,164,165,166,167,168,169,171,174,175,176,177,178,179,180," \
+                      "181,182,185,186,187,188,189,190,191,192,193,196,197A,197B,198,199,1000,1001,1002,1004,1005," \
+                      "1006,1007,1008,1009,1010,1011,1012,1014,1015,NOE,357,388,502"
+stage_1_error_codes = sorted(tuple(stage_1_error_codes.lower().split(',')))
+
+stage_2_error_codes = sorted(tuple(set(every_single_error_code) - set(stage_1_error_codes)))
+
 """
 List of all configured errors for validation.
 
 These all should have return type (Error, Dict[str, DataFrame])
 """
-configured_errors = [
+configured_errors = sorted([
     validate_552(),
     validate_101(),
     validate_102(),
@@ -71,7 +95,7 @@ configured_errors = [
     validate_192(),
     validate_193(),
     validate_196(),
-    validate_197(),
+    validate_197a(),
     validate_202(),
     validate_207(),
     validate_208(),
@@ -79,6 +103,7 @@ configured_errors = [
     validate_203(),
     validate_213(),
     validate_3001(),
+    validate_352(),
     validate_356(),
     validate_387(),
     validate_386(),
@@ -89,6 +114,8 @@ configured_errors = [
     validate_393(),
     validate_411(),
     validate_420(),
+    validate_433(),
+    validate_437(),
     validate_452(),
     validate_453(),
     validate_611(),
@@ -99,6 +126,7 @@ configured_errors = [
     validate_1005(),
     validate_1006(),
     validate_1009(),
+    validate_1010(),
     validate_1015(),
     validate_142(),
     validate_148(),
@@ -155,6 +183,7 @@ configured_errors = [
     validate_446(),
     validate_441(),
     validate_440(),
+    validate_550(),
     validate_516(),
     validate_363(),
     validate_364(),
@@ -168,14 +197,71 @@ configured_errors = [
     validate_375(),
     validate_376(),
     validate_379(),
+    validate_383(),
     validate_529(),
     validate_557(),
     validate_551(),
     validate_524(),
     validate_511(),
+    validate_547(),
     validate_558(),
+    validate_563(),
+    validate_565(),
+    validate_635(),
     validate_377(),
     validate_518(),
     validate_517(),
     validate_576(),
 ]
+    validate_344(),
+    validate_345(),
+    validate_384(),
+    validate_390(),
+    validate_398(),
+    validate_451(),
+    validate_520(),
+    validate_522(),
+    validate_553(),
+    validate_555(),
+    validate_544(),
+    validate_382(),
+    validate_602(),
+    validate_158(),
+    validate_580(),
+    validate_575(),
+    validate_133(),
+    validate_1012(),
+    validate_525(),
+    validate_432(),
+    validate_634(),
+    validate_442(),
+    validate_331(),
+    validate_217(),
+    validate_519(),
+    validate_378(),
+    validate_1007(),
+    validate_215(),
+    validate_399(),
+    validate_189(),
+    validate_226(),
+    validate_358(),
+    validate_362(),
+    validate_361(),
+    validate_407(),
+    validate_335(),
+    validate_209(),
+    validate_435(),
+    validate_607(),
+    validate_185(),
+    validate_186(),
+    validate_187(),
+    validate_188(),
+    validate_190(),
+    validate_191(),
+    validate_210(),
+    validate_392B(),
+    validate_117(),
+    validate_118(),
+])
+
+errors = {e[0].code: e for e in configured_errors}

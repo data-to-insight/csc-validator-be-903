@@ -1,12 +1,45 @@
+import collections.abc
+from pathlib import Path
+
 import pandas as pd
 import xml.etree.ElementTree as ET
-from zipfile import ZipFile
-from io import StringIO, BytesIO
-from typing import List
+from io import BytesIO
+from typing import List, Union, Dict, Iterator
+
+from pandas import DataFrame
+
 from .types import UploadException, UploadedFile
 from .config import column_names
 
-def read_from_text(raw_files: List[UploadedFile]):
+
+class _BufferedUploadedFile(collections.abc.Mapping):
+
+    def __init__(self, file, name, description):
+        self.name = name
+        self.description = description
+        self.file = Path(file)
+        if not self.file.is_file():
+            raise FileNotFoundError(f"{self.file} not found.")
+
+    def __getitem__(self, k):
+        if k == "name":
+            return self.name
+        elif k == "description":
+            return self.description
+        elif k == "fileText":
+            with open(self.file, 'rb') as file:
+                return file.read()
+        else:
+            raise AttributeError(f'{k} not found')
+
+    def __len__(self) -> int:
+        return 3
+
+    def __iter__(self) -> Iterator:
+        pass
+
+
+def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     """
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
@@ -31,7 +64,15 @@ def read_from_text(raw_files: List[UploadedFile]):
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
-def read_csvs_from_text(raw_files: List[UploadedFile]):
+
+def read_files(files: Union[str, Path]) -> List[UploadedFile]:
+    uploaded_files: List[_BufferedUploadedFile] = []
+    for filename in files:
+        uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
+    return uploaded_files
+
+
+def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
@@ -46,7 +87,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:
             name = file_name
-        elif 'Last year' in file_data['description']:
+        elif 'Prev year' in file_data['description']:
             name = file_name + '_last'
         else:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
@@ -55,7 +96,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
 
     return files
 
-def read_xml_from_text(xml_string):
+def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     header_df = []
     episodes_df = []
     uasc_df = []
@@ -132,8 +173,3 @@ def read_xml_from_text(xml_string):
         'PrevPerm': pd.DataFrame(prev_perm_df),
         'Missing': pd.DataFrame(missing_df),
     }
-
-def read_postcodes(zipped_csv_bytes):
-    with ZipFile(BytesIO(zipped_csv_bytes)) as unzipped:
-        with unzipped.open('postcodes.csv') as f:
-            return pd.read_csv(f)

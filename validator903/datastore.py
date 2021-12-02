@@ -50,6 +50,12 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
         data['Episodes_last'] = _add_postcode_derived_fields(
             data['Episodes_last'], metadata['localAuthority']
         )
+
+    # quick n dirty fix for weird postcode related columns showing up in episode tables
+    for table_name in ['Episodes', 'Episodes_last']:
+        if table_name in data:
+            data[table_name].drop(columns={'_14', '_15', '_16', '_17'} & set(data[table_name].columns))
+
     return data
 
 

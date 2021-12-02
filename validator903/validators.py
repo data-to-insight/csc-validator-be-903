@@ -527,7 +527,7 @@ def validate_525():
 def validate_335():
     error = ErrorDefinition(
         code='335',
-        description='Child is not adopted by a former foster carer(s) but has a last placement code of A3 or A5.',
+        description='The current foster value (0) suggests that child is not adopted by current foster carer, but last placement is A2, A3, or A5. Or the current foster value (1) suggests that child is adopted by current foster carer, but last placement is A1, A4 or A6.',
         affected_fields=['PLACE', 'FOSTER_CARE']
     )
 
@@ -537,14 +537,13 @@ def validate_335():
         else:
             episodes = dfs['Episodes']
             ad1 = dfs['AD1']
-            code_list = ['A3', 'A5']
 
             # prepare to merge
             episodes.reset_index(inplace=True)
             ad1.reset_index(inplace=True)
             merged = episodes.merge(ad1, on='CHILD', how='left', suffixes=['_eps', '_ad1'])
 
-            # Where <PL> = 'A3' or 'A5' <FOSTER_CARE> should not be '0'
+            # Where <PL> = 'A2', 'A3' or 'A5' and <DEC> = 'E1', 'E11', 'E12' <FOSTER_CARE> should not be '0'; Where <PL> = ‘A1’, ‘A4’ or ‘A6’ and <REC> = ‘E1’, ‘E11’, ‘E12’ <FOSTER_CARE> should not be ‘1’.
             mask = (
                     merged['REC'].isin(['E1', 'E11', 'E12']) & (
                     (merged['PLACE'].isin(['A2', 'A3', 'A5']) & (merged['FOSTER_CARE'].astype(str) == '0'))
@@ -991,7 +990,7 @@ def validate_451():
 def validate_519():
     error = ErrorDefinition(
         code='519',
-        description='Data entered on the legal status of adopters shows civil partnership couple, but data entered on genders of adopters shows it as a mixed gender couple.',
+        description='Data entered on the legal status of adopters shows civil partnership couple, but data entered on genders of adopters does not show it as a couple.',
         affected_fields=['LS_ADOPTR', 'SEX_ADOPTR']
     )
 
@@ -1000,7 +999,7 @@ def validate_519():
             return {}
         else:
             ad1 = dfs['AD1']
-            mask = (ad1['LS_ADOPTR'] == 'L2') & ((ad1['SEX_ADOPTR'] != 'MM') & (ad1['SEX_ADOPTR'] != 'FF'))
+            mask = (ad1['LS_ADOPTR'] == 'L2') & ((ad1['SEX_ADOPTR'] != 'MM') & (ad1['SEX_ADOPTR'] != 'FF') & (ad1['SEX_ADOPTR'] != 'MF'))
             error_locations = ad1.index[mask]
             return {'AD1': error_locations.to_list()}
 
@@ -2862,8 +2861,10 @@ def validate_132():
             'P1',
             'F2',
             'P2',
-            'F3',
-            'P3',
+            'F4',
+            'P4',
+            'F5',
+            'P5',
             'G4',
             'G5',
             'G6',

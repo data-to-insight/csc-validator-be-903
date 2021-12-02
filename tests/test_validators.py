@@ -1,6 +1,50 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_157():
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
+
+    eps = pd.DataFrame([
+        {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '2', 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '3333', 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '4', 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '5', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '6666', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+        {'CHILD': '6666', 'DECOM': '01/01/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': pd.NA, 'RNE': 'o'},
+        {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},
+        {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},
+    ])
+
+    oc2 = pd.DataFrame({
+        'CHILD':
+            ['9999999999', '1', '2', '3333',
+             '99999999', '8888', '5'],
+        'SDQ_SCORE':
+            ['OK', pd.NA, pd.NA, pd.NA,
+             pd.NA, 'OK', pd.NA],
+        'SDQ_REASON':
+            ['SDQ1', 'SDQ1', 'SDQ1', 'OK',
+             pd.NA, 'OK', 'OK!'],
+        'DOB':
+            ['01/04/1970', '31/03/1965', '01/04/1976', '01/04/1970',
+             '01/04/1970', '01/04/1970', '01/07/1970'],
+    })
+
+    test_dfs = {'Episodes': eps, 'OC2': oc2, 'metadata': metadata}
+
+    error_defn, error_func = validate_157()
+
+    test_result = error_func(test_dfs)
+
+    assert test_result == {'OC2': [1, 2]}
+
+
+
+
 
 def test_validate_357():
     episodes = pd.DataFrame([

@@ -1,6 +1,29 @@
 from validator903.validators import *
 import pandas as pd
 
+
+def test_validate_357():
+    episodes = pd.DataFrame([
+        {'CHILD': '000', 'DECOM': '01/01/2001', 'RNE': '!!'},
+        {'CHILD': '111', 'DECOM': '11/11/2011', 'RNE': 'ok'},
+        {'CHILD': '111', 'DECOM': '01/01/2000', 'RNE': 'S'},
+        {'CHILD': '222', 'DECOM': '11/11/2011', 'RNE': 'ok'},
+        {'CHILD': '222', 'DECOM': pd.NA, 'RNE': 'ok'},
+        {'CHILD': '222', 'DECOM': '01/01/2001', 'RNE': 'S'},
+        {'CHILD': '333', 'DECOM': '12/12/2012', 'RNE': 'ok'},
+        {'CHILD': '333', 'DECOM': '01/01/2001', 'RNE': '!!'},
+        {'CHILD': '333', 'DECOM': '05/05/2005', 'RNE': 'ok'},
+        {'CHILD': '444', 'DECOM': '05/05/2005', 'RNE': pd.NA}, # !!
+    ])
+
+    test_dfs = {'Episodes': episodes}
+
+    error_defn, error_func = validate_357()
+
+    test_result = error_func(test_dfs)
+
+    assert test_result == {'Episodes': [0, 7, 9]}
+
 def test_validate_117():
   metadata = {
       'collection_end': '31/03/2018'

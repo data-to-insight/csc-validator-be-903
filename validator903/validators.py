@@ -5,6 +5,31 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_357():
+    error = ErrorDefinition(
+        code='357',
+        description='If this is the first episode ever for this child, reason for new episode must be S.  '
+                    'Check whether there is an episode immediately preceding this one, which has been left out.  '
+                    'If not the reason for new episode code must be amended to S.',
+        affected_fields=['RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        eps = dfs['Episodes']
+        eps['DECOM'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+        eps = eps.loc[eps['DECOM'].notnull()]
+
+        first_eps = eps.loc[eps.groupby('CHILD')['DECOM'].idxmin()]
+        errs = first_eps[first_eps['RNE'] != 'S'].index.to_list()
+
+        return {'Episodes': errs}
+
+    return error, _validate
+
+
 def validate_117():
     error = ErrorDefinition(
         code='117',

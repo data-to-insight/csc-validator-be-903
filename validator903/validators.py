@@ -39,6 +39,82 @@ def validate_117():
       return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.unique().tolist()}
   return error, _validate
 
+def validate_118():
+  error = ErrorDefinition(
+    code = '118',
+    description = 'Date of decision that a child should no longer be placed for adoption is before the current collection year or before the date the child started to be looked after.',
+    affected_fields = ['DECOM', 'DECOM', 'LS']
+  )
+  def _validate(dfs):
+    if ('PlacedAdoption' not in dfs) or ('Episodes' not in dfs):
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      episodes = dfs['Episodes']
+      collection_start = dfs['metadata']['collection_start']
+      code_list =  ['V3','V4']
+
+      # datetime
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption['DATE_PLACED_CEASED'] = pd.to_datetime(placed_adoption['DATE_PLACED_CEASED'], format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+
+      # <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
+      filter_by_ls = episodes[~(episodes['LS'].isin(code_list))]
+      earliest_episode_idxs = filter_by_ls.groupby('CHILD')['DECOM'].idxmin()
+      earliest_episodes = episodes[episodes.index.isin(earliest_episode_idxs)]
+
+      #prepare to merge
+      placed_adoption.reset_index(inplace=True)
+      earliest_episodes.reset_index(inplace=True)
+
+      # merge
+      merged = earliest_episodes.merge(placed_adoption, on='CHILD', how='left', suffixes=['_eps', '_pa'])
+
+      # drop rows where DATE_PLACED_CEASED is not provided
+      merged = merged.dropna(subset=['DATE_PLACED_CEASED'])
+      # If provided <DATE_PLACED_CEASED> must not be prior to <COLLECTION_START_DATE> or <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
+      mask = (merged['DATE_PLACED_CEASED'] < merged['DECOM']) | (merged['DATE_PLACED_CEASED'] < collection_start)
+      # error locations
+      pa_error_locs = merged.loc[mask, 'index_pa']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.unique().tolist()}
+  return error, _validate
+
+def validate_352():
+    error = ErrorDefinition(
+        code='352',
+        description='Child who started to be looked after was aged 18 or over.',
+        affected_fields=['DECOM', 'RNE'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            header['DOB18'] = header['DOB'] + pd.DateOffset(years=18)
+
+            episodes_merged = episodes.reset_index().merge(header, how='left', on=['CHILD'], suffixes=('', '_header'),
+                                                           indicator=True).set_index('index')
+
+            care_start = episodes_merged['RNE'].str.upper().astype(str).isin(['S'])
+            started_over_18 = episodes_merged['DOB18'] <= episodes_merged['DECOM']
+
+            error_mask = care_start & started_over_18
+
+            error_locations = episodes.index[error_mask]
+
+            return {'Episodes': error_locations.to_list()}
+
+    return error, _validate
+
 def validate_209():
     error = ErrorDefinition(
         code='209',
@@ -3514,6 +3590,7 @@ def validate_134():
         else:
             oc3 = dfs['OC3']
             ad1 = dfs['AD1']
+            ad1['ad1_index'] = ad1.index
 
             all_data = ad1.merge(oc3, how='left', on='CHILD')
 
@@ -3522,6 +3599,7 @@ def validate_134():
                     all_data['ACTIV'].isna() &
                     all_data['ACCOM'].isna()
             )
+
             na_ad1_data = (
                     all_data['DATE_INT'].isna() &
                     all_data['DATE_MATCH'].isna() &
@@ -3532,9 +3610,9 @@ def validate_134():
             )
 
             validation_error = ~na_oc3_data & ~na_ad1_data
-            validation_error_locations = ad1.index[validation_error]
+            validation_error_locations = all_data.loc[validation_error, 'ad1_index'].unique()
 
-            return {'OC3': validation_error_locations.tolist()}
+            return {'AD1': validation_error_locations.tolist()}
 
     return error, _validate
 
@@ -4171,7 +4249,7 @@ def validate_180():
 
             oc2['SDQ_SCORE'] = pd.to_numeric(oc2['SDQ_SCORE'], errors='coerce')
 
-            error_mask = ~oc2['SDQ_SCORE'].isin(range(41))
+            error_mask = oc2['SDQ_SCORE'].notna() & ~oc2['SDQ_SCORE'].isin(range(41))
 
             validation_error_locations = oc2.index[error_mask]
 
@@ -4195,19 +4273,15 @@ def validate_181():
             oc2 = dfs['OC2']
             code_list = ['0', '1']
 
-            mask = (
-                    (oc2['CONVICTED'].astype(str).isin(code_list) | oc2['CONVICTED'].isna()) &
-                    (oc2['HEALTH_CHECK'].astype(str).isin(code_list) | oc2['HEALTH_CHECK'].isna()) &
-                    (oc2['IMMUNISATIONS'].astype(str).isin(code_list) | oc2['IMMUNISATIONS'].isna()) &
-                    (oc2['TEETH_CHECK'].astype(str).isin(code_list) | oc2['TEETH_CHECK'].isna()) &
-                    (oc2['HEALTH_ASSESSMENT'].astype(str).isin(code_list) | oc2['HEALTH_ASSESSMENT'].isna()) &
-                    (oc2['SUBSTANCE_MISUSE'].astype(str).isin(code_list) | oc2['SUBSTANCE_MISUSE'].isna()) &
-                    (oc2['INTERVENTION_RECEIVED'].astype(str).isin(code_list) | oc2['INTERVENTION_RECEIVED'].isna()) &
-                    (oc2['INTERVENTION_OFFERED'].astype(str).isin(code_list) | oc2['INTERVENTION_OFFERED'].isna())
-            )
+            fields_of_interest = ['CONVICTED', 'HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
+                                  'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
 
-            validation_error_mask = ~mask
-            validation_error_locations = oc2.index[validation_error_mask]
+            error_mask = (
+                    oc2[fields_of_interest].notna()
+                    & ~oc2[fields_of_interest].astype(str).isin(['0', '1'])
+            ).any(axis=1)
+
+            validation_error_locations = oc2.index[error_mask]
 
             return {'OC2': validation_error_locations.tolist()}
 

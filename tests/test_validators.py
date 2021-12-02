@@ -13,17 +13,17 @@ def test_validate_117():
       {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019'},  # 4 Fail DATE_PLACED > collection_end Ignored
   ])
   fake_data_eps = pd.DataFrame([
-      {'CHILD': 101, 'DEC': '01/01/2009', 'REC': 'E45', 'DECOM': '01/01/2009'},  # 0 
+      {'CHILD': 101, 'DEC': '01/01/2009', 'REC': 'E45', 'DECOM': '01/01/2009'},  # 0
       {'CHILD': 102, 'DEC': '01/01/2001', 'REC': 'A3','DECOM': '01/01/2001'},  # 1
       {'CHILD': 102, 'DEC': '20/12/2001', 'REC': 'E15','DECOM': '20/12/2001'},  # 2
       {'CHILD': 102, 'DEC': '03/01/2019', 'REC': 'E46','DECOM': '03/01/2019'},  # 3 Fail
-      {'CHILD': 102, 'DEC': '03/04/2008', 'REC': 'E48','DECOM': '03/04/2008'},  # 4 
+      {'CHILD': 102, 'DEC': '03/04/2008', 'REC': 'E48','DECOM': '03/04/2008'},  # 4
       {'CHILD': 103, 'DEC': '01/01/2002', 'REC': 'X2','DECOM': '01/01/2002'},  # 5
       {'CHILD': 104, 'DEC': '10/01/2002', 'REC': 'E11','DECOM': '10/01/2002'},  # 6
       {'CHILD': 104, 'DEC': '11/02/2010', 'REC': 'X1','DECOM': '11/02/2010'},  # 7 Fail Ignored
       {'CHILD': 104, 'DEC': '25/01/2002', 'REC': 'X1','DECOM': '25/01/2002'},  # 8 Ignored REC is X1
       {'CHILD': 105, 'DEC': '25/01/2002', 'REC': 'E47','DECOM': '25/01/2002'},  # 9
-      {'CHILD': 105, 'DEC': pd.NA, 'REC': 'E45','DECOM': pd.NA},  # 10 
+      {'CHILD': 105, 'DEC': pd.NA, 'REC': 'E45','DECOM': pd.NA},  # 10
   ])
   # TODO: in  the scenario where the REC of the latest episodes is X1, should the episode before the lastest be considered instead?. This will entail filtering by X1 before doing idxmax. Is this what this rule means?.
 
@@ -31,6 +31,48 @@ def test_validate_117():
   error_defn, error_func = validate_117()
   result = error_func(fake_dfs)
   assert result == {'Episodes':[3], 'PlacedAdoption':[1,3]}
+
+def test_validate_118():
+  fake_placed_adoption = pd.DataFrame({
+      'DATE_PLACED_CEASED': ['08/03/2020', '22/06/2020', '13/10/2022', pd.NA],
+      "CHILD": ['101', '102', '103', '104'],
+  })
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '101', 'LS': 'L1', 'DECOM': '01/01/2019'},  # 0 Fail DATE_PLACED_CEASED is before collection_start
+      {'CHILD': '102', 'LS': 'V3','DECOM': '01/01/2022'},  # 1 skip fail because LS is V3
+      {'CHILD': '102', 'LS': 'X0','DECOM': '20/12/2020'},  # 2 fail
+      {'CHILD': '102', 'LS': 'L1','DECOM': '03/01/2021'},  # 3
+      {'CHILD': '102', 'LS': 'L1','DECOM': '03/04/2022'},  # 4
+      {'CHILD': '103', 'LS': 'X2','DECOM': '01/01/2019'},  # 5 pass
+      {'CHILD': '104', 'LS': 'L1','DECOM': '01/01/2019'},  # 6 drop.na drops this child
+  ])
+  metadata = {
+      'collection_start': '01/04/2020',
+  }
+  fake_dfs = {'Episodes':fake_data_episodes, 'PlacedAdoption':fake_placed_adoption, 'metadata':metadata,}
+  error_defn, error_func = validate_118()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,2], 'PlacedAdoption':[0,1]}
+
+def test_validate_352():
+    fake_data = pd.DataFrame({
+        'CHILD': ['101', '102', '101', '102', '103'],
+        'RNE': ['S', 'S', 'X1', pd.NA, 'S'],
+        'DECOM': ['16/03/2021', '17/06/2020', '20/03/2020', pd.NA, '23/08/2020'],
+    })
+
+    fake_data_child = pd.DataFrame({
+        'CHILD': ['101', '102', '103'],
+        'DOB': ['16/03/2005', '23/09/2002', '31/12/2000'],
+    })
+
+    fake_dfs = {'Episodes': fake_data, 'Header': fake_data_child}
+
+    error_defn, error_func = validate_352()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [4]}
 
 def test_validators_1007():
     fake_data_oc3 = pd.DataFrame({
@@ -2328,7 +2370,7 @@ def test_validate_134():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [1, 2, 3]}
+    assert result == {'AD1': [1, 2, 3]}
 
 
 def test_validate_119():

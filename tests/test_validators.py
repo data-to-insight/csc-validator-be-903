@@ -1,6 +1,51 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_165():
+  fake_data_oc3 = pd.DataFrame({
+    'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
+    'IN_TOUCH':['No', 'YES', 'YES', pd.NA, 'Yes','No', 'YES', 'YES', pd.NA, pd.NA],
+    'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX',pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+    'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX',pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+  })
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': 101, 'DECOM': '01/01/2020', },  # 0
+      {'CHILD': 102, 'DECOM': '11/01/2020', },  # 1
+      {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2 
+      {'CHILD': 104, 'DECOM': '01/01/2020', },  # 3
+
+      {'CHILD': 105, 'DECOM': '11/05/2020', },  # 4
+      {'CHILD': 105, 'DECOM': '01/01/2020', },  # 5
+
+      {'CHILD': 106, 'DECOM': '22/01/2020', },  # 6
+      {'CHILD': 107, 'DECOM': '11/01/2020', },  # 7
+      {'CHILD': 108, 'DECOM': '22/01/2020', },  # 8
+      {'CHILD': 109, 'DECOM': '25/03/2020', },  # 9 
+
+      {'CHILD': 110, 'DECOM': '01/01/2020', },  # 10
+      {'CHILD': 110, 'DECOM': '01/11/2021', },  # 11
+  ])
+  fake_data_header = pd.DataFrame([
+      {'CHILD': 101, 'SEX': '2', 'MOTHER': pd.NA},  # 0 pass gender is male
+      {'CHILD': 102, 'SEX': '2', 'MOTHER': '0'},  # 1 
+      {'CHILD': 103, 'SEX': '2', 'MOTHER': 0},  # 2 fail invalid value
+      {'CHILD': 104, 'SEX': '2', 'MOTHER': 1},  # 3 fail invalid value
+      {'CHILD': 105, 'SEX': '1', 'MOTHER': pd.NA},  # 4 fail episodes exist in collection year 
+      {'CHILD': 106, 'SEX': '1', 'MOTHER': '2' },  # 5 fail invalid value
+      {'CHILD': 107, 'SEX': '2', 'MOTHER': '1'},  # 6 
+      {'CHILD': 108, 'SEX': '1', 'MOTHER': pd.NA},  # 7 pass: no eps in collection year and at least one of IN_TOUCH, ACTIV , ACCOM have been provided.
+      {'CHILD': 109, 'SEX': '2', 'MOTHER': '0'},  # 8 
+      {'CHILD': 110, 'SEX': '1', 'MOTHER': pd.NA},  # 9 fail: no eps in collection year but none of IN_TOUCH, ACTIV , ACCOM have been provided.
+  ])
+  metadata = {
+      'collection_start': '01/04/2020',
+      'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'Header': fake_data_header, 'Episodes': fake_data_episodes, 'OC3':fake_data_oc3, 'metadata': metadata}
+  error_defn, error_func = validate_165()
+  result = error_func(fake_dfs)
+  assert result == {'Header': [2,3,5,],}
+  # assert result == {'Header': [2,3,4,5,9], 'Episodes': [4,], 'OC3':[9]}
 
 def test_validate_352():
     fake_data = pd.DataFrame({

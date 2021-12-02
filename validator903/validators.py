@@ -4,6 +4,27 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_165():
+  error = ErrorDefinition(
+    code = '165',
+    description = 'Data entry for mother status is invalid.',
+    affected_fields = ['MOTHER', 'SEX', 'ACTIV', 'ACCOM', 'IN_TOUCH', 'DECOM']
+  )
+  def _validate(dfs):
+    if 'Header' not in dfs or 'Episodes' not in dfs or 'OC3' not in dfs:
+      return {}
+    else:
+      header = dfs['Header']
+      episodes = dfs['Episodes']
+      oc3 = dfs['OC3']
+      collection_start = dfs['metadata']['collection_start'] 
+      collection_end = dfs['metadata']['collection_end']
+      valid_values = ['0','1']
+
+      mask = header['MOTHER'].notna() & ~header['MOTHER'].isin(valid_values)
+      error_locations = header.index[mask]
+      return {'Header':error_locations.tolist()}
+  return error, _validate
 
 def validate_352():
     error = ErrorDefinition(

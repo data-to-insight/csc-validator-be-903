@@ -19,6 +19,9 @@ logger.addHandler(handler)
 
 class Validator:
     dfs: Dict[str, DataFrame] = {}
+    dones: List[str] = []
+    skips: List[str] = []
+    fails: List[str] = []
 
     def __init__(self, metadata: Dict[str, Any], files: List[UploadedFile]):
         self.metadata = metadata
@@ -40,15 +43,18 @@ class Validator:
                 try:
                     result: Dict[str, List[Any]] = test_func(ds_copy)
                 except Exception as e:
-                    logger.exception(f"Error check {error.code} failed to run!")
-                    checks_that_failed_to_run.append(error.code)
+                    logger.info(f"Error code {error.code} failed to run!")
+                    self.fails.append(error.code)
                     continue
 
                 if result == {}:
-                    checks_skipped_coz_missing_tables.append(error.code)
+                    logger.info(f"Error code {error.code} skipped due to missing tables")
+                    self.skips.append(error.code)
+                else:
+                    self.dones.append(error.code)
 
                 for table, values in result.items():
                     if len(values) > 0:
-                        logger.debug(f"Test {error.code} found {len(values)} errors")
+                        logger.info(f"Error code {error.code} found {len(values)} errors")
                         ds_results[table].loc[values, f'ERR_{error.code}'] = True
         return ds_results

@@ -11,6 +11,9 @@ from pandas import DataFrame
 from .types import UploadException, UploadedFile
 from .config import column_names
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class _BufferedUploadedFile(collections.abc.Mapping):
 
@@ -73,9 +76,11 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
 
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
+
     def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
+                logger.info(f'Loaded {table_name} from CSV. ({len(df)} rows)')
                 return table_name
         else:
             raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
@@ -161,7 +166,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
                         data = read_data(child_table)
                         sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
-    return {
+    data =  {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
@@ -173,3 +178,6 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         'PrevPerm': pd.DataFrame(prev_perm_df),
         'Missing': pd.DataFrame(missing_df),
     }
+    names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
+    logger.info(f'Tables created from XML -- {names_and_lengths}')
+    return data

@@ -31,9 +31,9 @@ def validate_1014():
       episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
       date_check = (
-              ((episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end))
-              | ((episodes['DEC']>=collection_start) & (episodes['DEC']<=collection_end))
-              | episodes['DEC'].isna()
+              ((episodes['DECOM'] >= collection_start) & (episodes['DECOM'] <= collection_end))
+              | ((episodes['DEC'] >= collection_start) & (episodes['DEC'] <= collection_end))
+              | ((episodes['DECOM'] >= collection_start) & episodes['DEC'].isna())
       )
       episodes['EPS'] = date_check
       episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')

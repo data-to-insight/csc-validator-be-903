@@ -28,9 +28,14 @@ def validate_1014():
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
       collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-      decom_check = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end) 
-      episodes['EPS'] = decom_check
+      date_check = (
+              ((episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end))
+              | ((episodes['DEC']>=collection_start) & (episodes['DEC']<=collection_end))
+              | episodes['DEC'].isna()
+      )
+      episodes['EPS'] = date_check
       episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
       # inner merge to take only episodes of children which are also found on the uasc table
@@ -41,11 +46,10 @@ def validate_1014():
 
       mask = (merged['EPS_COUNT']==0) & some_provided
 
-      error_locs_eps = merged.loc[mask, 'index_eps']
       error_locs_uasc = merged.loc[mask, 'index_sc']
       error_locs_oc3 = merged.loc[mask, 'index']
 
-      return {'Episodes':error_locs_eps.tolist(), 'UASC':error_locs_uasc.unique().tolist(), 'OC3':error_locs_oc3.unique().tolist()}
+      return {'UASC':error_locs_uasc.unique().tolist(), 'OC3':error_locs_oc3.unique().tolist()}
   return error, _validate
 
 def validate_352():

@@ -4,6 +4,31 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_1014():
+  error = ErrorDefinition(
+      code = '1014',
+      description = 'UASC information is not required for care leavers',
+      affected_fields = ['DECOM']
+    )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      collection_start = dfs['metadata']['collection_start'] 
+      collection_end = dfs['metadata']['collection_end']
+
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+      mask = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end) 
+      error_locations = episodes.index[mask]
+
+      return {'Episodes':error_locations.tolist()}
+  return error, _validate
+      
+
 
 def validate_352():
     error = ErrorDefinition(

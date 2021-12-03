@@ -48,7 +48,8 @@ def validate_165():
       error_locs_header = merged.loc[mask, 'index_er']
       error_locs_oc3 = merged.loc[mask, 'index']
 
-      return {'Episodes':error_locs_eps.tolist(), 'Header':error_locs_header.unique().tolist(), 'OC3':error_locs_oc3.unique().tolist()}
+      return {'Header':error_locs_header.dropna().unique().tolist(),
+              'OC3':error_locs_oc3.dropna().unique().tolist()}
   return error, _validate
 
 def validate_1014():

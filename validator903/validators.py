@@ -31,7 +31,7 @@ def validate_165():
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
       episodes['EPS'] = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end)
-      episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('count')
+      episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
       merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD', how='left')
 
@@ -44,8 +44,11 @@ def validate_165():
       # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
       mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
       # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
-      error_locations = header.index[mask]
-      return {'Header':error_locations.tolist()}
+      error_locs_eps = merged.loc[mask, 'index_eps']
+      error_locs_header = merged.loc[mask, 'index_er']
+      error_locs_oc3 = merged.loc[mask, 'index']
+
+      return {'Episodes':error_locs_eps.tolist(), 'Header':error_locs_header.unique().tolist(), 'OC3':error_locs_oc3.unique().tolist()}
   return error, _validate
 
 def validate_352():

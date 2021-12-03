@@ -44,7 +44,7 @@ def test_validate_165():
   fake_dfs = {'Header': fake_data_header, 'Episodes': fake_data_episodes, 'OC3':fake_data_oc3, 'metadata': metadata}
   error_defn, error_func = validate_165()
   result = error_func(fake_dfs)
-  assert result == {'Header': [2,3,4,5,7,8,9],}
+  # assert result == {'Header': [2,3,4,5,7,8,9],}
   # assert result == {'Header': [2,3,5,8],}
   assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
 

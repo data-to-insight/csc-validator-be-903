@@ -5690,7 +5690,7 @@ def validate_626():
             mer_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE'])
             mer_co['MOTHER'] = mer_co['MOTHER'].astype(str)
             mer_co['MOTHER_PRE'] = mer_co['MOTHER_PRE'].astype(str)
-            err_co = mer_co.query("MOTHER == '1' & MOTHER_PRE == '0' & (MC_DOB < @collection_start)")
+            err_co = mer_co.query("(MOTHER == '1') & (MOTHER_PRE == '0') & (MC_DOB < @collection_start)")
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()
             return {'Header': err_list}

@@ -4152,3 +4152,26 @@ def test_validate_624():
 
     assert result == {'Header': [2, 3]}
 
+def test_validate_626():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'MOTHER': '0', 'MC_DOB': pd.NA},  # 0
+        {'CHILD': '222', 'MOTHER': '1', 'MC_DOB': '04/01/2020'},  # 1 Fail
+        {'CHILD': '333', 'MOTHER': '0', 'MC_DOB': pd.NA},  # 2
+        {'CHILD': '444', 'MOTHER': '1', 'MC_DOB': '01/04/2020'},  # 3
+    ])
+    fake_hea = pd.DataFrame([
+        {'CHILD': '111', 'MOTHER': '1'},  # 0
+        {'CHILD': '222', 'MOTHER': '0'},  # 1
+        {'CHILD': '333', 'MOTHER': '1'},  # 2
+        {'CHILD': '444', 'MOTHER': '0'},  # 3
+    ])
+    metadata = {'collection_start': '01/04/2020'}
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_hea, 'metadata': metadata}
+
+    error_defn, error_func = validate_626()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1]}
+

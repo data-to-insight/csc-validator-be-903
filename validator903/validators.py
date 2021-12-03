@@ -5668,3 +5668,31 @@ def validate_624():
             return {'Header': err_list}
 
     return error, _validate
+
+def validate_626():
+    error = ErrorDefinition(
+        code='626',
+        description="Child was reported as a mother but the date of birth of the first child is before the current " +
+                    "year which contradicts with the mother status recorded last year.",
+        affected_fields=['MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']
+            hea_pre = dfs['Header_last']
+            collection_start = dfs['metadata']['collection_start']
+            hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            hea['orig_idx'] = hea.index
+            mer_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE'])
+            mer_co['MOTHER'] = mer_co['MOTHER'].astype(str)
+            mer_co['MOTHER_PRE'] = mer_co['MOTHER_PRE'].astype(str)
+            err_co = mer_co.query("MOTHER == '1' & MOTHER_PRE == '0' & (MC_DOB < @collection_start)")
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+            return {'Header': err_list}
+
+    return error, _validate

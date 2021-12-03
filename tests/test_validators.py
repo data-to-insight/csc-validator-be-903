@@ -1,6 +1,42 @@
 from validator903.validators import *
 import pandas as pd
 
+#Using these for single and multi-year versions of 199 below.
+fake_data_199_episodes_last = pd.DataFrame([
+      {'CHILD': '101', 'DECOM': '15/06/2016', 'DEC': '20/12/2020', 'REC': 'E11'},#Pass
+      {'CHILD': '102', 'DECOM': '08/10/2017', 'DEC': '03/03/2018', 'REC': 'E11'},#Fail
+      {'CHILD': '102', 'DECOM': '06/03/2018', 'DEC': '12/08/2020', 'REC': 'E4a'},#Ignore
+      {'CHILD': '103', 'DECOM': '11/05/2015', 'DEC': '07/04/2019', 'REC': 'E12'},#Fail
+      {'CHILD': '104', 'DECOM': '26/11/2017', 'DEC': '19/07/2020', 'REC': 'E12'},#Fail
+    ])
+
+fake_data_199_episodes = pd.DataFrame([
+      {'CHILD': '104', 'DECOM': '19/07/2020', 'DEC': '02/03/2021', 'REC': 'E13'},#Pass
+      {'CHILD': '103', 'DECOM': '16/04/2020', 'DEC': pd.NA, 'REC': pd.NA},#Ignore
+      {'CHILD': '105', 'DECOM': '02/12/2021', 'DEC': '03/12/2021', 'REC': 'X1'},#Ignore
+      {'CHILD': '105', 'DECOM': '03/12/2021', 'DEC': '04/12/2021', 'REC': 'E11'},#Fail
+      {'CHILD': '105', 'DECOM': '12/12/2021', 'DEC': pd.NA, 'REC': pd.NA},#Ignore
+    ])
+
+def test_validate_199_singleyear():
+    
+    fake_dfs = {'Episodes': fake_data_199_episodes}
+
+    error_defn, error_func = validate_199()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3]}
+
+def test_validate_199():
+    
+    fake_dfs = {'Episodes': fake_data_199_episodes, 'Episodes_last': fake_data_199_episodes_last}
+
+    error_defn, error_func = validate_199()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3], 'Episodes_last': [1,3,4]}
 
 def test_validate_352():
     fake_data = pd.DataFrame({

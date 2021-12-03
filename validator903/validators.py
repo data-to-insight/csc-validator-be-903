@@ -4,6 +4,25 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_357():
+  error = ErrorDefinition(
+    code = '357',
+    description = 'This is the first ever episode recorded for this child, but reason for new episode is not started to be looked after.',
+    affected_fields = ['RNE', 'DECOM']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+
+      first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
+      first_episodes = episodes[episodes.index.isin(first_eps_idxs)]
+      
+      mask = first_episodes['RNE'] != 'S'
+      error_locations = episodes.index[mask]
+      return {'Episodes': error_locations.tolist()}
+  return error, _validate
 
 def validate_352():
     error = ErrorDefinition(

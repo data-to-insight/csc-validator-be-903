@@ -16,11 +16,13 @@ def validate_357():
     else:
       episodes = dfs['Episodes']
 
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
       first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
       first_episodes = episodes[episodes.index.isin(first_eps_idxs)]
       
-      mask = first_episodes['RNE'] != 'S'
-      error_locations = episodes.index[mask]
+      mask = (first_episodes['RNE'] != 'S')
+      error_locations = first_episodes.index[mask]
       return {'Episodes': error_locations.tolist()}
   return error, _validate
 

@@ -5687,7 +5687,7 @@ def validate_626():
             hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             hea['orig_idx'] = hea.index
-            mer_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE'])
+            mer_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE']).query("MC_DOB.notna()")
             mer_co['MOTHER'] = mer_co['MOTHER'].astype(str)
             mer_co['MOTHER_PRE'] = mer_co['MOTHER_PRE'].astype(str)
             err_co = mer_co.query("(MOTHER == '1') & (MOTHER_PRE == '0') & (MC_DOB < @collection_start)")

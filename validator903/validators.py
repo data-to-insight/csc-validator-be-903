@@ -32,10 +32,20 @@ def validate_1014():
       decom_check = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end) 
       episodes['EPS'] = decom_check
       episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
-      mask = episodes['EPS_COUNT']>0
-      error_locations = episodes.index[mask]
 
-      return {'Episodes':error_locations.tolist()}
+      # inner merge to take only episodes of children which are also found on the uasc table
+      merged = episodes.merge(uasc, on='CHILD', how='inner', suffixes=['_eps', '_sc']).merge(oc3, on='CHILD', how='left')
+      # adding suffixes with the secondary merge here does not go so well yet.
+      
+      some_provided = (merged['ACTIV'].notna() | merged['ACCOM'].notna()| merged['IN_TOUCH'].notna())
+
+      mask = (merged['EPS_COUNT']==0) & some_provided
+
+      error_locs_eps = merged.loc[mask, 'index_eps']
+      error_locs_uasc = merged.loc[mask, 'index_sc']
+      error_locs_oc3 = merged.loc[mask, 'index']
+
+      return {'Episodes':error_locs_eps.tolist(), 'UASC':error_locs_uasc.unique().tolist(), 'OC3':error_locs_oc3.unique().tolist()}
   return error, _validate
 
 def validate_352():

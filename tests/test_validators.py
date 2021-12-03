@@ -11,8 +11,8 @@ def test_validate_1014():
   ])
   fake_data_oc3 = pd.DataFrame({
       'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
-      'IN_TOUCH':['No', 'YES', 'YES', pd.NA, 'Yes','No', 'YES', 'YES', pd.NA, pd.NA],
-      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX',pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+      'IN_TOUCH':[pd.NA, 'YES', 'YES', pd.NA, 'Yes','No', 'YES', 'YES', pd.NA, pd.NA],
+      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX',pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
       'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX',pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
     })
   fake_data_episodes = pd.DataFrame([
@@ -21,7 +21,7 @@ def test_validate_1014():
       {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2 
       {'CHILD': 104, 'DECOM': '01/01/2020', },  # 3
 
-      {'CHILD': 105, 'DECOM': '11/05/2020', },  # 4 in range
+      {'CHILD': 105, 'DECOM': '11/05/2020', },  # 4 eps in range
       {'CHILD': 105, 'DECOM': '01/01/2020', },  # 5
 
       {'CHILD': 106, 'DECOM': '22/01/2020', },  # 6
@@ -29,7 +29,7 @@ def test_validate_1014():
       {'CHILD': 108, 'DECOM': '22/01/2020', },  # 8
       {'CHILD': 109, 'DECOM': '25/03/2020', },  # 9 
 
-      {'CHILD': 110, 'DECOM': '01/01/2020', },  # 10 fail. no eps in range, none provided, yet child is present in uasc data
+      {'CHILD': 110, 'DECOM': '01/01/2020', },  # 10 fail. 
       {'CHILD': 110, 'DECOM': '01/11/2021', },  # 11
   ])
   metadata = {
@@ -39,8 +39,8 @@ def test_validate_1014():
   fake_dfs = {'UASC': fake_data_uasc, 'Episodes': fake_data_episodes, 'OC3':fake_data_oc3, 'metadata': metadata}
   error_defn, error_func = validate_1014()
   result = error_func(fake_dfs)
-  #assert result == {'UASC': [4], 'Episodes': [10,11], 'OC3':[9]}
-  assert result == {'Episodes': [10,11],}
+  # assert result == {'UASC': [2], 'Episodes': [4,5], 'OC3':[4]}
+  assert result == {'UASC': [1,3,4], 'Episodes': [1,7,10,11], 'OC3':[1,6,9]}
 
 def test_validate_352():
     fake_data = pd.DataFrame({

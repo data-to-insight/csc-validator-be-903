@@ -43,7 +43,7 @@ class Validator:
                 try:
                     result: Dict[str, List[Any]] = test_func(ds_copy)
                 except Exception as e:
-                    logger.info(f"Error code {error.code} failed to run!")
+                    logger.exception(f"Error code {error.code} failed to run!")
                     self.fails.append(error.code)
                     continue
 

@@ -2,7 +2,7 @@ from validator903.validators import *
 import pandas as pd
 
 def test_validate_1014():
-  fake_uasc = pd.DataFrame([
+  fake_data_uasc = pd.DataFrame([
       {'CHILD': 101, 'DOB': '01/06/2000', 'DUC': '05/06/2019'},  # 0
       {'CHILD': 102, 'DOB': '02/06/2000', 'DUC': pd.NA},  # 1
       {'CHILD': 105, 'DOB': '03/06/2000', 'DUC': '01/06/2015'},  # 2

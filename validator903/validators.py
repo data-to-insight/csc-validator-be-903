@@ -8,27 +8,35 @@ def validate_1014():
   error = ErrorDefinition(
       code = '1014',
       description = 'UASC information is not required for care leavers',
-      affected_fields = ['DECOM']
+      affected_fields = ['ACTIV', 'ACCOM', 'IN_TOUCH', 'DECOM']
     )
   def _validate(dfs):
-    if 'Episodes' not in dfs:
+    if 'UASC' not in dfs or 'Episodes' not in dfs or 'OC3' not in dfs:
       return {}
     else:
+      uasc = dfs['UASC']
       episodes = dfs['Episodes']
+      oc3 = dfs['OC3']
       collection_start = dfs['metadata']['collection_start'] 
       collection_end = dfs['metadata']['collection_end']
 
+      # prepare to merge
+      oc3.reset_index(inplace=True)
+      uasc.reset_index(inplace=True)
+      episodes.reset_index(inplace=True)
+      
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
       collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
-      mask = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end) 
+      decom_check = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end) 
+      episodes['EPS'] = decom_check
+      episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
+      mask = episodes['EPS_COUNT']>0
       error_locations = episodes.index[mask]
 
       return {'Episodes':error_locations.tolist()}
   return error, _validate
-      
-
 
 def validate_352():
     error = ErrorDefinition(

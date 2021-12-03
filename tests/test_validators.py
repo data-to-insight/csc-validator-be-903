@@ -10,7 +10,7 @@ def test_validate_165():
   })
   fake_data_episodes = pd.DataFrame([
       {'CHILD': 101, 'DECOM': '01/01/2020', },  # 0
-      {'CHILD': 102, 'DECOM': '11/01/2020', },  # 1
+      {'CHILD': 102, 'DECOM': '11/01/2020', },  # 1      {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2
       {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2
       {'CHILD': 104, 'DECOM': '01/01/2020', },  # 3
 
@@ -52,7 +52,7 @@ def test_validate_165():
   #                 header   : 4, 9
   #                 episodes : 4, 5, 10, 11
   #                 oc3      : 4, 9
-  assert result == {'Header': [2,3,4,5,9], 'Episodes': [2,3,4,5,6,10,11], 'OC3':[2,3,4,5,9]}
+  assert result == {'Header': [2,3,4,5,9], 'OC3':[2,3,4,5,9]}
   # assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
 
 

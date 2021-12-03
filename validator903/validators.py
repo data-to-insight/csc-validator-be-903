@@ -36,7 +36,7 @@ def validate_165():
       merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD', how='left')
 
       # Raise error if provided <MOTHER> is not a valid value. 
-      value_validity = merged['MOTHER'].notna() & ~merged['MOTHER'].isin(valid_values)
+      value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
       # If not provided
       female = (merged['SEX']=='1')
       eps_in_year = (merged['EPS_COUNT']>0)

@@ -34,7 +34,7 @@ def test_validate_165():
       {'CHILD': 106, 'SEX': '1', 'MOTHER': '2' },  # 5 fail invalid value
       {'CHILD': 107, 'SEX': '2', 'MOTHER': '1'},  # 6 
       {'CHILD': 108, 'SEX': '1', 'MOTHER': pd.NA},  # 7 pass: no eps in collection year and at least one of IN_TOUCH, ACTIV , ACCOM have been provided.
-      {'CHILD': 109, 'SEX': '1', 'MOTHER': pd.NA},  # 8 fail: female and value is absent
+      {'CHILD': 109, 'SEX': '1', 'MOTHER': pd.NA},  # 8 pass
       {'CHILD': 110, 'SEX': '1', 'MOTHER': pd.NA},  # 9 fail: no eps in collection year but none of IN_TOUCH, ACTIV , ACCOM have been provided.
   ])
   metadata = {
@@ -44,9 +44,16 @@ def test_validate_165():
   fake_dfs = {'Header': fake_data_header, 'Episodes': fake_data_episodes, 'OC3':fake_data_oc3, 'metadata': metadata}
   error_defn, error_func = validate_165()
   result = error_func(fake_dfs)
-  # assert result == {'Header': [2,3,4,5,7,8,9],}
-  # assert result == {'Header': [2,3,5,8],}
-  assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
+  # fail because of invalid value: 103,104,106 in all the dataframes
+  #                 header   : 2, 3, 5
+  #                 episodes : 2, 3, 6
+  #                 oc3      : 2, 3, 5
+  # fail because of no value: 105, 110 in all the dataframes
+  #                 header   : 4, 9
+  #                 episodes : 4, 5, 10, 11
+  #                 oc3      : 4, 9
+  assert result == {'Header': [2,3,4,5,9], 'Episodes': [2,3,4,5,6,10,11], 'OC3':[2,3,4,5,9]}     
+  # assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
 
 def test_validate_352():
     fake_data = pd.DataFrame({

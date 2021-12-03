@@ -103,11 +103,11 @@ def test_validate_205B_noUASCcol():
     result = error_func(fake_dfs_205_noUASCcol)
     assert result == {'UASC':[0,1]}
 
-# Temporary until can handle UASC field properly.
-def test_validate_205C_noUASCcol():
-    error_defn, error_func = validate_205C()
-    result = error_func(fake_dfs_205_noUASCcol)
-    assert result == {'UASC':[]}
+### Temporary until can handle UASC field properly.
+#def test_validate_205C_noUASCcol():
+#    error_defn, error_func = validate_205C()
+#    result = error_func(fake_dfs_205_noUASCcol)
+#    assert result == {'UASC':[]}
 
 # Temporary until can handle UASC field properly.
 def test_validate_205D_noUASCcol():

@@ -1,6 +1,44 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_601():
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '101', 'DEC': '01/01/2009', 'REC': 'E45', 'DECOM': '01/01/2009'},  # 0
+
+      {'CHILD': '102', 'DEC': '01/01/2021', 'REC': 'E11','DECOM': '01/01/2001'},  # 1 fail
+      {'CHILD': '102', 'DEC': '20/12/2021', 'REC': 'E15','DECOM': '20/12/2001'},  # 2
+      {'CHILD': '102', 'DEC': '03/07/2020', 'REC': 'E12','DECOM': '03/01/2019'},  # 3 fail
+      {'CHILD': '102', 'DEC': '03/04/2019', 'REC': 'E48','DECOM': '03/04/2008'},  # 4
+
+      {'CHILD': '103', 'DEC': '26/05/2020', 'REC': 'E12','DECOM': '01/01/2002'},  # 5 pass
+
+      {'CHILD': '104', 'DEC': '10/01/2002', 'REC': 'E11','DECOM': '10/01/2002'},  # 6
+      {'CHILD': '104', 'DEC': '11/02/2010', 'REC': 'X1','DECOM': '11/02/2010'},  # 7 
+      {'CHILD': '104', 'DEC': '25/01/2002', 'REC': 'X1','DECOM': '25/01/2002'},  # 8 
+
+      {'CHILD': '105', 'DEC': '25/01/2002', 'REC': 'E47','DECOM': '25/01/2002'},  # 9
+      {'CHILD': '105', 'DEC': pd.NA, 'REC': 'E45','DECOM': pd.NA},  # 10
+  ])
+  fake_data_ad1 = pd.DataFrame({
+      'CHILD': ['101', '102', '103', '104', '105'],
+      'DATE_INT': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'DATE_MATCH': [pd.NA, 'XXX', 'XXX', pd.NA, 'XXX'],
+      'FOSTER_CARE': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'NB_ADOPTR': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'SEX_ADOPTR': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
+      'LS_ADOPTR': [pd.NA, pd.NA, 'XXX', 'XXX', 'XXX'],
+  })
+  metadata = {
+      'collection_start': '01/04/2020',
+      'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'Episodes': fake_data_episodes, 'AD1':fake_data_ad1, 'metadata': metadata}
+  error_defn, error_func = validate_601()
+  result = error_func(fake_dfs)
+  
+  assert result == {'AD1':[1,]}
+  # assert result == {'Episodes': [1,2,3,4], 'AD1':[1,]}
+
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({
     'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],

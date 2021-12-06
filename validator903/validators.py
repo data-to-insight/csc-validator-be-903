@@ -41,22 +41,23 @@ def validate_199():
                 # drop rows with missing DECOM as invalid/missing values can lead to errors
                 episodes_merged = episodes.dropna(subset=['DECOM'])
 
+                #Create multi-index to match first part of if statement.
+                episodes_merged['SRC'] = 'episodes'
+                episodes_merged = episodes_merged.reset_index().set_index(['SRC','index'])
+
             episodes_merged.sort_values(['CHILD', 'DECOM'], inplace=True)
             episodes_merged[['NEXT_DECOM', 'NEXT_CHILD']] = episodes_merged[['DECOM', 'CHILD']].shift(-1)
 
-            #Tried to add a multi-index to single-year episodes df but got a keyerror on the .loc (unable to find episodes_last, naturally).
-            #Couldn't work out how to get around that so have added another if else around existence of Episodes_last.
+            episodes_loc = episodes_merged.drop(index='episodes_last', level=0,errors='ignore')
+            episodes_last_loc = episodes_merged.drop(index='episodes', level=0,errors='ignore')
+
+            episodes_ceased_e11_e12 = episodes_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
+            episodes_has_later = episodes_loc['CHILD'] == episodes_loc['NEXT_CHILD']
+
+            episodes_last_ceased_e11_e12 = episodes_last_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
+            episodes_last_has_later = episodes_last_loc['CHILD'] == episodes_last_loc['NEXT_CHILD']
 
             if 'Episodes_last' in dfs:
-
-                episodes_loc = episodes_merged.loc['episodes']
-                episodes_last_loc = episodes_merged.loc['episodes_last']
-
-                episodes_ceased_e11_e12 = episodes_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
-                episodes_has_later = episodes_loc['CHILD'] == episodes_loc['NEXT_CHILD']
-
-                episodes_last_ceased_e11_e12 = episodes_last_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
-                episodes_last_has_later = episodes_last_loc['CHILD'] == episodes_last_loc['NEXT_CHILD']
 
                 error_mask = episodes_ceased_e11_e12 & episodes_has_later
                 error_mask_last = episodes_last_ceased_e11_e12 & episodes_last_has_later
@@ -67,8 +68,6 @@ def validate_199():
                 return {'Episodes': error_locations.to_list(), 'Episodes_last': error_locations_last.to_list()}
 
             else:
-                episodes_ceased_e11_e12 = episodes_merged['REC'].str.upper().astype(str).isin(['E11', 'E12'])
-                episodes_has_later = episodes_merged['CHILD'] == episodes_merged['NEXT_CHILD']
 
                 error_mask = episodes_ceased_e11_e12 & episodes_has_later
 

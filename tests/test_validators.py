@@ -1,6 +1,39 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_577():
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '101', 'DEC': '08/03/2020', 'REC': 'E45',},  # 0 pass
+
+      {'CHILD': '102', 'DEC': '01/01/2021', 'REC': 'E11',},  # 1 
+      {'CHILD': '102', 'DEC': '20/12/2021', 'REC': 'E15',},  # 2
+      {'CHILD': '102', 'DEC': '03/07/2020', 'REC': 'E12',},  # 3 
+      {'CHILD': '102', 'DEC': '03/04/2019', 'REC': 'E48',},  # 4
+
+      {'CHILD': '103', 'DEC': '26/05/2020', 'REC': 'E12',},  # 5 
+
+      {'CHILD': '104', 'DEC': '10/01/2002', 'REC': 'E11',},  # 6
+      {'CHILD': '104', 'DEC': '11/02/2010', 'REC': 'X1',},  # 7 Ignore REC is X1
+      {'CHILD': '104', 'DEC': '25/01/2002', 'REC': pd.NA,},  # 8 Ignore REC is NULL
+
+      {'CHILD': '105', 'DEC': '13/10/2021', 'REC': 'E47',},  # 9
+      {'CHILD': '105', 'DEC': '13/10/2021', 'REC': 'E45',},  # 10
+    ])
+  fake_missing = pd.DataFrame({
+      'CHILD' : ['101', '102', '103', '104', '105',],
+      'MIS_START': ['08/02/2020', '22/06/2020', pd.NA, '13/10/2021', '10/24/2021'],
+      'MIS_END': ['08/03/2020', pd.NA, '22/06/2020', '13/10/21', '13/10/2021'],
+    })
+      # 0 pass
+      # 1 fail MIS_END not provided
+      # 2 Ignore fail since MIS_START is null
+      # 3 fail MIS_END not equal to DEC
+      # 4 pass MIS_END equals DEC
+  fake_dfs = {'Missing':fake_missing, 'Episodes':fake_data_episodes}
+  error_defn, error_func = validate_577()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[1,2,3,4,6], 'Missing':[1,3]}
+  
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({
     'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],

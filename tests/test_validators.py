@@ -1,6 +1,34 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_521():
+  fake_ad1 = pd.DataFrame({
+      "DATE_INT": ['08/03/2020', '22/07/2020', '13/10/2021', '22/06/2020', pd.NA,],
+      "CHILD": ['111','123', '333', '444', '678',]})
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '111', 'DECOM': '01/01/2020', 'PLACE': 'A6', },  # 0 fail
+      {'CHILD': '111', 'DECOM': '01/11/2020', 'PLACE': 'A5', },  # 1 pass
+      {'CHILD': '111', 'DECOM': '22/01/2020', 'PLACE': 'X1', },  # 2 ignore PLACE not in list
+
+      {'CHILD': '123', 'DECOM': pd.NA, 'PLACE': 'A5', },  # 3 ignore DECOM is nan
+      {'CHILD': '123', 'DECOM': '11/01/2020', 'PLACE': 'X1', },  # 4 ignore PLACE not in list
+
+      {'CHILD': '333', 'DECOM': '01/01/2020', 'PLACE': 'A6', },  # 5 fail
+      {'CHILD': '333', 'DECOM': '22/01/2020', 'PLACE': 'X1', }, # 6 ignore PLACE not in list
+      {'CHILD': '333', 'DECOM': '11/01/2020', 'PLACE': 'U1', },  # 7 ignore PLACE not in list
+
+      {'CHILD': '444', 'DECOM': '22/06/2020', 'PLACE': 'A3', },  # 8 pass
+      {'CHILD': '444', 'DECOM': '11/01/2020', 'PLACE': 'X1', },  # 9 ignore PLACE not in list
+      {'CHILD': '444', 'DECOM': '01/01/2020', 'PLACE': 'A3', },  # 10 fail
+
+      {'CHILD': '678', 'DECOM': '01/01/2020', 'PLACE': 'A4', },  # 11 ignore DATE_INT is nan
+  ])
+  fake_dfs = {'Episodes':fake_data_episodes, 'AD1':fake_ad1}
+  error_defn,error_func = validate_521()
+  result =  error_func(fake_dfs)
+  assert result == {'Episodes':[0,5,10], 'AD1':[0,2,3]}
+
+
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({
     'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],

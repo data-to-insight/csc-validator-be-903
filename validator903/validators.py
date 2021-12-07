@@ -11,13 +11,13 @@ def validate_543():
     affected_fields = ['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'CONVICTED']
   )
   def _validate(dfs):
-    if 'OC2' not in dfs:
+    if 'OC2' not in dfs or 'Episodes' not in dfs:
       return {}
     else:
       oc2 = dfs['OC2']
       collection_end = dfs['metadata']['collection_end']
       # add CLA column
-      
+      oc2 = add_CLA_column(dfs, 'OC2')
 
       # to datetime
       oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')

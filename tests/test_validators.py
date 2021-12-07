@@ -4,6 +4,7 @@ import pandas as pd
 def test_validate_543():
   fake_data_episodes = pd.DataFrame([
     #  'CONTINOUSLY_LOOKED_AFTER':['N' ,'Y', 'Y', 'N', 'Y'],
+    # The desired CLA values for this test, outlined in the preceding line, are generated from this data solely based on the number of episodes in the current year (DECOM). The other variables (LS, RNE, DEC) are kept neutral.
       {'CHILD': 101, 'DECOM': '01/01/2020', 'LS':'xx', 'RNE':'xx', 'REC':'xx', 'DEC': '22/01/2020' },  # 0
       {'CHILD': 101, 'DECOM': '11/01/2020', 'LS':'xx', 'RNE':'xx', 'REC':'xx', 'DEC': '22/01/2020' },  # 1
       # CLA 101 = 'N' count of episodes in current year is zero      

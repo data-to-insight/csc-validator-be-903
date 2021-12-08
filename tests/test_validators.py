@@ -1,6 +1,27 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_579():
+    fake_adopt_place = pd.DataFrame([
+        {'CHILD': '111', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': '05/06/2020'},  # 0
+        {'CHILD': '111', 'DATE_PLACED': '04/06/2020', 'DATE_PLACED_CEASED': pd.NA},  # 1 Fails overlaps
+        {'CHILD': '222', 'DATE_PLACED': '03/06/2020', 'DATE_PLACED_CEASED': '04/06/2020'},  # 2
+        {'CHILD': '222', 'DATE_PLACED': '04/06/2020', 'DATE_PLACED_CEASED': pd.NA},  # 3
+        {'CHILD': '222', 'DATE_PLACED': '07/06/2020', 'DATE_PLACED_CEASED': '09/06/2020'},  # 4 Fails, previous end is null
+        {'CHILD': '333', 'DATE_PLACED': '02/06/2020', 'DATE_PLACED_CEASED': '04/06/2020'},  # 5
+        {'CHILD': '333', 'DATE_PLACED': '03/06/2020', 'DATE_PLACED_CEASED': '09/06/2020'},  # 6 Fails overlaps
+        {'CHILD': '555', 'DATE_PLACED': pd.NA, 'DATE_PLACED_CEASED': '05/06/2020'},  # 7
+        {'CHILD': '555', 'DATE_PLACED': pd.NA, 'DATE_PLACED_CEASED': '05/06/2020'},  # 8
+    ])
+
+    fake_dfs = {'PlacedAdoption': fake_adopt_place}
+
+    error_defn, error_func = validate_579()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'PlacedAdoption': [1, 4, 6]}
+
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({
     'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],

@@ -4,6 +4,39 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_1003():
+  error = ErrorDefinition(
+    code = '1003',
+    description = "Date of LA's decision that a child should be placed for adoption is before the child started to be looked after.",
+    affected_fields = ['DATE_PLACED', 'DECOM', 'RNE']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      placed_adoption = dfs['PlacedAdoption']
+
+      # to datetime
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+      #select the earliest episodes with RNE =  S
+      eps_rne = episodes[episodes['RNE']=='S']
+      first_eps_idxs = eps_rne.groupby('CHILD')['DECOM'].idxmin()
+      first_eps = eps_rne[eps_rne.index.isin(first_eps_idxs)]
+      # prepare to merge
+      placed_adoption.reset_index(inplace=True)
+      first_eps.reset_index(inplace=True)
+      merged = first_eps.merge(placed_adoption, how='left', on='CHILD', suffixes=['_eps', '_pa'])
+      
+      # <DATE_PLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
+      mask = merged['DATE_PLACED'] < merged['DECOM']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+      pa_error_locs = merged.loc[mask, 'index_pa']
+      return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.tolist()}
+  return error, _validate
+
 def validate_165():
   error = ErrorDefinition(
     code = '165',

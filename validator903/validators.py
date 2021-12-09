@@ -6,7 +6,7 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 
 def validate_560():
   error = ErrorDefinition(
-    code = '160',
+    code = '560',
     description = 'Date of decision that the child should be placed for adoption this year is different from that recorded last year but the decision to place the child for adoption did not change.',
     affected_fields = ['DATE_PLACED', 'DATE_PLACED_CEASED']
   )

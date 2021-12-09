@@ -1,6 +1,26 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_560():
+  fake_placed_adoption = pd.DataFrame([
+      {'CHILD': 101, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': '26/05/2019'},  # 0
+      {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000'},  # 1 
+      {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA},  # 2
+      {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016'},  # 3 
+      {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019'},  # 4 
+  ])
+  fake_pa_last = pd.DataFrame([
+      {'CHILD': 101, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2000'},  # 0 fail
+      {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000'},  # 1 
+      {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA},  # 2
+      {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016'},  # 3 
+      {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019'},  # 4 pass
+  ])
+  fake_dfs = {'PlacedAdoption':fake_placed_adoption, 'PlacedAdoption_last':fake_pa_last}
+  error_defn, error_func = validate_560()
+  result = error_func(fake_dfs)
+  assert result == {'PlacedAdoption':[0,]}
+
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({
     'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],

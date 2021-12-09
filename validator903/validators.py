@@ -4,6 +4,36 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_560():
+  error = ErrorDefinition(
+    code = '160',
+    description = 'Date of decision that the child should be placed for adoption this year is different from that recorded last year but the decision to place the child for adoption did not change.',
+    affected_fields = ['DATE_PLACED', 'DATE_PLACED_CEASED']
+  )
+  def _validate(dfs):
+    if 'PlacedAdoption' not in dfs or 'PlacedAdoption_last' not in dfs:
+      return {}
+    else:
+      placed_adoption = dfs['PlacedAdoption']
+      pa_last = dfs['PlacedAdoption_last']
+
+      # convert dates to appropriate format
+      pa_last['DATE_PLACED'] = pd.to_datetime(pa_last['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+
+      # prepare to merge
+      placed_adoption.reset_index(inplace=True)
+      pa_last.reset_index(inplace=True)
+      merged = placed_adoption.merge(pa_last, how='left', on='CHILD', suffixes=['_now', '_last'])
+
+      # If <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> has been provided and <DATE_PLACED_CEASED> is Null then <CURRENT_COLLECTION_YEAR> <DATE_PLACED> should = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED>
+      mask = merged['DATE_PLACED_last'].notna() & merged['DATE_PLACED_CEASED_last'].isna() & (merged['DATE_PLACED_now']!=merged['DATE_PLACED_last'])
+      # error locations
+      error_locs =  merged.loc[mask, 'index_now']
+      return {'PlacedAdoption':error_locs.tolist()}
+
+  return error, _validate 
+
 def validate_165():
   error = ErrorDefinition(
     code = '165',

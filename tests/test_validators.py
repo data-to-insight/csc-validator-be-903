@@ -3034,7 +3034,9 @@ def test_validate_174():
 
 def test_validate_180():
     fake_data = pd.DataFrame({
-        'SDQ_SCORE': ['10', 41, '58', 72, '0', 40, 39.5, 20.0],
+        'SDQ_SCORE': ['10', 41, '58', 72,
+                      '0', 40, 39.5, 20.0,
+                      pd.NA, 'XX'],
     })
 
     fake_dfs = {'OC2': fake_data}
@@ -3043,7 +3045,7 @@ def test_validate_180():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC2': [1, 2, 3, 6]}
+    assert result == {'OC2': [1, 2, 3, 6, 9]}
 
 
 def test_validate_181():

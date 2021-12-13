@@ -4462,9 +4462,9 @@ def validate_180():
         else:
             oc2 = dfs['OC2']
 
-            oc2['SDQ_SCORE'] = pd.to_numeric(oc2['SDQ_SCORE'], errors='coerce')
+            oc2['SDQ_SCORE_num'] = pd.to_numeric(oc2['SDQ_SCORE'], errors='coerce')
 
-            error_mask = oc2['SDQ_SCORE'].notna() & ~oc2['SDQ_SCORE'].isin(range(41))
+            error_mask = oc2['SDQ_SCORE'].notna() & ~oc2['SDQ_SCORE_num'].isin(range(41))
 
             validation_error_locations = oc2.index[error_mask]
 

@@ -4,6 +4,40 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_632():
+  error = ErrorDefinition(
+    code = '632',
+    description = 'Date of previous permanence order not a valid value.',
+    affected_fields = ['DATE_PERM', 'DECOM'],
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'PrevPerm' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      prevperm = dfs['PrevPerm']
+
+      # convert dates from strings to appropriate format.
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      prevperm['DATE_PERM'] = pd.to_datetime(prevperm['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      prevperm.reset_index(inplace=True)
+      merged = episodes.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
+
+      # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
+      mask = merged['DATE_PERM'] >= merged['DECOM']
+      # error locations
+      prev_error_locs = merged.loc[mask, 'index_prev']
+      eps_error_locs = merged.loc[mask, 'index_eps']
+
+      return {'Episodes':eps_error_locs.tolist(), 'PrevPerm':prev_error_locs.tolist()}
+
+  return error, _validate
+
+
+
 def validate_165():
   error = ErrorDefinition(
     code = '165',

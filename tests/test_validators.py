@@ -63,12 +63,17 @@ def test_validate_1014():
       {'CHILD': 105, 'DOB': '03/06/2000', 'DUC': '01/06/2015'},  # 2
       {'CHILD': 107, 'DOB': '04/06/2000', 'DUC': '02/06/2020'},  # 3
       {'CHILD': 110, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 4 Fails
+      {'CHILD': 111, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 5 Fails
   ])
   fake_data_oc3 = pd.DataFrame({
-      'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
-      'IN_TOUCH':[pd.NA, 'YES', 'YES', pd.NA, 'Yes','No', 'YES', 'YES', pd.NA, pd.NA],
-      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX',pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
-      'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX',pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+      'CHILD': [101, 102, 103, 104, 105, 106,
+                107, 108, 109, 110, 111],
+      'IN_TOUCH':[pd.NA, 'YES', 'YES', pd.NA, 'Yes', 'No',
+                  'YES', 'YES', pd.NA, pd.NA, '!!'],
+      'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX', pd.NA,
+                pd.NA, 'XXX', pd.NA, 'XXX', '!!'],
+      'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX', pd.NA,
+                pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
     })
   fake_data_episodes = pd.DataFrame([
       {'CHILD': 101, 'DECOM': '01/01/2020', 'DEC': '01/01/2020', },  # 0
@@ -86,6 +91,8 @@ def test_validate_1014():
 
       {'CHILD': 110, 'DECOM': '01/01/2020', 'DEC': '01/01/2020', },  # 10 fail.
       {'CHILD': 110, 'DECOM': '01/11/2021', 'DEC': '01/11/2021', },  # 11
+
+      {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
   ])
   metadata = {
       'collection_start': '01/04/2020',

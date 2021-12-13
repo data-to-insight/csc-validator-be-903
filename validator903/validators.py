@@ -1958,7 +1958,7 @@ def validate_557():
 
             child_placed = eps['PLACE'].isin(['A3', 'A4', 'A5', 'A6'])
             order_granted = eps['LS'].isin(['D1', 'E1'])
-            not_adopted = ~eps['REC'].isin(['E11', 'E12']) & eps['REC'].notna()
+            not_adopted = ~eps['REC'].isin(['E11', 'E12']) & eps['REC'].notna() & (eps['REC'] != 'X1')
 
             placed['ceased_incomplete'] = (
                     placed['DATE_PLACED_CEASED'].isna() | placed['REASON_PLACED_CEASED'].isna()

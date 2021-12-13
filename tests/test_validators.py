@@ -1422,6 +1422,7 @@ def test_validate_557():
         {'CHILD': '5005', 'PLACE': 'A5', 'LS': 'x', 'REC': 'x'},  # 4: Fail! (not in PA)
         {'CHILD': '606', 'PLACE': 'A6', 'LS': 'x', 'REC': 'x'},  # 5: Fail! (missing vals in PA)
         {'CHILD': '77', 'PLACE': 'x', 'LS': 'x', 'REC': 'x'},  # 6 --ok
+        {'CHILD': '8', 'PLACE': 'A6', 'LS': 'x', 'REC': 'X1'},  # 5: Fail! (missing vals in PA)
     ])
 
     test_placed = pd.DataFrame([

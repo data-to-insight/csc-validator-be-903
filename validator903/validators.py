@@ -911,8 +911,8 @@ def validate_358():
             merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er'])
 
             # Where <LS> = ‘J1’ or ‘J2’ or ‘J3’ then <DOB> should <= to 10 years prior to <DECOM>
-            mask = merged['LS'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=10) < merged['DECOM'])
-            # That is, raise error if DECOM > DOB + 10years
+            mask = merged['LS'].isin(code_list) & (merged['DOB'] + pd.offsets.DateOffset(years=10) >= merged['DECOM'])
+            # That is, raise error if DECOM <= DOB + 10years
 
             # error locations
             header_error_locs = merged.loc[mask, 'index_er']

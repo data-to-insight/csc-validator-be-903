@@ -318,7 +318,7 @@ def validate_352():
 
             error_mask = care_start & started_over_18
 
-            error_locations = episodes.index[error_mask]
+            error_locations = episodes_merged.index[error_mask].unique()
 
             return {'Episodes': error_locations.to_list()}
 
@@ -2114,7 +2114,7 @@ def validate_389():
 
             error_mask = ceased_asc & ~ceased_over_16
 
-            error_locations = episodes.index[error_mask]
+            error_locations = episodes_merged.index[error_mask].unique()
 
             return {'Episodes': error_locations.to_list()}
 
@@ -2150,7 +2150,7 @@ def validate_387():
 
             error_mask = ceased_indep & ~ceased_over_14 & dec_present
 
-            error_locations = episodes.index[error_mask]
+            error_locations = episodes_merged.index[error_mask].unique()
 
             return {'Episodes': error_locations.to_list()}
 

@@ -5,7 +5,6 @@ def test_validate_632():
   fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '104', '105',],
       'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020'],
-      # last 3 rows will disappear after merging on CHILD
   })
   fake_data_episodes = pd.DataFrame([
       {'CHILD': '101', 'DECOM': '20/10/2011', },  # 0 fail DATE_PERM is not in appropriate format
@@ -18,9 +17,6 @@ def test_validate_632():
   fake_dfs = {'PrevPerm':fake_data_prevperm, 'Episodes':fake_data_episodes}
   error_defn, error_func = validate_632()
   result = error_func(fake_dfs)
-  # assert result == {'Episodes':[2], 'PrevPerm':[1]}
-  # assert result == {'Episodes':[0,2,5], 'PrevPerm':[0,1,4]}
-  #assert result == {'Episodes':[0,], 'PrevPerm':[0,]}
   # desired
   assert result == {'Episodes':[0,2], 'PrevPerm':[0,1]}
 

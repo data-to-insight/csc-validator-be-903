@@ -23,8 +23,8 @@ def validate_632():
       merged = episodes.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
       # check that date is of the right format
-      dte = merged['DATE_PERM']
       def valid_date(dte):
+        """This function checks whether an entered date has been filled correctly"""
         try:
           # if the date cannot be split on / then its format is inappropriate
           lst = dte.split("/")
@@ -52,12 +52,12 @@ def validate_632():
 
       # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
       mask = (merged['DATE_PERM'].apply(valid_date)==False) | (merged['DATE_PERM_c'] >= merged['DECOM'])
-      #mask = (merged['DATE_PERM'].apply(valid_date)==False)
+      
       # error locations
       prev_error_locs = merged.loc[mask, 'index_prev']
       eps_error_locs = merged.loc[mask, 'index_eps']
 
-      return {'Episodes':eps_error_locs.tolist(), 'PrevPerm':prev_error_locs.tolist()}
+      return {'Episodes':eps_error_locs.tolist(), 'PrevPerm':prev_error_locs.unique().tolist()}
 
   return error, _validate
 

@@ -1407,9 +1407,11 @@ def validate_433():
             return {}
         else:
             episodes = dfs['Episodes']
+            episodes['DECOM_dt'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC_dt'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
             episodes['original_index'] = episodes.index
-            episodes.sort_values(['CHILD', 'DECOM', 'DEC'], inplace=True)
+            episodes.sort_values(['CHILD', 'DECOM_dt', 'DEC_dt'], inplace=True)
             episodes[['PREVIOUS_DEC', 'PREVIOUS_CHILD']] = episodes[['DEC', 'CHILD']].shift(1)
 
             rne_is_ongoing = episodes['RNE'].str.upper().astype(str).isin(['P', 'L', 'T', 'U', 'B'])

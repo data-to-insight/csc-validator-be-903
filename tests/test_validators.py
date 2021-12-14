@@ -2506,7 +2506,7 @@ def test_validate_168():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [1, 3, 4, 6, 7, 9, 10, 11, 12, 16]}
+    assert result == {'Header': [1, 3, 4, 6, 9, 10, 11, 12, 16]}
 
 
 def test_validate_388():

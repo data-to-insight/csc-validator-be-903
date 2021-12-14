@@ -3697,7 +3697,7 @@ def validate_168():
         else:
             df = dfs['Header']
             mask = df['UPN'].str.match(r'(^((?![IOS])[A-Z]){1}(\d{12}|\d{11}[A-Z]{1})$)|^(UN[1-5])$', na=False)
-            mask = ~mask
+            mask = ~mask & df['UPN'].notnull()
             return {'Header': df.index[mask].tolist()}
 
     return error, _validate

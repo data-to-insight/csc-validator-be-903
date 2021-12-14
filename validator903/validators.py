@@ -28,9 +28,9 @@ def validate_632():
         try:
           # if the date cannot be split on / then its format is inappropriate
           lst = dte.split("/")
-          # The date should have two (day), two(month) and four(year) elements
-          # if ([].append(len(i) for i in lst) != [2,2,4]):
-            # return False
+          # The date should have two (day), two(month) and four(year) elements. This check does not work.
+          #if ([].append(len(i) for i in lst) != [2,2,4]):
+            #return False
           for i in lst:
             try:
               int(i)

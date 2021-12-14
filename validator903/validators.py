@@ -16,12 +16,12 @@ def validate_632():
     else:
       episodes = dfs['Episodes']
       prevperm = dfs['PrevPerm']
-              
+
       # prepare to merge
       episodes.reset_index(inplace=True)
       prevperm.reset_index(inplace=True)
       merged = episodes.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
-      
+
       # check that date is of the right format
       dte = merged['DATE_PERM']
       def valid_date(dte):
@@ -43,14 +43,16 @@ def validate_632():
           return True
         except:
           return False
-          
+
       # convert dates from strings to appropriate format.
-      merged['DECOM'] = pd.to_datetime(merged['DECOM'], format='%d/%m/%Y', errors='coerce')
-      merged['DATE_PERM'] = pd.to_datetime(merged['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+      #merged['DECOM'] = pd.to_datetime(merged['DECOM'], format='%d/%m/%Y', errors='coerce')
+      #merged['DATE_PERM'] = pd.to_datetime(merged['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+
+      merged = merged.dropna(subset=['DATE_PERM'])
 
       # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
       #mask = valid_date(dte) | (merged['DATE_PERM'] >= merged['DECOM'])
-      mask = merged['DATE_PERM'].apply(valid_date)
+      mask = (merged['DATE_PERM'].apply(valid_date)==False)
       # error locations
       prev_error_locs = merged.loc[mask, 'index_prev']
       eps_error_locs = merged.loc[mask, 'index_eps']

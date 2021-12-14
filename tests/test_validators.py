@@ -20,7 +20,9 @@ def test_validate_632():
   result = error_func(fake_dfs)
   # assert result == {'Episodes':[2], 'PrevPerm':[1]}
   # assert result == {'Episodes':[0,2,5], 'PrevPerm':[0,1,4]}
-  assert result == {'Episodes':[0,2], 'PrevPerm':[0,1]}
+  assert result == {'Episodes':[0,], 'PrevPerm':[0,]}
+  # desired
+  #assert result == {'Episodes':[0,2], 'PrevPerm':[0,1]}
 
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({

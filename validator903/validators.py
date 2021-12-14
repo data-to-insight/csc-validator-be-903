@@ -2686,7 +2686,7 @@ def validate_202():
 
             error_mask = in_both_years & sex_is_different
 
-            error_locations = header.index[error_mask]
+            error_locations = header_merged.index[error_mask]
 
             return {'Header': error_locations.to_list()}
 

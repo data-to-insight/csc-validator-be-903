@@ -561,14 +561,14 @@ def test_validate_226():
 
 def test_validate_358():
     fake_data_eps = pd.DataFrame([
-        {'CHILD': 101, 'DECOM': '01/01/2009', 'LS': 'J3'},  # 0 pass
+        {'CHILD': 101, 'DECOM': '01/01/2009', 'LS': 'J3'},  # 0 Fail
         {'CHILD': 102, 'DECOM': '01/01/2001', 'LS': 'X'},  # 1
         {'CHILD': 103, 'DECOM': '20/12/2001', 'LS': 'L2'},  # 2
-        {'CHILD': 104, 'DECOM': '03/01/2018', 'LS': 'J2'},  # 3 fail
-        {'CHILD': 105, 'DECOM': '03/04/2008', 'LS': 'J1'},  # 4 pass
+        {'CHILD': 104, 'DECOM': '03/01/2018', 'LS': 'J2'},  # 3 Pass
+        {'CHILD': 105, 'DECOM': '03/04/2008', 'LS': 'J1'},  # 4 Fail
         {'CHILD': 106, 'DECOM': '01/01/2002', 'LS': 'L2'},  # 5
         {'CHILD': 107, 'DECOM': '10/01/2002', 'LS': 'X'},  # 6
-        {'CHILD': 108, 'DECOM': '11/02/2012', 'LS': 'J1'},  # 7 fail
+        {'CHILD': 108, 'DECOM': '11/02/2012', 'LS': 'J1'},  # 7 Pass
         {'CHILD': 109, 'DECOM': '25/01/2002', 'LS': 'L2'},  # 8
         {'CHILD': 110, 'DECOM': '25/01/2002', 'LS': 'L2'},  # 9
         {'CHILD': 111, 'DECOM': pd.NA, 'LS': 'J2'},  # 10 ignored by dropna
@@ -591,7 +591,7 @@ def test_validate_358():
     fake_dfs = {'Episodes': fake_data_eps, 'Header': fake_data_header}
     error_defn, error_func = validate_358()
     result = error_func(fake_dfs)
-    assert result == {'Episodes': [3, 7], 'Header': [3, 7]}
+    assert result == {'Episodes': [0, 4], 'Header': [0, 4]}
 
 
 def test_validate_407():

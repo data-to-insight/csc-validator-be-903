@@ -17,10 +17,14 @@ def validate_632():
       episodes = dfs['Episodes']
       prevperm = dfs['PrevPerm']
 
+      # select first episodes
+      first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
+      first_eps = episodes[episodes.index.isin(first_eps_idxs)]
+
       # prepare to merge
-      episodes.reset_index(inplace=True)
+      first_eps.reset_index(inplace=True)
       prevperm.reset_index(inplace=True)
-      merged = episodes.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
+      merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
       # check that date is of the right format
       def valid_date(dte):
@@ -28,7 +32,7 @@ def validate_632():
         try:
           # if the date cannot be split on / then its format is inappropriate
           lst = dte.split("/")
-          # The date should have two (day), two(month) and four(year) elements. This check does not work yet. Is it necessary?
+          # The date should have two (day), two(month) and four(year) elements. 
           if ([len(i) for i in lst] != [2,2,4]):
             return False
           for i in lst:

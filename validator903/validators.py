@@ -17,32 +17,52 @@ def validate_632():
 
       # function to check that date is of the right format
       def valid_date(dte):
-        """This function checks whether an entered date has been filled correctly"""
-        try:
-          # if the date cannot be split on / then its format is inappropriate
-          lst = dte.split("/")
-          # The date should have two (day), two(month) and four(year) elements. 
-          if ([len(i) for i in lst] != [2,2,4]):
-            return False
-          for i in lst:
-            try:
-              int(i)
-              # if element is non-numeric, check if placeholder is appropriate
-            except ValueError:
-              if not 'zz' in i.lower():
-                return False
+          lst = dte.split('/')
+          # date should have three elements
+          if len(lst) != 3:
+              return pd.NaT
+
+          z_list = ['zz', 'zz', 'zzzz']
+          # We set the date to the latest possible value to avoid false positives
+          offset_list = [pd.DateOffset(months=1, days=-1),
+                        pd.DateOffset(years=1, days=-1),
+                        None]
+          # that is, go to the next month/year and take the day before that
+          already_found_non_zeds = False
+          date_bits = []
+          #offset_list = []
+
+          for i, zeds, offset in zip(lst, z_list, offset_list):
+              if i == zeds:
+                  # I'm assuming it is invalid to have a date like '01/zz/zzzz'
+                  if already_found_non_zeds:
+                      return pd.NaT
+                  # Replace day & month zeds with '01' so we can check if the resulting date is valid
+                  # and set the offset so we can compare the latest corresponding date
+                  elif i == 'zz':
+                      i = '01'
+                      offset_to_use = offset
               else:
-                return True
-          return True
-        except:
-          return False
+                  already_found_non_zeds = True
+              date_bits.append(i)
+              #offset_list.append(offset)
+          
+          as_datetime = pd.to_datetime('/'.join(date_bits), 
+                                      format='%d/%m/%Y', errors='coerce')
+          try:
+              as_datetime += offset_to_use
+          except NameError:  # offset_to_use only defined if needed
+              pass  
+          return as_datetime
 
       episodes = dfs['Episodes']
       prevperm = dfs['PrevPerm']
 
       # convert dates from strings to appropriate format.
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-      prevperm['DATE_PERM_c'] = pd.to_datetime(prevperm['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+      prevperm = prevperm.dropna(subset=['DATE_PERM'])
+      # previous line is to prevent <AttributeError: 'NAType' object has no attribute 'split'> in the next line
+      prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
 
       # select first episodes
       first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
@@ -53,10 +73,9 @@ def validate_632():
       prevperm.reset_index(inplace=True)
       merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
-      merged = merged.dropna(subset=['DATE_PERM'])
-
       # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
-      mask = (merged['DATE_PERM'].apply(valid_date)==False) | (merged['DATE_PERM_c'] >= merged['DECOM'])
+      #mask = (merged['DATE_PERM'].apply(valid_date)==False) | (merged['DATE_PERM_dt'] >= merged['DECOM'])
+      mask = ((merged['DATE_PERM_dt'] > merged['DECOM']) | merged['DATE_PERM_dt'].isna()) & (merged['DATE_PERM'] != 'zz/zz/zzzz')
       
       # error locations
       prev_error_locs = merged.loc[mask, 'index_prev']

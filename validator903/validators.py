@@ -14,19 +14,8 @@ def validate_632():
     if 'Episodes' not in dfs or 'PrevPerm' not in dfs:
       return {}
     else:
-      episodes = dfs['Episodes']
-      prevperm = dfs['PrevPerm']
 
-      # select first episodes
-      first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
-      first_eps = episodes[episodes.index.isin(first_eps_idxs)]
-
-      # prepare to merge
-      first_eps.reset_index(inplace=True)
-      prevperm.reset_index(inplace=True)
-      merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
-
-      # check that date is of the right format
+      # function to check that date is of the right format
       def valid_date(dte):
         """This function checks whether an entered date has been filled correctly"""
         try:
@@ -48,9 +37,21 @@ def validate_632():
         except:
           return False
 
+      episodes = dfs['Episodes']
+      prevperm = dfs['PrevPerm']
+
       # convert dates from strings to appropriate format.
-      merged['DECOM'] = pd.to_datetime(merged['DECOM'], format='%d/%m/%Y', errors='coerce')
-      merged['DATE_PERM_c'] = pd.to_datetime(merged['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      prevperm['DATE_PERM_c'] = pd.to_datetime(prevperm['DATE_PERM'], format='%d/%m/%Y', errors='coerce')
+
+      # select first episodes
+      first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
+      first_eps = episodes[episodes.index.isin(first_eps_idxs)]
+
+      # prepare to merge
+      first_eps.reset_index(inplace=True)
+      prevperm.reset_index(inplace=True)
+      merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
       merged = merged.dropna(subset=['DATE_PERM'])
 

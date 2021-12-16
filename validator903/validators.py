@@ -63,8 +63,6 @@ def validate_632():
 
       # convert dates from strings to appropriate format.
       episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-      #prevperm = prevperm.dropna(subset=['DATE_PERM'])
-      # previous line is to prevent <AttributeError: 'NAType' object has no attribute 'split'> in the next line
       prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
 
       # select first episodes
@@ -77,11 +75,11 @@ def validate_632():
       merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
       # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
-      #mask = (merged['DATE_PERM'].apply(valid_date)==False) | (merged['DATE_PERM_dt'] >= merged['DECOM'])
-      mask = (merged['DATE_PERM_dt'] >= merged['DECOM']) | merged['DATE_PERM_dt'].isna() & (merged['DATE_PERM'] != 'zz/zz/zzzz')
-      #mask = (merged['DATE_PERM_dt'] < merged['DECOM'])
-      # (date is later) or (date is not valid when it should be)
-      
+      mask = (merged['DATE_PERM_dt'] >= merged['DECOM']) | (merged['DATE_PERM'].notna()
+                                                            & merged['DATE_PERM_dt'].isna()
+                                                            & (merged['DATE_PERM'] != 'zz/zz/zzzz')
+                                                            )
+
       # error locations
       prev_error_locs = merged.loc[mask, 'index_prev']
       eps_error_locs = merged.loc[mask, 'index_eps']

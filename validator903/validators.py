@@ -7,7 +7,7 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 def validate_632():
   error = ErrorDefinition(
     code = '632',
-    description = 'Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year',
+    description = 'Date of previous permanence order not a valid value. NOTE: This rule may result in false neit pugatives where the period of care started before the current collection year',
     affected_fields = ['DATE_PERM', 'DECOM'],
   )
   def _validate(dfs):

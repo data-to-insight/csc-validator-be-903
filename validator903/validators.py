@@ -21,7 +21,7 @@ def validate_632():
             lst = dte.split('/')
           except AttributeError:
             return pd.NaT
-          # Preceding block checks for if the entered date is nan
+          # Preceding block checks for the scenario where the value passed in is nan/naT
           
           # date should have three elements
           if (len(lst) != 3):

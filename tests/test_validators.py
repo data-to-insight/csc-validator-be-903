@@ -3,9 +3,10 @@ import pandas as pd
 
 def test_validate_632():
   fake_data_prevperm = pd.DataFrame({
-      'CHILD': ['101', '102', '103', '104', '105', '106'],
-      'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020', 'zz/05/2021'],
+      'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
+      'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020', 'zz/05/2021', 'zz/zz/zzzz', 'zz/zz/1993', 'zz/zz/zz', '01/13/2000' ],
   })
+
   fake_data_episodes = pd.DataFrame([
       {'CHILD': '101', 'DECOM': '20/10/2011', },  # 0 fail DATE_PERM is not in appropriate format
       {'CHILD': '102', 'DECOM': '19/11/2021', },  # 1 pass
@@ -13,13 +14,17 @@ def test_validate_632():
       {'CHILD': '103', 'DECOM': pd.NA, },  # 3 ignore DECOM is nan
       {'CHILD': '104', 'DECOM': '11/09/2015', },  # 4 fail DATE_PERM is nan
       {'CHILD': '105', 'DECOM': '01/03/2021', },  # 5 fail DATE_PERM wrong format
-      {'CHILD': '106', 'DECOM': '01/07/2021', },  # pass
+      {'CHILD': '106', 'DECOM': '01/07/2021', },  # 6 pass
+      {'CHILD': '107', 'DECOM': '01/07/2021', },  # 7 pass
+      {'CHILD': '108', 'DECOM': '01/07/2021', },  # 8 pass
+      {'CHILD': '109', 'DECOM': '01/07/2021', },  # 9 fail- wrong zeds in DATE_PERM
+      {'CHILD': '110', 'DECOM': '01/07/2021', },  # 10 fail- wrong month in DATE_PERM
   ])
   fake_dfs = {'PrevPerm':fake_data_prevperm, 'Episodes':fake_data_episodes}
   error_defn, error_func = validate_632()
   result = error_func(fake_dfs)
   # desired
-  assert result == {'Episodes':[0,2,4,5], 'PrevPerm':[0,1,3,4]}
+  assert result == {'Episodes':[0,2,4,5,9,10], 'PrevPerm':[0,1,3,4,8,9]}
 
 def test_validate_165():
   fake_data_oc3 = pd.DataFrame({

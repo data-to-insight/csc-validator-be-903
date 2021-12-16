@@ -24,7 +24,7 @@ def validate_632():
           # Preceding block checks for if the entered date is nan
           
           # date should have three elements
-          if len(lst) != 3:
+          if (len(lst) != 3):
               return pd.NaT
 
           z_list = ['zz', 'zz', 'zzzz']
@@ -35,7 +35,6 @@ def validate_632():
           # that is, go to the next month/year and take the day before that
           already_found_non_zeds = False
           date_bits = []
-          #offset_list = []
 
           for i, zeds, offset in zip(lst, z_list, offset_list):
               if i == zeds:
@@ -50,7 +49,6 @@ def validate_632():
               else:
                   already_found_non_zeds = True
               date_bits.append(i)
-              #offset_list.append(offset)
           
           as_datetime = pd.to_datetime('/'.join(date_bits), 
                                       format='%d/%m/%Y', errors='coerce')

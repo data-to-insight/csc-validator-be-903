@@ -1236,7 +1236,7 @@ def validate_522():
             placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y',
                                                             errors='coerce')
             # Boolean mask
-            mask = placed_adoption['DATE_PLACED_CEASED'] > placed_adoption['DATE_PLACED']
+            mask = placed_adoption['DATE_PLACED_CEASED'] < placed_adoption['DATE_PLACED']
 
             error_locations = placed_adoption.index[mask]
             return {'PlacedAdoption': error_locations.to_list()}

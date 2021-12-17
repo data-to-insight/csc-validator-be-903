@@ -74,6 +74,11 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
         uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
     return uploaded_files
 
+def stringconvert(df):
+  '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
+  for col in df.select_dtypes(include='object'):
+    df[col] = df[col].str.upper()
+  return df
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
@@ -81,14 +86,18 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
                 logger.info(f'Loaded {table_name} from CSV. ({len(df)} rows)')
-                return table_name
+                return table_name 
         else:
             raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
 
     files = {}
     for file_data in raw_files:
         csv_file = BytesIO(file_data["fileText"])
+
+        # capitalize all string input
         df = pd.read_csv(csv_file)
+        df = stringconvert(df)
+
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:
             name = file_name
@@ -178,6 +187,11 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         'PrevPerm': pd.DataFrame(prev_perm_df),
         'Missing': pd.DataFrame(missing_df),
     }
+
+    # capitalize string columns
+    for df in data.values():
+      df = stringconvert(df)
+
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Tables created from XML -- {names_and_lengths}')
     return data

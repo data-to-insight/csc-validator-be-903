@@ -74,7 +74,7 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
         uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
     return uploaded_files
 
-def stringconvert(df):
+def stringconvert(df) -> pd.DataFrame:
   '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
   for col in df.select_dtypes(include='object'):
     df[col] = df[col].str.upper()

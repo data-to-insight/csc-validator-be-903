@@ -225,9 +225,13 @@ def test_validate_357():
         {'CHILD': '333', 'DECOM': '01/01/2001', 'RNE': '!!'},
         {'CHILD': '333', 'DECOM': '05/05/2005', 'RNE': 'ok'},
         {'CHILD': '444', 'DECOM': '05/05/2005', 'RNE': pd.NA}, # !!
+        {'CHILD': '555', 'DECOM': '01/01/1990', 'RNE': 'ok'}, # ok - before collection_start
     ])
-
-    test_dfs = {'Episodes': episodes}
+    metadata = {
+        'collection_start': '31/03/1995'
+    }
+    test_dfs = {'Episodes': episodes,
+                'metadata': metadata}
 
     error_defn, error_func = validate_357()
 

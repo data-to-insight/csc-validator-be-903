@@ -5711,7 +5711,7 @@ def validate_602():
 
             mask1 = (epi['DEC'] <= collection_end) & (epi['DEC'] >= collection_start)
             mask2 = epi['REC'].isin(['E11', 'E12'])
-            adoption_eps = epi[mask1 & mask2]
+            adoption_eps = epi[mask1 | mask2]
 
             adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
 

@@ -5892,7 +5892,7 @@ def validate_331():
             adoption_eps = adoption_eps.merge(adt, on='CHILD')
 
             # A child cannot be placed for adoption before the child has been matched with prospective adopter(s).
-            error_mask = adoption_eps['DATE_MATCH'] < adoption_eps['DECOM']
+            error_mask = adoption_eps['DATE_MATCH'] > adoption_eps['DECOM']
 
             # Get the rows of each table where the dates clash
             AD1_errs = list(adoption_eps.loc[error_mask, 'AD1_index'].unique())

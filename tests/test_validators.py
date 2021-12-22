@@ -4366,8 +4366,8 @@ def test_validate_331():
 
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [2, 4, 5],
-                      'Episodes': [2, 6, 9]}
+    assert result == {'AD1': [1],
+                      'Episodes': [1]}
 
 
 def test_validate_362():

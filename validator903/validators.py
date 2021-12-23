@@ -1094,7 +1094,7 @@ def validate_442():
     error = ErrorDefinition(
         code='442',
         description='Unique Pupil Number (UPN) field is not completed.',
-        affected_fields=['UPN', 'LS']
+        affected_fields=['UPN']
     )
 
     def _validate(dfs):

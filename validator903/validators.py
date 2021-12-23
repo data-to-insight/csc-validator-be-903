@@ -5715,9 +5715,6 @@ def validate_602():
 
             adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
 
-            #ad1.reset_index(inplace=True)
-            #adoption_eps.reset_index(inplace=True)
-
             err_list = (ad1
                         .reset_index()
                         .merge(adoption_eps, how='left', on='CHILD', indicator=True)

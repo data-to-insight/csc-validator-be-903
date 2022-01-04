@@ -4,7 +4,7 @@ import pandas as pd
 def test_validate_632():
   fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
-      'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020', 'zz/05/2021', 'zz/zz/zzzz', 'zz/zz/1993', 'zz/zz/zz', '01/13/2000' ],
+      'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/ZZ/2020', 'ZZ/05/2021', 'ZZ/ZZ/ZZZZ', 'ZZ/ZZ/1993', 'ZZ/ZZ/ZZ', '01/13/2000' ],
   })
 
   fake_data_episodes = pd.DataFrame([

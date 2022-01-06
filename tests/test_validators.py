@@ -130,7 +130,7 @@ def test_validate_1014():
   assert result == {'UASC': [1,3,4], 'OC3':[1,6,9]}
 
 
-def test_validate_197B():
+def test_validate_197b():
     metadata = {'collection_start': '01/04/1980',
                 'collection_end': '31/03/1981'}
 
@@ -165,7 +165,7 @@ def test_validate_197B():
 
     test_dfs = {'Episodes': eps, 'OC2': oc2, 'metadata': metadata}
 
-    error_defn, error_func = validate_197B()
+    error_defn, error_func = validate_197b()
 
     test_result = error_func(test_dfs)
 

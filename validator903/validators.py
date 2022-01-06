@@ -188,9 +188,9 @@ def validate_1014():
 
 
 # !# not sure what this rule is actually supposed to be getting at - description is confusing
-def validate_197B():
+def validate_197b():
     error = ErrorDefinition(
-        code='197B',
+        code='197b',
         description="SDQ score or reason for no SDQ should be reported for 4- or 17-year-olds.",
         affected_fields=['SDQ_REASON', 'DOB'],
     )

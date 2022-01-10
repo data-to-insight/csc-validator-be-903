@@ -90,6 +90,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         csv_file = BytesIO(file_data["fileText"])
         df = pd.read_csv(csv_file)
         file_name = _get_file_type(df)
+
         if 'This year' in file_data['description']:
             name = file_name
         elif 'Prev year' in file_data['description']:
@@ -98,6 +99,24 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
 
         files[name] = df
+
+    # Adding UASC
+    if 'Header' in files and 'UASC' in files:
+      header = files['Header']
+      uasc = files['UASC']
+      merge_indicator = header.merge(uasc, how='left', on='CHILD', merge_indicator=True)['_merge']
+      
+      header.loc[merge_indicator=='both', 'UASC'] = 1
+      header.loc[merge_indicator=='left_only', 'UASC'] = 0
+
+    # Adding UASC_last
+    if 'Header_last' in files and 'UASC_last' in files:
+      header_last = files['Header_last']
+      uasc_last = files['UASC_last']
+      merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', merge_indicator=True)['_merge']
+      
+      header_last.loc[merge_indicator=='both', 'UASC_last'] = 1
+      header_last.loc[merge_indicator=='left_only', 'UASC_last'] = 0
 
     return files
 

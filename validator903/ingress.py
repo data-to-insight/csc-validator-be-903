@@ -100,7 +100,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
         files[name] = df
 
-    # Adding UASC
+    # Adding UASC column to Header table
     if 'Header' in files and 'UASC' in files:
       header = files['Header']
       uasc = files['UASC']
@@ -109,14 +109,14 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
       header.loc[merge_indicator=='both', 'UASC'] = 1
       header.loc[merge_indicator=='left_only', 'UASC'] = 0
 
-    # Adding UASC_last
+    # Adding UASC column to Header_last table based on UASC_last table
     if 'Header_last' in files and 'UASC_last' in files:
       header_last = files['Header_last']
       uasc_last = files['UASC_last']
       merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', merge_indicator=True)['_merge']
       
-      header_last.loc[merge_indicator=='both', 'UASC_last'] = 1
-      header_last.loc[merge_indicator=='left_only', 'UASC_last'] = 0
+      header_last.loc[merge_indicator=='both', 'UASC'] = 1
+      header_last.loc[merge_indicator=='left_only', 'UASC'] = 0
 
     return files
 
@@ -152,7 +152,13 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
             except:
                 pass
             return val
-        return pd.Series({k: read_value(k) for k in column_names[table_name]}) 
+        
+        # Add UASC column to Header and Header_last tables
+        cols = column_names[table_name]
+        if table_name in ['Header', 'Header_last']:
+          cols = cols + ['UASC']
+
+        return pd.Series({k: read_value(k) for k in cols}) 
 
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)

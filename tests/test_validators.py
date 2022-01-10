@@ -1143,15 +1143,16 @@ def test_validate_187():
         {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
         {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
         {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
+        {'CHILD': '9', 'DECOM': '01/01/1981', 'DEC': '31/02/1981', 'LS': 'o', 'REC': 'xx', 'RNE': 'S'},
     ])
 
     oc3 = pd.DataFrame({
         'CHILD':
             ['9999999999', '1', '2', '3333',
-             '99999999', '8888', '5'],
+             '99999999', '8888', '5','9'],
         'IN_TOUCH':
             ['OK', '!!!', pd.NA, 'OK',
-             pd.NA, pd.NA, pd.NA],
+             pd.NA, pd.NA, pd.NA,'xx'],
     })
     other_oc3_cols = ['ACTIV', 'ACCOM']
     oc3 = oc3.assign(**{col: pd.NA for col in other_oc3_cols})
@@ -1159,10 +1160,10 @@ def test_validate_187():
     ad1 = pd.DataFrame({
         'CHILD':
             ['1', '2', '3333', '7777',
-             '99999999', '8888', '5'],
+             '99999999', '8888', '5','9'],
         'DATE_INT':
             [pd.NA, pd.NA, 'OK', 'OK',
-             pd.NA, pd.NA, '!!!'],
+             pd.NA, pd.NA, '!!!','xx'],
     })
 
     other_ad1_cols = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']

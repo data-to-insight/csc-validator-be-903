@@ -104,7 +104,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     if 'Header' in files and 'UASC' in files:
       header = files['Header']
       uasc = files['UASC']
-      merge_indicator = header.merge(uasc, how='left', on='CHILD', merge_indicator=True)['_merge']
+      merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
       
       header.loc[merge_indicator=='both', 'UASC'] = 1
       header.loc[merge_indicator=='left_only', 'UASC'] = 0
@@ -113,7 +113,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     if 'Header_last' in files and 'UASC_last' in files:
       header_last = files['Header_last']
       uasc_last = files['UASC_last']
-      merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', merge_indicator=True)['_merge']
+      merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', indicator=True)['_merge']
       
       header_last.loc[merge_indicator=='both', 'UASC'] = 1
       header_last.loc[merge_indicator=='left_only', 'UASC'] = 0

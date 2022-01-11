@@ -4,6 +4,27 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_105():
+  error  = ErrorDefinition(
+    code = '105',
+    description = 'Data entry for Unaccompanied Asylum- Seeking Children (UASC) status of child is invalid or has not been completed.',
+    affected_fields = ['UASC']
+  )
+  def _validate(dfs):
+    if ('Header' not in dfs) or ('UASC' not in dfs['Header'].columns) :
+      return {}
+    else:
+      header = dfs['Header']
+      #code_list = [0,1]
+      code_list = ['0','1']
+
+      mask = ~header['UASC'].astype(str).isin(code_list)
+      error_locs = header.index[mask]
+
+      return {'Header': error_locs.tolist()}
+  
+  return error, _validate
+
 def validate_632():
   error = ErrorDefinition(
     code = '632',

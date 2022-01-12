@@ -8,7 +8,7 @@ These are used in two places:
 - Constructing CSV files from provided XML (when XML is selected)
 """
 column_names = {
-    'Header': ['CHILD', 'SEX', 'DOB', 'ETHNIC', 'UPN', 'MOTHER', 'MC_DOB'],
+    'Header': ['CHILD', 'SEX', 'DOB', 'ETHNIC', 'UPN', 'MOTHER', 'MC_DOB', 'UASC'],
     'Episodes': ['CHILD', 'DECOM', 'RNE', 'LS', 'CIN', 'PLACE', 'PLACE_PROVIDER', 'DEC', 'REC', 'REASON_PLACE_CHANGE', 'HOME_POST', 'PL_POST', 'URN'],
     'Reviews': ['CHILD', 'DOB', 'REVIEW', 'REVIEW_CODE'],
     'UASC': ['CHILD', 'SEX', 'DOB', 'DUC'],

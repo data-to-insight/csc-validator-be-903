@@ -3906,13 +3906,12 @@ def validate_377():
 
     return error, _validate
 
- # For Error 303 there is currently no UASC field in Header file as this is in XML version and only coding CSV currently, currently rule passes all time if Date field entered 
+
 def validate_303():
     error = ErrorDefinition(
         code = '303',
         description = "If date Unaccompanied Asylum-Seeking Child (UASC) status ceased is not null, UASC status must be coded 1.",
-        affected_fields=['DUC']
-        #,'UASC'],
+        affected_fields=['DUC', 'UASC']
     )
 
     def _validate(dfs):
@@ -3921,8 +3920,6 @@ def validate_303():
         else:
             uasc = dfs['UASC']
             header = dfs['Header']
-            #uascdatechk = uasc['DUC'].isna()
-            #uascchk = uasc['UASC'].astype(str) == '1'
 
             # merge
             uasc.reset_index(inplace=True)
@@ -3931,8 +3928,7 @@ def validate_303():
 
             # If <DUC> provided, then <UASC> must be '1'
             error_mask = merged['DUC'].notna() & (merged['UASC'].astype(str)!='1')
-            #& uascchk
-            #validation_error_locations = uasc.index[error_mask]
+
             uasc_error_locs = merged.loc[error_mask, 'index_sc']
             header_error_locs = merged.loc[error_mask, 'index_er']
             

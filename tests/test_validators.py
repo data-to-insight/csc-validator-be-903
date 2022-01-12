@@ -2807,11 +2807,8 @@ def test_validate_377():
 
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
-
-# For Error 303 there is currently no UASC field in Header file as this is in XML version and only coding CSV currently, currently rule passes all time if Date field entered 
 def test_validate_303():
     fake_data_uasc = pd.DataFrame({
-        #'UASC': [pd.NA, 1, '1', 1, '1'],
         'CHILD': [0, 1, 2, 3, 4, 5,],
         'DUC': [pd.NA,'04/04/2021', '01/06/2020', pd.NA, '10/04/2020', '01/03/2021']
     })

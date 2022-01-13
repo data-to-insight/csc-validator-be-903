@@ -133,6 +133,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
             except:
                 pass
             return val
+  
         return pd.Series({k: read_value(k) for k in column_names[table_name]}) 
 
     for child in ET.fromstring(xml_string):

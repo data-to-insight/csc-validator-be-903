@@ -8,7 +8,7 @@ def validate_351():
   error = ErrorDefinition(
     code = '351',
     description = 'Child was over 21 at the start of the current collection year.',
-    affected_fields = ['DOB']
+    affected_fields = ['DOB',]
   )
 
   def _validate(dfs):
@@ -23,7 +23,7 @@ def validate_351():
       header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
-      mask = (header['DOB'] < collection_start)
+      mask = (header['DOB'] + pd.DateOffset(years=21)) > collection_start
       # error locations
       header_error_locs = header.index[mask]
 

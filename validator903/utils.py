@@ -81,6 +81,3 @@ def add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER(dfs, required_tables=None):
         return out[0]
     else:
         return out
-
-def get_csv_text(dfs):
-  return {k: df.to_csv(index=False) for k, df in dfs.items if k != 'metadata' }

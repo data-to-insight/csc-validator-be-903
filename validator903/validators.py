@@ -4,6 +4,31 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_351():
+  error = ErrorDefinition(
+    code = '351',
+    description = 'Child was over 21 at the start of the current collection year.',
+    affected_fields = ['DOB']
+  )
+
+  def _validate(dfs):
+    if 'Header' not in dfs:
+      return {}
+
+    else:
+      header = dfs['Header']
+      collection_start = dfs['metadata']['collection_start']
+
+      # Convert from string to date to appropriate format
+      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+
+      mask = (header['DOB'] < collection_start)
+      # error locations
+      header_error_locs = header.index[mask]
+
+      return {'Header': header_error_locs.tolist()}
+
 def validate_632():
   error = ErrorDefinition(
     code = '632',

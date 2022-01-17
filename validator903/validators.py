@@ -23,11 +23,13 @@ def validate_351():
       header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
       collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
-      mask = (header['DOB'] + pd.DateOffset(years=21)) > collection_start
+      mask = collection_start > (header['DOB'] + pd.DateOffset(years=21))
       # error locations
       header_error_locs = header.index[mask]
 
       return {'Header': header_error_locs.tolist()}
+  
+  return error, _validate
 
 def validate_632():
   error = ErrorDefinition(

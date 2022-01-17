@@ -1,6 +1,26 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_301():
+
+  fake_data_header = pd.DataFrame([
+      {'CHILD': 101, 'DOB': '01/07/2021', },  # 0 fail
+      {'CHILD': 102, 'DOB': '02/06/2000', },  # 1
+      {'CHILD': 103, 'DOB': '03/06/2000', },  # 2
+      {'CHILD': 104, 'DOB': '04/06/2022', },  # 3 fail
+      {'CHILD': 105, 'DOB': pd.NA, },  # 4 
+  ]) 
+
+  metadata = {
+      'collection_start': '01/04/2020',
+      'collection_end': '31/03/2021'
+  }
+
+  fake_dfs = {'Header':fake_data_header, 'metadata':metadata}
+  error_defn, error_func = validate_301()
+  result = error_func(fake_dfs)
+  assert result == {'Header':[0,3]}
+
 def test_validate_632():
   fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],

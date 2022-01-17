@@ -4,6 +4,32 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_301():
+  error = ErrorDefinition(
+    code = '301',
+    description = 'Date of birth falls after the year ended.',
+    affected_fields = ['DOB']
+  )
+
+  def _validate(dfs):
+    if 'Header' not in dfs:
+      return {}
+    else:
+      header = dfs['Header']
+      collection_end = dfs['metadata']['collection_end']
+
+      # convert dates
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+      
+      # <DOB> must be <= <COLLECTION_END_DATE>`
+      mask = header['DOB'] > collection_end
+      # error locations
+      error_locs = header.index[mask]
+      return {'Header':error_locs.tolist()}
+  
+  return error, _validate
+
 def validate_632():
   error = ErrorDefinition(
     code = '632',

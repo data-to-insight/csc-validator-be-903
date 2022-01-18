@@ -28,7 +28,7 @@ def validate_391():
 
       # error locations
       oc3_error_locs = oc3.index[mask]
-      # one to many join implies use .unique on the 'one'
+      
       return {'OC3':oc3_error_locs.tolist()}
   return error, _validate
 

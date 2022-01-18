@@ -1,7 +1,7 @@
 from validator903.validators import *
 import pandas as pd
 
-def test_validate_210():
+def test_validate_514():
     fake_data = pd.DataFrame({
         'LS_ADOPTR':  ['L0', 'xx', 'L0', pd.NA, 'L0'],
         'SEX_ADOPTR':  ['M1', 'F1', 'xx', pd.NA, 'xxx'],
@@ -9,7 +9,7 @@ def test_validate_210():
   
     fake_dfs = {'AD1': fake_data}
 
-    error_defn, error_func = validate_210()
+    error_defn, error_func = validate_514()
 
     result = error_func(fake_dfs)
 

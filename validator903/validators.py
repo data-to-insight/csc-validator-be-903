@@ -1,9 +1,9 @@
 import pandas as pd
 from .types import ErrorDefinition
 
-def validate_210():
+def validate_514():
     error = ErrorDefinition(
-      code='210',
+      code='514',
       description= 'Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.',
       affected_fields=['LS_ADOPTR', 'SEX_ADOPTR'],
     )
@@ -11,7 +11,7 @@ def validate_210():
     def _validate(dfs):
 
         if 'AD1' not in dfs:
-          return {}
+            return {}
         else:
             AD1 = dfs ['AD1']
             code_list = ['M1', 'F1']

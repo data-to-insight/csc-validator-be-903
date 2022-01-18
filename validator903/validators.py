@@ -15,14 +15,12 @@ def validate_210():
         else:
             AD1 = dfs ['AD1']
             code_list = ['M1', 'F1']
+            # Check if LS Adopter is L0 and Sex Adopter is not M1 or F1.
+            error_mask = (AD1['LS_ADOPTR'] == 'L0') & (~AD1['SEX_ADOPTR'].isin(code_list))
+          
+            error_locations = AD1.index[error_mask]
 
-            mask = AD1['LS_ADOPTR'].isin(code_list)
-
-            validation_error_mask = ~mask
-
-            validation_error_locations = AD1.index[validation_error_mask]
-
-            return {'AD1': validation_error_locations.to_lists()}
+            return {'AD1': error_locations.tolist()}
  
 
     return error, _validate

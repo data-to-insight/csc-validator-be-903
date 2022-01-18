@@ -91,22 +91,23 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
         # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
         try:
-          df = pd.read_csv(csv_file)
-          file_name = _get_file_type(df)
-          if 'This year' in file_data['description']:
-              name = file_name
-          elif 'Prev year' in file_data['description']:
-              name = file_name + '_last'
-          else:
-              raise UploadException(f'Unrecognized file description {file_data["description"]}')
-
-          files[name] = df
-
+            df = pd.read_csv(csv_file)
         except UnicodeDecodeError:
-          # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
-          # TODO check whether the name of the spefic files which raised the error can be displayed in the error message. Confirm if this should be done by csv_file.name (typical syntax of calling a class attribute) or csv_file[name] (syntax which considers the fact that the CSV file's type is UploadedFile, hence it is a dictionary.)
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
+            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
 
-          raise UploadException(f"Failed to decode on or more files . Try opening the text file(s) in Notepad and saving with the 'utf-8' encoding")
+        file_name = _get_file_type(df)
+        if 'This year' in file_data['description']:
+            name = file_name
+        elif 'Prev year' in file_data['description']:
+            name = file_name + '_last'
+        else:
+            raise UploadException(f'Unrecognized file description {file_data["description"]}')
+
+        files[name] = df
+
 
     return files
 

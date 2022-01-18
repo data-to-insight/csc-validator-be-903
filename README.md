@@ -4,18 +4,18 @@
 [![PyPI version](https://badge.fury.io/py/quality-lac-data-validator.svg)](https://badge.fury.io/py/quality-lac-data-validator)
 [![Run on Repl.it](https://repl.it/badge/github/SocialFinanceDigitalLabs/quality-lac-data-beta-validator)](https://repl.it/github/SocialFinanceDigitalLabs/quality-lac-data-beta-validator)
 
-*We want to build a tool that improves the quality of data on Looked After Children so that Children’s Services Departments have all the information needed to enhance services.*
+*We want to build a tool that improves the quality of data on Looked After Children so that Children’s Services Departments have all the information needed to enhance their services.*
 
 We believe that a tool that highlights and helps fixing data errors would be valuable for:
 
-1.   Reducing the time analysts, business support and social workers spend cleaning data
-2.   Enabling leadership to better use evidence in supporting Looked After Children
+1.   Reducing the time analysts, business support and social workers spend cleaning data.
+2.   Enabling leadership to better use evidence in supporting Looked After Children.
 
 ## About this project
 
 The aim of this project is to deliver a tool to relieve some of the pain-points
 of [reporting and quality][qlac-blog] in children's services data. This project
-focuses in particular on data on looked after children (LAC) and the
+focuses, in particular, on data on looked after children (LAC) and the
 [SSDA903][dfe-903] return.
 
 The project consists of a number of related pieces of work:
@@ -27,7 +27,7 @@ The project consists of a number of related pieces of work:
 * [Postcode Reference Data][qlac-ref-pc]
 
 The core parts consist of a [Python][python] validator engine and rules using
-[Pandas][pandas] with [Poetry][poetry] for dependency management. The is targeted
+[Pandas][pandas] with [Poetry][poetry] for dependency management. The tool is targeted
 to run either standalone, or in [pyodide][pyodide] in the browser for a zero-install
 deployment with offline capabilities.
 
@@ -44,7 +44,7 @@ the checks.
 * Identification of tables - currently matched on **exact** filename
 * Conversion of CSV to tabular format - **no type checking**
 * Enrichment of provided data with Postcode distances
-* Evalutation of rules
+* Evaluation of rules
 * Report
 
 ### Project Structure
@@ -63,7 +63,7 @@ project
 └─── tests                    - Unit tests
 ```
 
-Most of the work from contributors will be in `validators.py` and the associates testing files under
+Most of the work from contributors will be in `validators.py` and the associated testing files under
 tests. Please do not submit a pull-request without a comprehensive test.
 
 ### Development
@@ -122,12 +122,13 @@ Any XML uploads are converted into CSV form to give the same inputs.
 
 ## Releases
 
-To build and release a new version, follow the poetry release process:
+To build and release a new version, make sure all your unit tests pass.
 
-```
-poetry build
-poetry publish
-```
+We use [semantic versioning][semver], so update the project version in [pyproject.toml](./pyproject.toml) accordingly
+and commit, creating a PR. Once the release version is on GitHub, create a GitHub release naming the release with the 
+current release name, e.g. 1.0 and the tag with the release name prefixed with a v, i.e. v1.0. Alpha and beta releases 
+can be flagged by appending `-alpha.<number>` and `-beta.<number>`.
+
 
 [qlac-blog]: https://www.socialfinance.org.uk/blogs/better-data-children-care-building-common-approach
 [dfe-903]: https://www.gov.uk/guidance/children-looked-after-return-guide-to-submitting-data
@@ -136,6 +137,7 @@ poetry publish
 [pandas]: https://pandas.pydata.org/
 [poetry]: https://python-poetry.org/
 [pyodide]: https://pyodide.org/en/stable/
+[semver]: https://semver.org/
 
 [qlac]: https://sfdl.org.uk/quality-lac-data-beta/
 [qlac-front-end]: https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta

@@ -259,15 +259,20 @@ def validate_357():
         affected_fields=['RNE'],
     )
 
+    # !# Potential false negatives for first episodes before the current collection year?
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
         eps = dfs['Episodes']
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
         eps['DECOM'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')
 
         eps = eps.loc[eps['DECOM'].notnull()]
 
-        first_eps = eps.loc[eps.groupby('CHILD')['DECOM'].idxmin()]
+        first_eps = (eps
+                     .loc[eps.groupby('CHILD')['DECOM'].idxmin()]
+                     .loc[eps['DECOM'] >= collection_start])
+
         errs = first_eps[first_eps['RNE'] != 'S'].index.to_list()
 
         return {'Episodes': errs}
@@ -5887,7 +5892,7 @@ def validate_331():
             adoption_eps = adoption_eps.merge(adt, on='CHILD')
 
             # A child cannot be placed for adoption before the child has been matched with prospective adopter(s).
-            error_mask = adoption_eps['DATE_MATCH'] < adoption_eps['DECOM']
+            error_mask = adoption_eps['DATE_MATCH'] > adoption_eps['DECOM']
 
             # Get the rows of each table where the dates clash
             AD1_errs = list(adoption_eps.loc[error_mask, 'AD1_index'].unique())

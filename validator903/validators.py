@@ -5722,6 +5722,7 @@ def validate_602():
                         .dropna(subset=adoption_fields, how='all')
                         .set_index('index')
                         .index
+                        .unique()
                         .to_list())                  
 
             return {'AD1': err_list}

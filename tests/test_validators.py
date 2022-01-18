@@ -1,6 +1,21 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_514():
+    fake_data = pd.DataFrame({
+        'LS_ADOPTR':  ['L0', 'xx', 'L0', pd.NA, 'L0'],
+        'SEX_ADOPTR':  ['M1', 'F1', 'xx', pd.NA, 'xxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_514()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [ 2, 4, ]}
+
+
 def test_validate_632():
   fake_data_prevperm = pd.DataFrame({
       'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],

@@ -22,7 +22,7 @@ def validate_632():
           except AttributeError:
             return pd.NaT
           # Preceding block checks for the scenario where the value passed in is nan/naT
-          
+
           # date should have three elements
           if (len(lst) != 3):
               return pd.NaT
@@ -49,13 +49,13 @@ def validate_632():
               else:
                   already_found_non_zeds = True
               date_bits.append(i)
-          
-          as_datetime = pd.to_datetime('/'.join(date_bits), 
+
+          as_datetime = pd.to_datetime('/'.join(date_bits),
                                       format='%d/%m/%Y', errors='coerce')
           try:
               as_datetime += offset_to_use
           except NameError:  # offset_to_use only defined if needed
-              pass  
+              pass
           return as_datetime
 
       episodes = dfs['Episodes']
@@ -101,7 +101,7 @@ def validate_165():
       header = dfs['Header']
       episodes = dfs['Episodes']
       oc3 = dfs['OC3']
-      collection_start = dfs['metadata']['collection_start'] 
+      collection_start = dfs['metadata']['collection_start']
       collection_end = dfs['metadata']['collection_end']
       valid_values = ['0','1']
 
@@ -119,7 +119,7 @@ def validate_165():
 
       merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD', how='left')
 
-      # Raise error if provided <MOTHER> is not a valid value. 
+      # Raise error if provided <MOTHER> is not a valid value.
       value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
       # If not provided
       female = (merged['SEX']=='1')
@@ -2508,6 +2508,30 @@ def validate_440():
 
     return error, _validate
 
+
+def validate_514():
+    error = ErrorDefinition(
+      code='514',
+      description= 'Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.',
+      affected_fields=['LS_ADOPTR', 'SEX_ADOPTR'],
+    )
+
+    def _validate(dfs):
+
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            AD1 = dfs ['AD1']
+            code_list = ['M1', 'F1']
+            # Check if LS Adopter is L0 and Sex Adopter is not M1 or F1.
+            error_mask = (AD1['LS_ADOPTR'] == 'L0') & (~AD1['SEX_ADOPTR'].isin(code_list))
+          
+            error_locations = AD1.index[error_mask]
+
+            return {'AD1': error_locations.tolist()}
+ 
+
+    return error, _validate
 
 def validate_445():
     error = ErrorDefinition(
@@ -5728,7 +5752,7 @@ def validate_602():
                         .set_index('index')
                         .index
                         .unique()
-                        .to_list())                  
+                        .to_list())
 
             return {'AD1': err_list}
 

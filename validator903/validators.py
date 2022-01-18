@@ -5721,11 +5721,14 @@ def validate_602():
             adoption_fields = ['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
 
             err_list = (ad1
+                        .reset_index()
                         .merge(adoption_eps, how='left', on='CHILD', indicator=True)
                         .query("_merge == 'left_only'")
                         .dropna(subset=adoption_fields, how='all')
+                        .set_index('index')
                         .index
-                        .to_list())
+                        .unique()
+                        .to_list())                  
 
             return {'AD1': err_list}
 

@@ -88,7 +88,16 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     files = {}
     for file_data in raw_files:
         csv_file = BytesIO(file_data["fileText"])
-        df = pd.read_csv(csv_file)
+
+        # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
+        try:
+            df = pd.read_csv(csv_file)
+        except UnicodeDecodeError:
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
+            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
+
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:
             name = file_name
@@ -98,6 +107,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
 
         files[name] = df
+
 
     return files
 

@@ -1,12 +1,48 @@
+import collections.abc
+from pathlib import Path
+
 import pandas as pd
 import xml.etree.ElementTree as ET
-from zipfile import ZipFile
-from io import StringIO, BytesIO
-from typing import List
+from io import BytesIO
+from typing import List, Union, Dict, Iterator
+
+from pandas import DataFrame
+
 from .types import UploadException, UploadedFile
 from .config import column_names
 
-def read_from_text(raw_files: List[UploadedFile]):
+import logging
+logger = logging.getLogger(__name__)
+
+
+class _BufferedUploadedFile(collections.abc.Mapping):
+
+    def __init__(self, file, name, description):
+        self.name = name
+        self.description = description
+        self.file = Path(file)
+        if not self.file.is_file():
+            raise FileNotFoundError(f"{self.file} not found.")
+
+    def __getitem__(self, k):
+        if k == "name":
+            return self.name
+        elif k == "description":
+            return self.description
+        elif k == "fileText":
+            with open(self.file, 'rb') as file:
+                return file.read()
+        else:
+            raise AttributeError(f'{k} not found')
+
+    def __len__(self) -> int:
+        return 3
+
+    def __iter__(self) -> Iterator:
+        pass
+
+
+def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     """
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
@@ -31,10 +67,25 @@ def read_from_text(raw_files: List[UploadedFile]):
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
-def read_csvs_from_text(raw_files: List[UploadedFile]):
+
+def read_files(files: Union[str, Path]) -> List[UploadedFile]:
+    uploaded_files: List[_BufferedUploadedFile] = []
+    for filename in files:
+        uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
+    return uploaded_files
+
+def capitalise_object_dtype_cols(df) -> pd.DataFrame:
+  '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
+  for col in df.select_dtypes(include='object'):
+    df[col] = df[col].str.upper()
+  return df
+
+def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
+
     def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
+                logger.info(f'Loaded {table_name} from CSV. ({len(df)} rows)')
                 return table_name
         else:
             raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
@@ -42,11 +93,22 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
     files = {}
     for file_data in raw_files:
         csv_file = BytesIO(file_data["fileText"])
-        df = pd.read_csv(csv_file)
+        # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
+        try:
+            df = pd.read_csv(csv_file)
+        except UnicodeDecodeError:
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
+            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
+
+        # capitalize all string input
+        df = capitalise_object_dtype_cols(df)
+
         file_name = _get_file_type(df)
         if 'This year' in file_data['description']:
             name = file_name
-        elif 'Last year' in file_data['description']:
+        elif 'Prev year' in file_data['description']:
             name = file_name + '_last'
         else:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
@@ -55,7 +117,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]):
 
     return files
 
-def read_xml_from_text(xml_string):
+def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     header_df = []
     episodes_df = []
     uasc_df = []
@@ -120,7 +182,7 @@ def read_xml_from_text(xml_string):
                         data = read_data(child_table)
                         sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
-    return {
+    data =  {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
@@ -133,7 +195,10 @@ def read_xml_from_text(xml_string):
         'Missing': pd.DataFrame(missing_df),
     }
 
-def read_postcodes(zipped_csv_bytes):
-    with ZipFile(BytesIO(zipped_csv_bytes)) as unzipped:
-        with unzipped.open('postcodes.csv') as f:
-            return pd.read_csv(f)
+    # capitalize string columns
+    for df in data.values():
+      df = capitalise_object_dtype_cols(df)
+
+    names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
+    logger.info(f'Tables created from XML -- {names_and_lengths}')
+    return data

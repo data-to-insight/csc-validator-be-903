@@ -5,7 +5,7 @@ def validate_210():
     error = ErrorDefinition(
       code='210',
       description= 'Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.',
-      affected_fields=['LS_ADOPTR'],
+      affected_fields=['LS_ADOPTR', 'SEX_ADOPTR'],
     )
 
     def _validate(dfs):

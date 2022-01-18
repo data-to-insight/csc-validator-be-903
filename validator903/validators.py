@@ -4,6 +4,34 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_391():
+  error = ErrorDefinition(
+    code = '391',
+    description = 'Young person was not 17, 18, 19, 20 or 21 during the current collection year. ',
+    affected_fields = ['DOB','IN_TOUCH', 'ACTIV', 'ACCOM']
+  )
+  def _validate(dfs):
+    if 'OC3' not in dfs:
+      return {}
+    else:
+      oc3 = dfs['OC3']
+      collection_end = dfs['metadata']['collection_end']
+
+      # convert dates to datetime format
+      oc3['DOB'] = pd.to_datetime(oc3['DOB'], format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+      # If <DOB> < 17 years prior to <COLLECTION_END_DATE> then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
+      check_age = (oc3['DOB'] + pd.offsets.DateOffset(years=17) > collection_end)
+      mask = check_age & (oc3['IN_TOUCH'].notna()|oc3['ACTIV'].notna()|oc3['ACCOM'].notna())
+      # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
+
+      # error locations
+      oc3_error_locs = oc3.index[mask]
+
+      return {'OC3':oc3_error_locs.tolist()}
+  return error, _validate
+
 def validate_632():
   error = ErrorDefinition(
     code = '632',
@@ -2557,11 +2585,11 @@ def validate_514():
             code_list = ['M1', 'F1']
             # Check if LS Adopter is L0 and Sex Adopter is not M1 or F1.
             error_mask = (AD1['LS_ADOPTR'] == 'L0') & (~AD1['SEX_ADOPTR'].isin(code_list))
-          
+
             error_locations = AD1.index[error_mask]
 
             return {'AD1': error_locations.tolist()}
- 
+
 
     return error, _validate
 

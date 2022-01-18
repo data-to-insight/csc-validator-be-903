@@ -27,7 +27,7 @@ def validate_632():
           if (len(lst) != 3):
               return pd.NaT
 
-          z_list = ['zz', 'zz', 'zzzz']
+          z_list = ['ZZ', 'ZZ', 'ZZZZ']
           # We set the date to the latest possible value to avoid false positives
           offset_list = [pd.DateOffset(months=1, days=-1),
                         pd.DateOffset(years=1, days=-1),
@@ -38,12 +38,12 @@ def validate_632():
 
           for i, zeds, offset in zip(lst, z_list, offset_list):
               if i == zeds:
-                  # I'm assuming it is invalid to have a date like '01/zz/zzzz'
+                  # I'm assuming it is invalid to have a date like '01/ZZ/ZZZZ'
                   if already_found_non_zeds:
                       return pd.NaT
                   # Replace day & month zeds with '01' so we can check if the resulting date is valid
                   # and set the offset so we can compare the latest corresponding date
-                  elif i == 'zz':
+                  elif i == 'ZZ':
                       i = '01'
                       offset_to_use = offset
               else:
@@ -74,10 +74,10 @@ def validate_632():
       prevperm.reset_index(inplace=True)
       merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
-      # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
+      # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by ZZ if part of the date element is not known.
       mask = (merged['DATE_PERM_dt'] >= merged['DECOM']) | (merged['DATE_PERM'].notna()
                                                             & merged['DATE_PERM_dt'].isna()
-                                                            & (merged['DATE_PERM'] != 'zz/zz/zzzz')
+                                                            & (merged['DATE_PERM'] != 'ZZ/ZZ/ZZZZ')
                                                             )
 
       # error locations

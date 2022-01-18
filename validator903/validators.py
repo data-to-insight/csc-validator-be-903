@@ -4,6 +4,40 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_578():
+  error = ErrorDefinition(
+    code = '578',
+    description = 'The date that the child started to be missing is after the child ceased to be looked after.',
+    affected_fields = ['REC', 'DEC', 'MIS_START']
+  )
+
+  def _validate(dfs):
+
+    if 'Episodes' not in dfs or 'Missing' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      missing = dfs['Missing']
+
+      # convert dates
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
+
+      # prepare to merge
+      episodes.reset_index(inplace=True)
+      missing.reset_index(inplace=True)
+      merged = episodes.merge(missing, on='CHILD', how='left', suffixes=['_eps', '_ing'])
+
+      # If <MIS_START> >`=DEC, then no missing/away from placement information should be recorded
+      # interpreted as: if (REC != X1) and (DEC < MIS_START) then the error should be raised. check issue description.
+      error_mask = (merged['REC']!='X1') & (merged['DEC'] < merged['MIS_START'])
+      eps_error_locs = merged.loc[error_mask, 'index_eps']
+      mis_error_locs = merged.loc[error_mask, 'index_ing']
+
+      return {'Episodes':eps_error_locs.tolist(), 'Missing':mis_error_locs.unique().tolist()}
+  
+  return error, _validate
+
 def validate_632():
   error = ErrorDefinition(
     code = '632',

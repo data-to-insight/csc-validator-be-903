@@ -23,6 +23,9 @@ def validate_578():
       episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
       missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
 
+      # drop episodes where REC is null
+      episodes = episodes[episodes['REC'].notna()]
+
       # prepare to merge
       episodes.reset_index(inplace=True)
       missing.reset_index(inplace=True)

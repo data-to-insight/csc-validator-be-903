@@ -3,11 +3,12 @@ import pandas as pd
 
 def test_validate_578():
   fake_data_mis = pd.DataFrame([
-      {'CHILD': '1', 'MIS_START': '01/06/2020', 'MIS_END': '05/06/2020'},  # 0
-      {'CHILD': '2', 'MIS_START': '02/06/2020', 'MIS_END': pd.NA},  # 1
-      {'CHILD': '3', 'MIS_START': '03/06/2020', 'MIS_END': '01/06/2020'},  # 2 fail
-      {'CHILD': '4', 'MIS_START': '04/06/2020', 'MIS_END': '02/06/2020'},  # 3 
-      {'CHILD': '5', 'MIS_START': '01/01/1981', 'MIS_END': '05/06/2020'},  # 4 fail
+      {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0
+      {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1
+      {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 2 fail
+      {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 3 
+      {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 4 fail
+      {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 4 pass
   ]) 
   fake_data_eps = pd.DataFrame([
       {'CHILD': '1', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1',},
@@ -15,7 +16,7 @@ def test_validate_578():
       {'CHILD': '3', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk',}, # fail
       {'CHILD': '4', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!',}, # ignore
       {'CHILD': '5', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx',}, # fail
-      {'CHILD': '5', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk',}, # pass
+      {'CHILD': '6', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk',}, # pass
   ])
 
   fake_dfs = {'Episodes':fake_data_eps, 'Missing':fake_data_mis}

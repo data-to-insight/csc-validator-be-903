@@ -61,8 +61,8 @@ class Validator:
                         # select out only the valid values, that is remove all nans.
                         values = [i for i, not_nan in zip(values, pd.notna(values)) if not_nan]
                         nof_nans = nof_errors - len(values)
-                        if nof_nan_errors != 0:
-                            logger.warning(f"{error.code} returned {nof_nan_errors} NaNs! "
-                                           + f"output: {str(values)}")
+                        if nof_nans != 0:
+                            logger.warning(f"{error.code} returned {nof_nans} NaNs! "
+                                           + f"Output: {str(values)}")
                         ds_results[table].loc[values, f'ERR_{error.code}'] = True
         return ds_results

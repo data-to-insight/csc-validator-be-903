@@ -30,11 +30,63 @@ def test_validate_578():
     assert result == {'Episodes': [3, 5], 'Missing': [2, 4]}
 
 
+def test_validate_391():
+    fake_data_oc3 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2002', '03/01/2004', ],
+        'IN_TOUCH': ['DIED', 'Yes', 'RHOM', pd.NA, pd.NA],
+        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+    })
+    metadata = {
+        'collection_end': '31/03/2018'
+    }
+
+    fake_dfs = {'OC3': fake_data_oc3, 'metadata': metadata}
+    error_defn, error_func = validate_391()
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 3]}
+
+
+def test_validate_625():
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101', '102', '103'],
+      'MC_DOB': ['01/11/2021', '19/12/2016', pd.NA],
+      # 0 MC_DOB > collection_end FAIL
+      # 1 MC_DOB < collection_end but > DEC of latest episode FAIL
+      # 2 MC_DOB not provided IGNORE
+  })
+  fake_data_episodes = pd.DataFrame({
+    'CHILD': ['101','101', '102','102', '103', '103', '103'],
+    'DEC': ['02/12/2021', '11/11/2012','03/10/2014', '11/11/2015', '01/01/2020', '11/11/2020', '01/02/2020']
+  })
+  metadata = {
+    'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'metadata':metadata, 'Episodes':fake_data_episodes, 'Header':fake_data_header}
+  error_defn, error_func = validate_625()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,3], 'Header':[0,1]}
+
+def test_validate_514():
+    fake_data = pd.DataFrame({
+        'LS_ADOPTR':  ['L0', 'xx', 'L0', pd.NA, 'L0'],
+        'SEX_ADOPTR':  ['M1', 'F1', 'xx', pd.NA, 'xxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_514()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [ 2, 4, ]}
+
+
 def test_validate_632():
     fake_data_prevperm = pd.DataFrame({
         'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
-        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020', 'zz/05/2021', 'zz/zz/zzzz',
-                      'zz/zz/1993', 'zz/zz/zz', '01/13/2000'],
+        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/ZZ/2020', 'ZZ/05/2021', 'ZZ/ZZ/ZZZZ', 'ZZ/ZZ/1993', 'ZZ/ZZ/ZZ', '01/13/2000' ],
     })
 
     fake_data_episodes = pd.DataFrame([
@@ -353,6 +405,7 @@ def test_validate_352():
 
 
 def test_validators_1007():
+  # TODO change name to test_validate_1007()
     fake_data_oc3 = pd.DataFrame({
         'CHILD': ['A', 'B', 'C', 'D', 'E'],
         'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2000', '03/01/2000', ],

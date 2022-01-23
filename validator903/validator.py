@@ -1,5 +1,6 @@
 import logging
 import datetime
+import pandas as pd
 from typing import Any, List, Dict
 from pandas import DataFrame
 
@@ -59,5 +60,12 @@ class Validator:
                 for table, values in result.items():
                     if len(values) > 0:
                         logger.info(f"Error code {error.code} found {len(values)} errors")
+                        nof_errors = len(values)
+                        # select out only the valid values, that is remove all nans.
+                        values = [i for i, not_nan in zip(values, pd.notna(values)) if not_nan]
+                        nof_nans = nof_errors - len(values)
+                        if nof_nans != 0:
+                            logger.warning(f"{error.code} returned {nof_nans} NaNs! "
+                                           + f"Output: {str(values)}")
                         ds_results[table].loc[values, f'ERR_{error.code}'] = True
         return ds_results

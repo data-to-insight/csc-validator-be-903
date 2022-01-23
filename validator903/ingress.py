@@ -74,6 +74,11 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
         uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
     return uploaded_files
 
+def capitalise_object_dtype_cols(df) -> pd.DataFrame:
+  '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
+  for col in df.select_dtypes(include='object'):
+    df[col] = df[col].str.upper()
+  return df
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
@@ -88,7 +93,18 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     files = {}
     for file_data in raw_files:
         csv_file = BytesIO(file_data["fileText"])
-        df = pd.read_csv(csv_file)
+        # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
+        try:
+            df = pd.read_csv(csv_file)
+        except UnicodeDecodeError:
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
+            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
+
+        # capitalize all string input
+        df = capitalise_object_dtype_cols(df)
+
         file_name = _get_file_type(df)
 
         if 'This year' in file_data['description']:
@@ -208,6 +224,11 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         'PrevPerm': pd.DataFrame(prev_perm_df),
         'Missing': pd.DataFrame(missing_df),
     }
+
+    # capitalize string columns
+    for df in data.values():
+      df = capitalise_object_dtype_cols(df)
+
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Tables created from XML -- {names_and_lengths}')
     return data

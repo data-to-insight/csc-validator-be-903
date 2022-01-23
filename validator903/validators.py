@@ -6224,6 +6224,27 @@ def validate_435():
     return error, _validate
 
 
+def validate_104():
+    error = ErrorDefinition(
+        code='104',
+	      description='Date for Unaccompanied Asylum-Seeking Children (UASC) status ceased is not a valid date.',
+	      affected_fields=['DUC'],
+	  )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']
+            uasc['DUC_dt'] = pd.to_datetime(uasc['DUC'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+            mask = (uasc['DUC_dt'].isna() & uasc['DUC'].notna()) | (uasc['DUC_dt'] < collection_start)
+
+            return {'UASC': uasc.index[mask].to_list()}
+
+    return error, _validate
+
+
 # !# False positives if child was UASC in last 2 years but data not provided
 def validate_392B():
     error = ErrorDefinition(

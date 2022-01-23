@@ -25,9 +25,12 @@ class Validator:
     fails: List[str] = []
 
     def __init__(self, metadata: Dict[str, Any], files: List[UploadedFile]):
-        self.metadata = metadata
         logger.info('Reading uploaded files...')
-        self.dfs.update(read_from_text(raw_files=files))
+        dfs, file_format = read_from_text(raw_files=files)
+        self.dfs.update(dfs)
+        logger.info('Adding metadata to "dfs" dict...')
+        metadata['file_format'] = file_format
+        self.metadata = metadata
 
     def validate(self, error_codes: List[str]):
         logger.info('Creating Data Store...')

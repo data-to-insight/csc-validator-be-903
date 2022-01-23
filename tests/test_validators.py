@@ -4113,14 +4113,14 @@ def test_validate_435():
 
 def test_validate_104():
     fake_uasc = pd.DataFrame({
-      'DUC': ['01/03/2019', '19/02/2020', '03/04/2019', '01/01/2020'],
+      'DUC': ['01/03/2019', '19/02/2020', '03/04/2019', '01/01/2019', pd.NA],
     })
         
-    metadata = {'collection_start':'01/04/2019'}
+    metadata = {'collection_start': '01/04/2019'}
     
-    fake_dfs ={'UASC':fake_uasc, 'metadata':metadata}
+    fake_dfs = {'UASC': fake_uasc, 'metadata': metadata}
 
     error_defn, error_func = validate_104()
 
     result = error_func(fake_dfs)
-    assert result =={'UASC':[0, 3]}
+    assert result == {'UASC': [0, 3]}

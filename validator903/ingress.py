@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import xml.etree.ElementTree as ET
 from io import BytesIO
-from typing import List, Union, Dict, Iterator
+from typing import List, Union, Dict, Iterator, Tuple
 
 from pandas import DataFrame
 
@@ -42,7 +42,7 @@ class _BufferedUploadedFile(collections.abc.Mapping):
         pass
 
 
-def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
+def read_from_text(raw_files: List[UploadedFile]) -> Tuple[Dict[str, DataFrame], str]:
     """
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
@@ -61,9 +61,9 @@ def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         raise UploadException(f'Mix of CSV and XML files found ({extensions})! Please reupload.')
     else:
         if extensions[0] == 'csv':
-            return read_csvs_from_text(raw_files)
+            return read_csvs_from_text(raw_files), 'csv'
         elif extensions[0] == 'xml':
-            return read_xml_from_text(raw_files[0]['fileText'])
+            return read_xml_from_text(raw_files[0]['fileText']), 'xml'
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
@@ -102,21 +102,26 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
     # Adding UASC column to Header table
     if 'Header' in files and 'UASC' in files:
-      header = files['Header']
-      uasc = files['UASC']
-      merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
-      
-      header.loc[merge_indicator=='both', 'UASC'] = 1
-      header.loc[merge_indicator=='left_only', 'UASC'] = 0
+        header = files['Header']
+        uasc = files['UASC']
+        merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
+
+        header.loc[merge_indicator == 'both', 'UASC'] = 1
+        header.loc[merge_indicator == 'left_only', 'UASC'] = 0
+
+    #elif 'Header' in files and 'UASC' not in files:
+    #    header = files['Header']
+    #    header['UASC'] = pd.NA
+
 
     # Adding UASC column to Header_last table based on UASC_last table
     if 'Header_last' in files and 'UASC_last' in files:
-      header_last = files['Header_last']
-      uasc_last = files['UASC_last']
-      merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', indicator=True)['_merge']
-      
-      header_last.loc[merge_indicator=='both', 'UASC'] = 1
-      header_last.loc[merge_indicator=='left_only', 'UASC'] = 0
+        header_last = files['Header_last']
+        uasc_last = files['UASC_last']
+        merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', indicator=True)['_merge']
+
+        header_last.loc[merge_indicator == 'both', 'UASC'] = 1
+        header_last.loc[merge_indicator == 'left_only', 'UASC'] = 0
 
     return files
 
@@ -139,7 +144,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
             'CHILDID': 'CHILD',
             'PL': 'PLACE',
         }
-        return  {
+        return {
             conversions.get(node.tag, node.tag): node.text 
             for node in table.iter() if len(node) == 0
         }

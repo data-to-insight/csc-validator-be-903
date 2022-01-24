@@ -1,6 +1,31 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_1000():
+    fake_episodes_prev = pd.DataFrame({
+      'CHILD': ['101','101','102','102','103'],
+      'REC': ['X1', pd.NA, pd.NA, 'E2', 'E4a']
+    })
+
+    fake_episodes = pd.DataFrame({
+      'CHILD': ['104','105'],
+      'REC': ['X1','E2']
+    })
+
+    fake_oc3 = pd.DataFrame({
+      'CHILD': ['101','102','103','104','105']
+    })
+
+    erro_defn, error_func = validate_1000()
+
+    fake_dfs = {'Episodes': fake_episodes, 'Episodes_last': fake_episodes_prev, 'OC3': fake_oc3}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 4]}
+
+    fake_dfs = {'Episodes': fake_episodes, 'OC3': fake_oc3}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [4]}
+
 def test_validate_579():
     fake_adopt_place = pd.DataFrame([
         {'CHILD': '111', 'DATE_PLACED': '01/06/2020', 'DATE_PLACED_CEASED': '05/06/2020'},  # 0

@@ -4,6 +4,42 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+# !# potential false negatives, as this only operates on current and previous year data
+def validate_1000():
+    error = ErrorDefinition(
+        code = '1000',
+        description = 'This child is recorded as having died in care and therefore should not have the care leaver information completed. [NOTE: This only tests the current and previous year data loaded into the tool]',
+        affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'OC3' not in dfs:
+            return {}
+
+        else:
+            episodes = dfs['Episodes']
+            oc3 = dfs['OC3']
+
+            episodes_ended_e2 = episodes['REC'].str.upper().astype(str).isin(['E2'])
+            episodes = episodes.loc[episodes_ended_e2]
+
+            if 'Episodes_last' in dfs:
+                episodes_last = dfs['Episodes_last']
+                episodes_last_ended_e2 = episodes_last['REC'].str.upper().astype(str).isin(['E2'])
+                episodes_last = episodes_last.loc[episodes_last_ended_e2]
+                has_previous_e2 = oc3['CHILD'].isin(episodes_last['CHILD'])
+                has_current_e2 = oc3['CHILD'].isin(episodes['CHILD'])
+                error_mask = has_current_e2 | has_previous_e2
+            else:
+                has_current_e2 = oc3['CHILD'].isin(episodes['CHILD'])
+                error_mask = has_current_e2
+
+            validation_error_locations = oc3.index[error_mask]
+
+            return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_579():
     error = ErrorDefinition(
         code='579',

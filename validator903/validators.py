@@ -5,6 +5,42 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_577():
+    error = ErrorDefinition(
+        code='577',
+        description='Child ceased to be looked after but there is a missing/away from placement without authorisation period without an end date.',
+        affected_fields=['MIS_END', 'MIS_START', 'DEC', 'REC']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            missing = dfs['Missing']
+
+            # prepare to merge
+            missing.reset_index(inplace=True)
+            episodes.reset_index(inplace=True)
+
+            episodes = episodes[(episodes['REC'] != 'X1') & episodes['REC'].notna()].copy()
+            missing = missing[missing['MIS_START'].notna()].copy()
+
+            missing['MIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            merged = episodes.merge(missing, on='CHILD', how='inner', suffixes=['_eps', '_ing'])
+            mask = merged['MIS_END'].isna() | (merged['MIS_END'] > merged['DEC'])
+
+            eps_error_locs = merged.loc[mask, 'index_eps']
+            miss_error_locs = merged.loc[mask, 'index_ing']
+
+            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': miss_error_locs.unique().tolist()}
+
+    return error, _validate
+
+
+
 def validate_460():
     error = ErrorDefinition(
         code='460',

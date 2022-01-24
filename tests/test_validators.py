@@ -1,6 +1,27 @@
 from validator903.validators import *
 import pandas as pd
 
+
+def test_validate_301():
+    fake_data_header = pd.DataFrame([
+        {'CHILD': 101, 'DOB': '01/07/2021', },  # 0 fail
+        {'CHILD': 102, 'DOB': '02/06/2000', },  # 1
+        {'CHILD': 103, 'DOB': '03/06/2000', },  # 2
+        {'CHILD': 104, 'DOB': '04/06/2022', },  # 3 fail
+        {'CHILD': 105, 'DOB': pd.NA, },  # 4
+    ])
+
+    metadata = {
+        'collection_start': '01/04/2020',
+        'collection_end': '31/03/2021'
+    }
+
+    fake_dfs = {'Header': fake_data_header, 'metadata': metadata}
+    error_defn, error_func = validate_301()
+    result = error_func(fake_dfs)
+    assert result == {'Header': [0, 3]}
+
+
 def test_validate_577():
   fake_data_episodes = pd.DataFrame([
       {'CHILD': '101', 'DEC': '08/03/2020', 'REC': 'E45',},  # 0 pass
@@ -139,7 +160,7 @@ def test_validate_514():
 def test_validate_632():
     fake_data_prevperm = pd.DataFrame({
         'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
-        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/ZZ/2020', 'ZZ/05/2021', 'ZZ/ZZ/ZZZZ', 'ZZ/ZZ/1993', 'ZZ/ZZ/ZZ', '01/13/2000' ],
+        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/ZZ/2020', 'ZZ/05/2021', 'ZZ/ZZ/ZZZZ', 'ZZ/ZZ/1993', 'ZZ/ZZ/ZZ', '01/13/2000'],
     })
 
     fake_data_episodes = pd.DataFrame([
@@ -405,7 +426,8 @@ def test_validate_117():
         {'CHILD': 105, 'DEC': '25/01/2002', 'REC': 'E47', 'DECOM': '25/01/2002'},  # 9
         {'CHILD': 105, 'DEC': pd.NA, 'REC': 'E45', 'DECOM': pd.NA},  # 10
     ])
-    # TODO: in  the scenario where the REC of the latest episodes is X1, should the episode before the lastest be considered instead?. This will entail filtering by X1 before doing idxmax. Is this what this rule means?.
+    # TODO: in  the scenario where the REC of the latest episodes is X1, should the episode before the lastest
+    #  be considered instead?. This will entail filtering by X1 before doing idxmax. Is this what this rule means?.
 
     fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata, 'PlacedAdoption': fake_placed_adoption}
     error_defn, error_func = validate_117()
@@ -4620,10 +4642,11 @@ def test_validate_392B():
         {'CHILD': '444', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': 'XX1'},  # 6
         {'CHILD': '444', 'LS': 'V3', 'HOME_POST': pd.NA, 'PL_POST': pd.NA},  # 7
     ])
-    fake_uasc = pd.DataFrame([{'CHILD': '111'}, ])
-    fake_uasc_l = pd.DataFrame([{'CHILD': '444'}, ])
 
-    fake_dfs = {'Episodes': fake_data, 'UASC': fake_uasc, 'UASC_last': fake_uasc_l}
+    fake_uasc = pd.DataFrame([{'CHILD': '111'}, ])
+    fake_uasc_last = pd.DataFrame([{'CHILD': '444'}, ])
+
+    fake_dfs = {'Episodes': fake_data, 'UASC': fake_uasc, 'UASC_last': fake_uasc_last}
 
     error_defn, error_func = validate_392B()
 

@@ -22,11 +22,145 @@ def test_validate_301():
     assert result == {'Header': [0, 3]}
 
 
+def test_validate_577():
+  fake_data_episodes = pd.DataFrame([
+      {'CHILD': '101', 'DEC': '08/03/2020', 'REC': 'E45',},  # 0 pass
+
+      {'CHILD': '102', 'DEC': '01/01/2021', 'REC': 'E11',},  # 1
+      {'CHILD': '102', 'DEC': '20/12/2021', 'REC': 'E15',},  # 2
+      {'CHILD': '102', 'DEC': '03/07/2020', 'REC': 'E12',},  # 3
+      {'CHILD': '102', 'DEC': '03/04/2019', 'REC': 'E48',},  # 4
+
+      {'CHILD': '103', 'DEC': '26/05/2020', 'REC': 'E12',},  # 5
+
+      {'CHILD': '104', 'DEC': '10/01/2002', 'REC': 'E11',},  # 6
+      {'CHILD': '104', 'DEC': '11/02/2010', 'REC': 'X1',},  # 7 Ignore REC is X1
+      {'CHILD': '104', 'DEC': '25/01/2002', 'REC': pd.NA,},  # 8 Ignore REC is NULL
+
+      {'CHILD': '105', 'DEC': '13/10/2021', 'REC': 'E47',},  # 9
+      {'CHILD': '105', 'DEC': '13/10/2021', 'REC': 'E45',},  # 10
+    ])
+  fake_missing = pd.DataFrame({
+      'CHILD' : ['101', '102', '103', '104', '105',],
+      'MIS_START': ['08/02/2020', '22/06/2020', pd.NA, '13/10/2021', '10/24/2021'],
+      'MIS_END': ['08/03/2020', pd.NA, '22/06/2020', '13/10/21', '13/10/2021'],
+    })
+      # 0 pass
+      # 1 fail MIS_END not provided
+      # 2 Ignore fail since MIS_START is null
+      # 3 fail MIS_END not equal to DEC
+      # 4 pass MIS_END equals DEC
+  fake_dfs = {'Missing':fake_missing, 'Episodes':fake_data_episodes}
+  error_defn, error_func = validate_577()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[1,2,3,4,6], 'Missing':[1,3]}
+
+
+def test_validate_460():
+    fake_data = pd.DataFrame({
+        'CHILD': ['101', '102', '101', '102', '103', '104'],
+        'REC': ['E17', 'E17', 'X1', pd.NA, 'E17', 'E17'],
+        'DEC': ['16/03/2023', '17/06/2020', '20/03/2020', pd.NA, '23/08/2020', '23/08/2020'],
+    })
+
+    fake_data_child = pd.DataFrame({
+        'CHILD': ['101', '102', '103', '104'],
+        'DOB': ['16/03/2005', '23/09/2002', '31/12/2000', pd.NA],
+    })
+
+    fake_dfs = {'Episodes': fake_data, 'Header': fake_data_child}
+
+    error_defn, error_func = validate_460()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1]}
+
+def test_validate_578():
+    fake_data_mis = pd.DataFrame([
+        {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0
+        {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1
+        {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 2 fail
+        {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 3
+        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 4 pass
+        {'CHILD': '5', 'MIS_START': '01/01/1980', },  # 5 fail
+        {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 6 pass
+        {'CHILD': '77', 'MIS_START': '01/01/1981', },  # 7 pass
+    ])
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', },
+        {'CHILD': '2', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, },
+        {'CHILD': '88', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # pass
+        {'CHILD': '3', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # fail
+        {'CHILD': '4', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # ignore
+        {'CHILD': '5', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # fail
+        {'CHILD': '6', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # pass
+    ])
+
+    fake_dfs = {'Episodes': fake_data_eps, 'Missing': fake_data_mis}
+    error_defn, error_func = validate_578()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [3, 5], 'Missing': [2, 4]}
+
+
+def test_validate_391():
+    fake_data_oc3 = pd.DataFrame({
+        'CHILD': ['A', 'B', 'C', 'D', 'E'],
+        'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2002', '03/01/2004', ],
+        'IN_TOUCH': ['DIED', 'Yes', 'RHOM', pd.NA, pd.NA],
+        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+    })
+    metadata = {
+        'collection_end': '31/03/2018'
+    }
+
+    fake_dfs = {'OC3': fake_data_oc3, 'metadata': metadata}
+    error_defn, error_func = validate_391()
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 3]}
+
+
+def test_validate_625():
+  fake_data_header = pd.DataFrame({
+      'CHILD': ['101', '102', '103'],
+      'MC_DOB': ['01/11/2021', '19/12/2016', pd.NA],
+      # 0 MC_DOB > collection_end FAIL
+      # 1 MC_DOB < collection_end but > DEC of latest episode FAIL
+      # 2 MC_DOB not provided IGNORE
+  })
+  fake_data_episodes = pd.DataFrame({
+    'CHILD': ['101','101', '102','102', '103', '103', '103'],
+    'DEC': ['02/12/2021', '11/11/2012','03/10/2014', '11/11/2015', '01/01/2020', '11/11/2020', '01/02/2020']
+  })
+  metadata = {
+    'collection_end': '31/03/2021'
+  }
+  fake_dfs = {'metadata':metadata, 'Episodes':fake_data_episodes, 'Header':fake_data_header}
+  error_defn, error_func = validate_625()
+  result = error_func(fake_dfs)
+  assert result == {'Episodes':[0,3], 'Header':[0,1]}
+
+def test_validate_514():
+    fake_data = pd.DataFrame({
+        'LS_ADOPTR':  ['L0', 'xx', 'L0', pd.NA, 'L0'],
+        'SEX_ADOPTR':  ['M1', 'F1', 'xx', pd.NA, 'xxx'],
+    })
+
+    fake_dfs = {'AD1': fake_data}
+
+    error_defn, error_func = validate_514()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'AD1': [ 2, 4, ]}
+
+
 def test_validate_632():
     fake_data_prevperm = pd.DataFrame({
         'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
-        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/zz/2020', 'zz/05/2021', 'zz/zz/zzzz',
-                      'zz/zz/1993', 'zz/zz/zz', '01/13/2000'],
+        'DATE_PERM': ['xx/10/2011', '17/06/2001', '01/05/2000', pd.NA, '05/ZZ/2020', 'ZZ/05/2021', 'ZZ/ZZ/ZZZZ', 'ZZ/ZZ/1993', 'ZZ/ZZ/ZZ', '01/13/2000'],
     })
 
     fake_data_episodes = pd.DataFrame([
@@ -346,6 +480,7 @@ def test_validate_352():
 
 
 def test_validators_1007():
+  # TODO change name to test_validate_1007()
     fake_data_oc3 = pd.DataFrame({
         'CHILD': ['A', 'B', 'C', 'D', 'E'],
         'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2000', '03/01/2000', ],
@@ -4480,6 +4615,20 @@ def test_validate_435():
     result = error_func(fake_dfs)
 
     assert result == {'Episodes': [2, 6]}
+
+def test_validate_104():
+    fake_uasc = pd.DataFrame({
+      'DUC': ['01/03/2019', '19/02/2020', '03/04/2019', '01/01/2019', pd.NA, 'INNVLAID/DATE/2077'],
+    })
+
+    metadata = {'collection_start': '01/04/2019'}
+
+    fake_dfs = {'UASC': fake_uasc, 'metadata': metadata}
+
+    error_defn, error_func = validate_104()
+
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [0, 3, 5]}
 
 
 def test_validate_392B():

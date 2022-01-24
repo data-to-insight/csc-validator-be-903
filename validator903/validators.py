@@ -4,164 +4,172 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
 def validate_351():
-  error = ErrorDefinition(
-    code = '351',
-    description = 'Child was over 21 at the start of the current collection year.',
-    affected_fields = ['DOB',]
-  )
+    error = ErrorDefinition(
+        code='351',
+        description='Child was over 21 at the start of the current collection year.',
+        affected_fields=['DOB', ]
+    )
 
-  def _validate(dfs):
-    if 'Header' not in dfs:
-      return {}
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
 
-    else:
-      header = dfs['Header']
-      collection_start = dfs['metadata']['collection_start']
+        else:
+            header = dfs['Header']
+            collection_start = dfs['metadata']['collection_start']
 
-      # Convert from string to date to appropriate format
-      header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
-      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            # Convert from string to date to appropriate format
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
-      mask = collection_start > (header['DOB'] + pd.DateOffset(years=21))
-      # error locations
-      header_error_locs = header.index[mask]
+            mask = collection_start > (header['DOB'] + pd.DateOffset(years=21))
+            # error locations
+            header_error_locs = header.index[mask]
 
-      return {'Header': header_error_locs.tolist()}
-  
-  return error, _validate
+            return {'Header': header_error_locs.tolist()}
+
+    return error, _validate
+
 
 def validate_632():
-  error = ErrorDefinition(
-    code = '632',
-    description = 'Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year',
-    affected_fields = ['DATE_PERM', 'DECOM'],
-  )
-  def _validate(dfs):
-    if 'Episodes' not in dfs or 'PrevPerm' not in dfs:
-      return {}
-    else:
+    error = ErrorDefinition(
+        code='632',
+        description='Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year',
+        affected_fields=['DATE_PERM', 'DECOM'],
+    )
 
-      # function to check that date is of the right format
-      def valid_date(dte):
-          try:
-            lst = dte.split('/')
-          except AttributeError:
-            return pd.NaT
-          # Preceding block checks for the scenario where the value passed in is nan/naT
-          
-          # date should have three elements
-          if (len(lst) != 3):
-              return pd.NaT
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'PrevPerm' not in dfs:
+            return {}
+        else:
 
-          z_list = ['zz', 'zz', 'zzzz']
-          # We set the date to the latest possible value to avoid false positives
-          offset_list = [pd.DateOffset(months=1, days=-1),
-                        pd.DateOffset(years=1, days=-1),
-                        None]
-          # that is, go to the next month/year and take the day before that
-          already_found_non_zeds = False
-          date_bits = []
+            # function to check that date is of the right format
+            def valid_date(dte):
+                try:
+                    lst = dte.split('/')
+                except AttributeError:
+                    return pd.NaT
+                # Preceding block checks for the scenario where the value passed in is nan/naT
 
-          for i, zeds, offset in zip(lst, z_list, offset_list):
-              if i == zeds:
-                  # I'm assuming it is invalid to have a date like '01/zz/zzzz'
-                  if already_found_non_zeds:
-                      return pd.NaT
-                  # Replace day & month zeds with '01' so we can check if the resulting date is valid
-                  # and set the offset so we can compare the latest corresponding date
-                  elif i == 'zz':
-                      i = '01'
-                      offset_to_use = offset
-              else:
-                  already_found_non_zeds = True
-              date_bits.append(i)
-          
-          as_datetime = pd.to_datetime('/'.join(date_bits), 
-                                      format='%d/%m/%Y', errors='coerce')
-          try:
-              as_datetime += offset_to_use
-          except NameError:  # offset_to_use only defined if needed
-              pass  
-          return as_datetime
+                # date should have three elements
+                if (len(lst) != 3):
+                    return pd.NaT
 
-      episodes = dfs['Episodes']
-      prevperm = dfs['PrevPerm']
+                z_list = ['zz', 'zz', 'zzzz']
+                # We set the date to the latest possible value to avoid false positives
+                offset_list = [pd.DateOffset(months=1, days=-1),
+                               pd.DateOffset(years=1, days=-1),
+                               None]
+                # that is, go to the next month/year and take the day before that
+                already_found_non_zeds = False
+                date_bits = []
 
-      # convert dates from strings to appropriate format.
-      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-      prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
+                for i, zeds, offset in zip(lst, z_list, offset_list):
+                    if i == zeds:
+                        # I'm assuming it is invalid to have a date like '01/zz/zzzz'
+                        if already_found_non_zeds:
+                            return pd.NaT
+                        # Replace day & month zeds with '01' so we can check if the resulting date is valid
+                        # and set the offset so we can compare the latest corresponding date
+                        elif i == 'zz':
+                            i = '01'
+                            offset_to_use = offset
+                    else:
+                        already_found_non_zeds = True
+                    date_bits.append(i)
 
-      # select first episodes
-      first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
-      first_eps = episodes[episodes.index.isin(first_eps_idxs)]
+                as_datetime = pd.to_datetime('/'.join(date_bits),
+                                             format='%d/%m/%Y', errors='coerce')
+                try:
+                    as_datetime += offset_to_use
+                except NameError:  # offset_to_use only defined if needed
+                    pass
+                return as_datetime
 
-      # prepare to merge
-      first_eps.reset_index(inplace=True)
-      prevperm.reset_index(inplace=True)
-      merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
+            episodes = dfs['Episodes']
+            prevperm = dfs['PrevPerm']
 
-      # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
-      mask = (merged['DATE_PERM_dt'] >= merged['DECOM']) | (merged['DATE_PERM'].notna()
-                                                            & merged['DATE_PERM_dt'].isna()
-                                                            & (merged['DATE_PERM'] != 'zz/zz/zzzz')
-                                                            )
+            # convert dates from strings to appropriate format.
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
 
-      # error locations
-      prev_error_locs = merged.loc[mask, 'index_prev']
-      eps_error_locs = merged.loc[mask, 'index_eps']
+            # select first episodes
+            first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
+            first_eps = episodes[episodes.index.isin(first_eps_idxs)]
 
-      return {'Episodes':eps_error_locs.tolist(), 'PrevPerm':prev_error_locs.unique().tolist()}
+            # prepare to merge
+            first_eps.reset_index(inplace=True)
+            prevperm.reset_index(inplace=True)
+            merged = first_eps.merge(prevperm, on='CHILD', how='left', suffixes=['_eps', '_prev'])
 
-  return error, _validate
+            # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by zz if part of the date element is not known.
+            mask = (merged['DATE_PERM_dt'] >= merged['DECOM']) | (merged['DATE_PERM'].notna()
+                                                                  & merged['DATE_PERM_dt'].isna()
+                                                                  & (merged['DATE_PERM'] != 'zz/zz/zzzz')
+                                                                  )
+
+            # error locations
+            prev_error_locs = merged.loc[mask, 'index_prev']
+            eps_error_locs = merged.loc[mask, 'index_eps']
+
+            return {'Episodes': eps_error_locs.tolist(), 'PrevPerm': prev_error_locs.unique().tolist()}
+
+    return error, _validate
+
 
 def validate_165():
-  error = ErrorDefinition(
-    code = '165',
-    description = 'Data entry for mother status is invalid.',
-    affected_fields = ['MOTHER', 'SEX', 'ACTIV', 'ACCOM', 'IN_TOUCH', 'DECOM']
-  )
-  def _validate(dfs):
-    if 'Header' not in dfs or 'Episodes' not in dfs or 'OC3' not in dfs:
-      return {}
-    else:
-      header = dfs['Header']
-      episodes = dfs['Episodes']
-      oc3 = dfs['OC3']
-      collection_start = dfs['metadata']['collection_start'] 
-      collection_end = dfs['metadata']['collection_end']
-      valid_values = ['0','1']
+    error = ErrorDefinition(
+        code='165',
+        description='Data entry for mother status is invalid.',
+        affected_fields=['MOTHER', 'SEX', 'ACTIV', 'ACCOM', 'IN_TOUCH', 'DECOM']
+    )
 
-      # prepare to merge
-      oc3.reset_index(inplace=True)
-      header.reset_index(inplace=True)
-      episodes.reset_index(inplace=True)
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+            oc3 = dfs['OC3']
+            collection_start = dfs['metadata']['collection_start']
+            collection_end = dfs['metadata']['collection_end']
+            valid_values = ['0', '1']
 
-      collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
-      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
-      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            # prepare to merge
+            oc3.reset_index(inplace=True)
+            header.reset_index(inplace=True)
+            episodes.reset_index(inplace=True)
 
-      episodes['EPS'] = (episodes['DECOM']>=collection_start) & (episodes['DECOM']<=collection_end)
-      episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
-      merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD', how='left')
+            episodes['EPS'] = (episodes['DECOM'] >= collection_start) & (episodes['DECOM'] <= collection_end)
+            episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
-      # Raise error if provided <MOTHER> is not a valid value. 
-      value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
-      # If not provided
-      female = (merged['SEX']=='1')
-      eps_in_year = (merged['EPS_COUNT']>0)
-      none_provided = (merged['ACTIV'].isna()& merged['ACCOM'].isna()& merged['IN_TOUCH'].isna())
-      # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
-      mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
-      # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
-      error_locs_eps = merged.loc[mask, 'index_eps']
-      error_locs_header = merged.loc[mask, 'index_er']
-      error_locs_oc3 = merged.loc[mask, 'index']
+            merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD',
+                                                                                                    how='left')
 
-      return {'Header':error_locs_header.dropna().unique().tolist(),
-              'OC3':error_locs_oc3.dropna().unique().tolist()}
-  return error, _validate
+            # Raise error if provided <MOTHER> is not a valid value.
+            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
+            # If not provided
+            female = (merged['SEX'] == '1')
+            eps_in_year = (merged['EPS_COUNT'] > 0)
+            none_provided = (merged['ACTIV'].isna() & merged['ACCOM'].isna() & merged['IN_TOUCH'].isna())
+            # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
+            mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
+            # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
+            error_locs_eps = merged.loc[mask, 'index_eps']
+            error_locs_header = merged.loc[mask, 'index_er']
+            error_locs_oc3 = merged.loc[mask, 'index']
+
+            return {'Header': error_locs_header.dropna().unique().tolist(),
+                    'OC3': error_locs_oc3.dropna().unique().tolist()}
+
+    return error, _validate
+
 
 def validate_1014():
     error = ErrorDefinition(
@@ -297,8 +305,8 @@ def validate_357():
         eps = eps.loc[eps['DECOM'].notnull()]
 
         first_eps = (eps
-                     .loc[eps.groupby('CHILD')['DECOM'].idxmin()]
-                     .loc[eps['DECOM'] >= collection_start])
+            .loc[eps.groupby('CHILD')['DECOM'].idxmin()]
+            .loc[eps['DECOM'] >= collection_start])
 
         errs = first_eps[first_eps['RNE'] != 'S'].index.to_list()
 
@@ -1307,7 +1315,7 @@ def validate_519():
         else:
             ad1 = dfs['AD1']
             mask = (ad1['LS_ADOPTR'] == 'L2') & (
-                        (ad1['SEX_ADOPTR'] != 'MM') & (ad1['SEX_ADOPTR'] != 'FF') & (ad1['SEX_ADOPTR'] != 'MF'))
+                    (ad1['SEX_ADOPTR'] != 'MM') & (ad1['SEX_ADOPTR'] != 'FF') & (ad1['SEX_ADOPTR'] != 'MF'))
             error_locations = ad1.index[mask]
             return {'AD1': error_locations.to_list()}
 

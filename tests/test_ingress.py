@@ -39,8 +39,10 @@ def test_read_csv_from_text(dummy_input_files):
     uploaded_files += last_year_files
 
     out = read_csvs_from_text(uploaded_files)
-    assert len(out) == 2 * len(dummy_input_files) 
+    assert len(out) == 2 * len(dummy_input_files)
     for name, val in out.items():
+        if name in ('Header', 'Header_last'):
+            assert 'UASC' in val.columns, f'UASC field not added to {name}'
         assert len(val) > 0, f'No entries found for {name}'
 
 

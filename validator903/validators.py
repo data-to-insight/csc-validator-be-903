@@ -4725,7 +4725,7 @@ def validate_501():
 def validate_502():
     error = ErrorDefinition(
         code='502',
-        description='Last year’s record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.',
+        description="Last year's record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.",
         affected_fields=['DECOM'],
     )
 

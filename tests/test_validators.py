@@ -28,27 +28,28 @@ fake_uasc_prev_205 = pd.DataFrame([
     {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021', 'UASC': '0'},#Fail D
 ])
 
-# Temporary until can handle UASC field properly.
+fake_uasc_header_205 = pd.DataFrame([
+    {'CHILD': '101', 'DOB': '28/10/2004', 'UASC': '0'},#Pass C
+    {'CHILD': '108', 'DOB': '19/02/2003', 'UASC': '0'},#Fail C
+    {'CHILD': '109', 'DOB': '14/06/2003', 'UASC': '1'},#Fail D
+    {'CHILD': '102', 'DOB': '04/06/2004', 'UASC': '0'},#Pass A
+    {'CHILD': '103', 'DOB': '03/03/2002', 'UASC': '0'},#Fail A
+    {'CHILD': '104', 'DOB': '28/03/2003', 'UASC': '0'},#Fail A
+    {'CHILD': '105', 'DOB': '16/04/2001', 'UASC': '1'},#Fail B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'UASC': '1'},#Fail B
+    {'CHILD': '107', 'DOB': '23/07/2002', 'UASC': '1'},#Pass B
+])
+
 fake_uasc_prev_header_205 = pd.DataFrame([
-    {'CHILD': '109'}
-])
-
-# Temporary until can handle UASC field properly.
-fake_uasc_205_noUASCcol = pd.DataFrame([
-    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Fail B
-    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '16/06/2021'},#Fail B
-    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020'},#Pass B
-    {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021'},#Fail D
-])
-
-# Temporary until can handle UASC field properly.
-fake_uasc_prev_205_noUASCcol = pd.DataFrame([
-    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': '20/01/2020'},#Pass A
-    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020'},#Fail A
-    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021'},#Fail A
-    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Fail B
-    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '04/11/2023'},#Fail B
-    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020'},#Pass B
+    {'CHILD': '102', 'DOB': '04/06/2004', 'UASC': '1'},#Pass A
+    {'CHILD': '103', 'DOB': '03/03/2002', 'UASC': '1'},#Fail A
+    {'CHILD': '104', 'DOB': '28/03/2003', 'UASC': '1'},#Fail A
+    {'CHILD': '101', 'DOB': '28/10/2004', 'UASC': '0'},#Pass C
+    {'CHILD': '105', 'DOB': '16/04/2001', 'UASC': '1'},#Fail B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'UASC': '1'},#Fail B
+    {'CHILD': '107', 'DOB': '23/07/2002', 'UASC': '1'},#Pass B
+    {'CHILD': '108', 'DOB': '19/02/2003', 'UASC': '0'},#Fail C
+    {'CHILD': '109', 'DOB': '14/06/2003', 'UASC': '0'},#Fail D
 ])
 
 metadata_205 = {
@@ -59,61 +60,30 @@ metadata_205 = {
 fake_dfs_205 = {
     'UASC': fake_uasc_205,
     'UASC_last': fake_uasc_prev_205,
-    'Header_last': fake_uasc_prev_header_205,#Temporary until can handle UASC field properly.
+    'Header': fake_uasc_header_205,
+    'Header_last': fake_uasc_prev_header_205,
     'metadata': metadata_205
 }
 
 def test_validate_205A():
     error_defn, error_func = validate_205A()
     result = error_func(fake_dfs_205)
-    assert result == {'UASC_last':[2,3]}
+    assert result == {'UASC':[2,3], 'UASC_last':[2,3], 'Header':[4,5], 'Header_last':[1,2]}
 
 def test_validate_205B():
     error_defn, error_func = validate_205B()
     result = error_func(fake_dfs_205)
-    assert result == {'UASC':[4,5]}
+    assert result == {'UASC':[4,5], 'UASC_last': [4,5], 'Header': [6,7], 'Header_last': [4,5]}
 
 def test_validate_205C():
     error_defn, error_func = validate_205C()
     result = error_func(fake_dfs_205)
-    assert result == {'UASC':[7]}
+    assert result == {'UASC':[7], 'UASC_last': [7], 'Header': [1], 'Header_last': [7]}
 
 def test_validate_205D():
     error_defn, error_func = validate_205D()
     result = error_func(fake_dfs_205)
-    assert result == {'UASC':[8]}
-
-# Temporary until can handle UASC field properly.
-fake_dfs_205_noUASCcol = {
-    'UASC': fake_uasc_205_noUASCcol,
-    'UASC_last': fake_uasc_prev_205_noUASCcol,
-    'Header_last': fake_uasc_prev_header_205,#Temporary until can handle UASC field properly.
-    'metadata': metadata_205
-}
-
-# Temporary until can handle UASC field properly.
-def test_validate_205A_noUASCcol():
-    error_defn, error_func = validate_205A()
-    result = error_func(fake_dfs_205_noUASCcol)
-    assert result == {'UASC_last':[1,2]}
-
-# Temporary until can handle UASC field properly.
-def test_validate_205B_noUASCcol():
-    error_defn, error_func = validate_205B()
-    result = error_func(fake_dfs_205_noUASCcol)
-    assert result == {'UASC':[0,1]}
-
-### Temporary until can handle UASC field properly.
-#def test_validate_205C_noUASCcol():
-#    error_defn, error_func = validate_205C()
-#    result = error_func(fake_dfs_205_noUASCcol)
-#    assert result == {'UASC':[]}
-
-# Temporary until can handle UASC field properly.
-def test_validate_205D_noUASCcol():
-    error_defn, error_func = validate_205D()
-    result = error_func(fake_dfs_205_noUASCcol)
-    assert result == {'UASC':[3]}
+    assert result == {'UASC':[8], 'UASC_last': [8], 'Header': [2], 'Header_last': [8]}
 
 def test_validate_518():
     fake_data = pd.DataFrame({

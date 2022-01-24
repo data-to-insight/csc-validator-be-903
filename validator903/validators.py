@@ -5,15 +5,17 @@ def validate_205A():
     error = ErrorDefinition(
         code = '205A',
         description = 'Child identified as UASC last year is no longer UASC this year, but date UASC ceased in both years does not support this.',
-        affected_fields=['DUC'],
+        affected_fields=['DUC','UASC'],
     )
 
     def _validate(dfs):
-        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+        if 'UASC' not in dfs or 'UASC_last' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
             return {}
         else:
             uasc = dfs['UASC']
             uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
 
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
@@ -25,22 +27,27 @@ def validate_205A():
             uasc_last['DOB'] = pd.to_datetime(uasc_last['DOB'],format='%d/%m/%Y',errors='coerce')
             uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'],format='%d/%m/%Y',errors='coerce')
 
-            uasc_merged = uasc.reset_index().merge(uasc_last, how='right', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+            header.reset_index(inplace=True)
+            header_last.reset_index(inplace=True)
 
-            if 'UASC' in uasc_merged and 'UASC_last' in uasc_merged:
-                last_year_only = (uasc_merged['UASC'].astype(str) == '0') & (uasc_merged['UASC_last'].astype(str) == '1')
-                uasc_current_duc = uasc_merged['DUC'].notna()
-            else: #Handle missing data
-                last_year_only = uasc_merged['_merge'] == 'right_only'
-                uasc_current_duc = uasc_merged['DUC'].isna()
-            
-            uasc_last_duc = (uasc_merged['DUC_last'] >= collection_start_last) & (uasc_merged['DUC_last'] <= collection_end_last)
+            uasc_merged = uasc.reset_index().merge(header[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_header')).set_index('index')
+
+            uasc_last_merged = uasc_last.reset_index().merge(header_last[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_headerlast')) #not setting 'index' back here as need to retain as column for later
+
+            uasc_merged = uasc_merged.reset_index().merge(uasc_last_merged, how='right', on=['CHILD'], suffixes=('', '_uasclast'), indicator=True) #not setting 'index' back here as need to retain as column for later
+
+            last_year_only = (uasc_merged['UASC'].astype(str) == '0') & (uasc_merged['UASC_uasclast'].astype(str) == '1')
+            uasc_current_duc = uasc_merged['DUC'].notna()
+            uasc_last_duc = (uasc_merged['DUC_uasclast'] >= collection_start_last) & (uasc_merged['DUC_uasclast'] <= collection_end_last)
 
             error_mask = last_year_only & uasc_current_duc & ~uasc_last_duc
 
-            error_locations = uasc_last.index[error_mask]
+            error_locations_uasc = uasc_merged.loc[error_mask, 'index']
+            error_locations_uasc_last = uasc_merged.loc[error_mask, 'index_uasclast']
+            error_locations_header = uasc_merged.loc[error_mask, 'index_header']
+            error_locations_header_last = uasc_merged.loc[error_mask, 'index_headerlast']
 
-            return {'UASC_last': error_locations.to_list()}
+            return {'UASC': error_locations_uasc.to_list(), 'UASC_last': error_locations_uasc_last.to_list(), 'Header': error_locations_header.to_list(), 'Header_last': error_locations_header_last.to_list()}
 
     return error, _validate
 
@@ -48,15 +55,17 @@ def validate_205B():
     error = ErrorDefinition(
         code = '205B',
         description = 'Child previously identified as UASC is also UASC this year, but date UASC ceased in both years does not support this.',
-        affected_fields=['DUC'],
+        affected_fields=['DUC','UASC'],
     )
 
     def _validate(dfs):
-        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+        if 'UASC' not in dfs or 'UASC_last' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
             return {}
         else:
             uasc = dfs['UASC']
             uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
 
             collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
             collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
@@ -67,87 +76,107 @@ def validate_205B():
             uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'],format='%d/%m/%Y',errors='coerce')
             uasc_last['DOB18'] = uasc_last['DOB'] + pd.offsets.DateOffset(years=18)
 
-            uasc_merged = uasc.reset_index().merge(uasc_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
+            header.reset_index(inplace=True)
+            header_last.reset_index(inplace=True)
 
-            if 'UASC' in uasc_merged and 'UASC_last' in uasc_merged:
-                in_both_years = (uasc_merged['UASC'].astype(str) == '1') & (uasc_merged['UASC_last'].astype(str) == '1')
-            else: #Handle missing data
-                in_both_years = uasc_merged['_merge'] == 'both'
-            
+            uasc_merged = uasc.reset_index().merge(header[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_header')).set_index('index')
+
+            uasc_last_merged = uasc_last.reset_index().merge(header_last[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_headerlast')) #not setting 'index' back here as need to retain as column for later
+
+            uasc_merged = uasc_merged.reset_index().merge(uasc_last_merged, how='right', on=['CHILD'], suffixes=('', '_uasclast'), indicator=True) #not setting 'index' back here as need to retain as column for later
+
+            in_both_years = (uasc_merged['UASC'].astype(str) == '1') & (uasc_merged['UASC_headerlast'].astype(str) == '1')
             uasc_current_duc = (uasc_merged['DUC'] >= collection_start) & (uasc_merged['DUC'] <= collection_end)
-            uasc_last_duc = uasc_merged['DUC_last'] == uasc_merged['DOB18']
-            uasc_duc_matches = uasc_merged['DUC'] == uasc_merged['DUC_last']
+            uasc_last_duc = uasc_merged['DUC_uasclast'] == uasc_merged['DOB18']
+            uasc_duc_matches = uasc_merged['DUC'] == uasc_merged['DUC_uasclast']
 
             error_mask = in_both_years & (~uasc_current_duc | ~uasc_duc_matches | ~uasc_last_duc)
 
-            error_locations = uasc.index[error_mask]
+            error_locations_uasc = uasc_merged.loc[error_mask, 'index']
+            error_locations_uasc_last = uasc_merged.loc[error_mask, 'index_uasclast']
+            error_locations_header = uasc_merged.loc[error_mask, 'index_header']
+            error_locations_header_last = uasc_merged.loc[error_mask, 'index_headerlast']
 
-            return {'UASC': error_locations.to_list()}
+            return {'UASC': error_locations_uasc.to_list(), 'UASC_last': error_locations_uasc_last.to_list(), 'Header': error_locations_header.to_list(), 'Header_last': error_locations_header_last.to_list()}
 
     return error, _validate
 
-#def validate_205C():
-#    error = ErrorDefinition(
-#        code = '205C',
-#        description = 'Child not identified as UASC either this year or last year but date UASC ceased has been provided.',
-#        affected_fields=['CHILD'],
-#    )
-#
-#    def _validate(dfs):
-#        if 'UASC' not in dfs or 'UASC_last' not in dfs:
-#            return {}
-#        else:
-#            uasc = dfs['UASC']
-#            uasc_last = dfs['UASC_last']
-#
-#            if 'UASC' in uasc and 'UASC' in uasc_last:
-#                uasc_merged = uasc.reset_index().merge(uasc_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
-#                in_both_years = (uasc_merged['UASC'].astype(str) == '0') & (uasc_merged['UASC_last'].astype(str) == '0')
-#                has_current_duc = uasc_merged['DUC'].notna()
-#                has_last_duc = uasc_merged['DUC_last'].notna()
-#            else: #Handle missing data
-#                  #Can't validate this so nulling return
-#                in_both_years = uasc['CHILD'].isna()
-#                has_current_duc = uasc['CHILD'].isna()
-#                has_last_duc = uasc['CHILD'].isna()
-#
-#            error_mask = in_both_years & (has_current_duc | has_last_duc)
-#
-#            error_locations = uasc.index[error_mask]
-#
-#            return {'UASC': error_locations.to_list()}
-#
-#    return error, _validate
+def validate_205C():
+    error = ErrorDefinition(
+        code = '205C',
+        description = 'Child not identified as UASC either this year or last year but date UASC ceased has been provided.',
+        affected_fields=['DUC','UASC'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs or 'UASC_last' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+
+            header.reset_index(inplace=True)
+            header_last.reset_index(inplace=True)
+
+            uasc_merged = uasc.reset_index().merge(header[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_header')).set_index('index')
+
+            uasc_last_merged = uasc_last.reset_index().merge(header_last[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_headerlast')) #not setting 'index' back here as need to retain as column for later
+
+            uasc_merged = uasc_merged.reset_index().merge(uasc_last_merged, how='right', on=['CHILD'], suffixes=('', '_uasclast'), indicator=True) #not setting 'index' back here as need to retain as column for later
+
+            in_both_years = (uasc_merged['UASC'].astype(str) == '0') & (uasc_merged['UASC_uasclast'].astype(str) == '0')
+            has_current_duc = uasc_merged['DUC'].notna()
+            has_last_duc = uasc_merged['DUC_uasclast'].notna()
+
+            error_mask = in_both_years & (has_current_duc | has_last_duc)
+
+            error_locations_uasc = uasc_merged.loc[error_mask, 'index']
+            error_locations_uasc_last = uasc_merged.loc[error_mask, 'index_uasclast']
+            error_locations_header = uasc_merged.loc[error_mask, 'index_header']
+            error_locations_header_last = uasc_merged.loc[error_mask, 'index_headerlast']
+
+            return {'UASC': error_locations_uasc.to_list(), 'UASC_last': error_locations_uasc_last.to_list(), 'Header': error_locations_header.to_list(), 'Header_last': error_locations_header_last.to_list()}
+
+    return error, _validate
 
 def validate_205D():
     error = ErrorDefinition(
         code = '205D',
         description = 'Child identified as UASC this year but not identified as UASC status provided for the child last year.',
-        affected_fields=['CHILD'],
+        affected_fields=['UASC'],
     )
 
     def _validate(dfs):
-        if 'UASC' not in dfs or 'UASC_last' not in dfs or 'Header_last' not in dfs: #Header required for handling missing data only
+        if 'UASC' not in dfs or 'UASC_last' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs: 
             return {}
         else:
             uasc = dfs['UASC']
             uasc_last = dfs['UASC_last']
+            header = dfs['Header']
             header_last = dfs['Header_last']
 
-            if 'UASC' in uasc and 'UASC' in uasc_last:
-                uasc_merged = uasc.reset_index().merge(uasc_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
-                in_current_year = uasc_merged['UASC'].astype(str) == '1'
-                in_last_year = uasc_merged['UASC_last'].astype(str) == '1'
-            else: #Handle missing data
-                uasc_merged = uasc.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'), indicator=True).set_index('index')
-                in_current_year = 1
-                in_last_year = uasc_merged['_merge'] != 'both'
+            header.reset_index(inplace=True)
+            header_last.reset_index(inplace=True)
+
+            uasc_merged = uasc.reset_index().merge(header[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_header')).set_index('index')
+
+            uasc_last_merged = uasc_last.reset_index().merge(header_last[['CHILD', 'UASC', 'index']], how='left', on='CHILD', suffixes=('','_headerlast')) #not setting 'index' back here as need to retain as column for later
+
+            uasc_merged = uasc_merged.reset_index().merge(uasc_last_merged, how='right', on=['CHILD'], suffixes=('', '_uasclast'), indicator=True) #not setting 'index' back here as need to retain as column for later
+
+            in_current_year = uasc_merged['UASC'].astype(str) == '1'
+            in_last_year = uasc_merged['UASC_uasclast'].astype(str) == '1'
 
             error_mask = in_current_year & ~in_last_year
 
-            error_locations = uasc.index[error_mask]
+            error_locations_uasc = uasc_merged.loc[error_mask, 'index']
+            error_locations_uasc_last = uasc_merged.loc[error_mask, 'index_uasclast']
+            error_locations_header = uasc_merged.loc[error_mask, 'index_header']
+            error_locations_header_last = uasc_merged.loc[error_mask, 'index_headerlast']
 
-            return {'UASC': error_locations.to_list()}
+            return {'UASC': error_locations_uasc.to_list(), 'UASC_last': error_locations_uasc_last.to_list(), 'Header': error_locations_header.to_list(), 'Header_last': error_locations_header_last.to_list()}
 
     return error, _validate
 

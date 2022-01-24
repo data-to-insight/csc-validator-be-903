@@ -1,6 +1,22 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_351():
+    fake_data_header = pd.DataFrame({
+        'CHILD': ['101', '102', '103', '104', '105',],
+        'DOB': [pd.NA, '11/11/2020', '03/10/1995', '01/04/2000', '01/01/1999',]
+    })
+    metadata = {
+        'collection_start': '01/04/2021',
+    }
+    fake_dfs = {'Header': fake_data_header, 'metadata': metadata}
+
+    error_defn, error_func = validate_351()
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [2,4]}
+
+
 
 def test_validate_301():
     fake_data_header = pd.DataFrame([

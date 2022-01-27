@@ -2,6 +2,38 @@ from validator903.validators import *
 import pandas as pd
 
 
+def test_validate_334():
+    fake_data_episodes = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/03/1980', 'RNE': 'S'},  # 0 fail
+
+        {'CHILD': 102, 'DECOM': '01/03/1980', 'RNE': 'o'},
+        {'CHILD': 102, 'DECOM': '01/03/1980', 'RNE': 'S'},  # 2 ignore DATE_PLACED is nan
+
+        {'CHILD': 103, 'DECOM': '01/02/1970', 'RNE': 'o'},
+        {'CHILD': 103, 'DECOM': '01/03/1979', 'RNE': 'S'},
+        {'CHILD': 103, 'DECOM': '01/01/1980', 'RNE': 'S'},  # 5 pass
+
+        {'CHILD': 104, 'DECOM': '01/03/1979', 'RNE': 'o'},  # ignore no RNE is S
+        {'CHILD': 104, 'DECOM': '01/01/1981', 'RNE': 'o'},
+
+        {'CHILD': 105, 'DECOM': '01/03/1979', 'RNE': 'o'},
+        {'CHILD': 105, 'DECOM': '01/01/2020', 'RNE': 'S'},  # 9 fail
+        {'CHILD': 105, 'DECOM': '26/05/2021', 'RNE': 'o'},
+    ])
+    fake_placed_ad1 = pd.DataFrame([
+        {'CHILD': 101, 'DATE_INT': '26/05/1978'},  # 0 fail
+        {'CHILD': 102, 'DATE_INT': pd.NA},  # 1
+        {'CHILD': 103, 'DATE_INT': '26/05/1981'},  # 2 pass
+        {'CHILD': 104, 'DATE_INT': '01/02/1960'},  # 3
+        {'CHILD': 105, 'DATE_INT': '26/05/2019'},  # 4 fail
+    ])
+    fake_dfs = {'Episodes': fake_data_episodes, 'AD1': fake_placed_ad1}
+    error_defn, error_func = validate_334()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [0, 9], 'AD1': [0, 4]}
+
+
+
 def test_validate_559():
     metadata = {
         'collection_start': '01/04/2020',
@@ -366,10 +398,14 @@ def test_validate_1014():
         {'CHILD': 111, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 5 Fails
     ])
     fake_data_oc3 = pd.DataFrame({
-        'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111],
-        'IN_TOUCH': [pd.NA, 'YES', 'YES', pd.NA, 'Yes', 'No', 'YES', 'YES', pd.NA, pd.NA, '!!'],
-        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX', pd.NA, pd.NA, 'XXX', pd.NA, 'XXX', '!!'],
-        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX', pd.NA, pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
+        'CHILD': [101, 102, 103, 104, 105, 106,
+                  107, 108, 109, 110, 111],
+        'IN_TOUCH': [pd.NA, 'YES', 'YES', pd.NA, 'Yes', 'No',
+                     'YES', 'YES', pd.NA, pd.NA, '!!'],
+        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX', pd.NA,
+                  pd.NA, 'XXX', pd.NA, 'XXX', '!!'],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX', pd.NA,
+                  pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
     })
     fake_data_episodes = pd.DataFrame([
         {'CHILD': 101, 'DECOM': '01/01/2020', 'DEC': '01/01/2020', },  # 0

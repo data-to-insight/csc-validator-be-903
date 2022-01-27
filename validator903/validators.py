@@ -26,7 +26,8 @@ def validate_334():
             # select the earliest episodes with RNE =  S
             eps_rne = episodes[episodes['RNE'] == 'S']
             last_eps_idxs = eps_rne.groupby('CHILD')['DECOM'].idxmax()
-            last_eps = eps_rne[eps_rne.index.isin(last_eps_idxs)]
+            last_eps = eps_rne.loc[last_eps_idxs]
+
             # prepare to merge
             ad1.reset_index(inplace=True)
             last_eps.reset_index(inplace=True)
@@ -34,9 +35,12 @@ def validate_334():
 
             # <DATE_PLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
             mask = merged['DATE_INT'] < merged['DECOM']
+
             eps_error_locs = merged.loc[mask, 'index_eps']
             ad1_error_locs = merged.loc[mask, 'index_ad1']
-            return {'Episodes': eps_error_locs.tolist(), 'AD1': ad1_error_locs.tolist()}
+
+            return {'Episodes': eps_error_locs.tolist(),
+                    'AD1': ad1_error_locs.tolist()}
 
     return error, _validate
 

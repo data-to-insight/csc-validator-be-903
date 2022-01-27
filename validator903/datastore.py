@@ -83,10 +83,16 @@ def merge_postcodes(df: DataFrame, postcode_field: str) -> DataFrame:
     logger.info(f"Adding postcode abbreviations for {postcode_field}")
     pc_abbr_field = f'__{postcode_field}__abbr'
     df[pc_abbr_field] = df[postcode_field].str.replace(' ', '')
-    return df[[pc_abbr_field]].merge(postcodes.dataframe, how='left', left_on=pc_abbr_field, right_on='pcd_abbr')
+
+    df_merged = df[[pc_abbr_field]].merge(postcodes.dataframe, how='left', left_on=pc_abbr_field, right_on='pcd_abbr')
+    del df[key_field]
+    del df[pc_abbr_field]
+
+    return df_merged
 
 
 def _add_postcode_derived_fields(episodes_df, local_authority):
+    episodes_df = episodes_df.copy()
     home_details = merge_postcodes(episodes_df, "HOME_POST")
     pl_details = merge_postcodes(episodes_df, "PL_POST")
 

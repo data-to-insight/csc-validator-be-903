@@ -9,7 +9,7 @@ def validate_543():
     error = ErrorDefinition(
         code='543',
         description='Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.',
-        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'CONVICTED']
+        affected_fields=['DOB', 'CONVICTED']
     )
 
     def _validate(dfs):

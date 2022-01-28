@@ -1201,6 +1201,13 @@ def validate_399():
             reviews = dfs['Reviews']
 
             code_list = ['V3', 'V4']
+            # Rule adjustment: if child has any other episodes where LS is not V3 or V4, rule should not be triggered. Trigger error 399 only if all child episodes
+
+            # Column that will contain True if LS of the episode is either V3 or V4
+            episodes['LS_CHECKS'] = episodes['LS'].isin(code_list)
+
+            # Column that will contain True only if all LSs, for a child, are either V3 or V4
+            episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('max')
 
             # prepare to merge
             episodes['index_eps'] = episodes.index
@@ -1212,7 +1219,7 @@ def validate_399():
                       .merge(reviews, on='CHILD', how='left'))
 
             # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEW_CODE> should not be provided
-            mask = merged['LS'].isin(code_list) & (
+            mask = merged['LS_CHECK'] & (
                     merged['MOTHER'].notna() | merged['REVIEW'].notna() | merged['REVIEW_CODE'].notna())
 
             # Error locations

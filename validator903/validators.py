@@ -24,12 +24,10 @@ def validate_601():
             # prepare to merge
             ad1.reset_index(inplace=True)
             episodes.reset_index(inplace=True)
-            episodes = episodes['REC'].isin(['E11', 'E12'])
 
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
-
 
             # only keep episodes with adoption RECs during year
             adoption_eps_mask = (

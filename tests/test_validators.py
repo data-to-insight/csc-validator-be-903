@@ -37,8 +37,7 @@ def test_validate_601():
     error_defn, error_func = validate_601()
     result = error_func(fake_dfs)
 
-    assert result == {'AD1': [1, ]}
-    # assert result == {'Episodes': [1,2,3,4], 'AD1':[1,]}
+    assert result == {'AD1': [1, ], 'Episodes': [1, 3]}
 
 
 

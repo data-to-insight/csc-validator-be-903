@@ -1207,7 +1207,7 @@ def validate_399():
             episodes['LS_CHECKS'] = episodes['LS'].isin(code_list)
 
             # Column that will contain True only if all LSs, for a child, are either V3 or V4
-            episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('max')
+            episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('min')
 
             # prepare to merge
             episodes['index_eps'] = episodes.index

@@ -505,8 +505,10 @@ def test_validate_1014():
         {'CHILD': 110, 'DECOM': '01/01/2020', 'DEC': '01/01/2020', },  # 10 fail.
         {'CHILD': 110, 'DECOM': '01/11/2021', 'DEC': '01/11/2021', },  # 11
 
-    {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
-    ])metadata = {
+        {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
+    ])
+
+    metadata = {
         'collection_start': '01/04/2020',
         'collection_end': '31/03/2021'
     }

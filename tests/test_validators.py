@@ -727,7 +727,8 @@ def test_validate_209():
 
 
 def test_validate_198():
-    metadata = {'collection_start': '01/04/1980'}
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
 
     eps = pd.DataFrame([
         {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
@@ -1406,7 +1407,8 @@ def test_validate_558():
 
 
 def test_validate_185():
-    metadata = {'collection_start': '01/04/1980'}
+    metadata = {'collection_start': '01/04/1980',
+                'collection_end': '31/03/1981'}
 
     eps = pd.DataFrame([
         {'CHILD': '1', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},

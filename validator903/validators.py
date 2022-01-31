@@ -1223,7 +1223,7 @@ def validate_399():
                     merged['MOTHER'].notna() | merged['REVIEW'].notna() | merged['REVIEW_CODE'].notna())
 
             # Error locations
-            eps_errors = merged.loc[mask, 'index_eps']
+            eps_errors = merged.loc[mask, 'index_eps'].unique()
             header_errors = merged.loc[mask, 'index_hdr'].unique()
             revs_errors = merged.loc[mask, 'index_revs'].unique()
 

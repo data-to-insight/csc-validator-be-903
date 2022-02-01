@@ -4477,6 +4477,25 @@ def test_validate_377():
     assert result == {'Episodes': [0, 2, 3, 7, 9, 10, 12, 13, 14]}
 
 
+def test_validate_303():
+    fake_data_uasc = pd.DataFrame({
+        'CHILD': [0, 1, 2, 3, 4, 5,],
+        'DUC': [pd.NA,'04/04/2021', '01/06/2020', pd.NA, '10/04/2020', '01/03/2021']
+    })
+    fake_data_header = pd.DataFrame({
+      'CHILD': [0, 1, 2, 3, 4, 5,],
+      'UASC': [0, 1, 0, '1', '0', 1]
+    })
+
+    fake_dfs = {'UASC': fake_data_uasc, 'Header':fake_data_header}
+
+    error_defn, error_func = validate_303()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'UASC': [2,4], 'Header':[2,4]}
+
+
 def test_validate_576():
     fake_mis_l = pd.DataFrame([
         {'CHILD': '111', 'MIS_START': '07/02/2020', 'MIS_END': '07/02/2020'},  # 0

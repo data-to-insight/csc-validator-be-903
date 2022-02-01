@@ -5687,10 +5687,15 @@ def validate_626():
             header['MC_DOB'] = pd.to_datetime(header['MC_DOB'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             header['orig_idx'] = header.index
-            merged = header.merge(header_prev, how='inner', on='CHILD', suffixes=['', '_PRE']).query("MC_DOB.notna()")
+            header = header.query("MC_DOB.notna()")
+            merged = header.merge(header_prev, how='inner', on='CHILD', suffixes=['', '_PRE'])
             merged['MOTHER'] = pd.to_numeric(merged['MOTHER'], errors='coerce')
             merged['MOTHER_PRE'] = pd.to_numeric(merged['MOTHER_PRE'], errors='coerce')
-            err_co = merged.query("(MOTHER == 1) & (MOTHER_PRE == 0) & (MC_DOB < @collection_start)")
+            err_co = merged[
+                (merged['MOTHER'] == 1)
+                & (merged['MOTHER_PRE'] == 0)
+                & (merged['MC_DOB'] < collection_start)
+            ]
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()
             return {'Header': err_list}

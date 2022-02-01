@@ -1209,13 +1209,15 @@ def validate_399():
             # Column that will contain True only if all LSs, for a child, are either V3 or V4
             episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('min')
 
+            eps = episodes.loc[episodes['LS_CHECK']==True]
+
             # prepare to merge
-            episodes['index_eps'] = episodes.index
+            eps['index_eps'] = eps.index
             header['index_hdr'] = header.index
             reviews['index_revs'] = reviews.index
 
             # merge
-            merged = (episodes.merge(header, on='CHILD', how='left')
+            merged = (eps.merge(header, on='CHILD', how='left')
                       .merge(reviews, on='CHILD', how='left'))
 
             # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEW_CODE> should not be provided
@@ -1223,9 +1225,9 @@ def validate_399():
                     merged['MOTHER'].notna() | merged['REVIEW'].notna() | merged['REVIEW_CODE'].notna())
 
             # Error locations
-            eps_errors = merged.loc[mask, 'index_eps'].unique()
-            header_errors = merged.loc[mask, 'index_hdr'].unique()
-            revs_errors = merged.loc[mask, 'index_revs'].unique()
+            eps_errors = merged.loc[mask, 'index_eps'].dropna().unique()
+            header_errors = merged.loc[mask, 'index_hdr'].dropna().unique()
+            revs_errors = merged.loc[mask, 'index_revs'].dropna().unique()
 
             return {'Episodes': eps_errors.tolist(),
                     'Header': header_errors.tolist(),

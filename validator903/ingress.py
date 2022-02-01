@@ -4,12 +4,15 @@ from pathlib import Path
 import pandas as pd
 import xml.etree.ElementTree as ET
 from io import BytesIO
-from typing import List, Union, Dict, Iterator
+from typing import List, Union, Dict, Iterator, Tuple
 
 from pandas import DataFrame
 
 from .types import UploadException, UploadedFile
 from .config import column_names
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class _BufferedUploadedFile(collections.abc.Mapping):
@@ -39,7 +42,7 @@ class _BufferedUploadedFile(collections.abc.Mapping):
         pass
 
 
-def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
+def read_from_text(raw_files: List[UploadedFile]) -> Tuple[Dict[str, DataFrame], str]:
     """
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
@@ -58,9 +61,9 @@ def read_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         raise UploadException(f'Mix of CSV and XML files found ({extensions})! Please reupload.')
     else:
         if extensions[0] == 'csv':
-            return read_csvs_from_text(raw_files)
+            return read_csvs_from_text(raw_files), 'csv'
         elif extensions[0] == 'xml':
-            return read_xml_from_text(raw_files[0]['fileText'])
+            return read_xml_from_text(raw_files[0]['fileText']), 'xml'
         else:
             raise UploadException(f'Unknown file type {extensions[0]} found.')
 
@@ -71,11 +74,18 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
         uploaded_files.append(_BufferedUploadedFile(file=filename, name=filename, description="This year"))
     return uploaded_files
 
+def capitalise_object_dtype_cols(df) -> pd.DataFrame:
+  '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
+  for col in df.select_dtypes(include='object'):
+    df[col] = df[col].str.upper()
+  return df
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
+
     def _get_file_type(df) -> str:
         for table_name, expected_columns in column_names.items():
             if set(df.columns) == set(expected_columns):
+                logger.info(f'Loaded {table_name} from CSV. ({len(df)} rows)')
                 return table_name
         else:
             raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
@@ -83,8 +93,20 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
     files = {}
     for file_data in raw_files:
         csv_file = BytesIO(file_data["fileText"])
-        df = pd.read_csv(csv_file)
+        # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
+        try:
+            df = pd.read_csv(csv_file)
+        except UnicodeDecodeError:
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
+            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
+
+        # capitalize all string input
+        df = capitalise_object_dtype_cols(df)
+
         file_name = _get_file_type(df)
+
         if 'This year' in file_data['description']:
             name = file_name
         elif 'Prev year' in file_data['description']:
@@ -93,6 +115,29 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
 
         files[name] = df
+
+    # Adding UASC column to Header table
+    if 'Header' in files and 'UASC' in files:
+        header = files['Header']
+        uasc = files['UASC']
+        merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
+
+        header.loc[merge_indicator == 'both', 'UASC'] = 1
+        header.loc[merge_indicator == 'left_only', 'UASC'] = 0
+
+    #elif 'Header' in files and 'UASC' not in files:
+    #    header = files['Header']
+    #    header['UASC'] = pd.NA
+
+
+    # Adding UASC column to Header_last table based on UASC_last table
+    if 'Header_last' in files and 'UASC_last' in files:
+        header_last = files['Header_last']
+        uasc_last = files['UASC_last']
+        merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', indicator=True)['_merge']
+
+        header_last.loc[merge_indicator == 'both', 'UASC'] = 1
+        header_last.loc[merge_indicator == 'left_only', 'UASC'] = 0
 
     return files
 
@@ -115,7 +160,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
             'CHILDID': 'CHILD',
             'PL': 'PLACE',
         }
-        return  {
+        return {
             conversions.get(node.tag, node.tag): node.text 
             for node in table.iter() if len(node) == 0
         }
@@ -128,7 +173,13 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
             except:
                 pass
             return val
-        return pd.Series({k: read_value(k) for k in column_names[table_name]}) 
+        
+        # Add UASC column to Header and Header_last tables
+        cols = column_names[table_name]
+        if table_name in ['Header', 'Header_last']:
+          cols = cols + ['UASC']
+
+        return pd.Series({k: read_value(k) for k in cols}) 
 
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)
@@ -161,7 +212,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
                         data = read_data(child_table)
                         sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
-    return {
+    data =  {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
@@ -173,3 +224,11 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         'PrevPerm': pd.DataFrame(prev_perm_df),
         'Missing': pd.DataFrame(missing_df),
     }
+
+    # capitalize string columns
+    for df in data.values():
+      df = capitalise_object_dtype_cols(df)
+
+    names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
+    logger.info(f'Tables created from XML -- {names_and_lengths}')
+    return data

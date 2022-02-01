@@ -24,6 +24,28 @@ column_names = {
     'Missing': ['CHILD', 'DOB', 'MISSING', 'MIS_START', 'MIS_END'],
 }
 
+every_single_error_code = "101,102,103,104,105,112,113,114,115,116,117,118,119,120,131,132,133,134,141,142,143,144," \
+                          "145,146,147,148,149,151,153,157,158,159,164,165,166,167,168,169,171,174,175,176,177,178," \
+                          "179,180,181,182,185,186,187,188,189,190,191,192,193,196,198,199,1000,1001,1002,1004," \
+                          "1005,1006,1007,1008,1009,1010,1011,1012,1014,1015,NoE,357,388,502,184,1003,202,203,204," \
+                          "205A,205B,205C,205D,207,208,209,210,213,214,215,217,218,219,221,224,225,226,227,228,229," \
+                          "301,302,303,304,331,333,334,335,336,344,345,351,352,353,354,355,356,358,359,361,362,363," \
+                          "364,365,366,367,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387," \
+                          "389,390,391,392a,392b,392c,393,398,399,3001,406,407,408,411,420,426,431,432,433,434,435," \
+                          "436,437,440,441,442,445,446,451,452,453,501,504,511,514,516,517,518,519,520,521,522,523," \
+                          "524,525,526,527,528,529,530,531,542,543,544,545,546,547,550,551,552,553,554,555,556,557," \
+                          "558,559,560,561,562,563,564,565,566,567,570,571,574,575,576,577,578,579,580,586,601,602," \
+                          "607,611,612,620,621,624,625,626,628,630,631,632,633,634,635,503A,503B,503C,503D,503E,503F," \
+                          "503G,503H,503J,460,197A,197B,222"
+every_single_error_code = sorted(tuple(every_single_error_code.lower().split(',')))
+
+stage_1_error_codes = "101,102,103,104,105,112,113,114,115,116,117,118,119,120,131,132,133,134,141,142,143,144,145," \
+                      "146,147,148,149,151,153,157,158,159,164,165,166,167,168,169,171,174,175,176,177,178,179,180," \
+                      "181,182,185,186,187,188,189,190,191,192,193,196,197A,197B,198,199,1000,1001,1002,1004,1005," \
+                      "1006,1007,1008,1009,1010,1011,1012,1014,1015,NOE,357,388,502"
+stage_1_error_codes = sorted(tuple(stage_1_error_codes.lower().split(',')))
+
+stage_2_error_codes = sorted(tuple(set(every_single_error_code) - set(stage_1_error_codes)))
 
 """
 List of all configured errors for validation.
@@ -31,6 +53,8 @@ List of all configured errors for validation.
 These all should have return type (Error, Dict[str, DataFrame])
 """
 configured_errors = sorted([
+    validate_514(),
+    validate_198(),
     validate_552(),
     validate_101(),
     validate_102(),
@@ -96,10 +120,12 @@ configured_errors = sorted([
     validate_437(),
     validate_452(),
     validate_453(),
+    validate_460(),
     validate_611(),
     validate_612(),
     validate_621(),
     validate_631(),
+    validate_1000(),
     validate_1004(),
     validate_1005(),
     validate_1006(),
@@ -126,6 +152,7 @@ configured_errors = sorted([
     validate_333(),
     validate_1011(),
     validate_574(),
+    validate_579(),
     validate_564(),
     validate_566(),
     validate_570(),
@@ -189,6 +216,7 @@ configured_errors = sorted([
     validate_377(),
     validate_518(),
     validate_517(),
+    validate_576(),
     validate_344(),
     validate_345(),
     validate_384(),
@@ -237,6 +265,26 @@ configured_errors = sorted([
     validate_210(),
     validate_624(),
     validate_626(),
+    validate_104(),
+    validate_391(),
+    validate_165(),
+    validate_1014(),
+    validate_392B(),
+    validate_117(),
+    validate_118(),
+    validate_357(),
+    validate_197B(),
+    validate_157(),
+    validate_1003(),
+    validate_559(),
+    validate_521(),
+    validate_351(),
+    validate_577(),
+    validate_632(),
+    validate_301(),
+    validate_578(),
+    validate_625(),
+    validate_334(),
 ])
 
 errors = {e[0].code: e for e in configured_errors}

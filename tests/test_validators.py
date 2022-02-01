@@ -1,16 +1,16 @@
 from validator903.validators import *
 import pandas as pd
 
+
 def test_validate_105():
+    fake_header = pd.DataFrame({
+        'UASC': [0, 1, pd.NA, '', '0', '1', '2', 2]
+    })
 
-  fake_header = pd.DataFrame({
-    'UASC' : [0, 1, pd.NA, '', '0', '1', '2', 2]
-  })
-
-  fake_dfs = {'Header':fake_header}
-  error_defn, error_func = validate_105()
-  result = error_func(fake_dfs)
-  assert result == {'Header':[2, 3, 6, 7]}
+    fake_dfs = {'Header': fake_header}
+    error_defn, error_func = validate_105()
+    result = error_func(fake_dfs)
+    assert result == {'Header': [2, 3, 6, 7]}
 
 
 def test_validate_1003():
@@ -932,7 +932,7 @@ def test_validate_399():
     fake_dfs = {'Header': fake_data_header, 'Reviews': fake_data_reviews, 'Episodes': fake_data_episodes}
     error_defn, error_func = validate_399()
     result = error_func(fake_dfs)
-    assert result == {'Header': [0, 5], 'Reviews': [0, 5], 'Episodes': [0, 1, 5,]}
+    assert result == {'Header': [0, 5], 'Reviews': [0, 5], 'Episodes': [0, 1, 5, ]}
 
 
 def test_validate_226():
@@ -1512,19 +1512,22 @@ def test_validate_187():
         {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # False
         {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # !! - False
         {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},  # False
-        {'CHILD': '9', 'DECOM': '05/04/1980', 'DEC': pd.NA, 'LS': 'o', 'REC': 'xx', 'RNE': 'S'},#nCLA True DECOM>col_start and RNE==S
-        {'CHILD': '10', 'DECOM': pd.NA, 'DEC': '05/04/1980', 'LS': 'o', 'REC': 'xx', 'RNE': 'S'},#nCLA True DEC>col_start and REC!=X1
-        {'CHILD': '11', 'DECOM': pd.NA, 'DEC': '05/04/1980', 'LS': 'V3', 'REC': pd.NA, 'RNE': 'S'},#nCLA True DEC>col_start and LS in [V3, V4]
+        {'CHILD': '9', 'DECOM': '05/04/1980', 'DEC': pd.NA, 'LS': 'o', 'REC': 'xx', 'RNE': 'S'},
+        # nCLA True DECOM>col_start and RNE==S
+        {'CHILD': '10', 'DECOM': pd.NA, 'DEC': '05/04/1980', 'LS': 'o', 'REC': 'xx', 'RNE': 'S'},
+        # nCLA True DEC>col_start and REC!=X1
+        {'CHILD': '11', 'DECOM': pd.NA, 'DEC': '05/04/1980', 'LS': 'V3', 'REC': pd.NA, 'RNE': 'S'},
+        # nCLA True DEC>col_start and LS in [V3, V4]
 
     ])
 
     oc3 = pd.DataFrame({
         'CHILD':
             ['9999999999', '1', '2', '3333',
-             '99999999', '8888', '5','9', '10', '11'],
+             '99999999', '8888', '5', '9', '10', '11'],
         'IN_TOUCH':
             ['OK', '!!!', pd.NA, 'OK',
-             pd.NA, pd.NA, pd.NA,'xx', 'xx', 'xx'],
+             pd.NA, pd.NA, pd.NA, 'xx', 'xx', 'xx'],
     })
     other_oc3_cols = ['ACTIV', 'ACCOM']
     oc3 = oc3.assign(**{col: pd.NA for col in other_oc3_cols})
@@ -1532,10 +1535,10 @@ def test_validate_187():
     ad1 = pd.DataFrame({
         'CHILD':
             ['1', '2', '3333', '7777',
-             '99999999', '8888', '5','9','10','11'],
+             '99999999', '8888', '5', '9', '10', '11'],
         'DATE_INT':
             [pd.NA, pd.NA, 'OK', 'OK',
-             pd.NA, pd.NA, '!!!','xx', 'xx', 'xx'],
+             pd.NA, pd.NA, '!!!', 'xx', 'xx', 'xx'],
     })
 
     other_ad1_cols = ['DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
@@ -4821,6 +4824,7 @@ def test_validate_435():
 
     assert result == {'Episodes': [2, 6]}
 
+
 def test_validate_624():
     fake_data = pd.DataFrame([
         {'CHILD': '111', 'MC_DOB': '01/06/2020'},  # 0
@@ -4841,6 +4845,7 @@ def test_validate_624():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [2, 3]}
+
 
 def test_validate_626():
     header = pd.DataFrame([
@@ -4864,7 +4869,6 @@ def test_validate_626():
     result = error_func(fake_dfs)
 
     assert result == {'Header': [1]}
-
 
 
 def test_validate_104():

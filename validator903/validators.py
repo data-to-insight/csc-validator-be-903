@@ -4,26 +4,27 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
 def validate_105():
-  error  = ErrorDefinition(
-    code = '105',
-    description = 'Data entry for Unaccompanied Asylum- Seeking Children (UASC) status of child is invalid or has not been completed.',
-    affected_fields = ['UASC']
-  )
-  def _validate(dfs):
-    if ('Header' not in dfs) or ('UASC' not in dfs['Header'].columns) :
-      return {}
-    else:
-      header = dfs['Header']
-      #code_list = [0,1]
-      code_list = ['0','1']
+    error = ErrorDefinition(
+        code='105',
+        description='Data entry for Unaccompanied Asylum-Seeking Children (UASC) status of child is invalid or has not been completed.',
+        affected_fields=['UASC']
+    )
 
-      mask = ~header['UASC'].astype(str).isin(code_list)
-      error_locs = header.index[mask]
+    def _validate(dfs):
+        if ('Header' not in dfs) or ('UASC' not in dfs['Header'].columns):
+            return {}
+        else:
+            header = dfs['Header']
+            code_list = [0, 1]
 
-      return {'Header': error_locs.tolist()}
+            mask = ~pd.to_numeric(header['UASC'], errors='coerce').isin(code_list)
+            error_locs = header.index[mask]
 
-  return error, _validate
+            return {'Header': error_locs.tolist()}
+
+    return error, _validate
 
 
 def validate_1003():
@@ -1386,7 +1387,7 @@ def validate_399():
             # Column that will contain True only if all LSs, for a child, are either V3 or V4
             episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('min')
 
-            eps = episodes.loc[episodes['LS_CHECK']==True]
+            eps = episodes.loc[episodes['LS_CHECK'] == True]
 
             # prepare to merge
             eps['index_eps'] = eps.index
@@ -6580,6 +6581,7 @@ def validate_435():
 
     return error, _validate
 
+
 def validate_624():
     error = ErrorDefinition(
         code='624',
@@ -6607,6 +6609,7 @@ def validate_624():
 
     return error, _validate
 
+
 def validate_626():
     error = ErrorDefinition(
         code='626',
@@ -6633,7 +6636,7 @@ def validate_626():
                 (merged['MOTHER'] == 1)
                 & (merged['MOTHER_PRE'] == 0)
                 & (merged['MC_DOB'] < collection_start)
-            ]
+                ]
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()
             return {'Header': err_list}

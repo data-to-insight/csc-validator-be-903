@@ -5681,16 +5681,16 @@ def validate_626():
         if 'Header' not in dfs or 'Header_last' not in dfs:
             return {}
         else:
-            hea = dfs['Header']
-            hea_pre = dfs['Header_last']
+            header = dfs['Header']
+            header_prev = dfs['Header_last']
             collection_start = dfs['metadata']['collection_start']
-            hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            header['MC_DOB'] = pd.to_datetime(header['MC_DOB'], format='%d/%m/%Y', errors='coerce')
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
-            hea['orig_idx'] = hea.index
-            mer_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE']).query("MC_DOB.notna()")
-            mer_co['MOTHER'] = mer_co['MOTHER'].astype(str)
-            mer_co['MOTHER_PRE'] = mer_co['MOTHER_PRE'].astype(str)
-            err_co = mer_co.query("(MOTHER == '1') & (MOTHER_PRE == '0') & (MC_DOB < @collection_start)")
+            header['orig_idx'] = header.index
+            merged = header.merge(header_prev, how='inner', on='CHILD', suffixes=['', '_PRE']).query("MC_DOB.notna()")
+            merged['MOTHER'] = pd.to_numeric(merged['MOTHER'], errors='coerce')
+            merged['MOTHER_PRE'] = pd.to_numeric(merged['MOTHER_PRE'], errors='coerce')
+            err_co = merged.query("(MOTHER == 1) & (MOTHER_PRE == 0) & (MC_DOB < @collection_start)")
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()
             return {'Header': err_list}

@@ -2202,18 +2202,18 @@ def test_validate_208():
         'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109', '110', '111'],
         'UPN': ['H801200001001', 'H801200001001', 'UN1', 'UN2', pd.NA, 'UN3', pd.NA, 'UN4', 'H801200001111', 'H801200001111'],
     })
+
     # Change log
-    # index 0, fake_data: known UPN to unknown UPN fails
-    # index 9, fake_data_prev: unknown UPN to known UPN
-    
-    
+    # index 0, fake_data_prev: unknown UPN to known UPN
+    # index 9 that was flagging this error earlier should pass after update.
+        
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
 
     error_defn, error_func = validate_208()
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [1, 6, 7, 9]}
+    assert result == {'Header': [1, 6, 7,]}
 
 
 def test_validate_204():

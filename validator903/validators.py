@@ -3071,8 +3071,9 @@ def validate_208():
                 'UPN_last'].str.upper().astype(str)
             upn_not_recorded = header_merged['UPN'].str.upper().astype(str).isin(['UN2', 'UN3', 'UN4', 'UN5', 'UN6']) & \
                                header_merged['UPN_last'].str.upper().astype(str).isin(['UN1'])
+            upn_prev_unknown = header_merged['UPN_last'].str.upper().astype(str).isin(['UN2', 'UN3', 'UN4', 'UN5', 'UN6'])
 
-            error_mask = in_both_years & upn_is_different & ~upn_not_recorded
+            error_mask = in_both_years & upn_is_different & ~upn_not_recorded & ~upn_prev_unknown
 
             error_locations = header.index[error_mask]
 

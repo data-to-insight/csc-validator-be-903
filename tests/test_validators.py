@@ -2194,16 +2194,19 @@ def test_validate_446():
 
 
 def test_validate_208():
-    fake_data = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109', '110', '111'],
-        'UPN': ['H801200001001', 'H801200001001', 'UN1', 'UN2', pd.NA, 'UN3', pd.NA, 'UN4', 'H801200001111', 'UN1'],
-    })
-
     fake_data_prev = pd.DataFrame({
         'CHILD': ['101', '102', '103', '104', '105', '107', '108', '109', '110', '111'],
-        'UPN': ['H801200001001', 'H801200001011', 'UN1', 'UN1', pd.NA, 'UN4', 'UN1', pd.NA, 'h801200001111', 'UN2'],
+        'UPN': ['UN5', 'H801200001011', 'UN1', 'UN1', pd.NA, 'UN4', 'UN1', pd.NA, 'h801200001111', 'UN2'],
     })
-
+    fake_data = pd.DataFrame({
+        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109', '110', '111'],
+        'UPN': ['H801200001001', 'H801200001001', 'UN1', 'UN2', pd.NA, 'UN3', pd.NA, 'UN4', 'H801200001111', 'H801200001111'],
+    })
+    # Change log
+    # index 0, fake_data: known UPN to unknown UPN fails
+    # index 9, fake_data_prev: unknown UPN to known UPN
+    
+    
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
 
     error_defn, error_func = validate_208()

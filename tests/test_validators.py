@@ -4798,6 +4798,51 @@ def test_validate_435():
 
     assert result == {'Episodes': [2, 6]}
 
+def test_validate_624():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'MC_DOB': '01/06/2020'},  # 0
+        {'CHILD': '222', 'MC_DOB': '04/06/2020'},  # 1
+        {'CHILD': '333', 'MC_DOB': pd.NA},  # 2
+        {'CHILD': '444', 'MC_DOB': '08/09/2020'},  # 3
+    ])
+    fake_hea = pd.DataFrame([
+        {'CHILD': '111', 'MC_DOB': '01/06/2020'},  # 0
+        {'CHILD': '222', 'MC_DOB': '04/06/2020'},  # 1
+        {'CHILD': '333', 'MC_DOB': '01/06/2019'},  # 2
+        {'CHILD': '444', 'MC_DOB': '10/09/2020'},  # 3
+    ])
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_hea}
+
+    error_defn, error_func = validate_624()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [2, 3]}
+
+def test_validate_626():
+    header = pd.DataFrame([
+        {'CHILD': '111', 'MOTHER': 1, 'MC_DOB': pd.NA},  # 0
+        {'CHILD': '222', 'MOTHER': '1', 'MC_DOB': '04/01/2020'},  # 1 Fail
+        {'CHILD': '333', 'MOTHER': 0, 'MC_DOB': pd.NA},  # 2
+        {'CHILD': '444', 'MOTHER': 1.0, 'MC_DOB': '01/04/2020'},  # 3
+    ])
+    header_last = pd.DataFrame([
+        {'CHILD': '111', 'MOTHER': '1'},  # 0
+        {'CHILD': '222', 'MOTHER': 0.0},  # 1
+        {'CHILD': '333', 'MOTHER': '1'},  # 2
+        {'CHILD': '444', 'MOTHER': '0'},  # 3
+    ])
+    metadata = {'collection_start': '01/04/2020'}
+
+    fake_dfs = {'Header': header, 'Header_last': header_last, 'metadata': metadata}
+
+    error_defn, error_func = validate_626()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Header': [1]}
+
+
 
 def test_validate_104():
     fake_uasc = pd.DataFrame({

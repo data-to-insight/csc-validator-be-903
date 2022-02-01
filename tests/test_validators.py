@@ -896,16 +896,24 @@ def test_validate_215():
 
 
 def test_validate_399():
+    # change log
+
+    # index 6 and 7 are changed to the same child such that though both have the review information, index 6 would no longer trigger the error because the child has another episode (index 7) where LS is not V3/V4.
+    # Index 0 and 1 have been same to the same child such that all its episodes have LS V3/V4 and the error is trigged though index zero does not have the review information and would not have triggered the error on its own.
+    # index 6 truly reflects the change. It would have failed earlier but it passes now since the child's other LS is not V3
+    
+    # test data assumes that child IDs cannot repeat in the header and reviews tables.
+
     fake_data_episodes = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
-        'LS': [pd.NA, 'V4', 'V3', 'L4', 'L1', 'V4', 'V3', 'XO'],
+        'CHILD': ['101', '101', '103', '104', '105', '106', '108', '108'],
+        'LS': ['V4', 'V4', 'V3', 'L4', pd.NA, 'V4', 'V3', 'XO'],
     })
     fake_data_header = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109'],
         'MOTHER': ['0', '0', pd.NA, pd.NA, 1, 0, 1, pd.NA],
     })
     fake_data_reviews = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '999'],
+        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109'],
         'REVIEW': ['31/12/2008', '01/01/2012', pd.NA, '01/01/2009', '01/01/2012', '01/01/2017', '01/01/2021',
                    '01/01/2015'],
         'REVIEW_CODE': ['PN1', 'PN2', pd.NA, 'PN4', 'PN5', 'PN6', 'PN7', 'PN0'],
@@ -913,7 +921,7 @@ def test_validate_399():
     fake_dfs = {'Header': fake_data_header, 'Reviews': fake_data_reviews, 'Episodes': fake_data_episodes}
     error_defn, error_func = validate_399()
     result = error_func(fake_dfs)
-    assert result == {'Header': [1, 5, 6], 'Reviews': [1, 5, 6], 'Episodes': [1, 5, 6]}
+    assert result == {'Header': [0, 5], 'Reviews': [0, 5], 'Episodes': [0, 1, 5,]}
 
 
 def test_validate_226():

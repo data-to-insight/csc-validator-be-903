@@ -29,8 +29,16 @@ def test_create_datastore(dummy_empty_input):
 
 def test_add_postcodes():
     df = pd.DataFrame([['ZE1 0AA', 'ZE3 9JX']], columns=["HOME_POST", "PL_POST"])
-    _add_postcode_derived_fields(df, '')
+    df = _add_postcode_derived_fields(df, '')
     assert df.PL_DISTANCE[0] == 20.1
+
+
+def test_add_postcodes_columns():
+    df = pd.DataFrame([['ZE1 0AA', 'ZE3 9JX']], columns=["HOME_POST", "PL_POST"])
+    df_new = _add_postcode_derived_fields(df, '')
+
+    assert df.columns.tolist() == ['HOME_POST', 'PL_POST']
+    assert df_new.columns.tolist() == ['HOME_POST', 'PL_POST', 'PL_LA', 'PL_LOCATION', 'PL_DISTANCE']
 
 
 @pytest.mark.parametrize("postcode, expected", [

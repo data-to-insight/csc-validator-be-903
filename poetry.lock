@@ -196,7 +196,7 @@ python-versions = "*"
 
 [[package]]
 name = "quality-lac-data-ref-authorities"
-version = "2021.4a6"
+version = "2021.4"
 description = "This is a redistribution of the ONS dataset on Lower Tier Local Authority toUpper Tier Local Authority Lookup packaged for the Quality Lac Data project.Source: Office for National Statistics licensed under the Open Government Licence v.3.0"
 category = "main"
 optional = false
@@ -243,7 +243,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "fe0f5eb615e8fe7bff3c0c6eafe418cf2661500f4c12cb8f5b7de93a0d62ebba"
+content-hash = "d4821c50eaa8d5af810f28c86b0636220a8ed7d3982824591ed5bdd31d097a87"
 
 [metadata.files]
 atomicwrites = [
@@ -408,8 +408,8 @@ pytz = [
     {file = "pytz-2021.3.tar.gz", hash = "sha256:acad2d8b20a1af07d4e4c9d2e9285c5ed9104354062f275f3fcd88dcef4f1326"},
 ]
 quality-lac-data-ref-authorities = [
-    {file = "quality-lac-data-ref-authorities-2021.4a6.tar.gz", hash = "sha256:cdb78efd9ff0d451adfb77f8bdbc5cf0881588781db43e72930a2c302445d2b2"},
-    {file = "quality_lac_data_ref_authorities-2021.4a6-py3-none-any.whl", hash = "sha256:5fbefa84c3e08ded5ed5f2f671aef95a048c33cfdb7e4e782c0bd7131143d13c"},
+    {file = "quality-lac-data-ref-authorities-2021.4.tar.gz", hash = "sha256:d4063aada6288bc2255042154a3af6f012658540e83e06118b51a743676425c1"},
+    {file = "quality_lac_data_ref_authorities-2021.4-py3-none-any.whl", hash = "sha256:1ee07cb4482f69b585dd025114fa8839f11aa555364fdf6d9ad0b9f0b090dd18"},
 ]
 quality-lac-data-ref-postcodes = [
     {file = "quality-lac-data-ref-postcodes-2021.8.1.tar.gz", hash = "sha256:2c53a19dffab2d307b602bcc491dd0da184491d8625ec10870eb87199afcfbda"},

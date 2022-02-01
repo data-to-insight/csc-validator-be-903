@@ -6550,6 +6550,66 @@ def validate_435():
 
     return error, _validate
 
+def validate_624():
+    error = ErrorDefinition(
+        code='624',
+        description="Date of birth of the first child contradicts the date of birth of the first child previously " +
+                    "recorded.",
+        affected_fields=['SDQ_SCORE'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            hea = dfs['Header']
+            hea_pre = dfs['Header_last']
+            hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            hea_pre['MC_DOB'] = pd.to_datetime(hea_pre['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            hea['orig_idx'] = hea.index
+
+            err_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE']) \
+                .query("MC_DOB_PRE.notna() & MC_DOB != MC_DOB_PRE")
+
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+            return {'Header': err_list}
+
+    return error, _validate
+
+def validate_626():
+    error = ErrorDefinition(
+        code='626',
+        description="Child was reported as a mother but the date of birth of the first child is before the current " +
+                    "year which contradicts with the mother status recorded last year.",
+        affected_fields=['MOTHER', 'MC_DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Header_last' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            header_prev = dfs['Header_last']
+            collection_start = dfs['metadata']['collection_start']
+            header['MC_DOB'] = pd.to_datetime(header['MC_DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            header['orig_idx'] = header.index
+            header = header.query("MC_DOB.notna()")
+            merged = header.merge(header_prev, how='inner', on='CHILD', suffixes=['', '_PRE'])
+            merged['MOTHER'] = pd.to_numeric(merged['MOTHER'], errors='coerce')
+            merged['MOTHER_PRE'] = pd.to_numeric(merged['MOTHER_PRE'], errors='coerce')
+            err_co = merged[
+                (merged['MOTHER'] == 1)
+                & (merged['MOTHER_PRE'] == 0)
+                & (merged['MC_DOB'] < collection_start)
+            ]
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+            return {'Header': err_list}
+
+    return error, _validate
+
 
 def validate_104():
     error = ErrorDefinition(

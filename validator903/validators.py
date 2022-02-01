@@ -6564,7 +6564,7 @@ def validate_624():
         code='624',
         description="Date of birth of the first child contradicts the date of birth of the first child previously " +
                     "recorded.",
-        affected_fields=['SDQ_SCORE'],
+        affected_fields=['MC_DOB'],
     )
 
     def _validate(dfs):

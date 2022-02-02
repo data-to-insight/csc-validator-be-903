@@ -4580,11 +4580,10 @@ def validate_181():
 
             fields_of_interest = ['CONVICTED', 'HEALTH_CHECK', 'IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT',
                                   'SUBSTANCE_MISUSE', 'INTERVENTION_RECEIVED', 'INTERVENTION_OFFERED']
-            # select only fields of interest that are present as columns in the given data and ignore those that are absent.                      
-            df1 = oc2.loc[:, oc2.columns.isin(fields_of_interest)]
+
             error_mask = (
-                    df1.notna()
-                    & ~df1.astype(str).isin(['0', '1'])
+                    oc2[fields_of_interest].notna()
+                    & ~oc2[fields_of_interest].astype(str).isin(['0', '1'])
             ).any(axis=1)
 
             validation_error_locations = oc2.index[error_mask]

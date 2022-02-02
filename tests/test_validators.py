@@ -3093,8 +3093,8 @@ def test_validate_181():
         'HEALTH_ASSESSMENT': ['1', pd.NA, 1, pd.NA, '2'],
         'SUBSTANCE_MISUSE': [0, pd.NA, 0, '1', '2'],
         'INTERVENTION_RECEIVED': [0, pd.NA, '1', 1, '2'],
+        'INTERVENTION_OFFERED': ['1', pd.NA, pd.NA, 0, '2'],
     })
-    #   'INTERVENTION_OFFERED': ['1', pd.NA, pd.NA, 0, '2'],
 
     fake_dfs = {'OC2': fake_data}
 

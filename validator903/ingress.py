@@ -75,10 +75,10 @@ def read_files(files: Union[str, Path]) -> List[UploadedFile]:
     return uploaded_files
 
 def capitalise_object_dtype_cols(df) -> pd.DataFrame:
-  '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
-  for col in df.select_dtypes(include='object'):
-    df[col] = df[col].str.upper()
-  return df
+    '''This function takes in a pandas dataframe and capitalizes all the strings found in it.'''
+    for col in df.select_dtypes(include='object'):
+        df[col] = df[col].str.upper()
+    return df
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
@@ -95,12 +95,13 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         csv_file = BytesIO(file_data["fileText"])
         # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
         try:
-            df = pd.read_csv(csv_file)
+            max_cols = max([len(cols) for cols in column_names.values()])
+            df = pd.read_csv(csv_file, converters={i: str for i in range(max_cols)})
         except UnicodeDecodeError:
             # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
             # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
             raise UploadException(f"Failed to decode one or more files. Try opening the text "
-                                f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
+                                  f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
 
         # capitalize all string input
         df = capitalise_object_dtype_cols(df)
@@ -117,27 +118,14 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         files[name] = df
 
     # Adding UASC column to Header table
-    if 'Header' in files and 'UASC' in files:
-        header = files['Header']
-        uasc = files['UASC']
-        merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
+    for header_name, uasc_name in (('Header', 'UASC'), ('Header_last', 'UASC_last')):
+        if header_name in files and uasc_name in files:
+            header = files[header_name]
+            uasc = files[uasc_name]
+            merge_indicator = header.merge(uasc, how='left', on='CHILD', indicator=True)['_merge']
 
-        header.loc[merge_indicator == 'both', 'UASC'] = 1
-        header.loc[merge_indicator == 'left_only', 'UASC'] = 0
-
-    #elif 'Header' in files and 'UASC' not in files:
-    #    header = files['Header']
-    #    header['UASC'] = pd.NA
-
-
-    # Adding UASC column to Header_last table based on UASC_last table
-    if 'Header_last' in files and 'UASC_last' in files:
-        header_last = files['Header_last']
-        uasc_last = files['UASC_last']
-        merge_indicator = header_last.merge(uasc_last, how='left', on='CHILD', indicator=True)['_merge']
-
-        header_last.loc[merge_indicator == 'both', 'UASC'] = 1
-        header_last.loc[merge_indicator == 'left_only', 'UASC'] = 0
+            header.loc[merge_indicator == 'both', 'UASC'] = '1'
+            header.loc[merge_indicator == 'left_only', 'UASC'] = '0'
 
     return files
 
@@ -168,18 +156,20 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     def get_fields_for_table(all_data, table_name):
         def read_value(k):
             val = all_data.get(k, None)
-            try:
-                val = int(val)
-            except:
-                pass
+            if val is None:
+                return pd.NA
+            if not isinstance(val, str):
+                logger.warning(
+                    f'Got a non-string thing reading {table_name}:{k} from xml -- got {val}, of type {type(val)}'
+                )
             return val
         
         # Add UASC column to Header and Header_last tables
         cols = column_names[table_name]
         if table_name in ['Header', 'Header_last']:
-          cols = cols + ['UASC']
+            cols = cols + ['UASC']
 
-        return pd.Series({k: read_value(k) for k in cols}) 
+        return pd.Series({k: read_value(k) for k in cols})
 
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)
@@ -212,7 +202,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
                         data = read_data(child_table)
                         sbpfa_df.append(get_fields_for_table({**all_data, **data}, 'PlacedAdoption'))
 
-    data =  {
+    data = {
         'Header': pd.DataFrame(header_df),
         'Episodes': pd.DataFrame(episodes_df),
         'UASC': pd.DataFrame(uasc_df),
@@ -227,7 +217,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
 
     # capitalize string columns
     for df in data.values():
-      df = capitalise_object_dtype_cols(df)
+        df = capitalise_object_dtype_cols(df)
 
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Tables created from XML -- {names_and_lengths}')

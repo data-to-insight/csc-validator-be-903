@@ -26,40 +26,45 @@ def test_validate_1001():
 
         # [-] - PASS: not in OC3
         {'CHILD': '5555', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/05/2012', 'REC': 'o'},  # 120:60:
-        {'CHILD': '5555', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:4
+        {'CHILD': '5555', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
 
         # [4] - FAIL: more than 91 days but none after 16th bday
         {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
         {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/08/2015', 'REC': 'o'},  # :180:
 
-        # [5] - PASS: more than 91 days inc V3/V4 episode over 17 days
-        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/05/2012', 'REC': 'o'},  # 120:60:
-        {'CHILD': '7777', 'LS': 'V3', 'DECOM': '01/06/2015', 'DEC': '31/12/2015', 'REC': 'o'},  # :40: (this V3 counts)
-        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:4
+        # [5] - PASS: enough days including V3 episode
+        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '01/01/2013', 'DEC': '01/03/2014', 'REC': 'o'},  # 365:60:
+        {'CHILD': '7777', 'LS': 'V3', 'DECOM': '01/01/2015', 'DEC': '01/02/2015', 'REC': 'o'},  # :30: (this V3 counts)
+        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
 
         # [6] - FAIL:  more than 91 days but final REC E11/E12
         {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
         {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/08/2015', 'REC': 'o'},  # :180:
         {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/02/2016', 'DEC': '01/03/2016', 'REC': 'o'},  # ::30
         {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/03/2017', 'DEC': '01/05/2017', 'REC': 'E11'},  # ::60 but E11
+
+        # [8] - PASS: more than 91 days if missing DEC filled in
+        {'CHILD': '9999', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/05/2012', 'REC': 'o'},  # 120:60:
+        {'CHILD': '9999', 'LS': 'C2', 'DECOM': '01/06/2017', 'DEC': pd.NA, 'REC': 'o'},  # :40:120
     ])
+
+    metadata = {'collection_end': '01/10/2017'}
 
     # Split episodes into current and previous year dataframes
     eps['DECOM_dt'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')
     first_ep_per_child = eps.groupby('CHILD')['DECOM_dt'].idxmin()
     prev_eps = eps.loc[first_ep_per_child].copy().drop('DECOM_dt', axis=1)
-    current_eps = eps.drop(index=first_ep_per_child[:-2],
+    current_eps = eps.drop(index=first_ep_per_child[:-4],
                            columns='DECOM_dt')  # keep a couple eps in both df's, so we know dups dont break it
 
-    assert len(prev_eps) + len(current_eps) == len(eps) + 2, (
+    assert len(prev_eps) + len(current_eps) == len(eps) + 4, (
         '(test logic problem) creating current/prev episodes tables didnt work as intended'
     )
 
     oc3 = pd.DataFrame({
         'CHILD': ['1111', '2222', '3333', '4444',
-                  '6006', '7777', '8888',
+                  '6006', '7777', '8888', '9999'
                   '1010101010'],  # '1010101010' not in episodes
-
     })
 
     header = pd.DataFrame({
@@ -72,7 +77,8 @@ def test_validate_1001():
     erro_defn, error_func = validate_1001()
 
     fake_dfs = {'Episodes': current_eps, 'OC3': oc3, 'Header': header,
-                'Episodes_last': prev_eps}
+                'Episodes_last': prev_eps,
+                'metadata': metadata}
     result = error_func(fake_dfs)
     assert result == {'OC3': [1, 2, 4, 6, 7]}
 

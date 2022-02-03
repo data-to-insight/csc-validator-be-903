@@ -82,7 +82,12 @@ def capitalise_object_dtype_cols(df) -> pd.DataFrame:
 
 def accomodate_nans(df) -> pd.DataFrame:
   '''This function converts all columns to the best possible datatypes in order to accomodate missing values so that they do not cause the other integer values found in their column to be read in as floats'''
-  df =  df.convert_dtypes()
+  # create a copy of the DataFrame and delete the CHILD column
+  df_copy = df.copy()
+  df_copy = df_copy.drop('CHILD').convert_dtypes()
+  # replace the columns in the original DataFrame with their respective converted columns.
+  for col in df_copy.columns:
+    df[col]=df_copy[col].values
   return df
 
 def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:

@@ -96,7 +96,7 @@ def _add_postcode_derived_fields(episodes_df, local_authority):
     home_details = merge_postcodes(episodes_df, "HOME_POST")
     pl_details = merge_postcodes(episodes_df, "PL_POST")
 
-    # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
+    # The indices remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
     pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='LTLA21CD')
     episodes_df['PL_LA'] = pl_details['UTLA21CD']
     first_letter = pl_details['laua'].str.upper().get(0)

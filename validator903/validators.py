@@ -5,6 +5,28 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_105():
+    error = ErrorDefinition(
+        code='105',
+        description='Data entry for Unaccompanied Asylum-Seeking Children (UASC) status of child is invalid or has not been completed.',
+        affected_fields=['UASC']
+    )
+
+    def _validate(dfs):
+        if ('Header' not in dfs) or ('UASC' not in dfs['Header'].columns):
+            return {}
+        else:
+            header = dfs['Header']
+            code_list = [0, 1]
+
+            mask = ~pd.to_numeric(header['UASC'], errors='coerce').isin(code_list)
+            error_locs = header.index[mask]
+
+            return {'Header': error_locs.tolist()}
+
+    return error, _validate
+
+
 def validate_1003():
     error = ErrorDefinition(
         code='1003',
@@ -1357,24 +1379,33 @@ def validate_399():
             reviews = dfs['Reviews']
 
             code_list = ['V3', 'V4']
+            # Rule adjustment: if child has any other episodes where LS is not V3 or V4, rule should not be triggered. Trigger error 399 only if all child episodes
+
+            # Column that will contain True if LS of the episode is either V3 or V4
+            episodes['LS_CHECKS'] = episodes['LS'].isin(code_list)
+
+            # Column that will contain True only if all LSs, for a child, are either V3 or V4
+            episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('min')
+
+            eps = episodes.loc[episodes['LS_CHECK'] == True]
 
             # prepare to merge
-            episodes['index_eps'] = episodes.index
+            eps['index_eps'] = eps.index
             header['index_hdr'] = header.index
             reviews['index_revs'] = reviews.index
 
             # merge
-            merged = (episodes.merge(header, on='CHILD', how='left')
+            merged = (eps.merge(header, on='CHILD', how='left')
                       .merge(reviews, on='CHILD', how='left'))
 
             # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEW_CODE> should not be provided
-            mask = merged['LS'].isin(code_list) & (
+            mask = merged['LS_CHECK'] & (
                     merged['MOTHER'].notna() | merged['REVIEW'].notna() | merged['REVIEW_CODE'].notna())
 
             # Error locations
-            eps_errors = merged.loc[mask, 'index_eps']
-            header_errors = merged.loc[mask, 'index_hdr'].unique()
-            revs_errors = merged.loc[mask, 'index_revs'].unique()
+            eps_errors = merged.loc[mask, 'index_eps'].dropna().unique()
+            header_errors = merged.loc[mask, 'index_hdr'].dropna().unique()
+            revs_errors = merged.loc[mask, 'index_revs'].dropna().unique()
 
             return {'Episodes': eps_errors.tolist(),
                     'Header': header_errors.tolist(),
@@ -6567,12 +6598,13 @@ def validate_435():
 
     return error, _validate
 
+
 def validate_624():
     error = ErrorDefinition(
         code='624',
         description="Date of birth of the first child contradicts the date of birth of the first child previously " +
                     "recorded.",
-        affected_fields=['SDQ_SCORE'],
+        affected_fields=['MC_DOB'],
     )
 
     def _validate(dfs):
@@ -6593,6 +6625,7 @@ def validate_624():
             return {'Header': err_list}
 
     return error, _validate
+
 
 def validate_626():
     error = ErrorDefinition(
@@ -6620,7 +6653,7 @@ def validate_626():
                 (merged['MOTHER'] == 1)
                 & (merged['MOTHER_PRE'] == 0)
                 & (merged['MC_DOB'] < collection_start)
-            ]
+                ]
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()
             return {'Header': err_list}
@@ -6676,5 +6709,41 @@ def validate_392B():
             err_list.sort()
 
             return {'Episodes': err_list}
+
+    return error, _validate
+
+
+def validate_303():
+    error = ErrorDefinition(
+        code='303',
+        description="If date Unaccompanied Asylum-Seeking Child (UASC) status ceased is not null, UASC status must be coded 1.",
+        affected_fields=['DUC', 'UASC']
+    )
+
+    def _validate(dfs):
+        if ('UASC' not in dfs) or ('Header' not in dfs):
+            return {}
+        elif 'UASC' not in dfs['Header'].columns:
+            return {}
+        else:
+            uasc = dfs['UASC']
+            header = dfs['Header']
+
+            # merge
+            uasc.reset_index(inplace=True)
+            header.reset_index(inplace=True)
+
+            merged = header.merge(uasc, how='left', on='CHILD', suffixes=['_er', '_sc'])
+
+            merged['UASC'] = pd.to_numeric(merged['UASC'], errors='coerce')
+
+            # If <DUC> provided, then <UASC> must be '1'
+            error_mask = merged['DUC'].notna() & (merged['UASC'] != 1)
+
+            uasc_error_locs = merged.loc[error_mask, 'index_sc']
+            header_error_locs = merged.loc[error_mask, 'index_er']
+            
+            return {'UASC': uasc_error_locs.tolist(),
+                    'Header': header_error_locs.tolist()}
 
     return error, _validate

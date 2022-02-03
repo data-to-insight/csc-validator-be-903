@@ -99,11 +99,15 @@ def _add_postcode_derived_fields(episodes_df, local_authority):
     # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
     pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='LTLA21CD')
     episodes_df['PL_LA'] = pl_details['UTLA21CD']
+    first_letter = pl_details['laua'].str.upper().get(0)
+    episodes_df.loc[first_letter=='S', 'PL_LA'] = 'SCO'
+    episodes_df.loc[first_letter=='N', 'PL_LA'] = 'NIR'
+    episodes_df.loc[first_letter=='W', 'PL_LA'] = 'WAL'
 
     logger.info(f"Adding IN/OUT")
     episodes_df['PL_LOCATION'] = 'IN'
     episodes_df.loc[episodes_df['PL_LA'].ne(local_authority), 'PL_LOCATION'] = 'OUT'
-    episodes_df.loc[episodes_df['PL_LA'].isna(), 'PL_LOCATION'] = pd.NA
+    episodes_df.loc[episodes_df['oseast1m'].isna(), 'PL_LOCATION'] = pd.NA
 
     logger.info(f"Calculating distances")
     # This formula is taken straight from the guidance, to get miles between two postcodes

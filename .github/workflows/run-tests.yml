@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.8] # Pandas takes forever to build on 3.9 - if we test on 3.8 it should be pretty safe
 
     steps:
       - uses: actions/checkout@v2
@@ -22,15 +22,21 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Cache dependencies
+        id: cached-poetry-dependencies
         uses: actions/cache@v2
+        env:
+          cache-name: cache-poetry-deps
         with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          path: |
+            ~/.venv
+            ~/.cache/pypoetry
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
       - name: Test with pytest

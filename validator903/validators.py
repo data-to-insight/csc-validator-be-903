@@ -3112,8 +3112,9 @@ def validate_208():
             UN2_to_5 = ['UN2', 'UN3', 'UN4', 'UN5']
             UN_codes = ['UN1', ] + UN2_to_5
             valid_unknown_change = (
-                    (header_merged['UPN_last'].eq('UN1') | null_before)
-                    & header_merged['UPN'].isin(UN2_to_5)
+                    ((header_merged['UPN_last'].eq('UN1') | null_before)  # change from UN1/null...
+                     & header_merged['UPN'].isin(UN2_to_5))  # ...to UN2-5
+                    | (null_before & header_merged['UPN_last'].eq('UN1'))  # OR, change from null to UN1
             )
             unknown_to_known = (
                     (header_merged['UPN_last'].isin(UN_codes) | null_before)  # was either null or an UN-code

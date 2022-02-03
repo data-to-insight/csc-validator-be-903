@@ -2228,7 +2228,7 @@ def test_validate_208():
         'UPN': ['UN5', 'X888888888888', 'UN1', 'UN1',
                 pd.NA, 'UN4', 'UN1', pd.NA,
                 'a------------', 'UN2', 'UN5', 'H000000000000',
-                'J--1--1--1--1'],
+                pd.NA],
     })
     fake_data = pd.DataFrame({
         'CHILD': ['101', '102', '103', '104',
@@ -2238,7 +2238,7 @@ def test_validate_208():
         'UPN': ['H801200001001', 'O------------', 'UN1', 'UN2',
                 pd.NA, 'UN3', pd.NA, 'UN4',
                 'A------------', 'H801200001111', 'UN5', 'X999999999999',
-                'J--1--1--1--1'],
+                'UN1'],
     })
 
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
@@ -2247,7 +2247,7 @@ def test_validate_208():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Header': [1, 5, 6]}
+    assert result == {'Header': [1, 5, 6, 12]}
 
 
 def test_validate_204():

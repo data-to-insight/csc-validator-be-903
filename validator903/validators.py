@@ -3066,14 +3066,30 @@ def validate_208():
             header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'),
                                                        indicator=True).set_index('index')
 
+            null_now = header_merged['UPN'].isna()
+            null_before = header_merged['UPN_last'].isna()
             in_both_years = header_merged['_merge'] == 'both'
-            upn_is_different = header_merged['UPN'].str.upper().astype(str) != header_merged[
-                'UPN_last'].str.upper().astype(str)
-            upn_not_recorded = header_merged['UPN'].str.upper().astype(str).isin(['UN2', 'UN3', 'UN4', 'UN5', 'UN6']) & \
-                               header_merged['UPN_last'].str.upper().astype(str).isin(['UN1'])
-            upn_prev_unknown = header_merged['UPN_last'].str.upper().astype(str).isin(['UN2', 'UN3', 'UN4', 'UN5', 'UN6'])
 
-            error_mask = in_both_years & upn_is_different & ~upn_not_recorded & ~upn_prev_unknown
+            header_merged['UPN'] = header_merged['UPN'].astype(str).str.upper()
+            header_merged['UPN_last'] = header_merged['UPN_last'].astype(str).str.upper()
+            upn_is_different = (
+                    (header_merged['UPN'] != header_merged['UPN_last'])
+                    & ~(null_now & null_before)
+                # exclude case where unknown both years null; leave to 442 (missing UPN)
+            )
+
+            UN2_to_5 = ['UN2', 'UN3', 'UN4', 'UN5']
+            UN_codes = ['UN1', ] + UN2_to_5
+            valid_unknown_change = (
+                    (header_merged['UPN_last'].eq('UN1') | null_before)
+                    & header_merged['UPN'].isin(UN2_to_5)
+            )
+            unknown_to_known = (
+                    (header_merged['UPN_last'].isin(UN_codes) | null_before)  # was either null or an UN-code
+                    & ~(header_merged['UPN'].isin(UN_codes) | null_now)  # now neither null nor UN-known
+            )
+
+            error_mask = in_both_years & upn_is_different & ~valid_unknown_change & ~unknown_to_known
 
             error_locations = header.index[error_mask]
 

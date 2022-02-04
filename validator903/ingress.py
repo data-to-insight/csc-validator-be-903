@@ -96,7 +96,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
         try:
             max_cols = max([len(cols) for cols in column_names.values()])
-            df = pd.read_csv(csv_file, converters={i: str for i in range(max_cols)})
+            df = pd.read_csv(csv_file, converters={i: lambda s: str(s) if s != '' else pd.np.nan for i in range(max_cols)})
         except UnicodeDecodeError:
             # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
             # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames

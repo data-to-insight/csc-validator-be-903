@@ -5,6 +5,57 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_601():
+    error = ErrorDefinition(
+        code='601',
+        description='The additional fields relating to adoption have not been completed although the episode data shows that the child was adopted during the year.',
+        affected_fields=['REC', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            ad1 = dfs['AD1']
+            episodes = dfs['Episodes']
+            collection_start = dfs['metadata']['collection_start']
+            collection_end = dfs['metadata']['collection_end']
+
+            # prepare to merge
+            ad1.reset_index(inplace=True)
+            episodes.reset_index(inplace=True)
+
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            # only keep episodes with adoption RECs during year
+            adoption_eps_mask = (
+                (episodes['DEC'] >= collection_start)
+                & (episodes['DEC'] <= collection_end)
+                & episodes['REC'].isin(['E11', 'E12'])
+            )
+            episodes = episodes[adoption_eps_mask]
+
+            # inner merge to take only episodes of children which are also found in the ad1 table
+            merged = episodes.merge(ad1, on='CHILD', how='inner', suffixes=['_eps', '_ad1'])
+
+            some_absent = (
+                merged[['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']]
+                .isna()
+                .any(axis=1)
+            )
+
+            error_locs_ad1 = merged.loc[some_absent, 'index_ad1'].unique().tolist()
+            error_locs_eps = merged.loc[some_absent, 'index_eps'].unique().tolist()
+
+            return {'AD1': error_locs_ad1,
+                    'Episodes': error_locs_eps}
+
+    return error, _validate
+
+
+
 def validate_302():
     error = ErrorDefinition(
         code='302',

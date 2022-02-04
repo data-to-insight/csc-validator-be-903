@@ -4963,19 +4963,24 @@ def test_validate_435():
 
 
 def test_validate_624():
-    fake_data = pd.DataFrame([
+    hdr = pd.DataFrame([
         {'CHILD': '111', 'MC_DOB': '01/06/2020'},  # 0
         {'CHILD': '222', 'MC_DOB': '04/06/2020'},  # 1
         {'CHILD': '333', 'MC_DOB': pd.NA},  # 2
         {'CHILD': '444', 'MC_DOB': '08/09/2020'},  # 3
+        {'CHILD': '555', 'MC_DOB': pd.NA},  # 4
+        {'CHILD': '66', 'MC_DOB': '01/02/2020'},  # 5
+
     ])
-    fake_hea = pd.DataFrame([
+    hdr_last = pd.DataFrame([
         {'CHILD': '111', 'MC_DOB': '01/06/2020'},  # 0
         {'CHILD': '222', 'MC_DOB': '04/06/2020'},  # 1
         {'CHILD': '333', 'MC_DOB': '01/06/2019'},  # 2
         {'CHILD': '444', 'MC_DOB': '10/09/2020'},  # 3
+        {'CHILD': '555', 'MC_DOB': pd.NA},  # 4
+        {'CHILD': '66', 'MC_DOB': pd.NA},  # 5
     ])
-    fake_dfs = {'Header': fake_data, 'Header_last': fake_hea}
+    fake_dfs = {'Header': hdr, 'Header_last': hdr_last}
 
     error_defn, error_func = validate_624()
 

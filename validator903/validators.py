@@ -5,6 +5,41 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_434():
+    error = ErrorDefinition(
+        code='434',
+        description="Reason for new episode is that child's legal status has changed but not the placement, but this is not reflected in the episode data.",
+        affected_fields=['RNE', 'LS', 'PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            print(episodes)
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            # create columns of previous values
+
+            cols = ['PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']
+
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+
+            error_mask = (
+                    (episodes['CHILD'] == episodes['CHILD'].shift(1))
+                    & (episodes['RNE'] == 'L')
+                    & (
+                            (episodes['LS'] == episodes['LS'].shift(1))
+                            | (episodes[cols] != episodes[cols].shift(1)).any(axis=1)
+                    )
+            )
+            # error locations
+            error_locs = episodes.index[error_mask].to_list()
+            return {'Episodes': error_locs}
+
+    return error, _validate
+
+
 def validate_336():
     error = ErrorDefinition(
         code='336',

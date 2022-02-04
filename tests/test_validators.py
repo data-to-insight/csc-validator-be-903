@@ -39,6 +39,27 @@ def test_validate_105():
     assert result == {'Header': [2, 3, 6, 7]}
 
 
+def test_validate_434():
+    fake_eps = pd.DataFrame([
+        {'CHILD': '111', 'DECOM': '01/01/2020', 'RNE': 'L', 'LS': '--', 'PL_POST': 'ooo', 'URN': '---'},  # 0
+        {'CHILD': '111', 'DECOM': '01/02/2020', 'RNE': 'P', 'LS': '--', 'PL_POST': 'ooo', 'URN': '---'},  # 1
+        {'CHILD': '111', 'DECOM': '01/12/2020', 'RNE': 'L', 'LS': '--', 'PL_POST': 'ooo', 'URN': '---'},
+        # 2 fail: LS same as [3]
+        {'CHILD': '111', 'DECOM': '01/03/2020', 'RNE': 'P', 'LS': '--', 'PL_POST': 'ooo', 'URN': '---'},  # 3
+        {'CHILD': '222', 'DECOM': '01/01/2020', 'RNE': 'L', 'LS': '--', 'PL_POST': '---', 'URN': '---'},  # 4
+        {'CHILD': '222', 'DECOM': '01/02/2020', 'RNE': 'L', 'LS': 'xx', 'PL_POST': '---', 'URN': '---'},  # 5
+        {'CHILD': '222', 'DECOM': '01/03/2020', 'RNE': 'L', 'LS': 'oo', 'PL_POST': '---', 'URN': 'xxx'},  # 6 fail: URN
+        {'CHILD': '222', 'DECOM': '01/04/2020', 'RNE': 'L', 'LS': 'oo', 'PL_POST': 'xxx', 'URN': 'xxx'},
+        # 7 fail: PL_POST
+    ])
+    fake_eps['PLACE'] = '---'
+    fake_eps['PLACE_PROVIDER'] = '---'
+    fake_dfs = {'Episodes': fake_eps}
+    error_defn, error_func = validate_434()
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [2, 6, 7]}
+
+
 def test_validate_1003():
     fake_data_episodes = pd.DataFrame([
         {'CHILD': 101, 'DECOM': '01/03/1980', 'RNE': 'S'},  # 0 fail

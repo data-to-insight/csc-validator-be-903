@@ -5,6 +5,45 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_302():
+    error = ErrorDefinition(
+        code='302',
+        description='First episode starts before child was born.',
+        affected_fields=['DECOM', 'DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            episodes = episodes.reset_index()
+            header = header.reset_index()
+
+            episodes = episodes.loc[episodes.groupby('CHILD')['DECOM'].idxmin()]
+
+            merged = episodes.merge(header, how='left', on=['CHILD'], suffixes=('_eps', '_hdr'))
+
+            # omitting looking for the 'S' episode as we may not have it in current year's data
+            # care_start = merged['RNE'].str.upper().astype(str).isin(['S'])
+
+            started_before_born = merged['DOB'] > merged['DECOM']
+
+            eps_errors = merged.loc[started_before_born, 'index_eps'].to_list()
+            hdr_errors = merged.loc[started_before_born, 'index_hdr'].to_list()
+            return {'Episodes': eps_errors,
+                    'Header': hdr_errors}
+
+    return error, _validate
+
+
 def validate_434():
     error = ErrorDefinition(
         code='434',

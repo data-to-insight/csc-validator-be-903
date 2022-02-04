@@ -5,6 +5,39 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_561():
+    error = ErrorDefinition(
+        code='561',
+        description='Date of the decision that the child should be placed for adoption this year is the same as that recorded last year but records show that the decision changed, and the child should no longer be placed for adoption last year.',
+        affected_fields=['DATE_PLACED']
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs or 'PlacedAdoption_last' not in dfs:
+            return {}
+        else:
+            placed_adoption = dfs['PlacedAdoption']
+            pa_last = dfs['PlacedAdoption_last']
+
+            # prepare to merge
+            placed_adoption.reset_index(inplace=True)
+            pa_last.reset_index(inplace=True)
+            merged = placed_adoption.merge(pa_last, how='inner', on='CHILD', suffixes=['_now', '_last'])
+
+            # If <CURRENT_COLLECTION_YEAR> <DATE_PLACED> is = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> then <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED_CEASED> and <REASON_PLACED_CEASED> should be Null
+            mask = (
+                (merged['DATE_PLACED_now'] == merged['DATE_PLACED_last'])
+                & merged[['REASON_PLACED_CEASED_last', 'DATE_PLACED_CEASED_last']].notna().any(axis=1)
+            )
+
+            # error locations
+            error_locs = merged.loc[mask, 'index_now']
+            return {'PlacedAdoption': error_locs.tolist()}
+
+    return error, _validate
+
+
+
 def validate_601():
     error = ErrorDefinition(
         code='601',

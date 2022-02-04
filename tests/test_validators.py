@@ -121,6 +121,39 @@ def test_validate_601():
 
 
 
+def test_validate_561():
+    fake_placed_adoption = pd.DataFrame([
+        {'CHILD': 101, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': '26/05/2019', 'REASON_PLACED_CEASED': 'xx'},
+        # 0
+        {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000', 'REASON_PLACED_CEASED': 'xx'},
+        # 1
+        {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA, 'REASON_PLACED_CEASED': 'xx'},  # 2
+        {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016', 'REASON_PLACED_CEASED': 'xx'},
+        # 3
+        {'CHILD': 106, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2029', 'REASON_PLACED_CEASED': 'xx'},  # 4
+    ])
+
+    fake_pa_last = pd.DataFrame([
+        {'CHILD': 101, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019', 'REASON_PLACED_CEASED': 'xx'},
+        # 0 fail
+        {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000', 'REASON_PLACED_CEASED': 'xx'},
+        # 1 fail
+        {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA, 'REASON_PLACED_CEASED': 'xx'},  # 2
+        {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016', 'REASON_PLACED_CEASED': 'xx'},
+        # 3
+        {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019', 'REASON_PLACED_CEASED': pd.NA},
+        # 4 pass
+        {'CHILD': 106, 'DATE_PLACED_CEASED': 'xx', 'DATE_PLACED': '01/07/2019', 'REASON_PLACED_CEASED': 'xx'},
+        # 5 pass
+    ])
+
+    fake_dfs = {'PlacedAdoption': fake_placed_adoption, 'PlacedAdoption_last': fake_pa_last}
+    error_defn, error_func = validate_561()
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [0, 1, 3]}
+
+
+
 def test_validate_1003():
     fake_data_episodes = pd.DataFrame([
         {'CHILD': 101, 'DECOM': '01/03/1980', 'RNE': 'S'},  # 0 fail
@@ -549,7 +582,7 @@ def test_validate_1014():
         {'CHILD': 105, 'DOB': '03/06/2000', 'DUC': '01/06/2015'},  # 2
         {'CHILD': 107, 'DOB': '04/06/2000', 'DUC': '02/06/2020'},  # 3
         {'CHILD': 110, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 4 Fails
-        {'CHILD': 111, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 5 Fails
+    {'CHILD': 111, 'DOB': pd.NA, 'DUC': '05/06/2020'},  # 5 Fails
     ])
     fake_data_oc3 = pd.DataFrame({
         'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111],
@@ -574,7 +607,7 @@ def test_validate_1014():
         {'CHILD': 110, 'DECOM': '01/01/2020', 'DEC': '01/01/2020', },  # 10 fail.
         {'CHILD': 110, 'DECOM': '01/11/2021', 'DEC': '01/11/2021', },  # 11
 
-        {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
+    {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
     ])
     metadata = {
         'collection_start': '01/04/2020',

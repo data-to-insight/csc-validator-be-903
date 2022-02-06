@@ -32,9 +32,9 @@ def test_validate_1001():
         {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
         {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/08/2015', 'REC': 'o'},  # :180:
 
-        # [5] - PASS: enough days including V3 episode
+        # [5] - FAIL: enough days but including V3 episode
         {'CHILD': '7777', 'LS': 'C2', 'DECOM': '01/01/2013', 'DEC': '01/03/2014', 'REC': 'o'},  # 365:60:
-        {'CHILD': '7777', 'LS': 'V3', 'DECOM': '01/01/2015', 'DEC': '01/02/2015', 'REC': 'o'},  # :30: (this V3 counts)
+        {'CHILD': '7777', 'LS': 'V3', 'DECOM': '01/01/2015', 'DEC': '01/02/2015', 'REC': 'o'},  # :30: (doesnt count)
         {'CHILD': '7777', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
 
         # [6] - FAIL:  more than 91 days but final REC E11/E12
@@ -80,7 +80,7 @@ def test_validate_1001():
                 'Episodes_last': prev_eps,
                 'metadata': metadata}
     result = error_func(fake_dfs)
-    assert result == {'OC3': [1, 2, 4, 6, 7]}
+    assert result == {'OC3': [1, 2, 4, 5, 6, 7]}
 
 
 def test_validate_105():

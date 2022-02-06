@@ -1247,17 +1247,21 @@ def validate_1001():
             header = dfs['Header']
 
             collection_end = dfs['metadata']['collection_end']
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
 
             episodes = pd.concat([current_eps, prev_eps], axis=0)
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
-            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
             episodes.drop_duplicates(subset=['CHILD', 'DECOM'])
 
             header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
             header = header[header['DOB'].notnull()]
             header['DOB14'] = header['DOB'] + pd.DateOffset(years=14)
             header['DOB16'] = header['DOB'] + pd.DateOffset(years=16)
+
+            # Drop children who are over 20 years old at collection end,
+            # as we would not expect to see sufficient episodes in the past 2 years of data
+            header = header[header['DOB'] + pd.DateOffset(years=20) > collection_end]
 
             # this should drop any episodes duplicated between years.
             # keep='first' should drop prev. year's missing DEC
@@ -1270,24 +1274,22 @@ def validate_1001():
             )
             episodes.loc[missing_last_DECs, 'DEC'] = collection_end
 
+
             # Work out how long child has been in care since 14th and 16th birthdays.
             episodes_merged = (episodes
                                .reset_index()
                                .merge(header[['CHILD', 'DOB', 'DOB14', 'DOB16']],
                                       how='inner', on=['CHILD'], suffixes=('', '_header'), indicator=True)
                                .set_index('index'))
-            episodes_merged['DURATION'] = (episodes_merged['DEC'] - episodes_merged['DECOM']).dt.days
+
+
+            # Drop all episodes with V3/V4 legal status
             v3v4_ls = episodes_merged['LS'].str.upper().isin(['V3', 'V4'])
-            episodes_merged['DURATION V3/V4'] = episodes_merged['DURATION'] * v3v4_ls.astype(int)
-
-            v3v4_ls = (v3v4_ls
-                       & ~(episodes_merged['DURATION'] >= 17)
-                       # TODO: 75 days in any 12-month period
-                       # & ~episodes_merged[v3v4_ls].groupby('CHILD')['DURATION V3/V4'].transform('sum') >= 150
-                       )
-
             index_v3v4_ls = episodes_merged.loc[v3v4_ls].index
             episodes_merged.drop(index_v3v4_ls, inplace=True)
+
+            if len(episodes_merged) == 0:
+                return {'OC3': []}
 
             episodes_merged['DECOM14'] = episodes_merged[["DECOM", "DOB14"]].max(axis=1)
             episodes_merged['DECOM16'] = episodes_merged[["DECOM", "DOB16"]].max(axis=1)
@@ -1298,14 +1300,10 @@ def validate_1001():
             episodes_merged['TOTAL14'] = episodes_merged.groupby('CHILD')['DURATION14'].transform('sum')
             episodes_merged['TOTAL16'] = episodes_merged.groupby('CHILD')['DURATION16'].transform('sum')
 
-            episodes_merged['ADOPTED'] = episodes_merged[['REC']].isin(['E11', 'E12'])
-            episodes_merged['EVER_ADOPTED'] = episodes_merged.groupby('CHILD')['ADOPTED'].transform('max')
+            totals = episodes_merged[['CHILD', 'TOTAL14', 'TOTAL16']].drop_duplicates('CHILD')
 
-            totals = episodes_merged[['CHILD', 'TOTAL14', 'TOTAL16']].drop_duplicates()
+            oc3 = oc3.merge(totals, how='left')
 
-            oc3 = oc3.merge(totals.drop_duplicates('CHILD'), how='left')
-
-            # may be useful later...
             # print(episodes_merged[['CHILD', 'DOB', 'DURATION14', 'TOTAL14', 'DURATION16', 'TOTAL16']])
             # print(episodes_merged[['CHILD', 'DOB', 'LS', 'REC', 'EVER_ADOPTED', 'DURATION V3/V4']])
 
@@ -1320,7 +1318,7 @@ def validate_1001():
             episodes_adopted = episodes_max[episodes_max['REC'].str.upper().isin(['E11', 'E12'])]
             adopted = oc3['CHILD'].isin(episodes_adopted['CHILD'])
 
-            error_mask = (adopted | ~valid_care_leaver)
+            error_mask = adopted | ~valid_care_leaver
 
             validation_error_locations = oc3.index[error_mask]
 

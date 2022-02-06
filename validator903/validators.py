@@ -5,6 +5,239 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_560():
+    error = ErrorDefinition(
+        code='560',
+        description='Date of decision that the child should be placed for adoption this year is different from that recorded last year but the decision to place the child for adoption did not change.',
+        affected_fields=['DATE_PLACED', 'DATE_PLACED_CEASED']
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs or 'PlacedAdoption_last' not in dfs:
+            return {}
+        else:
+            placed_adoption = dfs['PlacedAdoption']
+            pa_last = dfs['PlacedAdoption_last']
+
+            # prepare to merge
+            placed_adoption.reset_index(inplace=True)
+            pa_last.reset_index(inplace=True)
+            merged = placed_adoption.merge(pa_last, how='inner', on='CHILD', suffixes=['_now', '_last'])
+
+            # If <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> has been provided and <DATE_PLACED_CEASED> is Null then <CURRENT_COLLECTION_YEAR> <DATE_PLACED> should = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED>
+            mask = (
+                merged['DATE_PLACED_last'].notna()
+                & merged['DATE_PLACED_CEASED_last'].isna()
+                & (merged['DATE_PLACED_now'] != merged['DATE_PLACED_last'])
+            )
+            # error locations
+            error_locs = merged.loc[mask, 'index_now']
+            return {'PlacedAdoption': error_locs.tolist()}
+
+    return error, _validate
+
+
+
+def validate_561():
+    error = ErrorDefinition(
+        code='561',
+        description='Date of the decision that the child should be placed for adoption this year is the same as that recorded last year but records show that the decision changed, and the child should no longer be placed for adoption last year.',
+        affected_fields=['DATE_PLACED']
+    )
+
+    def _validate(dfs):
+        if 'PlacedAdoption' not in dfs or 'PlacedAdoption_last' not in dfs:
+            return {}
+        else:
+            placed_adoption = dfs['PlacedAdoption']
+            pa_last = dfs['PlacedAdoption_last']
+
+            # prepare to merge
+            placed_adoption.reset_index(inplace=True)
+            pa_last.reset_index(inplace=True)
+            merged = placed_adoption.merge(pa_last, how='inner', on='CHILD', suffixes=['_now', '_last'])
+
+            # If <CURRENT_COLLECTION_YEAR> <DATE_PLACED> is = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> then <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED_CEASED> and <REASON_PLACED_CEASED> should be Null
+            mask = (
+                (merged['DATE_PLACED_now'] == merged['DATE_PLACED_last'])
+                & merged[['REASON_PLACED_CEASED_last', 'DATE_PLACED_CEASED_last']].notna().any(axis=1)
+            )
+
+            # error locations
+            error_locs = merged.loc[mask, 'index_now']
+            return {'PlacedAdoption': error_locs.tolist()}
+
+    return error, _validate
+
+
+
+def validate_601():
+    error = ErrorDefinition(
+        code='601',
+        description='The additional fields relating to adoption have not been completed although the episode data shows that the child was adopted during the year.',
+        affected_fields=['REC', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            ad1 = dfs['AD1']
+            episodes = dfs['Episodes']
+            collection_start = dfs['metadata']['collection_start']
+            collection_end = dfs['metadata']['collection_end']
+
+            # prepare to merge
+            ad1.reset_index(inplace=True)
+            episodes.reset_index(inplace=True)
+
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            # only keep episodes with adoption RECs during year
+            adoption_eps_mask = (
+                (episodes['DEC'] >= collection_start)
+                & (episodes['DEC'] <= collection_end)
+                & episodes['REC'].isin(['E11', 'E12'])
+            )
+            episodes = episodes[adoption_eps_mask]
+
+            # inner merge to take only episodes of children which are also found in the ad1 table
+            merged = episodes.merge(ad1, on='CHILD', how='inner', suffixes=['_eps', '_ad1'])
+
+            some_absent = (
+                merged[['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']]
+                .isna()
+                .any(axis=1)
+            )
+
+            error_locs_ad1 = merged.loc[some_absent, 'index_ad1'].unique().tolist()
+            error_locs_eps = merged.loc[some_absent, 'index_eps'].unique().tolist()
+
+            return {'AD1': error_locs_ad1,
+                    'Episodes': error_locs_eps}
+
+    return error, _validate
+
+
+
+def validate_302():
+    error = ErrorDefinition(
+        code='302',
+        description='First episode starts before child was born.',
+        affected_fields=['DECOM', 'DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            episodes = dfs['Episodes']
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+            episodes = episodes.reset_index()
+            header = header.reset_index()
+
+            episodes = episodes.loc[episodes.groupby('CHILD')['DECOM'].idxmin()]
+
+            merged = episodes.merge(header, how='left', on=['CHILD'], suffixes=('_eps', '_hdr'))
+
+            # omitting looking for the 'S' episode as we may not have it in current year's data
+            # care_start = merged['RNE'].str.upper().astype(str).isin(['S'])
+
+            started_before_born = merged['DOB'] > merged['DECOM']
+
+            eps_errors = merged.loc[started_before_born, 'index_eps'].to_list()
+            hdr_errors = merged.loc[started_before_born, 'index_hdr'].to_list()
+            return {'Episodes': eps_errors,
+                    'Header': hdr_errors}
+
+    return error, _validate
+
+
+def validate_434():
+    error = ErrorDefinition(
+        code='434',
+        description="Reason for new episode is that child's legal status has changed but not the placement, but this is not reflected in the episode data.",
+        affected_fields=['RNE', 'LS', 'PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            print(episodes)
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            # create columns of previous values
+
+            cols = ['PLACE', 'PL_POST', 'URN', 'PLACE_PROVIDER']
+
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+
+            error_mask = (
+                    (episodes['CHILD'] == episodes['CHILD'].shift(1))
+                    & (episodes['RNE'] == 'L')
+                    & (
+                            (episodes['LS'] == episodes['LS'].shift(1))
+                            | (episodes[cols] != episodes[cols].shift(1)).any(axis=1)
+                    )
+            )
+            # error locations
+            error_locs = episodes.index[error_mask].to_list()
+            return {'Episodes': error_locs}
+
+    return error, _validate
+
+
+def validate_336():
+    error = ErrorDefinition(
+        code='336',
+        description='Child does not have a foster placement immediately prior to being placed for adoption.',
+        affected_fields=['PLACE']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            place_code_list = ['A3', 'A4']
+            prev_code_list = ['A3', 'A4', 'A5', 'A6', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            # new column that contains place of previous episode
+
+            sorted_and_grouped_eps = (episodes
+                                      .sort_values('DECOM')
+                                      .groupby('CHILD'))
+
+            episodes['PLACE_prev'] = sorted_and_grouped_eps['PLACE'].shift(1)
+            episodes['is_first_episode'] = False
+            episodes.loc[sorted_and_grouped_eps['DECOM'].idxmin(), 'is_first_episode'] = True
+
+            print(episodes)
+            # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of:
+            # ('A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6')
+            mask = (
+                (episodes['PLACE'].isin(place_code_list))
+                & ~episodes['PLACE_prev'].isin(prev_code_list)
+                & ~episodes['is_first_episode']  # omit first eps, as prev_PLACE is NaN
+            )
+
+            # error locations
+            error_locs = episodes.index[mask]
+            return {'Episodes': error_locs.tolist()}
+
+    return error, _validate
+
+
 def validate_105():
     error = ErrorDefinition(
         code='105',
@@ -1677,12 +1910,12 @@ def validate_1007():
 
             # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC> not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
             check_age = (merged['DOB'] + pd.offsets.DateOffset(years=17) <= collection_end) & (
-                    merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
+                        merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
             # That is, check that 17<=age<19
             check_dec_rec = merged['REC'].isna() | merged['DEC'].isna()
             # if either DEC or REC are absent
             mask = check_age & check_dec_rec & (
-                    merged['IN_TOUCH'].notna() | merged['ACTIV'].notna() | merged['ACCOM'].notna())
+                        merged['IN_TOUCH'].notna() | merged['ACTIV'].notna() | merged['ACCOM'].notna())
             # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
 
             # error locations
@@ -6719,12 +6952,10 @@ def validate_624():
         else:
             hea = dfs['Header']
             hea_pre = dfs['Header_last']
-            hea['MC_DOB'] = pd.to_datetime(hea['MC_DOB'], format='%d/%m/%Y', errors='coerce')
-            hea_pre['MC_DOB'] = pd.to_datetime(hea_pre['MC_DOB'], format='%d/%m/%Y', errors='coerce')
             hea['orig_idx'] = hea.index
 
             err_co = hea.merge(hea_pre, how='inner', on='CHILD', suffixes=['', '_PRE']) \
-                .query("MC_DOB_PRE.notna() & MC_DOB != MC_DOB_PRE")
+                .query("MC_DOB_PRE.notna() & (MC_DOB != MC_DOB_PRE)")
 
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()

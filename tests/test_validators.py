@@ -154,6 +154,32 @@ def test_validate_561():
 
 
 
+def test_validate_560():
+    fake_placed_adoption = pd.DataFrame([
+        {'CHILD': 101, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': '26/05/2019'},  # 0 --- FAIL
+        {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000'},  # 1
+        {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA},  # 2
+        {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016'},  # 3
+        {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '27/05/2019'},  # 4 --- FAIL
+        {'CHILD': 106, 'DATE_PLACED_CEASED': '34rd/Dec/-1000A.D', 'DATE_PLACED': '34rd/Dec/-1000A.D'},  # 5
+        {'CHILD': 107, 'DATE_PLACED_CEASED': 'different', 'DATE_PLACED': 'also different'},  # 6
+    ])
+    fake_pa_last = pd.DataFrame([
+        {'CHILD': 101, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2000'},  # 0
+        {'CHILD': 102, 'DATE_PLACED_CEASED': '01/07/2018', 'DATE_PLACED': '26/05/2000'},  # 1
+        {'CHILD': 103, 'DATE_PLACED_CEASED': '26/05/2000', 'DATE_PLACED': pd.NA},  # 2
+        {'CHILD': 104, 'DATE_PLACED_CEASED': '26/05/2017', 'DATE_PLACED': '01/02/2016'},  # 3
+        {'CHILD': 105, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '26/05/2019'},  # 4
+        {'CHILD': 106, 'DATE_PLACED_CEASED': pd.NA, 'DATE_PLACED': '34rd/Dec/-1000A.D'},  # 5
+        {'CHILD': 107, 'DATE_PLACED_CEASED': '34rd/Dec/-1000A.D', 'DATE_PLACED': '20/20/2020'},  # 6
+    ])
+    fake_dfs = {'PlacedAdoption': fake_placed_adoption, 'PlacedAdoption_last': fake_pa_last}
+    error_defn, error_func = validate_560()
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [0, 4]}
+
+
+
 def test_validate_1003():
     fake_data_episodes = pd.DataFrame([
         {'CHILD': 101, 'DECOM': '01/03/1980', 'RNE': 'S'},  # 0 fail
@@ -609,6 +635,7 @@ def test_validate_1014():
 
     {'CHILD': 111, 'DECOM': '01/11/2019', 'DEC': '31/03/2021', },  # 12
     ])
+
     metadata = {
         'collection_start': '01/04/2020',
         'collection_end': '31/03/2021'

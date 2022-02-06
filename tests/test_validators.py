@@ -1,6 +1,87 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_1001():
+    # DOB always 01/01/2000
+    # next to each episode, approx days in each age bracket is listed like so:      under 14  :  14-16  :  over 16
+    eps = pd.DataFrame([
+        # [0] - PASS: more than 91 relevant days
+        {'CHILD': '1111', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
+        {'CHILD': '1111', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/06/2015', 'REC': 'o'},  # :120:
+        {'CHILD': '1111', 'LS': 'C2', 'DECOM': '01/01/2016', 'DEC': '01/02/2016', 'REC': 'o'},  # ::1
+
+        # [1] - FAIL: less than 91 days
+        {'CHILD': '2222', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
+        {'CHILD': '2222', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': pd.NA, 'REC': 'o'},  # Duplicate DECOM, missing
+                                                                                         # DEC - should get dropped
+        {'CHILD': '2222', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '01/02/2016', 'REC': 'o'},  # :7:30
+
+        # [2] - FAIL: more than 91 days but not after 14th bday
+        {'CHILD': '3333', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/03/2014', 'REC': 'o'},  # 120:60:
+        {'CHILD': '3333', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
+
+        # [3] - PASS: more than 91 days, all after 16th bday
+        {'CHILD': '4444', 'LS': 'C2', 'DECOM': '01/01/2016', 'DEC': '01/02/2016', 'REC': 'o'},  # ::30
+        {'CHILD': '4444', 'LS': 'C2', 'DECOM': '25/12/2016', 'DEC': '01/04/2017', 'REC': 'o'},  # ::120
+
+        # [-] - PASS: not in OC3
+        {'CHILD': '5555', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/05/2012', 'REC': 'o'},  # 120:60:
+        {'CHILD': '5555', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
+
+        # [4] - FAIL: more than 91 days but none after 16th bday
+        {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
+        {'CHILD': '6006', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/08/2015', 'REC': 'o'},  # :180:
+
+        # [5] - FAIL: enough days but including V3 episode
+        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '01/01/2013', 'DEC': '01/03/2014', 'REC': 'o'},  # 365:60:
+        {'CHILD': '7777', 'LS': 'V3', 'DECOM': '01/01/2015', 'DEC': '01/02/2015', 'REC': 'o'},  # :30: (doesnt count)
+        {'CHILD': '7777', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '04/01/2016', 'REC': 'o'},  # :7:3
+
+        # [6] - FAIL:  more than 91 days but final REC E11/E12
+        {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/01/2014', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
+        {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/02/2015', 'DEC': '01/08/2015', 'REC': 'o'},  # :180:
+        {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/02/2016', 'DEC': '01/03/2016', 'REC': 'o'},  # ::30
+        {'CHILD': '8888', 'LS': 'C2', 'DECOM': '01/03/2017', 'DEC': '01/05/2017', 'REC': 'E11'},  # ::60 but E11
+
+        # [8] - PASS: more than 91 days if missing DEC filled in
+        {'CHILD': '9999', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/05/2012', 'REC': 'o'},  # 120:60:
+        {'CHILD': '9999', 'LS': 'C2', 'DECOM': '01/06/2017', 'DEC': pd.NA, 'REC': 'o'},  # :40:120
+    ])
+
+    metadata = {'collection_end': '01/10/2017'}
+
+    # Split episodes into current and previous year dataframes
+    eps['DECOM_dt'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')
+    first_ep_per_child = eps.groupby('CHILD')['DECOM_dt'].idxmin()
+    prev_eps = eps.loc[first_ep_per_child].copy().drop('DECOM_dt', axis=1)
+    current_eps = eps.drop(index=first_ep_per_child[:-4],
+                           columns='DECOM_dt')  # keep a couple eps in both df's, so we know dups dont break it
+
+    assert len(prev_eps) + len(current_eps) == len(eps) + 4, (
+        '(test logic problem) creating current/prev episodes tables didnt work as intended'
+    )
+
+    oc3 = pd.DataFrame({
+        'CHILD': ['1111', '2222', '3333', '4444',
+                  '6006', '7777', '8888', '9999'
+                  '1010101010'],  # '1010101010' not in episodes
+    })
+
+    header = pd.DataFrame({
+        'CHILD': ['1111', '2222', '3333', '4444',
+                  '6006', '7777', '8888',
+                  '1010101010']
+    })
+    header['DOB'] = '01/01/2000'
+
+    erro_defn, error_func = validate_1001()
+
+    fake_dfs = {'Episodes': current_eps, 'OC3': oc3, 'Header': header,
+                'Episodes_last': prev_eps,
+                'metadata': metadata}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [1, 2, 4, 5, 6, 7]}
+
 def test_validate_302():
     fake_data = pd.DataFrame({
         'CHILD': ['101', '102', '101', '102', '103',

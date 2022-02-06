@@ -1454,6 +1454,111 @@ def validate_625():
     return error, _validate
 
 
+
+# !# big potential false positives, as this only operates on the current and previous year data
+# should use collection start/end & DOB to exclude children whose first/last episode dates mean we probably can't tell
+def validate_1001():
+    error = ErrorDefinition(
+        code='1001',
+        description='The episodes recorded for this young person suggest they are not a relevant or a former relevant '
+                    'child and therefore should not have care leaver information completed. '
+                    '[NOTE: This tool can only test the current and previous year data loaded into the tool - this '
+                    'check may generate false positives if a child had episodes prior to last year\'s collection.]',
+        affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
+    )
+
+    def _validate(dfs):
+        # requiring 'Episodes_last' to reduce false positive rate, though more could be done
+        if any(table_name not in dfs for table_name in ('Episodes', 'OC3', 'Header', 'Episodes_last')):
+            return {}
+        elif any(len(dfs[table_name]) == 0 for table_name in ('Episodes', 'OC3', 'Header', 'Episodes_last')):
+            return {}
+        else:
+            current_eps = dfs['Episodes']
+            prev_eps = dfs['Episodes_last']
+            oc3 = dfs['OC3']
+            header = dfs['Header']
+
+            collection_end = dfs['metadata']['collection_end']
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            episodes = pd.concat([current_eps, prev_eps], axis=0)
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            episodes.drop_duplicates(subset=['CHILD', 'DECOM'])
+
+            header['DOB'] = pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            header = header[header['DOB'].notnull()]
+            header['DOB14'] = header['DOB'] + pd.DateOffset(years=14)
+            header['DOB16'] = header['DOB'] + pd.DateOffset(years=16)
+
+            # Drop children who are over 20 years old at collection end,
+            # as we would not expect to see sufficient episodes in the past 2 years of data
+            header = header[header['DOB'] + pd.DateOffset(years=20) > collection_end]
+
+            # this should drop any episodes duplicated between years.
+            # keep='first' should drop prev. year's missing DEC
+            episodes = episodes.sort_values('DEC').drop_duplicates(['CHILD', 'DECOM'], keep='first')
+
+            # fill in missing final DECs with the collection year's end date
+            missing_last_DECs = (
+                episodes.index.isin(episodes.groupby('CHILD')['DECOM'].idxmax())
+                & episodes['DEC'].isna()
+            )
+            episodes.loc[missing_last_DECs, 'DEC'] = collection_end
+
+
+            # Work out how long child has been in care since 14th and 16th birthdays.
+            episodes_merged = (episodes
+                               .reset_index()
+                               .merge(header[['CHILD', 'DOB', 'DOB14', 'DOB16']],
+                                      how='inner', on=['CHILD'], suffixes=('', '_header'), indicator=True)
+                               .set_index('index'))
+
+
+            # Drop all episodes with V3/V4 legal status
+            v3v4_ls = episodes_merged['LS'].str.upper().isin(['V3', 'V4'])
+            index_v3v4_ls = episodes_merged.loc[v3v4_ls].index
+            episodes_merged.drop(index_v3v4_ls, inplace=True)
+
+            if len(episodes_merged) == 0:
+                return {'OC3': []}
+
+            episodes_merged['DECOM14'] = episodes_merged[["DECOM", "DOB14"]].max(axis=1)
+            episodes_merged['DECOM16'] = episodes_merged[["DECOM", "DOB16"]].max(axis=1)
+
+            episodes_merged['DURATION14'] = (episodes_merged['DEC'] - episodes_merged['DECOM14']).dt.days.clip(lower=0)
+            episodes_merged['DURATION16'] = (episodes_merged['DEC'] - episodes_merged['DECOM16']).dt.days.clip(lower=0)
+
+            episodes_merged['TOTAL14'] = episodes_merged.groupby('CHILD')['DURATION14'].transform('sum')
+            episodes_merged['TOTAL16'] = episodes_merged.groupby('CHILD')['DURATION16'].transform('sum')
+
+            totals = episodes_merged[['CHILD', 'TOTAL14', 'TOTAL16']].drop_duplicates('CHILD')
+
+            oc3 = oc3.merge(totals, how='left')
+
+            # print(episodes_merged[['CHILD', 'DOB', 'DURATION14', 'TOTAL14', 'DURATION16', 'TOTAL16']])
+            # print(episodes_merged[['CHILD', 'DOB', 'LS', 'REC', 'EVER_ADOPTED', 'DURATION V3/V4']])
+
+            has_care_after_14 = oc3['TOTAL14'] >= 91
+            has_care_after_16 = oc3['TOTAL16'] >= 1
+
+            valid_care_leaver = has_care_after_14 & has_care_after_16
+
+            # Find out if child has been adopted
+            episodes_max = episodes.groupby('CHILD')['DECOM'].idxmax()
+            episodes_max = episodes.loc[episodes_max]
+            episodes_adopted = episodes_max[episodes_max['REC'].str.upper().isin(['E11', 'E12'])]
+            adopted = oc3['CHILD'].isin(episodes_adopted['CHILD'])
+
+            error_mask = adopted | ~valid_care_leaver
+
+            validation_error_locations = oc3.index[error_mask]
+
+            return {'OC3': validation_error_locations.tolist()}
+
+    return error, _validate
+
 def validate_1010():
     error = ErrorDefinition(
         code='1010',

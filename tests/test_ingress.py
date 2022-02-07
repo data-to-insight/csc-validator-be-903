@@ -44,6 +44,8 @@ def test_read_csv_from_text(dummy_input_files):
         if name in ('Header', 'Header_last'):
             assert 'UASC' in val.columns, f'UASC field not added to {name}'
         assert len(val) > 0, f'No entries found for {name}'
+        assert set(str(dtype) for dtype in val.dtypes) == {'object'}, \
+            f'Got non-object columns in {name}: \n{val.dtypes}!'
 
 
 def test_read_xml_from_text():
@@ -55,4 +57,6 @@ def test_read_xml_from_text():
 
     for name, val in out.items():
         assert len(val) > 0, f'No entries found for {name}'
-    
+        assert set(str(dtype) for dtype in val.dtypes) == {'object'}, \
+            f'Got non-objects columns in {name}: \n{val.dtypes}!'
+

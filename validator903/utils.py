@@ -51,7 +51,9 @@ def add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(episodes, collection_start, co
     in_care_at_some_point = eps_copy.groupby('CHILD')['during_year'].transform('max')
     not_in_care_at_some_point = eps_copy.groupby('CHILD')['implies_not_continuous'].transform('max')
 
-    episodes['CONTINUOUSLY_LOOKED_AFTER'] = in_care_at_some_point & ~not_in_care_at_some_point
+    # the "== True/False" is to cope with weird situations which cause these to potentially be float dtype,
+    # which i don't have time to get into right now, but may be to do with missing DECOMs
+    episodes['CONTINUOUSLY_LOOKED_AFTER'] = (in_care_at_some_point == True) & (not_in_care_at_some_point == False)
 
     return episodes
 

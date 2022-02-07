@@ -175,7 +175,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         if table_name in ['Header', 'Header_last']:
             cols = cols + ['UASC']
 
-        return pd.Series({k: read_value(k) for k in cols})
+        return pd.Series({k: read_value(k) for k in cols}, dtype=object)
 
     for child in ET.fromstring(xml_string):
         all_data = read_data(child)

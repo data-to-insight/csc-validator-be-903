@@ -7,7 +7,7 @@ from io import BytesIO
 from typing import List, Union, Dict, Iterator, Tuple
 
 from pandas import DataFrame
-
+from numpy import nan
 from .types import UploadException, UploadedFile
 from .config import column_names
 
@@ -96,7 +96,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
         try:
             max_cols = max([len(cols) for cols in column_names.values()])
-            df = pd.read_csv(csv_file, converters={i: lambda s: str(s) if s != '' else pd.np.nan
+            df = pd.read_csv(csv_file, converters={i: lambda s: str(s) if s != '' else nan
                                                    for i in range(max_cols)})
             # If a column contains only nan's, dtype will be float, and test_ingress.py::test_read_csv_from_text fails
             for col in df.columns:
@@ -163,7 +163,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         def read_value(k):
             val = all_data.get(k, None)
             if val is None:
-                return pd.NA
+                return nan
             if not isinstance(val, str):
                 logger.warning(
                     f'Got a non-string thing reading {table_name}:{k} from xml -- got {val}, of type {type(val)}'
@@ -224,6 +224,9 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     # capitalize string columns
     for df in data.values():
         df = capitalise_object_dtype_cols(df)
+        for col in df.columns:
+            if df.dtypes[col] != object:
+                df[col] = df[col].values.astype(object)
 
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Tables created from XML -- {names_and_lengths}')

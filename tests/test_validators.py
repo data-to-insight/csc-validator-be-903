@@ -1,49 +1,28 @@
 from validator903.validators import *
 import pandas as pd
-
+import test_utils
 
 def test_validate_543():
     fake_data_episodes = pd.DataFrame([
-        #  'CONTINOUSLY_LOOKED_AFTER':['N' ,'Y', 'Y', 'N', 'Y'],
-        # The desired CLA values for this test, outlined in the preceding line, are generated from this data solely based on the number of episodes in the current year (DECOM). The other variables (LS, RNE, DEC) are kept neutral.
-        {'CHILD': 101, 'DECOM': '01/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 0
-        {'CHILD': 101, 'DECOM': '11/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 1
-        # CLA 101 = 'N' count of episodes in current year is zero
-        {'CHILD': 102, 'DECOM': '30/03/2032', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 2
-        {'CHILD': 102, 'DECOM': '01/01/2032', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 3
-        # CLA 102 = 'Y'
-        {'CHILD': 103, 'DECOM': '11/05/2031', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 4
-        {'CHILD': 103, 'DECOM': '01/01/2032', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 5
-        # CLA 103 = 'Y'
-        {'CHILD': 104, 'DECOM': '22/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 6
-        {'CHILD': 104, 'DECOM': '11/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 7
-        {'CHILD': 104, 'DECOM': '22/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 8
-        {'CHILD': 104, 'DECOM': '25/03/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 9
-        # CLA 104 = 'N' count of episodes in current year is zero
-        {'CHILD': 105, 'DECOM': '01/01/2020', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 10
-        {'CHILD': 105, 'DECOM': '01/11/2031', 'LS': 'xx', 'RNE': 'xx', 'REC': 'xx', 'DEC': '22/01/2020'},  # 11
-        # CLA 105 = 'Y'
-    ])
-    # If count of episodes in current year = ‘0’
-    # or any episode has <LS> = ‘V3’,‘V4’ and <DEC> >= <COLLECTION_START_DATE> or Null
-    # or any episode<DEC> >= <COLLECTION_START_DATE> and <REC> not = ‘X1’
-    # or any episode <RNE> = ‘S’ and <DECOM> > <COLLECTION_START_DATE>
-    # Then <LOOKED_AFTER_CONTINUOUSLY> = ‘N’
-    # else <LOOKED_AFTER_CONTINUOUSLY> =’Y’
+        {'CHILD': 101, 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': 102, 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': 103, 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': 104, 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
 
+        {'CHILD': 105, 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+    ])
     fake_data = pd.DataFrame({
         'CHILD': [101, 102, 103, 104, 105],
-        'DOB': ['08/03/2020', '22/06/2000', pd.NA, '13/10/2000', '10/01/2027'],
+        'DOB': ['08/03/1960', '22/06/1969', pd.NA, '13/10/2000', '31/03/1970'],
         'CONVICTED': [1, pd.NA, 1, 1, pd.NA],
-        # 0 ignore CLA is nan
-        # 1 fail conditions are met but CONVICTED is not provided
-        # 2 ignnore DOB is nan
-        # 3 ignore CLA is not Y
-        # 4 ignore DOB is less than 10 years prior to Collection_end
+        # 0 pass
+        # 1 fail because conditions are met but CONVICTED is not provided
+        # 2 ignore: DOB is nan
+        # 3 ignore: CLA is false
+        # 4 fail because conditions are met but CONVICTED is not provided.
     })
 
-    metadata = {'collection_start': '01/04/2031',
-                'collection_end': '31/03/2032'}
+    metadata = {'collection_start' : '01/04/1980', 'collection_end' : '31/03/1981'}
 
     fake_dfs = {'OC2': fake_data, 'metadata': metadata, 'Episodes': fake_data_episodes}
 
@@ -51,7 +30,7 @@ def test_validate_543():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC2': [1, ]}
+    assert result == {'OC2': [1, 4 ]}
 
 
 

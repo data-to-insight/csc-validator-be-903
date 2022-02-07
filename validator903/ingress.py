@@ -84,7 +84,7 @@ def accomodate_nans(df) -> pd.DataFrame:
   '''This function converts all columns to the best possible datatypes in order to accomodate missing values so that they do not cause the other integer values found in their column to be read in as floats'''
   # create a copy of the DataFrame and delete the CHILD column
   df_copy = df.copy()
-  df_copy = df_copy.drop('CHILD').convert_dtypes()
+  df_copy = df_copy.drop('CHILD', axis=1, errors='ignore').convert_dtypes()
   # replace the columns in the original DataFrame with their respective converted columns.
   for col in df_copy.columns:
     df[col]=df_copy[col].values
@@ -111,11 +111,14 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
             raise UploadException(f"Failed to decode one or more files. Try opening the text "
                                 f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
-
+        # arrange column data types
+        logger.info('+'*50)
+        logger.info('DF DATATYPES BEFORE CONVERSION', df.dtypes)
+        df = accomodate_nans(df)
+        logger.info('AFTER CONVERSION BEFORE CAPITALISING', df.dtypes)
         # capitalize all string input
         df = capitalise_object_dtype_cols(df)
-        # arrange column data types
-        df = accomodate_nans(df)
+        logger.info('DF DATATYPES AFTER CAPITALISING', df.dtypes)        
 
         file_name = _get_file_type(df)
 
@@ -127,6 +130,8 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             raise UploadException(f'Unrecognized file description {file_data["description"]}')
 
         files[name] = df
+        logger.info('DF NAME: ', name)
+        logger.info('+'*50)
 
     # Adding UASC column to Header table
     if 'Header' in files and 'UASC' in files:
@@ -239,8 +244,8 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
 
     # capitalize string columns
     for df in data.values():
-      df = capitalise_object_dtype_cols(df)
       df = accomodate_nans(df)
+      df = capitalise_object_dtype_cols(df)      
 
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Tables created from XML -- {names_and_lengths}')

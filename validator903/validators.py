@@ -9,7 +9,7 @@ def validate_545():
     error = ErrorDefinition(
         code='545',
         description='Child is aged under 5 at 31 March and has been looked after continuously for 12 months yet health promotion information has not been completed.',
-        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+        affected_fields=['CONTINUOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
     )
 
     def _validate(dfs):
@@ -26,7 +26,7 @@ def validate_545():
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
 
             # If <DOB> < 5 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER>= 'Y' then<HEALTH_CHECK>` should be provided.
-            mask = (collection_end < (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2['CONTINUOULY_LOOKED_AFTER'] & oc2['HEALTH_CHECK'].isna()
+            mask = (collection_end < (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2['HEALTH_CHECK'].isna()
             error_locations = oc2.index[mask]
             return {'OC2': error_locations.tolist()}
 

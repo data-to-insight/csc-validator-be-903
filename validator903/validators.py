@@ -13,19 +13,25 @@ def validate_406():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs:
+        if 'Episodes' not in dfs or 'Header' not in dfs:
+            return {}
+        elif 'UASC' not in dfs['Header'].columns:
             return {}
         else:
+            header = dfs['Header']
             epi = dfs['Episodes']
+
             epi['orig_idx'] = epi.index
-            if 'UASC' in dfs:
-                uas = dfs['UASC']
-                err_co1 = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-                err_co1.drop(['_merge'], axis=1, inplace=True)
-            if 'UASC_last' in dfs:
-                uas_l = dfs['UASC_last']
-                err_co2 = epi.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-                # we want left_only (found only in the first year) and both (found in both years) but no children who are found in the uasc table but have no entry in the episodes table (no right_only, that is.).
+
+            header = header.loc[pd.to_numeric(header['UASC'])==1]
+            
+            err_co1 = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
+            err_co1.drop(['_merge'], axis=1, inplace=True)
+            if 'Header_last' in dfs:
+                header_last = dfs['Header_last']                
+                header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==1]
+                err_co2 = epi.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
+
             err_list = err_co1['orig_idx'].unique().tolist()
             err_list2 = err_co2['orig_idx'].unique().tolist()
             err_list.extend(err_list2)

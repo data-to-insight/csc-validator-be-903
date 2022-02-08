@@ -5170,7 +5170,7 @@ def test_validate_104():
 
 
 def test_validate_392B():
-    fake_data = pd.DataFrame([
+    fake_episodes = pd.DataFrame([
         {'CHILD': '111', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': 'XX1'},  # 0
         {'CHILD': '222', 'LS': 'L1', 'HOME_POST': 'XX1', 'PL_POST': pd.NA},  # 1
         {'CHILD': '222', 'LS': 'V3', 'HOME_POST': pd.NA, 'PL_POST': 'XX1'},  # 2
@@ -5181,10 +5181,22 @@ def test_validate_392B():
         {'CHILD': '444', 'LS': 'V3', 'HOME_POST': pd.NA, 'PL_POST': pd.NA},  # 7
     ])
 
-    fake_uasc = pd.DataFrame([{'CHILD': '111'}, ])
-    fake_uasc_last = pd.DataFrame([{'CHILD': '444'}, ])
+    fake_header = pd.DataFrame([
+        {'CHILD': '111', 'UASC': 1},  # 0 
+        {'CHILD': '222', 'UASC': 0},  # 2  
+        {'CHILD': '333', 'UASC': 0},  # 4
+        {'CHILD': '345', 'UASC': 0},  # 5
+        {'CHILD': '444', 'UASC': 0},  # 6 
+    ])
+    fake_header_last = pd.DataFrame([
+        {'CHILD': '111', 'UASC': 0},  # 0 
+        {'CHILD': '222', 'UASC': 0},  # 2  
+        {'CHILD': '333', 'UASC': 0},  # 4
+        {'CHILD': '345', 'UASC': 0},  # 5
+        {'CHILD': '444', 'UASC': 1},  # 6 
+    ])
 
-    fake_dfs = {'Episodes': fake_data, 'UASC': fake_uasc, 'UASC_last': fake_uasc_last}
+    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
 
     error_defn, error_func = validate_392B()
 

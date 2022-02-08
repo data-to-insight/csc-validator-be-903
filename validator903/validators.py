@@ -7027,19 +7027,28 @@ def validate_392B():
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs:
+        # comments on similar lines of code are found in validate_406()
+        if 'Episodes' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
             return {}
+        elif 'UASC' not in dfs['Header'].columns or 'UASC' not in dfs['Header_last'].columns:
+          return {}
         else:
+            # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <HOME_POST> and <PL_POST> should be provided.
             epi = dfs['Episodes']
-            epi['orig_idx'] = epi.index
-            if 'UASC' in dfs:
-                uas = dfs['UASC']
-                err_co = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
-                err_co.drop(['_merge'], axis=1, inplace=True)
-            if 'UASC_last' in dfs:
-                uas_l = dfs['UASC_last']
-                err_co = err_co.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+            header = dfs['Header']
+            header_last = dfs['Header_last']
 
+            epi['orig_idx'] = epi.index
+            
+            header = header.loc[pd.to_numeric(header['UASC'])==0]
+            # Get children who are still found in the header table (that is, their UASC is 0) and who have episodes.
+            err_co = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
+            err_co.drop(['_merge'], axis=1, inplace=True)
+
+            header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==0]
+            err_co = err_co.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
+
+            # Check that the episodes LS are neither V3 or V4 and then get the error positions.
             err_co = err_co.query("(~LS.isin(['V3','V4'])) & (HOME_POST.isna() | PL_POST.isna())")
             err_list = err_co['orig_idx'].unique().tolist()
             err_list.sort()

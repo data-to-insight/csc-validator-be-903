@@ -14,27 +14,32 @@ def validate_406():
 
     def _validate(dfs):
         if 'Episodes' not in dfs or 'Header' not in dfs:
+          # This rule is based on an 'or' conditional so it can run without Header_last
             return {}
         elif 'UASC' not in dfs['Header'].columns:
             return {}
         else:
+            # If <UASC> = '1' or <COLLECTION YEAR> - 1 <UASC> = '1' or <COLLECTION YEAR> - 2 <UASC> = '1' Then <PL_DISTANCE> should not be provided Note: <PL_DISTANCE> is a derived field in most instances
             header = dfs['Header']
             epi = dfs['Episodes']
-
+            # Note the initial positions. Freeze a copy of the index values into a column
             epi['orig_idx'] = epi.index
-
+            #Let the header table represent only the children tha have UASC==1
             header = header.loc[pd.to_numeric(header['UASC'])==1]
             
+            # Get children from the episodes table that have UASC==1 and yet have a PL_DISTANCE recorded (they are not supposed to have this)
             err_co1 = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-            err_co1.drop(['_merge'], axis=1, inplace=True)
+            # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
+            err_list = err_co1['orig_idx'].unique().tolist()
+
+            # The code is blocked this way to enable the function to run even when Header_last is absent.
             if 'Header_last' in dfs:
                 header_last = dfs['Header_last']                
                 header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==1]
                 err_co2 = epi.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-
-            err_list = err_co1['orig_idx'].unique().tolist()
-            err_list2 = err_co2['orig_idx'].unique().tolist()
-            err_list.extend(err_list2)
+                err_list2 = err_co2['orig_idx'].unique().tolist()
+                err_list.extend(err_list2)         
+          
             err_list.sort()
 
             return {'Episodes': err_list}

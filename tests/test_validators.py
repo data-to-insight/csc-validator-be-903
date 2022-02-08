@@ -27,10 +27,7 @@ def test_validate_406():
         {'CHILD': '444', 'UASC': 1},  # 6 
     ])
 
-    fake_uasc = pd.DataFrame([{'CHILD': '111'}, {'CHILD': '345'}, ])
-    fake_uasc_last = pd.DataFrame([{'CHILD': '444'}, {'CHILD': '222'},])
-
-    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last': fake_header_last}
+    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
 
     error_defn, error_func = validate_406()
 

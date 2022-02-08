@@ -1,6 +1,5 @@
 from validator903.validators import *
 import pandas as pd
-import test_utils
 
 def test_validate_543():
     fake_data_episodes = pd.DataFrame([

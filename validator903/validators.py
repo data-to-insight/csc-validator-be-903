@@ -4892,7 +4892,6 @@ def validate_148():
             return {}
         else:
             df = dfs['Episodes']
-            df['DEC'] = pd.to_datetime(df['DEC'], format='%d/%m/%Y', errors='coerce')
 
             mask = ((df['DEC'].isna()) & (df['REC'].notna())) | ((df['DEC'].notna()) & (df['REC'].isna()))
 

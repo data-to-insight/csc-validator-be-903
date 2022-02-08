@@ -1,6 +1,29 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_392A():
+    fake_data = pd.DataFrame([
+        {'CHILD': '111', 'LS': 'L1', 'PL_DISTANCE': 'XX1'},  # 0
+        {'CHILD': '222', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 1 fail
+        {'CHILD': '222', 'LS': 'V3', 'PL_DISTANCE': 'XX1'},  # 2
+        {'CHILD': '333', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 3 fail
+        {'CHILD': '333', 'LS': 'V4', 'PL_DISTANCE': 'XX1'},  # 4
+        {'CHILD': '345', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 5 fail
+        {'CHILD': '444', 'LS': 'L1', 'PL_DISTANCE': 'XX1'},  # 6
+        {'CHILD': '444', 'LS': 'V3', 'PL_DISTANCE': pd.NA},  # 7 pass since LS isin [V3, V4]
+    ])
+
+    fake_uasc = pd.DataFrame([{'CHILD': '111'}, ])
+    fake_uasc_last = pd.DataFrame([{'CHILD': '444'}, ])
+
+    fake_dfs = {'Episodes': fake_data, 'UASC': fake_uasc, 'UASC_last': fake_uasc_last}
+
+    error_defn, error_func = validate_392A()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [1,3,5]}
+
 def test_validate_1001():
     # DOB always 01/01/2000
     # next to each episode, approx days in each age bracket is listed like so:      under 14  :  14-16  :  over 16

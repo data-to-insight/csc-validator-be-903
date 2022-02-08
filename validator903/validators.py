@@ -4,6 +4,34 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_392A():
+    error = ErrorDefinition(
+        code='392A',
+        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['orig_idx'] = epi.index
+            if 'UASC' in dfs:
+                uas = dfs['UASC']
+                err_co = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+                err_co.drop(['_merge'], axis=1, inplace=True)
+            if 'UASC_last' in dfs:
+                uas_l = dfs['UASC_last']
+                err_co = err_co.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+
+            err_co = err_co.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
+            err_list = err_co['orig_idx'].unique().tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
 
 def validate_560():
     error = ErrorDefinition(

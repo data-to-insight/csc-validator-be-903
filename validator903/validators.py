@@ -4,6 +4,36 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+# !# False negatives if child was UASC in last 2 years but data not provided
+def validate_406():
+    error = ErrorDefinition(
+        code='406',
+        description='Child is Unaccompanied Asylum-Seeking Child (UASC) or was formerly UASC. Distance should be blank. [NOTE: This check may result in false negatives for children formerly UASC]',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi['orig_idx'] = epi.index
+            if 'UASC' in dfs:
+                uas = dfs['UASC']
+                err_co1 = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
+                err_co1.drop(['_merge'], axis=1, inplace=True)
+            if 'UASC_last' in dfs:
+                uas_l = dfs['UASC_last']
+                err_co2 = epi.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
+                # we want left_only (found only in the first year) and both (found in both years) but no children who are found in the uasc table but have no entry in the episodes table (no right_only, that is.).
+            err_list = err_co1['orig_idx'].unique().tolist()
+            err_list2 = err_co2['orig_idx'].unique().tolist()
+            err_list.extend(err_list2)
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
 
 def validate_560():
     error = ErrorDefinition(

@@ -4,6 +4,32 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_218():
+  error = ErrorDefinition(
+    code = '218',
+    description = 'Ofsted Unique reference number (URN) is required.',
+    affected_fields = ['PL_LA', 'URN', 'DEC', 'PLACE']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      reference_date = '31/03/2015'
+      pl_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1' ]
+      # The assumption is made that CON is represented by a C
+      lettr_abbrev = {'S': 'SCO', 'N': 'NIR', 'W': 'WAL', 'C':'CON'}
+      la_list = ['CON', 'NIR' 'SCO', 'WAL', 'NUK']
+
+      #first_lettr = episodes['PL_LA')[1]
+      abbrev_check = ~episodes['PL_LA'][1].isin(lettr_abbrev)
+      mask = (~episodes['PLACE'].isin(pl_list)) & (episodes['DEC']>reference_date | episodes['DEC'].isna()) & abbrev_check & episodes['URN'].isna()
+
+      error_locations = episodes.index[mask]
+      return {'Episodes':error_locations.tolist()}
+  
+  return error, _validate
+      
 
 def validate_560():
     error = ErrorDefinition(

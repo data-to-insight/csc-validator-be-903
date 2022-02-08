@@ -7,7 +7,7 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 def validate_392A():
     error = ErrorDefinition(
         code='392A',
-        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        description='Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC]',
         affected_fields=['PL_DISTANCE'],
     )
 

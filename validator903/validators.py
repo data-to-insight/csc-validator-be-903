@@ -798,21 +798,40 @@ def validate_165():
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            episodes['EPS'] = (episodes['DECOM'] >= collection_start) & (episodes['DECOM'] <= collection_end)
+            # Drop all episodes with V3/V4 legal status
+            v3v4_ls = episodes['LS'].str.upper().isin(['V3', 'V4'])
+            index_v3v4_ls = episodes.loc[v3v4_ls].index
+            episodes.drop(index_v3v4_ls, inplace=True)
+
+            # fill in missing DECs with the collection year end date
+            missing_last_DECs = (
+                episodes['DEC'].isna()
+            )
+            episodes.loc[missing_last_DECs, 'DEC'] = collection_end
+
+            episodes['EPS'] = (episodes['DEC'] >= collection_start) & (episodes['DECOM'] <= collection_end)
             episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
             merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD',
                                                                                                     how='left')
 
-            # Raise error if provided <MOTHER> is not a valid value.
-            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
-            # If not provided
-            female = (merged['SEX'] == '1')
+            # Raise error if provided <MOTHER> is not a valid value
+            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].astype(str).isin(valid_values))
+
+            # Raise error if provided <MOTHER> and child is male
+            male = merged['MOTHER'].notna() & (merged['SEX'].astype(str) == '1')
+
+            # Raise error if female and not provided
+            female = (merged['SEX'].astype(str) == '2')
+            has_mother = merged['MOTHER'].notna()
             eps_in_year = (merged['EPS_COUNT'] > 0)
-            none_provided = (merged['ACTIV'].isna() & merged['ACCOM'].isna() & merged['IN_TOUCH'].isna())
-            # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
-            mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
+            has_oc3 = (merged['ACTIV'].notna() | merged['ACCOM'].notna() | merged['IN_TOUCH'].notna())
+
+            # If provided <MOTHER> must be a valid value (and child must be female). If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
+            mask = value_validity | male | (~has_mother & female & eps_in_year) | (has_mother & female & ~eps_in_year & has_oc3)
+
             # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
             error_locs_eps = merged.loc[mask, 'index_eps']
             error_locs_header = merged.loc[mask, 'index_er']

@@ -627,41 +627,40 @@ def test_validate_632():
 
 def test_validate_165():
     fake_data_oc3 = pd.DataFrame({
-        'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
-        'IN_TOUCH': ['No', 'YES', 'YES', pd.NA, 'Yes', 'No', 'YES', 'YES', pd.NA, pd.NA],
-        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX', pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
-        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX', pd.NA, pd.NA, pd.NA, 'XXX', pd.NA],
+        'CHILD': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111],
+        'IN_TOUCH': [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, 'YES', pd.NA, pd.NA, pd.NA],
+        'ACTIV': [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, 'XXX', pd.NA, pd.NA, pd.NA],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, 'XXX', pd.NA, pd.NA],
     })
     fake_data_episodes = pd.DataFrame([
-        {'CHILD': 101, 'DECOM': '01/01/2020', },  # 0
-        {'CHILD': 102, 'DECOM': '11/01/2020', },  # 1      {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2
-        {'CHILD': 103, 'DECOM': '30/03/2020', },  # 2
-        {'CHILD': 104, 'DECOM': '01/01/2020', },  # 3
-
-        {'CHILD': 105, 'DECOM': '11/05/2020', },  # 4
-        {'CHILD': 105, 'DECOM': '01/01/2020', },  # 5
-
-        {'CHILD': 106, 'DECOM': '22/01/2020', },  # 6
-        {'CHILD': 107, 'DECOM': '11/01/2020', },  # 7
-        {'CHILD': 108, 'DECOM': '22/01/2020', },  # 8
-        {'CHILD': 109, 'DECOM': '25/03/2020', },  # 9
-
-        {'CHILD': 110, 'DECOM': '01/01/2020', },  # 10
-        {'CHILD': 110, 'DECOM': '01/11/2021', },  # 11
+        {'CHILD': 101, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'C2'},  # 0
+        {'CHILD': 102, 'DECOM': '11/01/2020', 'DEC': '11/05/2020', 'LS': 'C2'},  # 1
+        {'CHILD': 103, 'DECOM': '30/03/2020', 'DEC': '30/05/2020', 'LS': 'C2'},  # 2
+        {'CHILD': 103, 'DECOM': '30/03/2020', 'DEC': '30/05/2020', 'LS': 'C2'},  # 2
+        {'CHILD': 104, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'C2'},  # 3
+        {'CHILD': 105, 'DECOM': '11/05/2020', 'DEC': '11/08/2020', 'LS': 'C2'},  # 4
+        {'CHILD': 105, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'C2'},  # 5
+        {'CHILD': 106, 'DECOM': '22/01/2020', 'DEC': '22/05/2020', 'LS': 'C2'},  # 6
+        {'CHILD': 107, 'DECOM': '11/01/2020', 'DEC': '11/05/2020', 'LS': 'C2'},  # 7
+        {'CHILD': 108, 'DECOM': '22/01/2020', 'DEC': '22/05/2020', 'LS': 'C2'},  # 8        
+        {'CHILD': 109, 'DECOM': '25/03/2020', 'DEC': '25/03/2020', 'LS': 'C2'},  # 9
+        {'CHILD': 110, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'V3'},  # 10
+        {'CHILD': 110, 'DECOM': '01/11/2021', 'DEC': '01/11/2021', 'LS': 'C2'},  # 11
+        {'CHILD': 111, 'DECOM': '01/11/2020', 'DEC': '01/11/2020', 'LS': 'V3'},  # 12
     ])
     fake_data_header = pd.DataFrame([
-        {'CHILD': 101, 'SEX': '2', 'MOTHER': pd.NA},  # 0 pass gender is male
-        {'CHILD': 102, 'SEX': '2', 'MOTHER': '0'},  # 1
-        {'CHILD': 103, 'SEX': '2', 'MOTHER': 0},  # 2 fail invalid value
-        {'CHILD': 104, 'SEX': '2', 'MOTHER': 1},  # 3 fail invalid value
-        {'CHILD': 105, 'SEX': '1', 'MOTHER': pd.NA},  # 4 fail episodes exist in collection year
-        {'CHILD': 106, 'SEX': '1', 'MOTHER': '2'},  # 5 fail invalid value
-        {'CHILD': 107, 'SEX': '2', 'MOTHER': '1'},  # 6
-        {'CHILD': 108, 'SEX': '1', 'MOTHER': pd.NA},
-        # 7 pass: no eps in collection year and at least one of IN_TOUCH, ACTIV , ACCOM have been provided.
-        {'CHILD': 109, 'SEX': '1', 'MOTHER': pd.NA},  # 8 pass
-        {'CHILD': 110, 'SEX': '1', 'MOTHER': pd.NA},
-        # 9 fail: no eps in collection year but none of IN_TOUCH, ACTIV , ACCOM have been provided.
+        {'CHILD': 101, 'SEX': '1', 'MOTHER': pd.NA},  # 0 pass: male no value
+        {'CHILD': 102, 'SEX': '2', 'MOTHER': '0'},  # 1 pass
+        {'CHILD': 103, 'SEX': '2', 'MOTHER': 0},  # 2 pass
+        {'CHILD': 104, 'SEX': '2', 'MOTHER': 1},  # 3 pass
+        {'CHILD': 105, 'SEX': '2', 'MOTHER': pd.NA},  # 4 fail: no value
+        {'CHILD': 106, 'SEX': '2', 'MOTHER': '2'},  # 5 fail: invalid value
+        {'CHILD': 107, 'SEX': '1', 'MOTHER': '1'},  # 6 fail: male value
+        {'CHILD': 108, 'SEX': '2', 'MOTHER': pd.NA},  # 7 fail: has OC3 data but also has episode in collection year 
+        {'CHILD': 109, 'SEX': '2', 'MOTHER': pd.NA},  # 8 pass: has OC3 and no episode in collection year
+        {'CHILD': 110, 'SEX': '2', 'MOTHER': 1},
+        # 9 pass: no non-V3/V4 episode in collection year and no OC3
+        {'CHILD': 111, 'SEX': '2', 'MOTHER': pd.NA},  # 10 pass: V3 episode 
     ])
     metadata = {
         'collection_start': '01/04/2020',
@@ -670,16 +669,8 @@ def test_validate_165():
     fake_dfs = {'Header': fake_data_header, 'Episodes': fake_data_episodes, 'OC3': fake_data_oc3, 'metadata': metadata}
     error_defn, error_func = validate_165()
     result = error_func(fake_dfs)
-    # fail because of invalid value: 103,104,106 in all the dataframes
-    #                 header   : 2, 3, 5
-    #                 episodes : 2, 3, 6
-    #                 oc3      : 2, 3, 5
-    # fail because of no value: 105, 110 in all the dataframes
-    #                 header   : 4, 9
-    #                 episodes : 4, 5, 10, 11
-    #                 oc3      : 4, 9
-    assert result == {'Header': [2, 3, 4, 5, 9], 'OC3': [2, 3, 4, 5, 9]}
-    # assert result == {'Header': [2,3,4,5,8,9], 'Episodes': [4,], 'OC3':[9]}
+
+    assert result == {'Header': [4, 5, 6, 7], 'OC3': [4, 5, 6, 7]}
 
 
 def test_validate_1014():

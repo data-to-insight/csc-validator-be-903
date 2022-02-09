@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Iterator, Tuple
 
 from pandas import DataFrame
 from numpy import nan
-from .types import UploadException, UploadedFile
+from .types import UploadError, UploadedFile
 from .config import column_names
 
 import logging
@@ -53,19 +53,56 @@ def read_from_text(raw_files: List[UploadedFile]) -> Tuple[Dict[str, DataFrame],
     This function will try to catch most basic upload errors, and dispatch other errors
     to either the csv or xml reader based on the file extension.
     """
-    if len(raw_files) == 0:
-        raise UploadException('No files uploaded!')
 
-    extensions = list(set([f["name"][-3:].lower() for f in raw_files]))
-    if len(extensions) != 1:
-        raise UploadException(f'Mix of CSV and XML files found ({extensions})! Please reupload.')
+    CH_uploaded = [f for f in raw_files if f['description'] == 'CH lookup']
+    SCP_uploaded = [f for f in raw_files if f['description'] == 'SCP lookup']
+    num_of_CH_and_SCP = (len(CH_uploaded), len(SCP_uploaded))
+
+    logger.info(f'#CH: {num_of_CH_and_SCP[0]}, #SCP:{num_of_CH_and_SCP[1]}')
+
+    if max(num_of_CH_and_SCP) > 1:
+        raise UploadError(
+            f"{num_of_CH_and_SCP[0]} (Children's Homes List) and {num_of_CH_and_SCP[1]} (Social Care Providers List) "
+            f"URN lookup tables were loaded - Please only load a single file in each box."
+        )
+    elif set(num_of_CH_and_SCP) == {0, 1}:
+        raise UploadError(
+            "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+            "from Ofsted into their respective boxes above."
+        )
+    elif set(num_of_CH_and_SCP) == {1}:
+        (CH_uploaded,) = CH_uploaded
+        (SCP_uploaded,) = SCP_uploaded
+        construct_URN_lookup_table(CH=CH_uploaded, SCP=SCP_uploaded)
+
+    raw_files = [f for f in raw_files
+                 if f['description'] not in ('CH lookup', 'SCP lookup')]
+
+    extensions = list(set([f["name"].split('.')[-1].lower() for f in raw_files]))
+    if len(raw_files) == 0:
+        raise UploadError('No SSDA 903 files uploaded!')
+    elif len(extensions) > 1:
+        raise UploadError(f'Mix of CSV and XML files found ({extensions})! Please reupload.')
     else:
         if extensions[0] == 'csv':
             return read_csvs_from_text(raw_files), 'csv'
         elif extensions[0] == 'xml':
             return read_xml_from_text(raw_files[0]['fileText']), 'xml'
         else:
-            raise UploadException(f'Unknown file type {extensions[0]} found.')
+            raise UploadError(f'Unknown file type {extensions[0]} found.')
+
+
+def construct_URN_lookup_table(CH, SCP):
+    logger.info('type:' + str(type(CH['fileText'])))
+    logger.info('filtext'+ str(CH['fileText']))
+    logger.info('dir(FILETEXT):''\n' + str(dir(CH['fileText'])))
+
+    # TODO: read only the necessary data; hopefully improve performance
+    CH_ = pd.read_excel(CH['fileText'].tobytes(), sheet_name=None, engine='openpyxl')
+    SCP = pd.read_excel(SCP['fileText'].tobytes(), sheet_name=None, engine='openpyxl')
+    logger.info(f'{type(CH)}, {CH}')
+    logger.info(f'{[i.shape for i in CH.items()]}')
+    return
 
 
 def read_files(files: Union[str, Path]) -> List[UploadedFile]:
@@ -95,7 +132,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
                 logger.info(f'Loaded {table_name} from CSV. ({len(df)} rows)')
                 return table_name
         else:
-            raise UploadException(f'Failed to match provided data ({list(df.columns)}) to known column names!')
+            raise UploadError(f'Failed to match provided data ({list(df.columns)}) to known column names!')
 
     files = {}
     for file_data in raw_files:
@@ -109,7 +146,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         except UnicodeDecodeError:
             # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
             # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
-            raise UploadException(f"Failed to decode one or more files. Try opening the text "
+            raise UploadError(f"Failed to decode one or more files. Try opening the text "
                                   f"file(s) in Notepad, then 'Saving As...' with the UTF-8 encoding")
         # arrange column data types
         logger.debug('+'*50)
@@ -127,7 +164,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
         elif 'Prev year' in file_data['description']:
             name = file_name + '_last'
         else:
-            raise UploadException(f'Unrecognized file description {file_data["description"]}')
+            raise UploadError(f'Unrecognized file description {file_data["description"]}')
 
         files[name] = df
         logger.debug('DF NAME: ', name)

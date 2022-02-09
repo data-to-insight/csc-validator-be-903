@@ -21,9 +21,13 @@ def validate_218():
       lettr_abbrev = {'S': 'SCO', 'N': 'NIR', 'W': 'WAL', 'C':'CON'}
       la_list = ['CON', 'NIR' 'SCO', 'WAL', 'NUK']
 
-      #first_lettr = episodes['PL_LA')[1]
-      abbrev_check = ~episodes['PL_LA'][1].isin(lettr_abbrev)
-      mask = (~episodes['PLACE'].isin(pl_list)) & (episodes['DEC']>reference_date | episodes['DEC'].isna()) & abbrev_check & episodes['URN'].isna()
+      reference_date = pd.to_datetime(reference_date, format='%d/%m/%Y', errors='coerce')
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+      #first_lettr = episodes['PL_LA'].strip().upper()[1]
+      #abbrev_check = ~lettr_abbrev[first_lettr].isin(la_list)
+      abbrev_check = ~episodes['PL_LA'].astype('str').str.startswith(('S', 'N', 'W', 'C'))
+      mask = (~episodes['PLACE'].isin(pl_list)) & ((episodes['DEC']>reference_date) | episodes['DEC'].isna()) & abbrev_check & episodes['URN'].isna()
 
       error_locations = episodes.index[mask]
       return {'Episodes':error_locations.tolist()}

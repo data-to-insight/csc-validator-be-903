@@ -17,15 +17,11 @@ def validate_218():
       episodes = dfs['Episodes']
       reference_date = '31/03/2015'
       pl_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1' ]
-      # The assumption is made that CON is represented by a C
-      lettr_abbrev = {'S': 'SCO', 'N': 'NIR', 'W': 'WAL', 'C':'CON'}
-      la_list = ['CON', 'NIR' 'SCO', 'WAL', 'NUK']
-
+      
+      # convert string date values to datetime format to enable comparison.
       reference_date = pd.to_datetime(reference_date, format='%d/%m/%Y', errors='coerce')
       episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-      #first_lettr = episodes['PL_LA'].strip().upper()[1]
-      #abbrev_check = ~lettr_abbrev[first_lettr].isin(la_list)
       abbrev_check = ~episodes['PL_LA'].astype('str').str.startswith(('S', 'N', 'W', 'C'))
       mask = (~episodes['PLACE'].isin(pl_list)) & ((episodes['DEC']>reference_date) | episodes['DEC'].isna()) & abbrev_check & episodes['URN'].isna()
 

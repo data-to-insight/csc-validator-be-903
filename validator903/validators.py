@@ -34,6 +34,91 @@ def validate_218():
       return error, _validate
       
 
+def validate_546():
+    error = ErrorDefinition(
+        code='546',
+        description='Children aged 5 or over at 31 March should not have health promotion information completed.',
+        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> >= 5 years prior to<COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER>= 'Y' then<HEALTH_CHECK>` should not be provided
+            mask = (collection_end >= (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2['HEALTH_CHECK'].notna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_545():
+    error = ErrorDefinition(
+        code='545',
+        description='Child is aged under 5 at 31 March and has been looked after continuously for 12 months yet health promotion information has not been completed.',
+        affected_fields=['DOB', 'HEALTH_CHECK'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> < 5 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER>= 'Y' then<HEALTH_CHECK>` should be provided.
+            mask = (collection_end < (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2['HEALTH_CHECK'].isna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_543():
+    error = ErrorDefinition(
+        code='543',
+        description='Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.',
+        affected_fields=['DOB', 'CONVICTED']
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> >= 10 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER> = 'Y' then <CONVICTED> should be provided
+            mask = (collection_end > (oc2['DOB'] + pd.offsets.DateOffset(years=10))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2['CONVICTED'].isna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+
 def validate_560():
     error = ErrorDefinition(
         code='560',
@@ -827,21 +912,40 @@ def validate_165():
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            episodes['EPS'] = (episodes['DECOM'] >= collection_start) & (episodes['DECOM'] <= collection_end)
+            # Drop all episodes with V3/V4 legal status
+            v3v4_ls = episodes['LS'].str.upper().isin(['V3', 'V4'])
+            index_v3v4_ls = episodes.loc[v3v4_ls].index
+            episodes.drop(index_v3v4_ls, inplace=True)
+
+            # fill in missing DECs with the collection year end date
+            missing_last_DECs = (
+                episodes['DEC'].isna()
+            )
+            episodes.loc[missing_last_DECs, 'DEC'] = collection_end
+
+            episodes['EPS'] = (episodes['DEC'] >= collection_start) & (episodes['DECOM'] <= collection_end)
             episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
             merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD',
                                                                                                     how='left')
 
-            # Raise error if provided <MOTHER> is not a valid value.
-            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
-            # If not provided
-            female = (merged['SEX'] == '1')
+            # Raise error if provided <MOTHER> is not a valid value
+            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].astype(str).isin(valid_values))
+
+            # Raise error if provided <MOTHER> and child is male
+            male = merged['MOTHER'].notna() & (merged['SEX'].astype(str) == '1')
+
+            # Raise error if female and not provided
+            female = (merged['SEX'].astype(str) == '2')
+            has_mother = merged['MOTHER'].notna()
             eps_in_year = (merged['EPS_COUNT'] > 0)
-            none_provided = (merged['ACTIV'].isna() & merged['ACCOM'].isna() & merged['IN_TOUCH'].isna())
-            # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
-            mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
+            has_oc3 = (merged['ACTIV'].notna() | merged['ACCOM'].notna() | merged['IN_TOUCH'].notna())
+
+            # If provided <MOTHER> must be a valid value (and child must be female). If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
+            mask = value_validity | male | (~has_mother & female & eps_in_year) | (has_mother & female & ~eps_in_year & has_oc3)
+
             # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
             error_locs_eps = merged.loc[mask, 'index_eps']
             error_locs_header = merged.loc[mask, 'index_er']
@@ -1481,7 +1585,6 @@ def validate_625():
             return {'Header': header_error_locs.unique().tolist(), 'Episodes': eps_error_locs.tolist()}
 
     return error, _validate
-
 
 
 # !# big potential false positives, as this only operates on the current and previous year data

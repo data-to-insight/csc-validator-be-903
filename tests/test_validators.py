@@ -8,7 +8,7 @@ def test_validate_218():
         {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/06/2015', 'PL_LA': 'W06000008', 'URN': 'xx'},  # 1 ignore: PL_LA is Wales
         {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': 'xx'},  # 2 pass
 
-        {'CHILD': '2222', 'PLACE': 'C2', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 3 ignore: DEC < 31/03/2015
+        {'CHILD': '2222', 'PLACE': 'C2', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 3 ignore: DEC < coll. end
         {'CHILD': '2222', 'PLACE': 'xx', 'DEC': pd.NA, 'PL_LA': 'o', 'URN': pd.NA},  # 4 fail
         {'CHILD': '2222', 'PLACE': 'R5', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': 'xx'},  # 5 ignore: of PLACE value
 
@@ -22,7 +22,9 @@ def test_validate_218():
         {'CHILD': '5555', 'PLACE': 'C2',  'DEC': '04/01/2016', 'PL_LA': 'S12000035', 'URN': pd.NA},  # 11 ignore: PL_LA in Scotland
     ])
 
-    fake_dfs = {'Episodes':fake_data_eps}
+    metadata = {'collection_start': '01/04/2015'}
+
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata': metadata}
     error_defn, error_func = validate_218()
     
     result = error_func(fake_dfs)

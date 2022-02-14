@@ -1,14 +1,14 @@
 import pytest
 import os
 from validator903.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
-from validator903.types import UploadException, UploadedFile
+from validator903.types import UploadError, UploadedFile
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [
         pytest.param([])
     ])
     def test_read_from_text_errors(self, files):
-        with pytest.raises(UploadException):
+        with pytest.raises(UploadError):
             read_from_text(files)
 
     def test_csv_reading(self, mocker):

@@ -57,7 +57,6 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
         if table_name in data:
             data[table_name] = data[table_name].drop(columns={'_14', '_15', '_16', '_17'} & set(data[table_name].columns))
 
-
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Datastore created -- {names_and_lengths}')
     return data

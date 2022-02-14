@@ -7022,36 +7022,61 @@ def validate_104():
 def validate_392B():
     error = ErrorDefinition(
         code='392B',
-        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false '
+                    'positives for children formerly UASC, particularly if current & past UASC data not loaded]',
         affected_fields=['HOME_POST', 'PL_POST'],
     )
 
     def _validate(dfs):
-        # comments on similar lines of code are found in validate_406()
-        if 'Episodes' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
+        # Will also use Header/UASC and/or Header_last/UASC_last for former UASC status
+        if 'Episodes' not in dfs:
             return {}
-        elif 'UASC' not in dfs['Header'].columns or 'UASC' not in dfs['Header_last'].columns:
-          return {}
         else:
             # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <HOME_POST> and <PL_POST> should be provided.
             epi = dfs['Episodes']
-            header = dfs['Header']
-            header_last = dfs['Header_last']
+            epi['original_index'] = epi.index
 
-            epi['orig_idx'] = epi.index
-            
-            header = header.loc[pd.to_numeric(header['UASC'])==0]
-            # Get children who are still found in the header table (that is, their UASC is 0) and who have episodes.
-            err_co = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
-            err_co.drop(['_merge'], axis=1, inplace=True)
+            # Remove any children with evidence of former UASC status
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header_current = dfs['Header']
+                header = pd.concat((header, header_current), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
 
-            header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==0]
-            err_co = err_co.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
+            if 'Header_last' in dfs:
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                #
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
 
-            # Check that the episodes LS are neither V3 or V4 and then get the error positions.
-            err_co = err_co.query("(~LS.isin(['V3','V4'])) & (HOME_POST.isna() | PL_POST.isna())")
-            err_list = err_co['orig_idx'].unique().tolist()
-            err_list.sort()
+            if 'UASC' in header.columns:
+
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = (epi
+                       .merge(header[['CHILD']], how='left', on='CHILD', indicator=True)
+                       .query("_merge == 'left_only'"))
+
+            print('HEADER\n\n', header)
+            print('---EPI')
+            print(epi)
+            print(header.columns)
+            print('---')
+            print(header.index)
+            # Remove episodes where LS is V3/V4
+            epi = epi.query("(~LS.isin(['V3','V4']))")
+
+            # Remove episodes with postcodes filled in
+            epi = epi.query("(HOME_POST.isna() | PL_POST.isna())")
+
+            # Get error indices
+            err_list = epi['original_index'].sort_values().tolist()
 
             return {'Episodes': err_list}
 

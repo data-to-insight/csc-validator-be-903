@@ -43,8 +43,8 @@ def dummy_input_data(dummy_input_files, dummy_metadata):
         dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'This year'})
         dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'Prev year'})
 
-    dummy_dfs, string_that_says_csv = read_from_text(dummy_uploads)
-    dummy_metadata.update({'file_format': string_that_says_csv})
+    dummy_dfs, extra_metadata = read_from_text(dummy_uploads)
+    dummy_metadata.update(extra_metadata)
     return create_datastore(dummy_dfs, dummy_metadata)
 
 

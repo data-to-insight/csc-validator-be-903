@@ -58,6 +58,6 @@ class UploadedFile(TypedDict):
     description: str
 
 
-class UploadException(Exception):
+class UploadError(Exception):
     pass
 

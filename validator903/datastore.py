@@ -93,17 +93,26 @@ def merge_postcodes(df: DataFrame, postcode_field: str) -> DataFrame:
 
 def _add_postcode_derived_fields(episodes_df, local_authority):
     episodes_df = episodes_df.copy()
+
     home_details = merge_postcodes(episodes_df, "HOME_POST")
     pl_details = merge_postcodes(episodes_df, "PL_POST")
 
-    # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
+    # The indices remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
     pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='LTLA21CD')
     episodes_df['PL_LA'] = pl_details['UTLA21CD']
 
     logger.info(f"Adding IN/OUT")
     episodes_df['PL_LOCATION'] = 'IN'
     episodes_df.loc[episodes_df['PL_LA'].ne(local_authority), 'PL_LOCATION'] = 'OUT'
-    episodes_df.loc[episodes_df['PL_LA'].isna(), 'PL_LOCATION'] = pd.NA
+    episodes_df.loc[pl_details['laua'].isna(), 'PL_LOCATION'] = pd.NA
+
+    # Add country codes for placements outside england
+    for letter, code in {'S': 'SCO', 'N': 'NIR', 'W': 'WAL'}.items():
+        mask = (
+            pl_details['laua'].str.upper().str.startswith(letter)
+            & episodes_df['PL_POST'].notnull()
+        )
+        episodes_df.loc[mask, ['PL_LA', 'PL_LOCATION']] = [code, 'OUT']
 
     logger.info(f"Calculating distances")
     # This formula is taken straight from the guidance, to get miles between two postcodes

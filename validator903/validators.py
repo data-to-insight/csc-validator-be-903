@@ -30,8 +30,7 @@ def validate_218():
 
             error_locations = episodes.index[mask]
             return {'Episodes':error_locations.tolist()}
-
-      return error, _validate
+    return error, _validate
       
 
 def validate_546():

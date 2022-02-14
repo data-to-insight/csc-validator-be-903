@@ -5,6 +5,35 @@ from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 
+def validate_543():
+    error = ErrorDefinition(
+        code='543',
+        description='Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.',
+        affected_fields=['DOB', 'CONVICTED']
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> >= 10 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER> = 'Y' then <CONVICTED> should be provided
+            mask = (collection_end > (oc2['DOB'] + pd.offsets.DateOffset(years=10))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2['CONVICTED'].isna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+
 def validate_560():
     error = ErrorDefinition(
         code='560',

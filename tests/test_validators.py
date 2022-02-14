@@ -1,6 +1,37 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_543():
+    fake_data_episodes = pd.DataFrame([
+        {'CHILD': 101, 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': 102, 'DECOM': '01/03/1980', 'DEC': '30/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': 103, 'DECOM': '01/03/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'X1', 'RNE': 'o'},  # False
+        {'CHILD': 104, 'DECOM': '01/02/1970', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', 'RNE': 'o'},
+
+        {'CHILD': 105, 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+    ])
+    fake_data = pd.DataFrame({
+        'CHILD': [101, 102, 103, 104, 105],
+        'DOB': ['08/03/1960', '22/06/1969', pd.NA, '13/10/2000', '31/03/1970'],
+        'CONVICTED': [1, pd.NA, 1, 1, pd.NA],
+        # 0 pass
+        # 1 fail because conditions are met but CONVICTED is not provided
+        # 2 ignore: DOB is nan
+        # 3 ignore: CLA is false
+        # 4 fail because conditions are met but CONVICTED is not provided.
+    })
+
+    metadata = {'collection_start' : '01/04/1980', 'collection_end' : '31/03/1981'}
+
+    fake_dfs = {'OC2': fake_data, 'metadata': metadata, 'Episodes': fake_data_episodes}
+
+    error_defn, error_func = validate_543()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'OC2': [1, 4 ]}
+
+
 def test_validate_1001():
     # DOB always 01/01/2000
     # next to each episode, approx days in each age bracket is listed like so:      under 14  :  14-16  :  over 16
@@ -642,7 +673,7 @@ def test_validate_165():
         {'CHILD': 105, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'C2'},  # 5
         {'CHILD': 106, 'DECOM': '22/01/2020', 'DEC': '22/05/2020', 'LS': 'C2'},  # 6
         {'CHILD': 107, 'DECOM': '11/01/2020', 'DEC': '11/05/2020', 'LS': 'C2'},  # 7
-        {'CHILD': 108, 'DECOM': '22/01/2020', 'DEC': '22/05/2020', 'LS': 'C2'},  # 8        
+        {'CHILD': 108, 'DECOM': '22/01/2020', 'DEC': '22/05/2020', 'LS': 'C2'},  # 8
         {'CHILD': 109, 'DECOM': '25/03/2020', 'DEC': '25/03/2020', 'LS': 'C2'},  # 9
         {'CHILD': 110, 'DECOM': '01/01/2020', 'DEC': '01/05/2020', 'LS': 'V3'},  # 10
         {'CHILD': 110, 'DECOM': '01/11/2021', 'DEC': '01/11/2021', 'LS': 'C2'},  # 11
@@ -656,11 +687,11 @@ def test_validate_165():
         {'CHILD': 105, 'SEX': '2', 'MOTHER': pd.NA},  # 4 fail: no value
         {'CHILD': 106, 'SEX': '2', 'MOTHER': '2'},  # 5 fail: invalid value
         {'CHILD': 107, 'SEX': '1', 'MOTHER': '1'},  # 6 fail: male value
-        {'CHILD': 108, 'SEX': '2', 'MOTHER': pd.NA},  # 7 fail: has OC3 data but also has episode in collection year 
+        {'CHILD': 108, 'SEX': '2', 'MOTHER': pd.NA},  # 7 fail: has OC3 data but also has episode in collection year
         {'CHILD': 109, 'SEX': '2', 'MOTHER': pd.NA},  # 8 pass: has OC3 and no episode in collection year
         {'CHILD': 110, 'SEX': '2', 'MOTHER': 1},
         # 9 pass: no non-V3/V4 episode in collection year and no OC3
-        {'CHILD': 111, 'SEX': '2', 'MOTHER': pd.NA},  # 10 pass: V3 episode 
+        {'CHILD': 111, 'SEX': '2', 'MOTHER': pd.NA},  # 10 pass: V3 episode
     ])
     metadata = {
         'collection_start': '01/04/2020',

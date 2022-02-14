@@ -4,6 +4,35 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_227():
+  error = ErrorDefinition(
+    code = '227',
+    description = 'Ofsted Unique reference number (URN) is not valid for the episode start date.',
+    affected_fields = ['URN', 'DECOM']
+  )
+
+  def _validate(dfs):
+    if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      provider_info = dfs['metadata']['provider_info']
+
+      # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      provider_info['REG_END'] = pd.to_datetime(provider_info['REG_END'], format='%d/%m/%Y', errors='coerce')
+
+      # merge
+      episodes['index_eps'] = episodes.index
+      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+      merged = episodes.merge(provider_info, on='URN', how='left')
+      # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+      mask = merged['REG_END'].notna() & (merged['DECOM']>=merged['REG_END'])
+
+      eps_error_locations = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locations.tolist()}
+
+  return error, _validate
 
 def validate_560():
     error = ErrorDefinition(

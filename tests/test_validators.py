@@ -1,6 +1,36 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_227():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'DECOM': '01/01/2014', 'URN': 1,},  # 0 pass
+        {'CHILD': '1111', 'DECOM': '01/02/2015', 'URN': pd.NA,},  # 1 ignore: URN not provided
+        {'CHILD': '1111', 'DECOM': '01/01/2016', 'URN': 3,},  # 2 pass
+
+        {'CHILD': '2222', 'DECOM': '01/01/2010', 'URN': 'XXXXXX',},  # 3 ignore
+
+        {'CHILD': '3333', 'DECOM': '01/01/2010', 'URN': 2,},  # 4 pass
+        {'CHILD': '3333', 'DECOM': '25/12/2015', 'URN': 2,},  # 5 fail DECOM after REG_END
+
+        {'CHILD': '4444', 'DECOM': '25/12/2016', 'URN': 1,},  # 6 fail. DECOM after REG_END
+
+        {'CHILD': '5555', 'DECOM': '01/01/2010', 'URN': 4,},  # 7 ignore: REG_END not provided
+        {'CHILD': '5555', 'DECOM': '25/12/2015', 'URN': 1,},  # 8 fail DECOM equals REG_END
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'REG_END': '25/12/2015', },  # 0
+        {'URN': 2, 'REG_END': '21/02/2014', },  # 1
+        {'URN': 3, 'REG_END': '25/12/2017', },  # 2
+        {'URN': 3, 'REG_END': pd.NA, },  # 3
+    ])
+    metadata = {'provider_info':fake_provider_info}
+
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata':metadata}
+    error_defn, error_func = validate_227()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[5,6,8]}
+
 def test_validate_1001():
     # DOB always 01/01/2000
     # next to each episode, approx days in each age bracket is listed like so:      under 14  :  14-16  :  over 16

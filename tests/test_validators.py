@@ -19,7 +19,7 @@ def test_validate_218():
         {'CHILD': '4444', 'PLACE': 'C2', 'DEC': '01/04/2017', 'PL_LA': 'o', 'URN': pd.NA},  # 9 fail
 
         {'CHILD': '5555', 'PLACE': 'C2', 'DEC': '31/03/2015', 'PL_LA': 'o', 'URN': pd.NA},  # 10 ignore: DEC
-        {'CHILD': '5555', 'PLACE': 'C2',  'DEC': '04/01/2016', 'PL_LA': 'S12000035', 'URN': pd.NA},  # 11 ignore: PL_LA in Scotland
+        {'CHILD': '5555', 'PLACE': 'C2',  'DEC': '04/01/2016', 'PL_LA': 'SCO', 'URN': pd.NA},  # 11 ignore: PL_LA in Scotland
     ])
 
     metadata = {'collection_start': '01/04/2015'}

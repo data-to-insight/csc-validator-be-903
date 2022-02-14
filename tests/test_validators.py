@@ -1,6 +1,35 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_218():
+    fake_data_eps = pd.DataFrame([
+
+        {'CHILD': '1111', 'PLACE': 'H5', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 0 ignore: of PLACE value
+        {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/06/2015', 'PL_LA': 'W06000008', 'URN': 'xx'},  # 1 ignore: PL_LA is Wales
+        {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': 'xx'},  # 2 pass
+
+        {'CHILD': '2222', 'PLACE': 'C2', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 3 ignore: DEC < coll. end
+        {'CHILD': '2222', 'PLACE': 'xx', 'DEC': pd.NA, 'PL_LA': 'o', 'URN': pd.NA},  # 4 fail
+        {'CHILD': '2222', 'PLACE': 'R5', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': 'xx'},  # 5 ignore: of PLACE value
+
+        {'CHILD': '3333', 'PLACE': 'C2', 'DEC': '01/03/2014', 'PL_LA': 'o', 'URN': pd.NA},  # 6 ignore: DEC
+        {'CHILD': '3333', 'PLACE': 'C2', 'DEC': '04/01/2016', 'PL_LA': 'o', 'URN': pd.NA},  # 7 fail
+
+        {'CHILD': '4444', 'PLACE': 'C2', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': pd.NA},  # 8 fail
+        {'CHILD': '4444', 'PLACE': 'C2', 'DEC': '01/04/2017', 'PL_LA': 'o', 'URN': pd.NA},  # 9 fail
+
+        {'CHILD': '5555', 'PLACE': 'C2', 'DEC': '31/03/2015', 'PL_LA': 'o', 'URN': pd.NA},  # 10 ignore: DEC
+        {'CHILD': '5555', 'PLACE': 'C2',  'DEC': '04/01/2016', 'PL_LA': 'SCO', 'URN': pd.NA},  # 11 ignore: PL_LA in Scotland
+    ])
+
+    metadata = {'collection_start': '01/04/2015'}
+
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_218()
+
+    result = error_func(fake_dfs)
+    assert result == {'Episodes':[4,7,8,9]}
+
 def test_validate_543():
     fake_data_episodes = pd.DataFrame([
         {'CHILD': 101, 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},  # CLA

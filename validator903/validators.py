@@ -4,6 +4,34 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_218():
+    error = ErrorDefinition(
+        code='218',
+        description='Ofsted Unique reference number (URN) is required.',
+        affected_fields=['URN']
+    )
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            collection_start = dfs['metadata']['collection_start']
+            pl_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1' ]
+
+            # convert string date values to datetime format to enable comparison.
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            episodes['DEC_dt'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            out_of_england = episodes['PL_LA'].astype('str').str.upper().str.startswith(('N', 'W', 'S', 'C'))
+            place_exempt = episodes['PLACE'].isin(pl_list)
+            ends_after_collection_start = (episodes['DEC_dt'] >= collection_start) | episodes['DEC'].isna()
+
+            mask = ends_after_collection_start & episodes['URN'].isna() & ~place_exempt & ~out_of_england
+
+            error_locations = episodes.index[mask]
+            return {'Episodes':error_locations.tolist()}
+    return error, _validate
+      
 
 def validate_546():
     error = ErrorDefinition(

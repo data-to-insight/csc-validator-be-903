@@ -9,7 +9,7 @@ def validate_545():
     error = ErrorDefinition(
         code='545',
         description='Child is aged under 5 at 31 March and has been looked after continuously for 12 months yet health promotion information has not been completed.',
-        affected_fields=['CONTINUOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+        affected_fields=['DOB', 'HEALTH_CHECK'],
     )
 
     def _validate(dfs):

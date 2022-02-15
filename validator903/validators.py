@@ -4,6 +4,34 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_221():
+  error = ErrorDefinition(
+    code = '221',
+    description = "The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement postcode provided.",
+    affected_fields = ['PL_POST']
+  )
+
+  def _validate(dfs):
+    if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      provider_info = dfs['metadata']['provider_info']
+      ls_list = ['V3', 'V4']
+      place_list = ['K1', 'K2', 'R3', 'S1']
+
+      # merge
+      episodes['index_eps'] = episodes.index
+      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX') & (~episodes['LS'].isin(ls_list)) & episodes['PLACE'].isin(place_list) & episodes['PL_POST'].notna()]
+      merged = episodes.merge(provider_info, on='URN', how='left')
+      # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
+      mask = merged['PL_POST'].str.replace(' ', '') != merged['POSTCODE']
+
+      eps_error_locations = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locations.unique().tolist()}
+
+  return error, _validate
+
 def validate_218():
     error = ErrorDefinition(
         code='218',

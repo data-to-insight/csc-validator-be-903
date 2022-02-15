@@ -31,36 +31,6 @@ def test_validate_221():
 
     assert result == {'Episodes':[2,6,7]}
 
-def test_validate_224():
-    fake_data_eps = pd.DataFrame([
-        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': 1,},  # 0 fail
-        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR5', 'URN': pd.NA,},  # 1 ignore
-        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR0', 'URN': 3,},  # 2 fail
-
-        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXX',},  # 3 ignore
-
-        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR0', 'URN': 2,},  # 4 pass
-        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR3', 'URN': 2,},  # 5 fail
-
-        {'CHILD': '4444', 'PLACE_PROVIDER': 'PR3', 'URN': 1,},  # 6 pass
-
-        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 4,},  # 7 fail ?
-        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 1,},  # 8 pass
-    ])
-    fake_provider_info = pd.DataFrame([
-        {'URN': 1, 'PLACE_PROVIDER': 'PR3', },  # 0
-        {'URN': 2, 'PLACE_PROVIDER': 'PR0', },  # 1
-        {'URN': 3, 'PLACE_PROVIDER': 'PR1', },  # 2
-        {'URN': 3, 'PLACE_PROVIDER': pd.NA, },  # 3 should NaNs be ignored?
-    ])
-    metadata = {'provider_info':fake_provider_info}
-
-    fake_dfs = {'Episodes':fake_data_eps, 'metadata':metadata}
-    error_defn, error_func = validate_224()
-    result = error_func(fake_dfs)
-
-    assert result == {'Episodes':[0,2,5,7]}
-
 def test_validate_218():
     fake_data_eps = pd.DataFrame([
 

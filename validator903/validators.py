@@ -4,6 +4,39 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_227():
+  error = ErrorDefinition(
+    code = '1008',
+    description = 'Ofsted Unique Reference Number (URN) is not valid.',
+    affected_fields = ['URN']
+  )
+
+  """This implementation can be done in two ways: 
+  Method 1: We could either check each URN value in the episodes table passed on a set of accepted values or formats or
+  
+  Method 2: We could merge the episodes table with the URN lookup table and flag all URN values that are left_only (found only in the episodes table). This method assumes that at every point in time, the provider_info table contains an exhaustive list of possible URNs. If this is true, then this method is preferred as it will no longer be necessary to update this rule if changes are made, to the acceptable values, in the future.
+  
+  I am choosing to proceed with Method 1."""
+
+  def _validate(dfs):
+    if ('Episodes' not in dfs):
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      urn_list = ['SC999999','XXXXXX', '999999' ]
+
+      # merge
+      episodes['index_eps'] = episodes.index
+      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+      merged = episodes.merge(provider_info, on='URN', how='left')
+      # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+      mask = merged['REG_END'].notna() & (merged['DECOM']>=merged['REG_END'])
+
+      eps_error_locations = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locations.tolist()}
+
+  return error, _validate
+
 def validate_218():
     error = ErrorDefinition(
         code='218',

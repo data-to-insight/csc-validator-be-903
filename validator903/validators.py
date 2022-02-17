@@ -4,6 +4,40 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_228():
+  error = ErrorDefinition(
+    code = '227',
+    description = 'Ofsted Unique reference number (URN) is not valid for the episode end date',
+    affected_fields = ['URN', 'DEC']
+  )
+
+  def _validate(dfs):
+    if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      provider_info = dfs['metadata']['provider_info']
+      collection_end = dfs['metadata']['collection_end']
+
+      # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+      episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+      provider_info['REG_END'] = pd.to_datetime(provider_info['REG_END'], format='%d/%m/%Y', errors='coerce')
+      collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+      # merge
+      episodes['index_eps'] = episodes.index
+      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+      provider_info = provider_info[provider_info['REG_END'].notna()]
+      
+      merged = episodes.merge(provider_info, on='URN', how='left')
+      # If <URN> provided and not = 'XXXXXXX', and Ofsted URN <REG_END> not NULL then <DEC> if provided must be <= Ofsted <REG_END>OR if not provided then<COLLECTION_END_DATE>must be<= <REG_END>. Note: For open episodes (those without an end date) a check should be made to ensure that the Ofsted URN was still open at the 31 March of the current year.
+      mask = (merged['DEC'].notna() & (merged['DEC']>merged['REG_END'])) | (merged['DEC'].isna() & (collection_end>merged['REG_END']))
+
+      eps_error_locations = merged.loc[mask, 'index_eps']
+      return {'Episodes':eps_error_locations.tolist()}
+
+  return error, _validate
+
 def validate_218():
     error = ErrorDefinition(
         code='218',

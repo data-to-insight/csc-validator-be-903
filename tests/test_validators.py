@@ -1,13 +1,13 @@
 from validator903.validators import *
 import pandas as pd
 
-def test_validate_227():
+def test_validate_1008():
     fake_data_eps = pd.DataFrame([
         {'CHILD': '1111', 'URN': 'SC999999',},  # 0 pass: accepted value
         {'CHILD': '1111', 'URN': pd.NA,},  # 1 ignore
         {'CHILD': '1111', 'URN': 1234567,},  # 2 pass: digits will be converted to strings before comparison.
 
-        {'CHILD': '2222', 'URN': 'XXXXXX',},  # 3 pass: accepted value
+        {'CHILD': '2222', 'URN': 'XXXXXXX',},  # 3 pass: accepted value
 
         {'CHILD': '3333', 'URN': '1234567',},  # 4 pass
         {'CHILD': '3333', 'URN': '2345',},  # 5 fail : insufficient digits

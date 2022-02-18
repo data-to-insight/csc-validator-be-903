@@ -4,7 +4,7 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
-def validate_227():
+def validate_1008():
   error = ErrorDefinition(
     code = '1008',
     description = 'Ofsted Unique Reference Number (URN) is not valid.',
@@ -23,16 +23,15 @@ def validate_227():
       return {}
     else:
       episodes = dfs['Episodes']
-      urn_list = ['SC999999','XXXXXX', '999999' ]
+      urn_list = ['SC999999', '999999' ]
 
       # merge
       episodes['index_eps'] = episodes.index
-      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
-      merged = episodes.merge(provider_info, on='URN', how='left')
-      # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
-      mask = merged['REG_END'].notna() & (merged['DECOM']>=merged['REG_END'])
+      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+      # If provided <URN> must be a valid value (where valid values include 'XXXXXX') For allowed values please see Ofsted URN list.
+      mask = (~episodes['URN'].isin(urn_list))
 
-      eps_error_locations = merged.loc[mask, 'index_eps']
+      eps_error_locations = episodes.index[mask]
       return {'Episodes':eps_error_locations.tolist()}
 
   return error, _validate

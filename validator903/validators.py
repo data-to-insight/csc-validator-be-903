@@ -29,7 +29,8 @@ def validate_1008():
       episodes['index_eps'] = episodes.index
       episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
       # If provided <URN> must be a valid value (where valid values include 'XXXXXX') For allowed values please see Ofsted URN list.
-      mask = (~episodes['URN'].isin(urn_list))
+      mask = (~episodes['URN'].isin(urn_list)) & (episodes['URN'].astype('str').str.len()!=7)
+      #mask = (~(episodes['URN'].str.isdigit()))
 
       eps_error_locations = episodes.index[mask]
       return {'Episodes':eps_error_locations.tolist()}

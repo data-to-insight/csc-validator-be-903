@@ -25,13 +25,11 @@ def validate_1008():
       episodes = dfs['Episodes']
       urn_list = ['SC999999', '999999' ]
 
-      # merge
       episodes['index_eps'] = episodes.index
       episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
       # If provided <URN> must be a valid value (where valid values include 'XXXXXX') For allowed values please see Ofsted URN list.
-      mask = (~episodes['URN'].isin(urn_list)) & (episodes['URN'].astype('str').str.len()!=7)
-      #mask = (~(episodes['URN'].str.isdigit()))
-
+      mask = (~(episodes['URN'].astype('str').str.isdigit() & episodes['URN'].astype('str').str.len()==7)) &(~episodes['URN'].isin(urn_list))
+# that is, if it is not a 7-digit string and it does not belong to the list of accepted values, raise error.  
       eps_error_locations = episodes.index[mask]
       return {'Episodes':eps_error_locations.tolist()}
 

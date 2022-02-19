@@ -15,13 +15,13 @@ def test_validate_219():
 
         {'CHILD': '4444', 'PLACE': 'PR5', 'URN': 1, },  # 6 fail
 
-        {'CHILD': '5555', 'PLACE': 'PR5', 'URN': 4, },  # 7 ignore: PLACE_CODES is null
+        {'CHILD': '5555', 'PLACE': 'PR5', 'URN': 4, },  # 7 fail - PLACE_CODES should not be null so probly needs a look
         {'CHILD': '5555', 'PLACE': 'PR2', 'URN': 1, },  # 8 pass
     ])
     fake_provider_info = pd.DataFrame([
         {'URN': 1, 'PLACE_CODES': 'PR2', },  # 0
-        {'URN': 2, 'PLACE_CODES': 'PR1, PR3, PR5', },  # 1
-        {'URN': 3, 'PLACE_CODES': 'PR5, PR4, PR2', },  # 2
+        {'URN': 2, 'PLACE_CODES': 'PR1,PR3,PR5', },  # 1
+        {'URN': 3, 'PLACE_CODES': 'PR5,PR4,PR2', },  # 2
         {'URN': 4, 'PLACE_CODES': pd.NA, },  # 3
     ])
     metadata = {'provider_info': fake_provider_info}
@@ -30,7 +30,7 @@ def test_validate_219():
     error_defn, error_func = validate_219()
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [0, 2, 6]}
+    assert result == {'Episodes': [0, 2, 6, 7]}
 
 
 def test_validate_218():

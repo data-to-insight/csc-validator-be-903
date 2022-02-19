@@ -22,7 +22,7 @@ def test_validate_221():
         {'URN': 1, 'POSTCODE': 'A115KE', },  # 0
         {'URN': 2, 'POSTCODE': 'S251WO', },  # 1
         {'URN': 3, 'POSTCODE': 'V29XX', },  # 2
-        {'URN': 3, 'POSTCODE': pd.NA, },  # 3 should NaNs be ignored?
+        {'URN': 4, 'POSTCODE': pd.NA, },  # 3 should NaNs be ignored?
     ])
     metadata = {'provider_info': fake_provider_info}
 

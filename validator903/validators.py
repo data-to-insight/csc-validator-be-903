@@ -11,26 +11,22 @@ def validate_1008():
     affected_fields = ['URN']
   )
 
-  """This implementation can be done in two ways: 
-  Method 1: We could either check each URN value in the episodes table passed on a set of accepted values or formats or
-  
-  Method 2: We could merge the episodes table with the URN lookup table and flag all URN values that are left_only (found only in the episodes table). This method assumes that at every point in time, the provider_info table contains an exhaustive list of possible URNs. If this is true, then this method is preferred as it will no longer be necessary to update this rule if changes are made, to the acceptable values, in the future.
-  
-  I am choosing to proceed with Method 1."""
-
   def _validate(dfs):
-    if ('Episodes' not in dfs):
+    if 'Episodes' not in dfs or 'provider_info' not in dfs['metadata']:
       return {}
     else:
       episodes = dfs['Episodes']
-      urn_list = ['SC999999', '999999' ]
+      providers = dfs['metadata']['provider_info']
 
       episodes['index_eps'] = episodes.index
       episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
-      # If provided <URN> must be a valid value (where valid values include 'XXXXXX') For allowed values please see Ofsted URN list.
-      mask = (~(episodes['URN'].astype('str').str.isdigit() & episodes['URN'].astype('str').str.len()==7)) &(~episodes['URN'].isin(urn_list))
-# that is, if it is not a 7-digit string and it does not belong to the list of accepted values, raise error.  
-      eps_error_locations = episodes.index[mask]
+      episodes['URN']  = episodes['URN'].astype(str)
+      print(episodes.to_string)
+      episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
+
+      mask = episodes['_merge'] == 'left_only'
+      print(episodes.to_string())
+      eps_error_locations = episodes.loc[mask, 'index_eps']
       return {'Episodes':eps_error_locations.tolist()}
 
   return error, _validate

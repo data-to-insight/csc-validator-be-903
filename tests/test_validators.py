@@ -3,22 +3,28 @@ import pandas as pd
 
 def test_validate_1008():
     fake_data_eps = pd.DataFrame([
-        {'CHILD': '1111', 'URN': 'SC999999',},  # 0 pass: accepted value
+        {'CHILD': '1111', 'URN': 'SC999999',},  # 0 pass
         {'CHILD': '1111', 'URN': pd.NA,},  # 1 ignore
         {'CHILD': '1111', 'URN': 1234567,},  # 2 pass: digits will be converted to strings before comparison.
 
-        {'CHILD': '2222', 'URN': 'XXXXXXX',},  # 3 pass: accepted value
+        {'CHILD': '2222', 'URN': 'XXXXXXX',},  # 3 pass: accepted placeholder value
 
         {'CHILD': '3333', 'URN': '1234567',},  # 4 pass
-        {'CHILD': '3333', 'URN': '2345',},  # 5 fail : insufficient digits
+        {'CHILD': '3333', 'URN': '2345',},  # 5 fail
 
-        {'CHILD': '4444', 'URN': '999999',},  # 6 pass: accepted value
+        {'CHILD': '4444', 'URN': '999999',},  # 6 pass
 
-        {'CHILD': '5555', 'URN': '5b67891',},  # 7 fail: unrecognised digit-letter mixture.
+        {'CHILD': '5555', 'URN': '5b67891',},  # 7 fail
         {'CHILD': '5555', 'URN': 'XXXXXX',},  # 8 fail: 6 Xs instead of seven
     ])
 
-    fake_dfs = {'Episodes':fake_data_eps,}
+    metadata = {
+        'provider_info':
+                    pd.DataFrame(
+                        {'URN': ['1234567', 'SC999999', '999999']}
+                    )
+    }
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata': metadata}
     error_defn, error_func = validate_1008()
     result = error_func(fake_dfs)
 

@@ -15,14 +15,14 @@ def test_validate_224():
 
         {'CHILD': '4444', 'PLACE_PROVIDER': 'PR3', 'URN': 1, },  # 6 pass
 
-        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 4, },  # 7 fail ?
-        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 1, },  # 8 pass
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 4, },  # 7 fail - if PROVIDER_CODES is null something is wrong
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR4', 'URN': 1, },  # 8 pass
     ])
     fake_provider_info = pd.DataFrame([
-        {'URN': 1, 'PLACE_PROVIDER': 'PR3', },  # 0
-        {'URN': 2, 'PLACE_PROVIDER': 'PR0', },  # 1
-        {'URN': 3, 'PLACE_PROVIDER': 'PR1', },  # 2
-        {'URN': 3, 'PLACE_PROVIDER': pd.NA, },  # 3 should NaNs be ignored?
+        {'URN': 1, 'PROVIDER_CODES': 'PR1,PR3,PR4', },  # 0
+        {'URN': 2, 'PROVIDER_CODES': 'PR0', },  # 1
+        {'URN': 3, 'PROVIDER_CODES': 'PR1', },  # 2
+        {'URN': 4, 'PROVIDER_CODES': pd.NA, },  # 3
     ])
     metadata = {'provider_info': fake_provider_info}
 

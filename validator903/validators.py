@@ -22,11 +22,14 @@ def validate_224():
             # merge
             episodes['index_eps'] = episodes.index
             episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
-            merged = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
+            episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
             # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
-            mask = merged['PLACE_PROVIDER_eps'] != merged['PLACE_PROVIDER_lookup']
-
-            eps_error_locations = merged.loc[mask, 'index_eps']
+            valid = pd.Series([
+                pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
+                else False
+                for pl_pr, valid in zip(episodes['PLACE_PROVIDER'], episodes['PROVIDER_CODES'])
+            ])
+            eps_error_locations = episodes.loc[~valid, 'index_eps']
             return {'Episodes': eps_error_locations.unique().tolist()}
 
     return error, _validate

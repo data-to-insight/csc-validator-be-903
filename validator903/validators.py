@@ -19,10 +19,16 @@ def validate_221():
       provider_info = dfs['metadata']['provider_info']
       ls_list = ['V3', 'V4']
       place_list = ['K1', 'K2', 'R3', 'S1']
-
+      xxx = 'X' * 7
       # merge
       episodes['index_eps'] = episodes.index
-      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX') & (~episodes['LS'].isin(ls_list)) & episodes['PLACE'].isin(place_list) & episodes['PL_POST'].notna()]
+      episodes = episodes[
+          episodes['URN'].notna()
+          & (episodes['URN'] != xxx)
+          & (~episodes['LS'].isin(ls_list))
+          & episodes['PLACE'].isin(place_list)
+          & episodes['PL_POST'].notna()
+      ]
       merged = episodes.merge(provider_info, on='URN', how='left')
       # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
       mask = merged['PL_POST'].str.replace(' ', '') != merged['POSTCODE']
@@ -5281,6 +5287,7 @@ def validate_1015():
         description='Placement provider is own provision but child not placed in own LA.',
         affected_fields=['PL_LA'],
     )
+
 
     def _validate(dfs):
         if 'Episodes' not in dfs:

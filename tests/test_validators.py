@@ -7,7 +7,7 @@ def test_validate_221():
         {'CHILD': '1111', 'LS':'V2', 'PLACE':'R3', 'PL_POST': 'PR5', 'URN': pd.NA,},  # 1 ignore: URN value
         {'CHILD': '1111', 'LS':'V2', 'PLACE':'K1', 'PL_POST': 'S25 1WO', 'URN': 3,},  # 2 fail
 
-        {'CHILD': '2222', 'LS':'V2', 'PLACE':'K2', 'PL_POST': 'PR3', 'URN': 'XXXXXX',},  # 3 ignore: URN value
+        {'CHILD': '2222', 'LS':'V2', 'PLACE':'K2', 'PL_POST': 'PR3', 'URN': 'XXXXXXX',},  # 3 ignore: URN value
 
         {'CHILD': '3333', 'LS':'V2', 'PLACE':'R3', 'PL_POST': 'S25 1WO', 'URN': 2,},  # 4 pass
         {'CHILD': '3333', 'LS':'V2', 'PLACE':'xx', 'PL_POST': 'S25 1WO', 'URN': 2,},  # 5 ignore: PLACE value

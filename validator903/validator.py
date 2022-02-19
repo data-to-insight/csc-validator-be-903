@@ -26,18 +26,15 @@ class Validator:
 
     def __init__(self, metadata: Dict[str, Any], files: List[UploadedFile]):
         logger.info('Reading uploaded files...')
-        dfs, file_format = read_from_text(raw_files=files)
+        dfs, metadata_extras = read_from_text(raw_files=files)
         self.dfs.update(dfs)
-        logger.info('Adding metadata to "dfs" dict...')
-        metadata['file_format'] = file_format
+        metadata.update(metadata_extras)
+        logger.info(f'Metadata receieved: {",".join(metadata.keys())}')
         self.metadata = metadata
 
     def validate(self, error_codes: List[str]):
         logger.info('Creating Data Store...')
         data_store = create_datastore(self.dfs, self.metadata)
-
-        checks_that_failed_to_run = []
-        checks_skipped_coz_missing_tables = []
 
         ds_results = copy_datastore(data_store)
         for error, test_func in configured_errors:

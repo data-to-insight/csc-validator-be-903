@@ -35,6 +35,32 @@ def validate_219():
     return error, _validate
 
 
+
+def validate_1008():
+    error = ErrorDefinition(
+        code='1008',
+        description='Ofsted Unique Reference Number (URN) is not valid.',
+        affected_fields=['URN']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'provider_info' not in dfs['metadata']:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            providers = dfs['metadata']['provider_info']
+
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes['URN'] = episodes['URN'].astype(str)
+            episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
+            mask = episodes['_merge'] == 'left_only'
+            eps_error_locations = episodes.loc[mask, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
 def validate_218():
     error = ErrorDefinition(
         code='218',
@@ -70,7 +96,7 @@ def validate_546():
     error = ErrorDefinition(
         code='546',
         description='Children aged 5 or over at 31 March should not have health promotion information completed.',
-        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+        affected_fields=['DOB', 'HEALTH_CHECK']
     )
 
     def _validate(dfs):

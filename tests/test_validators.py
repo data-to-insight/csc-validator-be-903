@@ -872,22 +872,30 @@ def test_validate_197B():
         {'CHILD': '7777', 'DECOM': '01/03/1979', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
         {'CHILD': '7777', 'DECOM': '01/01/1981', 'DEC': '01/07/1981', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},
         {'CHILD': '8888', 'DECOM': '01/01/1981', 'DEC': '31/03/1999', 'LS': 'o', 'REC': 'o', 'RNE': 'S'},
+        {'CHILD': '9009', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+        {'CHILD': '1010', 'DECOM': '01/03/1980', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', 'RNE': 'o'},
+
     ])
 
     oc2 = pd.DataFrame({
         'CHILD':
             ['9999999999', '1', '2', '3333',
-             '99999999', '8888', '5'],
+             '99999999', '8888', '5', '9009',
+             '1010'],
         'SDQ_SCORE':
             ['OK', pd.NA, pd.NA, pd.NA,
-             pd.NA, 'OK', pd.NA],
+             pd.NA, 'OK', pd.NA, pd.NA,
+             pd.NA],
         'SDQ_REASON':
             ['SDQ1', pd.NA, pd.NA, 'OK',
-             pd.NA, 'OK', 'OK!'],
+             pd.NA, 'OK', 'OK!', pd.NA,
+             pd.NA],
         'DOB':
-            ['01/04/1970', '31/03/1964', '31/03/1977', '01/04/1970',
-             '01/04/1970', '01/04/1970', '01/07/1970'],
+            ['01/04/1970', '31/03/1964', '31/03/1977', '01/04/1970',  # 10, 17.00!, 4.00!, 10
+             '01/04/1970', '01/04/1970', '01/07/1970', '01/01/1977',
+             '09/09/1963'],  #10,10,10, 4!
     })
+
 
     test_dfs = {'Episodes': eps, 'OC2': oc2, 'metadata': metadata}
 
@@ -895,7 +903,7 @@ def test_validate_197B():
 
     test_result = error_func(test_dfs)
 
-    assert test_result == {'OC2': [1, 2]}
+    assert test_result == {'OC2': [1, 2, 7, 8]}
 
 
 def test_validate_157():

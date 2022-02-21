@@ -1023,11 +1023,11 @@ def validate_197B():
         start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
         endo = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
         oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
-
+      # Based on the DfE 'children looked after by local authorities in England' document, this rule should compare with collection_end instead of collection_start. check the issue discussion here (https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta-validator/issues/130) for more details.
         ERRRR = (
                 (
-                        (oc2['DOB'] + pd.DateOffset(years=4) == start)  # ???
-                        | (oc2['DOB'] + pd.DateOffset(years=17) == start)
+                        (oc2['DOB'] + pd.DateOffset(years=4) == endo)  # ???
+                        | (oc2['DOB'] + pd.DateOffset(years=17) == endo)
                 )
                 & oc2['CONTINUOUSLY_LOOKED_AFTER']
                 & oc2['SDQ_SCORE'].isna()

@@ -13,18 +13,18 @@ def test_validate_406():
         {'CHILD': '444', 'PL_DISTANCE': pd.NA},  # 7
     ])
     fake_header = pd.DataFrame([
-        {'CHILD': '111', 'UASC': 1},  # 0
-        {'CHILD': '222', 'UASC': 0},  # 2
-        {'CHILD': '333', 'UASC': 0},  # 4
-        {'CHILD': '345', 'UASC': 1},  # 5
-        {'CHILD': '444', 'UASC': 0},  # 6
+        {'CHILD': '111', 'UASC': '1'},  # 0
+        {'CHILD': '222', 'UASC': '0'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '1'},  # 5
+        {'CHILD': '444', 'UASC': '0'},  # 6
     ])
     fake_header_last = pd.DataFrame([
-        {'CHILD': '111', 'UASC': 0},  # 0
-        {'CHILD': '222', 'UASC': 1},  # 2
-        {'CHILD': '333', 'UASC': 0},  # 4
-        {'CHILD': '345', 'UASC': 0},  # 5
-        {'CHILD': '444', 'UASC': 1},  # 6
+        {'CHILD': '111', 'UASC': '0'},  # 0
+        {'CHILD': '222', 'UASC': '1'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '0'},  # 5
+        {'CHILD': '444', 'UASC': '1'},  # 6
     ])
 
     fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}

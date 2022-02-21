@@ -8,39 +8,53 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 def validate_406():
     error = ErrorDefinition(
         code='406',
-        description='Child is Unaccompanied Asylum-Seeking Child (UASC) or was formerly UASC. Distance should be blank. [NOTE: This check may result in false negatives for children formerly UASC]',
+        description='Child is Unaccompanied Asylum-Seeking Child (UASC) or was formerly UASC. Distance should be '
+                    'blank. [NOTE: This check will result in false negatives for children formerly UASC not '
+                    'identified as such in loaded data]',
         affected_fields=['PL_DISTANCE'],
     )
 
+    # If <UASC> = '1' or <COLLECTION YEAR> - 1 <UASC> = '1' or <COLLECTION YEAR> - 2 <UASC> = '1' Then
+    # <PL_DISTANCE> should not be provided Note: <PL_DISTANCE> is a derived field in most instances
     def _validate(dfs):
-        if 'Episodes' not in dfs or 'Header' not in dfs:
-          # This rule is based on an 'or' conditional so it can run without Header_last
-            return {}
-        elif 'UASC' not in dfs['Header'].columns:
+        # Header_last also used if present
+        if 'Episodes' not in dfs:
             return {}
         else:
-            # If <UASC> = '1' or <COLLECTION YEAR> - 1 <UASC> = '1' or <COLLECTION YEAR> - 2 <UASC> = '1' Then <PL_DISTANCE> should not be provided Note: <PL_DISTANCE> is a derived field in most instances
-            header = dfs['Header']
             epi = dfs['Episodes']
+
             # Note the initial positions. Freeze a copy of the index values into a column
             epi['orig_idx'] = epi.index
-            #Let the header table represent only the children tha have UASC==1
-            header = header.loc[pd.to_numeric(header['UASC'])==1]
-            
-            # Get children from the episodes table that have UASC==1 and yet have a PL_DISTANCE recorded (they are not supposed to have this)
-            err_co1 = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-            # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
-            err_list = err_co1['orig_idx'].unique().tolist()
 
-            # The code is blocked this way to enable the function to run even when Header_last is absent.
+            # Work out who is formerly
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header_current = dfs['Header']
+                header = pd.concat((header, header_current), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
             if 'Header_last' in dfs:
-                header_last = dfs['Header_last']                
-                header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==1]
-                err_co2 = epi.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'").query("PL_DISTANCE.notna()")
-                err_list2 = err_co2['orig_idx'].unique().tolist()
-                err_list.extend(err_list2)         
-          
-            err_list.sort()
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'UASC' in header.columns:
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = epi.merge(header[['CHILD']], how='inner', on='CHILD')
+            else:
+                # if theres no UASC column in header, either from XML data, inferred for CSV in ingress, or added above
+                # then we can't identify anyone as UASC/formerly UASC
+                return {}
+            # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
+
+            err_list = epi.loc[epi['PL_DISTANCE'].notna(), 'orig_idx'].sort_values().unique().tolist()
 
             return {'Episodes': err_list}
 
@@ -227,7 +241,7 @@ def validate_1008():
             providers = dfs['metadata']['provider_info']
 
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')].copy()
             episodes['URN'] = episodes['URN'].astype(str)
             episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
             mask = episodes['_merge'] == 'left_only'
@@ -2090,7 +2104,7 @@ def validate_399():
             # Column that will contain True only if all LSs, for a child, are either V3 or V4
             episodes['LS_CHECK'] = episodes.groupby('CHILD')['LS_CHECKS'].transform('min')
 
-            eps = episodes.loc[episodes['LS_CHECK'] == True]
+            eps = episodes.loc[episodes['LS_CHECK'] == True].copy()
 
             # prepare to merge
             eps['index_eps'] = eps.index

@@ -35,6 +35,287 @@ def validate_227():
     return error, _validate
 
 
+def validate_224():
+    error = ErrorDefinition(
+        code='224',
+        description="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement provider recorded.",
+        affected_fields=['PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
+            # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
+            valid = pd.Series([
+                pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
+                else False
+                for pl_pr, valid in zip(episodes['PLACE_PROVIDER'], episodes['PROVIDER_CODES'])
+            ])
+            eps_error_locations = episodes.loc[~valid, 'index_eps']
+            return {'Episodes': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_221():
+  error = ErrorDefinition(
+    code = '221',
+    description = "The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement postcode provided.",
+    affected_fields = ['PL_POST']
+  )
+
+  def _validate(dfs):
+      if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+          return {}
+      else:
+          episodes = dfs['Episodes']
+          provider_info = dfs['metadata']['provider_info']
+          ls_list = ['V3', 'V4']
+          place_list = ['K1', 'K2', 'R3', 'S1']
+          xxx = 'X' * 7
+          # merge
+          episodes['index_eps'] = episodes.index
+          episodes = episodes[
+              episodes['URN'].notna()
+              & (episodes['URN'] != xxx)
+              & (~episodes['LS'].isin(ls_list))
+              & episodes['PLACE'].isin(place_list)
+              & episodes['PL_POST'].notna()
+              ]
+          merged = episodes.merge(provider_info, on='URN', how='left')
+          # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
+          mask = merged['PL_POST'].str.replace(' ', '') != merged['POSTCODE']
+
+          eps_error_locations = merged.loc[mask, 'index_eps']
+          return {'Episodes': eps_error_locations.unique().tolist()}
+
+  return error, _validate
+
+
+def validate_228():
+    error = ErrorDefinition(
+        code='227',
+        description='Ofsted Unique reference number (URN) is not valid for the episode end date '
+                    '[NOTE: may give false positives on open episodes at providers who close during the year]',
+        affected_fields=['URN', 'DEC']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+            collection_end = dfs['metadata']['collection_end']
+
+            # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            provider_info = provider_info[provider_info['REG_END'].notna()]
+
+            merged = episodes.merge(provider_info, on='URN', how='inner')
+            # If <URN> provided and not = 'XXXXXXX', and Ofsted URN <REG_END> not NULL then <DEC> if provided
+            # must be <= Ofsted <REG_END>OR if not provided then<COLLECTION_END_DATE>must be<= <REG_END>.
+            # Note: For open episodes (those without an end date) a check should be made to ensure that the Ofsted
+            # URN was still open at the 31 March of the current year.
+            mask = (
+                    (merged['DEC'].notna() & (merged['DEC'] > merged['REG_END']))
+                    | (merged['DEC'].isna() & (collection_end > merged['REG_END']))
+            )
+
+            eps_error_locations = merged.loc[mask, 'index_eps'].sort_values().to_list()
+            return {'Episodes': eps_error_locations}
+
+    return error, _validate
+
+
+
+def validate_219():
+    error = ErrorDefinition(
+        code='219',
+        description="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement type recorded.",
+        affected_fields=['URN', 'PLACE']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes = episodes.merge(provider_info, on='URN', how='left')
+            # If <URN> provided and <URN> not = 'XXXXXXX' then <PL> must = any URN Lookup <PLACEMENT CODE> of matching URN Lookup <URN>
+            place_valid = pd.Series([
+                False if (pd.isna(pl) or pd.isna(valid)) else pl in valid.split(',')
+                for pl, valid in zip(episodes['PLACE'], episodes['PLACE_CODES'])
+            ])
+
+            eps_error_locations = episodes.loc[~place_valid, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
+
+def validate_1008():
+    error = ErrorDefinition(
+        code='1008',
+        description='Ofsted Unique Reference Number (URN) is not valid.',
+        affected_fields=['URN']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'provider_info' not in dfs['metadata']:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            providers = dfs['metadata']['provider_info']
+
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes['URN'] = episodes['URN'].astype(str)
+            episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
+            mask = episodes['_merge'] == 'left_only'
+            eps_error_locations = episodes.loc[mask, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_218():
+    error = ErrorDefinition(
+        code='218',
+        description='Ofsted Unique reference number (URN) is required.',
+        affected_fields=['URN']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            collection_start = dfs['metadata']['collection_start']
+            pl_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
+
+            # convert string date values to datetime format to enable comparison.
+            collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+            episodes['DEC_dt'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+
+            out_of_england = episodes['PL_LA'].astype('str').str.upper().str.startswith(('N', 'W', 'S', 'C'))
+            place_exempt = episodes['PLACE'].isin(pl_list)
+            ends_after_collection_start = (episodes['DEC_dt'] >= collection_start) | episodes['DEC'].isna()
+
+            mask = ends_after_collection_start & episodes['URN'].isna() & ~place_exempt & ~out_of_england
+
+            error_locations = episodes.index[mask]
+            return {'Episodes': error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_546():
+    error = ErrorDefinition(
+        code='546',
+        description='Children aged 5 or over at 31 March should not have health promotion information completed.',
+        affected_fields=['DOB', 'HEALTH_CHECK']
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> >= 5 years prior to<COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER>= 'Y' then<HEALTH_CHECK>` should not be provided
+            mask = (collection_end >= (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2[
+                'CONTINUOUSLY_LOOKED_AFTER'] & oc2['HEALTH_CHECK'].notna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_545():
+    error = ErrorDefinition(
+        code='545',
+        description='Child is aged under 5 at 31 March and has been looked after continuously for 12 months yet health promotion information has not been completed.',
+        affected_fields=['DOB', 'HEALTH_CHECK'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> < 5 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER>= 'Y' then<HEALTH_CHECK>` should be provided.
+            mask = (collection_end < (oc2['DOB'] + pd.offsets.DateOffset(years=5))) & oc2['CONTINUOUSLY_LOOKED_AFTER'] & \
+                   oc2['HEALTH_CHECK'].isna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_543():
+    error = ErrorDefinition(
+        code='543',
+        description='Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.',
+        affected_fields=['DOB', 'CONVICTED']
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            oc2 = dfs['OC2']
+            collection_end = dfs['metadata']['collection_end']
+            # add CLA column
+            oc2 = add_CLA_column(dfs, 'OC2')
+
+            # to datetime
+            oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # If <DOB> >= 10 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER> = 'Y' then <CONVICTED> should be provided
+            mask = (collection_end > (oc2['DOB'] + pd.offsets.DateOffset(years=10))) & oc2[
+                'CONTINUOUSLY_LOOKED_AFTER'] & oc2['CONVICTED'].isna()
+            error_locations = oc2.index[mask]
+            return {'OC2': error_locations.tolist()}
+
+    return error, _validate
+
+
 def validate_560():
     error = ErrorDefinition(
         code='560',
@@ -825,21 +1106,41 @@ def validate_165():
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
 
-            episodes['EPS'] = (episodes['DECOM'] >= collection_start) & (episodes['DECOM'] <= collection_end)
+            # Drop all episodes with V3/V4 legal status
+            v3v4_ls = episodes['LS'].str.upper().isin(['V3', 'V4'])
+            index_v3v4_ls = episodes.loc[v3v4_ls].index
+            episodes.drop(index_v3v4_ls, inplace=True)
+
+            # fill in missing DECs with the collection year end date
+            missing_last_DECs = (
+                episodes['DEC'].isna()
+            )
+            episodes.loc[missing_last_DECs, 'DEC'] = collection_end
+
+            episodes['EPS'] = (episodes['DEC'] >= collection_start) & (episodes['DECOM'] <= collection_end)
             episodes['EPS_COUNT'] = episodes.groupby('CHILD')['EPS'].transform('sum')
 
             merged = episodes.merge(header, on='CHILD', how='left', suffixes=['_eps', '_er']).merge(oc3, on='CHILD',
                                                                                                     how='left')
 
-            # Raise error if provided <MOTHER> is not a valid value.
-            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].isin(valid_values))
-            # If not provided
-            female = (merged['SEX'] == '1')
+            # Raise error if provided <MOTHER> is not a valid value
+            value_validity = merged['MOTHER'].notna() & (~merged['MOTHER'].astype(str).isin(valid_values))
+
+            # Raise error if provided <MOTHER> and child is male
+            male = merged['MOTHER'].notna() & (merged['SEX'].astype(str) == '1')
+
+            # Raise error if female and not provided
+            female = (merged['SEX'].astype(str) == '2')
+            has_mother = merged['MOTHER'].notna()
             eps_in_year = (merged['EPS_COUNT'] > 0)
-            none_provided = (merged['ACTIV'].isna() & merged['ACCOM'].isna() & merged['IN_TOUCH'].isna())
-            # If provided <MOTHER> must be a valid value. If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
-            mask = value_validity | (merged['MOTHER'].isna() & (female & (eps_in_year | none_provided)))
+            has_oc3 = (merged['ACTIV'].notna() | merged['ACCOM'].notna() | merged['IN_TOUCH'].notna())
+
+            # If provided <MOTHER> must be a valid value (and child must be female). If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
+            mask = value_validity | male | (~has_mother & female & eps_in_year) | (
+                        has_mother & female & ~eps_in_year & has_oc3)
+
             # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
             error_locs_eps = merged.loc[mask, 'index_eps']
             error_locs_header = merged.loc[mask, 'index_er']
@@ -5148,6 +5449,7 @@ def validate_1015():
         affected_fields=['PL_LA'],
     )
 
+
     def _validate(dfs):
         if 'Episodes' not in dfs:
             return {}
@@ -7047,27 +7349,53 @@ def validate_104():
 def validate_392B():
     error = ErrorDefinition(
         code='392B',
-        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false '
+                    'positives for children formerly UASC, particularly if current & prior year UASC data not loaded]',
         affected_fields=['HOME_POST', 'PL_POST'],
     )
 
     def _validate(dfs):
+        # Will also use Header/UASC and/or Header_last/UASC_last for former UASC status
         if 'Episodes' not in dfs:
             return {}
         else:
+            # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <HOME_POST> and <PL_POST> should be provided.
             epi = dfs['Episodes']
-            epi['orig_idx'] = epi.index
-            if 'UASC' in dfs:
-                uas = dfs['UASC']
-                err_co = epi.merge(uas, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
-                err_co.drop(['_merge'], axis=1, inplace=True)
-            if 'UASC_last' in dfs:
-                uas_l = dfs['UASC_last']
-                err_co = err_co.merge(uas_l, how='left', on='CHILD', indicator=True).query("_merge == 'left_only'")
+            epi['original_index'] = epi.index
 
-            err_co = err_co.query("(~LS.isin(['V3','V4'])) & (HOME_POST.isna() | PL_POST.isna())")
-            err_list = err_co['orig_idx'].unique().tolist()
-            err_list.sort()
+            # Remove any children with evidence of former UASC status
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header_current = dfs['Header']
+                header = pd.concat((header, header_current), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'Header_last' in dfs:
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'UASC' in header.columns:
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = (epi
+                       .merge(header[['CHILD']], how='left', on='CHILD', indicator=True)
+                       .query("_merge == 'left_only'"))
+
+            # Remove episodes where LS is V3/V4
+            epi = epi.query("(~LS.isin(['V3','V4']))")
+
+            # Remove episodes with postcodes filled in
+            epi = epi.query("(HOME_POST.isna() | PL_POST.isna())")
+
+            # Get error indices
+            err_list = epi['original_index'].sort_values().tolist()
 
             return {'Episodes': err_list}
 

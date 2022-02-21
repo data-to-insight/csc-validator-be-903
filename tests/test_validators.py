@@ -2,6 +2,38 @@ from validator903.validators import *
 import pandas as pd
 
 
+def test_validate_224():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': 1, },  # 0 fail
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR5', 'URN': pd.NA, },  # 1 ignore
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR0', 'URN': 3, },  # 2 fail
+
+        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXX', },  # 3 ignore
+
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR0', 'URN': 2, },  # 4 pass
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR3', 'URN': 2, },  # 5 fail
+
+        {'CHILD': '4444', 'PLACE_PROVIDER': 'PR3', 'URN': 1, },  # 6 pass
+
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR3', 'URN': 4, },  # 7 fail - if PROVIDER_CODES is null something is wrong
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR4', 'URN': 1, },  # 8 pass
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'PROVIDER_CODES': 'PR1,PR3,PR4', },  # 0
+        {'URN': 2, 'PROVIDER_CODES': 'PR0', },  # 1
+        {'URN': 3, 'PROVIDER_CODES': 'PR1', },  # 2
+        {'URN': 4, 'PROVIDER_CODES': pd.NA, },  # 3
+    ])
+    metadata = {'provider_info': fake_provider_info}
+
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_224()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 5, 7]}
+
+
+
 def test_validate_221():
     fake_data_eps = pd.DataFrame([
         {'CHILD': '1111', 'LS': 'V3', 'PLACE': 'R3', 'PL_POST': 'A11 5KE', 'URN': 1, },  # 0 ignore: LS is V3

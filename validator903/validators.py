@@ -4,6 +4,37 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
+def validate_224():
+    error = ErrorDefinition(
+        code='224',
+        description="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement provider recorded.",
+        affected_fields=['PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
+            # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
+            valid = pd.Series([
+                pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
+                else False
+                for pl_pr, valid in zip(episodes['PLACE_PROVIDER'], episodes['PROVIDER_CODES'])
+            ])
+            eps_error_locations = episodes.loc[~valid, 'index_eps']
+            return {'Episodes': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
 def validate_221():
   error = ErrorDefinition(
     code = '221',

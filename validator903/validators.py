@@ -23,7 +23,6 @@ def validate_228():
 
             # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
-            provider_info['REG_END'] = pd.to_datetime(provider_info['REG_END'], format='%d/%m/%Y', errors='coerce')
             collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
 
             # merge
@@ -41,8 +40,8 @@ def validate_228():
                     | (merged['DEC'].isna() & (collection_end > merged['REG_END']))
             )
 
-            eps_error_locations = merged.loc[mask, 'index_eps']
-            return {'Episodes': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_eps'].sort_values().to_list()
+            return {'Episodes': eps_error_locations}
 
     return error, _validate
 

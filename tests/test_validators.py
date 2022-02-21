@@ -24,6 +24,7 @@ def test_validate_228():
         {'URN': 3, 'REG_END': '01/02/2015', },  # 2
         {'URN': 4, 'REG_END': pd.NA, },  # 3
     ])
+    fake_provider_info['REG_END'] = pd.to_datetime(fake_provider_info['REG_END'], format='%d/%m/%Y', errors='raise')
     metadata = {'collection_start': '01/04/2014', 'collection_end': '31/03/2015', 'provider_info': fake_provider_info}
 
     fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}

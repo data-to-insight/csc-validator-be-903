@@ -4,35 +4,36 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
 def validate_227():
-  error = ErrorDefinition(
-    code = '227',
-    description = 'Ofsted Unique reference number (URN) is not valid for the episode start date.',
-    affected_fields = ['URN', 'DECOM']
-  )
+    error = ErrorDefinition(
+        code='227',
+        description='Ofsted Unique reference number (URN) is not valid for the episode start date.',
+        affected_fields=['URN', 'DECOM']
+    )
 
-  def _validate(dfs):
-    if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
-      return {}
-    else:
-      episodes = dfs['Episodes']
-      provider_info = dfs['metadata']['provider_info']
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
 
-      # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
-      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
-      provider_info['REG_END'] = pd.to_datetime(provider_info['REG_END'], format='%d/%m/%Y', errors='coerce')
+            # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
-      # merge
-      episodes['index_eps'] = episodes.index
-      episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
-      merged = episodes.merge(provider_info, on='URN', how='left')
-      # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
-      mask = merged['REG_END'].notna() & (merged['DECOM']>=merged['REG_END'])
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            merged = episodes.merge(provider_info, on='URN', how='left')
+            # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+            mask = merged['REG_END'].notna() & (merged['DECOM'] >= merged['REG_END'])
 
-      eps_error_locations = merged.loc[mask, 'index_eps']
-      return {'Episodes':eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
 
-  return error, _validate
+    return error, _validate
+
 
 def validate_560():
     error = ErrorDefinition(
@@ -55,16 +56,15 @@ def validate_560():
 
             # If <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> has been provided and <DATE_PLACED_CEASED> is Null then <CURRENT_COLLECTION_YEAR> <DATE_PLACED> should = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED>
             mask = (
-                merged['DATE_PLACED_last'].notna()
-                & merged['DATE_PLACED_CEASED_last'].isna()
-                & (merged['DATE_PLACED_now'] != merged['DATE_PLACED_last'])
+                    merged['DATE_PLACED_last'].notna()
+                    & merged['DATE_PLACED_CEASED_last'].isna()
+                    & (merged['DATE_PLACED_now'] != merged['DATE_PLACED_last'])
             )
             # error locations
             error_locs = merged.loc[mask, 'index_now']
             return {'PlacedAdoption': error_locs.tolist()}
 
     return error, _validate
-
 
 
 def validate_561():
@@ -88,8 +88,8 @@ def validate_561():
 
             # If <CURRENT_COLLECTION_YEAR> <DATE_PLACED> is = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> then <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED_CEASED> and <REASON_PLACED_CEASED> should be Null
             mask = (
-                (merged['DATE_PLACED_now'] == merged['DATE_PLACED_last'])
-                & merged[['REASON_PLACED_CEASED_last', 'DATE_PLACED_CEASED_last']].notna().any(axis=1)
+                    (merged['DATE_PLACED_now'] == merged['DATE_PLACED_last'])
+                    & merged[['REASON_PLACED_CEASED_last', 'DATE_PLACED_CEASED_last']].notna().any(axis=1)
             )
 
             # error locations
@@ -97,7 +97,6 @@ def validate_561():
             return {'PlacedAdoption': error_locs.tolist()}
 
     return error, _validate
-
 
 
 def validate_601():
@@ -126,9 +125,9 @@ def validate_601():
 
             # only keep episodes with adoption RECs during year
             adoption_eps_mask = (
-                (episodes['DEC'] >= collection_start)
-                & (episodes['DEC'] <= collection_end)
-                & episodes['REC'].isin(['E11', 'E12'])
+                    (episodes['DEC'] >= collection_start)
+                    & (episodes['DEC'] <= collection_end)
+                    & episodes['REC'].isin(['E11', 'E12'])
             )
             episodes = episodes[adoption_eps_mask]
 
@@ -137,8 +136,8 @@ def validate_601():
 
             some_absent = (
                 merged[['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'NB_ADOPTR', 'SEX_ADOPTR', 'LS_ADOPTR']]
-                .isna()
-                .any(axis=1)
+                    .isna()
+                    .any(axis=1)
             )
 
             error_locs_ad1 = merged.loc[some_absent, 'index_ad1'].unique().tolist()
@@ -148,7 +147,6 @@ def validate_601():
                     'Episodes': error_locs_eps}
 
     return error, _validate
-
 
 
 def validate_302():
@@ -255,9 +253,9 @@ def validate_336():
             # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of:
             # ('A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6')
             mask = (
-                (episodes['PLACE'].isin(place_code_list))
-                & ~episodes['PLACE_prev'].isin(prev_code_list)
-                & ~episodes['is_first_episode']  # omit first eps, as prev_PLACE is NaN
+                    (episodes['PLACE'].isin(place_code_list))
+                    & ~episodes['PLACE_prev'].isin(prev_code_list)
+                    & ~episodes['is_first_episode']  # omit first eps, as prev_PLACE is NaN
             )
 
             # error locations
@@ -1483,7 +1481,6 @@ def validate_625():
     return error, _validate
 
 
-
 # !# big potential false positives, as this only operates on the current and previous year data
 # should use collection start/end & DOB to exclude children whose first/last episode dates mean we probably can't tell
 def validate_1001():
@@ -1531,11 +1528,10 @@ def validate_1001():
 
             # fill in missing final DECs with the collection year's end date
             missing_last_DECs = (
-                episodes.index.isin(episodes.groupby('CHILD')['DECOM'].idxmax())
-                & episodes['DEC'].isna()
+                    episodes.index.isin(episodes.groupby('CHILD')['DECOM'].idxmax())
+                    & episodes['DEC'].isna()
             )
             episodes.loc[missing_last_DECs, 'DEC'] = collection_end
-
 
             # Work out how long child has been in care since 14th and 16th birthdays.
             episodes_merged = (episodes
@@ -1543,7 +1539,6 @@ def validate_1001():
                                .merge(header[['CHILD', 'DOB', 'DOB14', 'DOB16']],
                                       how='inner', on=['CHILD'], suffixes=('', '_header'), indicator=True)
                                .set_index('index'))
-
 
             # Drop all episodes with V3/V4 legal status
             v3v4_ls = episodes_merged['LS'].str.upper().isin(['V3', 'V4'])
@@ -1587,6 +1582,7 @@ def validate_1001():
             return {'OC3': validation_error_locations.tolist()}
 
     return error, _validate
+
 
 def validate_1010():
     error = ErrorDefinition(
@@ -1939,12 +1935,12 @@ def validate_1007():
 
             # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC> not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
             check_age = (merged['DOB'] + pd.offsets.DateOffset(years=17) <= collection_end) & (
-                        merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
+                    merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
             # That is, check that 17<=age<19
             check_dec_rec = merged['REC'].isna() | merged['DEC'].isna()
             # if either DEC or REC are absent
             mask = check_age & check_dec_rec & (
-                        merged['IN_TOUCH'].notna() | merged['ACTIV'].notna() | merged['ACCOM'].notna())
+                    merged['IN_TOUCH'].notna() | merged['ACTIV'].notna() | merged['ACCOM'].notna())
             # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
 
             # error locations

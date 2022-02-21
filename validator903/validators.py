@@ -1284,7 +1284,7 @@ def validate_197B():
             & oc2['SDQ_REASON'].isna()
         )
 
-        return {'OC2': oc2[ERRRR].index.to_list()}
+        return {'OC2': oc2[errors].index.to_list()}
 
     return error, _validate
 

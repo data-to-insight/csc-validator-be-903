@@ -35,6 +35,139 @@ def validate_224():
     return error, _validate
 
 
+def validate_221():
+  error = ErrorDefinition(
+    code = '221',
+    description = "The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement postcode provided.",
+    affected_fields = ['PL_POST']
+  )
+
+  def _validate(dfs):
+      if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+          return {}
+      else:
+          episodes = dfs['Episodes']
+          provider_info = dfs['metadata']['provider_info']
+          ls_list = ['V3', 'V4']
+          place_list = ['K1', 'K2', 'R3', 'S1']
+          xxx = 'X' * 7
+          # merge
+          episodes['index_eps'] = episodes.index
+          episodes = episodes[
+              episodes['URN'].notna()
+              & (episodes['URN'] != xxx)
+              & (~episodes['LS'].isin(ls_list))
+              & episodes['PLACE'].isin(place_list)
+              & episodes['PL_POST'].notna()
+              ]
+          merged = episodes.merge(provider_info, on='URN', how='left')
+          # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
+          mask = merged['PL_POST'].str.replace(' ', '') != merged['POSTCODE']
+
+          eps_error_locations = merged.loc[mask, 'index_eps']
+          return {'Episodes': eps_error_locations.unique().tolist()}
+
+  return error, _validate
+
+
+def validate_228():
+    error = ErrorDefinition(
+        code='227',
+        description='Ofsted Unique reference number (URN) is not valid for the episode end date '
+                    '[NOTE: may give false positives on open episodes at providers who close during the year]',
+        affected_fields=['URN', 'DEC']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+            collection_end = dfs['metadata']['collection_end']
+
+            # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+            episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            collection_end = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            provider_info = provider_info[provider_info['REG_END'].notna()]
+
+            merged = episodes.merge(provider_info, on='URN', how='inner')
+            # If <URN> provided and not = 'XXXXXXX', and Ofsted URN <REG_END> not NULL then <DEC> if provided
+            # must be <= Ofsted <REG_END>OR if not provided then<COLLECTION_END_DATE>must be<= <REG_END>.
+            # Note: For open episodes (those without an end date) a check should be made to ensure that the Ofsted
+            # URN was still open at the 31 March of the current year.
+            mask = (
+                    (merged['DEC'].notna() & (merged['DEC'] > merged['REG_END']))
+                    | (merged['DEC'].isna() & (collection_end > merged['REG_END']))
+            )
+
+            eps_error_locations = merged.loc[mask, 'index_eps'].sort_values().to_list()
+            return {'Episodes': eps_error_locations}
+
+    return error, _validate
+
+
+
+def validate_219():
+    error = ErrorDefinition(
+        code='219',
+        description="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement type recorded.",
+        affected_fields=['URN', 'PLACE']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes = episodes.merge(provider_info, on='URN', how='left')
+            # If <URN> provided and <URN> not = 'XXXXXXX' then <PL> must = any URN Lookup <PLACEMENT CODE> of matching URN Lookup <URN>
+            place_valid = pd.Series([
+                False if (pd.isna(pl) or pd.isna(valid)) else pl in valid.split(',')
+                for pl, valid in zip(episodes['PLACE'], episodes['PLACE_CODES'])
+            ])
+
+            eps_error_locations = episodes.loc[~place_valid, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
+
+def validate_1008():
+    error = ErrorDefinition(
+        code='1008',
+        description='Ofsted Unique Reference Number (URN) is not valid.',
+        affected_fields=['URN']
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs or 'provider_info' not in dfs['metadata']:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            providers = dfs['metadata']['provider_info']
+
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            episodes['URN'] = episodes['URN'].astype(str)
+            episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
+            mask = episodes['_merge'] == 'left_only'
+            eps_error_locations = episodes.loc[mask, 'index_eps']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
 def validate_218():
     error = ErrorDefinition(
         code='218',
@@ -70,7 +203,7 @@ def validate_546():
     error = ErrorDefinition(
         code='546',
         description='Children aged 5 or over at 31 March should not have health promotion information completed.',
-        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+        affected_fields=['DOB', 'HEALTH_CHECK']
     )
 
     def _validate(dfs):
@@ -5285,6 +5418,7 @@ def validate_1015():
         description='Placement provider is own provision but child not placed in own LA.',
         affected_fields=['PL_LA'],
     )
+
 
     def _validate(dfs):
         if 'Episodes' not in dfs:

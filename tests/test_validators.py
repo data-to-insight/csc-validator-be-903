@@ -33,6 +33,132 @@ def test_validate_224():
     assert result == {'Episodes': [0, 2, 5, 7]}
 
 
+
+def test_validate_221():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'LS': 'V3', 'PLACE': 'R3', 'PL_POST': 'A11 5KE', 'URN': 1, },  # 0 ignore: LS is V3
+        {'CHILD': '1111', 'LS': 'V2', 'PLACE': 'R3', 'PL_POST': 'PR5', 'URN': pd.NA, },  # 1 ignore: URN value
+        {'CHILD': '1111', 'LS': 'V2', 'PLACE': 'K1', 'PL_POST': 'S25 1WO', 'URN': 3, },  # 2 fail
+
+        {'CHILD': '2222', 'LS': 'V2', 'PLACE': 'K2', 'PL_POST': 'PR3', 'URN': 'XXXXXXX', },  # 3 ignore: URN value
+
+        {'CHILD': '3333', 'LS': 'V2', 'PLACE': 'R3', 'PL_POST': 'S25 1WO', 'URN': 2, },  # 4 pass
+        {'CHILD': '3333', 'LS': 'V2', 'PLACE': 'xx', 'PL_POST': 'S25 1WO', 'URN': 2, },  # 5 ignore: PLACE value
+
+        {'CHILD': '4444', 'LS': 'V2', 'PLACE': 'S1', 'PL_POST': 'N9 5PY', 'URN': 1, },  # 6 fail
+
+        {'CHILD': '5555', 'LS': 'V2', 'PLACE': 'S1', 'PL_POST': 'N9 5PY', 'URN': 4, },  # 7 fail
+        {'CHILD': '5555', 'LS': 'V2', 'PLACE': 'R3', 'PL_POST': pd.NA, 'URN': 1, },  # 8 ignore: PL_POST value
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'POSTCODE': 'A115KE', },  # 0
+        {'URN': 2, 'POSTCODE': 'S251WO', },  # 1
+        {'URN': 3, 'POSTCODE': 'V29XX', },  # 2
+        {'URN': 4, 'POSTCODE': pd.NA, },  # 3 should NaNs be ignored?
+    ])
+    metadata = {'provider_info': fake_provider_info}
+
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_221()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 6, 7]}
+
+
+
+def test_validate_228():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'DEC': pd.NA, 'URN': 1, },  # 0 pass REG_END is after March 31st of collection year
+        {'CHILD': '1111', 'DEC': '01/02/2015', 'URN': pd.NA, },  # 1 ignore: URN not provided
+        {'CHILD': '1111', 'DEC': pd.NA, 'URN': 3, },  # 2 fail REG_END is before March 31st of collection year
+
+        {'CHILD': '2222', 'DEC': '01/01/2010', 'URN': 'XXXXXXX', },  # 3 ignore: URN
+
+        {'CHILD': '3333', 'DEC': '01/01/2010', 'URN': 2, },  # 4 pass
+        {'CHILD': '3333', 'DEC': '25/12/2015', 'URN': 2, },  # 5 fail DEC after REG_END
+
+        {'CHILD': '4444', 'DEC': '25/12/2016', 'URN': 1, },  # 6 fail. DEC after REG_END
+
+        {'CHILD': '5555', 'DEC': '01/01/2010', 'URN': 4, },  # 7 ignore: REG_END is null
+        {'CHILD': '5555', 'DEC': '25/12/2015', 'URN': 1, },  # 8 pass DEC equals REG_END
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'REG_END': '25/12/2015', },  # 0
+        {'URN': 2, 'REG_END': '21/02/2014', },  # 1
+        {'URN': 3, 'REG_END': '01/02/2015', },  # 2
+        {'URN': 4, 'REG_END': pd.NA, },  # 3
+    ])
+    fake_provider_info['REG_END'] = pd.to_datetime(fake_provider_info['REG_END'], format='%d/%m/%Y', errors='raise')
+    metadata = {'collection_start': '01/04/2014', 'collection_end': '31/03/2015', 'provider_info': fake_provider_info}
+
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_228()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 5, 6]}
+
+
+
+def test_validate_219():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'PLACE': 'PR5', 'URN': 1, },  # 0 fail
+        {'CHILD': '1111', 'PLACE': 'PR5', 'URN': pd.NA, },  # 1 ignore: URN
+        {'CHILD': '1111', 'PLACE': 'PR7', 'URN': 3, },  # 2 fail
+
+        {'CHILD': '2222', 'PLACE': 'PR5', 'URN': 'XXXXXXX', },  # 3 ignore: URN
+
+        {'CHILD': '3333', 'PLACE': 'PR1', 'URN': 2, },  # 4 pass
+        {'CHILD': '3333', 'PLACE': 'PR3', 'URN': 2, },  # 5 pass
+
+        {'CHILD': '4444', 'PLACE': 'PR5', 'URN': 1, },  # 6 fail
+
+        {'CHILD': '5555', 'PLACE': 'PR5', 'URN': 4, },  # 7 fail - PLACE_CODES should not be null so probly needs a look
+        {'CHILD': '5555', 'PLACE': 'PR2', 'URN': 1, },  # 8 pass
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'PLACE_CODES': 'PR2', },  # 0
+        {'URN': 2, 'PLACE_CODES': 'PR1,PR3,PR5', },  # 1
+        {'URN': 3, 'PLACE_CODES': 'PR5,PR4,PR2', },  # 2
+        {'URN': 4, 'PLACE_CODES': pd.NA, },  # 3
+    ])
+    metadata = {'provider_info': fake_provider_info}
+
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_219()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 6, 7]}
+
+
+
+def test_validate_1008():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'URN': 'SC999999', },  # 0 pass
+        {'CHILD': '1111', 'URN': pd.NA, },  # 1 ignore
+        {'CHILD': '1111', 'URN': 1234567, },  # 2 pass: digits will be converted to strings before comparison.
+
+        {'CHILD': '2222', 'URN': 'XXXXXXX', },  # 3 pass: accepted placeholder value
+
+        {'CHILD': '3333', 'URN': '1234567', },  # 4 pass
+        {'CHILD': '3333', 'URN': '2345', },  # 5 fail
+
+        {'CHILD': '4444', 'URN': '999999', },  # 6 pass
+
+        {'CHILD': '5555', 'URN': '5b67891', },  # 7 fail
+        {'CHILD': '5555', 'URN': 'XXXXXX', },  # 8 fail: 6 Xs instead of seven
+    ])
+
+    metadata = {
+        'provider_info':
+            pd.DataFrame({'URN': ['1234567', 'SC999999', '999999']})
+    }
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_1008()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [5, 7, 8]}
+
+
 def test_validate_218():
     fake_data_eps = pd.DataFrame([
 

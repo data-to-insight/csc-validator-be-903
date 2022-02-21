@@ -1,6 +1,40 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_406():
+    fake_episodes = pd.DataFrame([
+        {'CHILD': '111', 'PL_DISTANCE': 'XX1'},  # 0 fail
+        {'CHILD': '222', 'PL_DISTANCE': pd.NA},  # 1
+        {'CHILD': '222', 'PL_DISTANCE': 'XX1'},  # 2 fail
+        {'CHILD': '333', 'PL_DISTANCE': pd.NA},  # 3
+        {'CHILD': '333', 'PL_DISTANCE': 'XX1'},  # 4 ignore: it is not present in any uasc table.
+        {'CHILD': '345', 'PL_DISTANCE': pd.NA},  # 5
+        {'CHILD': '444', 'PL_DISTANCE': 'XX1'},  # 6 fail
+        {'CHILD': '444', 'PL_DISTANCE': pd.NA},  # 7
+    ])
+    fake_header = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '1'},  # 0
+        {'CHILD': '222', 'UASC': '0'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '1'},  # 5
+        {'CHILD': '444', 'UASC': '0'},  # 6
+    ])
+    fake_header_last = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'},  # 0
+        {'CHILD': '222', 'UASC': '1'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '0'},  # 5
+        {'CHILD': '444', 'UASC': '1'},  # 6
+    ])
+
+    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
+
+    error_defn, error_func = validate_406()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 6]}
+
 
 def test_validate_227():
     fake_data_eps = pd.DataFrame([

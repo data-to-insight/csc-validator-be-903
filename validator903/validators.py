@@ -37,7 +37,7 @@ def validate_546():
     error = ErrorDefinition(
         code='546',
         description='Children aged 5 or over at 31 March should not have health promotion information completed.',
-        affected_fields=['CONTINOUSLY_LOOKED_AFTER', 'DOB', 'HEALTH_CHECK']
+        affected_fields=['DOB', 'HEALTH_CHECK']
     )
 
     def _validate(dfs):

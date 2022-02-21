@@ -7023,7 +7023,7 @@ def validate_392B():
     error = ErrorDefinition(
         code='392B',
         description='Child is looked after but no postcodes are recorded. [NOTE: This check may result in false '
-                    'positives for children formerly UASC, particularly if current & past UASC data not loaded]',
+                    'positives for children formerly UASC, particularly if current & prior year UASC data not loaded]',
         affected_fields=['HOME_POST', 'PL_POST'],
     )
 
@@ -7050,25 +7050,17 @@ def validate_392B():
             if 'Header_last' in dfs:
                 header = pd.concat((header, dfs['Header_last']), axis=0)
             elif 'UASC_last' in dfs:
-                #
                 uasc = dfs['UASC_last']
                 uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
                 uasc.loc[:, 'UASC'] = '1'
                 header = pd.concat((header, uasc), axis=0)
 
             if 'UASC' in header.columns:
-
                 header = header[header.UASC == '1'].drop_duplicates('CHILD')
                 epi = (epi
                        .merge(header[['CHILD']], how='left', on='CHILD', indicator=True)
                        .query("_merge == 'left_only'"))
 
-            print('HEADER\n\n', header)
-            print('---EPI')
-            print(epi)
-            print(header.columns)
-            print('---')
-            print(header.index)
             # Remove episodes where LS is V3/V4
             epi = epi.query("(~LS.isin(['V3','V4']))")
 

@@ -1,6 +1,36 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_229():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR1', 'URN': 1,},  # 0 fail
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': pd.NA,},  # 1 ignore: URN is nan
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': 4,},  # 2 pass
+
+        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR1', 'URN': 'XXXXXXX',},  # 3 ignore: URN
+
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR2', 'URN': 2,},  # 4  fail
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR1', 'URN': 2,},  # 5  pass
+
+        {'CHILD': '4444', 'PLACE_PROVIDER': 'PR2', 'URN': 3,},  # 6 pass
+
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR1', 'URN': 4,},  # 7 fail
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR2', 'URN': 1,},  # 8 pass
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'LA_CODE': 'other', },  # 0
+        {'URN': 2, 'LA_CODE': 'auth', },  # 1
+        {'URN': 3, 'LA_CODE': 'other', },  # 2
+        {'URN': 4, 'LA_CODE': pd.NA, },  # 3
+    ])
+    metadata = {'localAuthority': 'auth', 'provider_info':fake_provider_info}
+
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata':metadata}
+    error_defn, error_func = validate_229()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[0,4,7]}
+
 def test_validate_218():
     fake_data_eps = pd.DataFrame([
 

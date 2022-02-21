@@ -34,6 +34,67 @@ def test_validate_228():
     assert result == {'Episodes': [2, 5, 6]}
 
 
+
+def test_validate_219():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'PLACE': 'PR5', 'URN': 1, },  # 0 fail
+        {'CHILD': '1111', 'PLACE': 'PR5', 'URN': pd.NA, },  # 1 ignore: URN
+        {'CHILD': '1111', 'PLACE': 'PR7', 'URN': 3, },  # 2 fail
+
+        {'CHILD': '2222', 'PLACE': 'PR5', 'URN': 'XXXXXXX', },  # 3 ignore: URN
+
+        {'CHILD': '3333', 'PLACE': 'PR1', 'URN': 2, },  # 4 pass
+        {'CHILD': '3333', 'PLACE': 'PR3', 'URN': 2, },  # 5 pass
+
+        {'CHILD': '4444', 'PLACE': 'PR5', 'URN': 1, },  # 6 fail
+
+        {'CHILD': '5555', 'PLACE': 'PR5', 'URN': 4, },  # 7 fail - PLACE_CODES should not be null so probly needs a look
+        {'CHILD': '5555', 'PLACE': 'PR2', 'URN': 1, },  # 8 pass
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'PLACE_CODES': 'PR2', },  # 0
+        {'URN': 2, 'PLACE_CODES': 'PR1,PR3,PR5', },  # 1
+        {'URN': 3, 'PLACE_CODES': 'PR5,PR4,PR2', },  # 2
+        {'URN': 4, 'PLACE_CODES': pd.NA, },  # 3
+    ])
+    metadata = {'provider_info': fake_provider_info}
+
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_219()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [0, 2, 6, 7]}
+
+
+
+def test_validate_1008():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'URN': 'SC999999', },  # 0 pass
+        {'CHILD': '1111', 'URN': pd.NA, },  # 1 ignore
+        {'CHILD': '1111', 'URN': 1234567, },  # 2 pass: digits will be converted to strings before comparison.
+
+        {'CHILD': '2222', 'URN': 'XXXXXXX', },  # 3 pass: accepted placeholder value
+
+        {'CHILD': '3333', 'URN': '1234567', },  # 4 pass
+        {'CHILD': '3333', 'URN': '2345', },  # 5 fail
+
+        {'CHILD': '4444', 'URN': '999999', },  # 6 pass
+
+        {'CHILD': '5555', 'URN': '5b67891', },  # 7 fail
+        {'CHILD': '5555', 'URN': 'XXXXXX', },  # 8 fail: 6 Xs instead of seven
+    ])
+
+    metadata = {
+        'provider_info':
+            pd.DataFrame({'URN': ['1234567', 'SC999999', '999999']})
+    }
+    fake_dfs = {'Episodes': fake_data_eps, 'metadata': metadata}
+    error_defn, error_func = validate_1008()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [5, 7, 8]}
+
+
 def test_validate_218():
     fake_data_eps = pd.DataFrame([
 

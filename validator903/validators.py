@@ -22,11 +22,8 @@ def validate_1008():
             episodes['index_eps'] = episodes.index
             episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             episodes['URN'] = episodes['URN'].astype(str)
-            print(episodes.to_string)
             episodes = episodes.merge(providers, on='URN', how='left', indicator=True)
-
             mask = episodes['_merge'] == 'left_only'
-            print(episodes.to_string())
             eps_error_locations = episodes.loc[mask, 'index_eps']
             return {'Episodes': eps_error_locations.tolist()}
 

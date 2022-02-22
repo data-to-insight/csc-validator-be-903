@@ -18,10 +18,10 @@ def test_validate_229():
         {'CHILD': '5555', 'PLACE_PROVIDER': 'PR2', 'URN': 1,},  # 8 pass
     ])
     fake_provider_info = pd.DataFrame([
-        {'URN': 1, 'LA_CODE': 'other', },  # 0
-        {'URN': 2, 'LA_CODE': 'auth', },  # 1
-        {'URN': 3, 'LA_CODE': 'other', },  # 2
-        {'URN': 4, 'LA_CODE': pd.NA, },  # 3
+        {'URN': 1, 'LA_CODE_INFERRED': 'other', },  # 0
+        {'URN': 2, 'LA_CODE_INFERRED': 'auth', },  # 1
+        {'URN': 3, 'LA_CODE_INFERRED': 'other', },  # 2
+        {'URN': 4, 'LA_CODE_INFERRED': pd.NA, },  # 3
     ])
     metadata = {'localAuthority': 'auth', 'provider_info':fake_provider_info}
 

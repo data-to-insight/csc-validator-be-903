@@ -43,15 +43,20 @@ def validate_164():
                 header = pd.concat((header, uasc), axis=0)
 
             if 'UASC' in header.columns:
-                header = header[header.UASC == '0'].drop_duplicates('CHILD')
-                epi = epi.merge(header[['CHILD']], how='inner', on='CHILD')
+                #header = header[header.UASC == '0'].drop_duplicates('CHILD')
+              # get CHILD values of all instances where UASC is 1
+              child_ids = header.loc[header['UASC']=='1', 'CHILD']
+              # drop all CHILD IDs that ever have UASC==1
+              header = header[~header['CHILD'].isin(child_ids)]
+              epi = epi.merge(header[['CHILD']], how='inner', on='CHILD')
             else:
                 # if theres no UASC column in header, either from XML data, inferred for CSV in ingress, or added above
                 # then we can't identify anyone as UASC/formerly UASC
                 return {}
             # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
             epi = epi[epi['PL_DISTANCE'].notna()]
-            err_list = epi.loc[((epi['PL_DISTANCE'].astype('float')<0.0) | (epi['PL_DISTANCE'].astype('float')>999.9)), 'orig_idx'].sort_values().unique().tolist()
+            check_in_range = (epi['PL_DISTANCE'].astype('float')<0.0) | (epi['PL_DISTANCE'].astype('float')>999.9)
+            err_list = epi.loc[(check_in_range), 'orig_idx'].sort_values().unique().tolist()
 
             return {'Episodes': err_list}
 

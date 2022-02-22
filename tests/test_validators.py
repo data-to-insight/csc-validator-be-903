@@ -17,7 +17,7 @@ def test_validate_164():
         {'CHILD': '111', 'UASC': '0'},  
         {'CHILD': '222', 'UASC': '0'}, 
         {'CHILD': '333', 'UASC': '0'}, 
-        {'CHILD': '345', 'UASC': '1'},  
+        {'CHILD': '345', 'UASC': '0'},  
     ])
     fake_header_last = pd.DataFrame([
         {'CHILD': '111', 'UASC': '0'}, 

@@ -7,8 +7,9 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 def validate_229():
     error = ErrorDefinition(
         code = '229',
-        description = 'Placement provider does not match between the placing authority and the local authority code of '
-                      'the provider. [NOTE: The ]',
+        description = "Placement provider does not match between the placing authority and the local authority code of "
+                      "the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may "
+                      "be inaccurate in some cases.]",
         affected_fields = ['URN', 'PLACE_PROVIDER']
     )
 

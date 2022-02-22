@@ -1,6 +1,39 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_164():
+    fake_episodes = pd.DataFrame([
+        {'CHILD': '111', 'LS':'V3', 'PL_DISTANCE': '0.0'},  # 0 ignore: LS
+      
+        {'CHILD': '222', 'LS':'V1', 'PL_DISTANCE': pd.NA},  # 1
+        {'CHILD': '222', 'LS':'V5', 'PL_DISTANCE': '-2'},  # 2 fail
+      
+        {'CHILD': '333', 'LS':'V1', 'PL_DISTANCE': '3.5'},  # 3 pass
+        {'CHILD': '333', 'LS':'V2', 'PL_DISTANCE': '1000'},  # 4 fail
+      
+        {'CHILD': '345', 'LS':'V7', 'PL_DISTANCE': '1380'},  # 5 ignore: UASC
+    ])
+    fake_header = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'},  
+        {'CHILD': '222', 'UASC': '0'}, 
+        {'CHILD': '333', 'UASC': '0'}, 
+        {'CHILD': '345', 'UASC': '1'},  
+    ])
+    fake_header_last = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'}, 
+        {'CHILD': '222', 'UASC': '0'}, 
+        {'CHILD': '333', 'UASC': '0'}, 
+        {'CHILD': '345', 'UASC': '0'}, 
+    ])
+
+    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
+
+    error_defn, error_func = validate_164()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 4]}
+
 def test_validate_406():
     fake_episodes = pd.DataFrame([
         {'CHILD': '111', 'PL_DISTANCE': 'XX1'},  # 0 fail

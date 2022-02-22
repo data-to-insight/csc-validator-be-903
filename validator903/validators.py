@@ -4,6 +4,39 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_229():
+    error = ErrorDefinition(
+        code = '229',
+        description = "Placement provider does not match between the placing authority and the local authority code of "
+                      "the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may "
+                      "be inaccurate in some cases.]",
+        affected_fields = ['URN', 'PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+            local_authority = dfs['metadata']['localAuthority']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            merged = episodes.merge(provider_info, on='URN', how='left')
+
+            # If Ofsted URN is provided and not 'XXXXXXX' then: If <PLACE_PROVIDER> = 'PR1' then <LA> must equal Ofsted URN lookup <LA code>. If <PLACE_PROVIDER> = 'PR2' then Ofsted URN lookup <LA code> must not equal <LA>.
+            mask = (
+                    (merged['PLACE_PROVIDER'].eq('PR1') & merged['LA_CODE_INFERRED'].ne(local_authority))
+                    | (merged['PLACE_PROVIDER'].eq('PR2') & merged['LA_CODE_INFERRED'].eq(local_authority))
+            )
+
+            eps_error_locations = merged.loc[mask, 'index_eps'].tolist()
+            return {'Episodes': eps_error_locations}
+
+    return error, _validate
+
 # !# False negatives if child was UASC in last 2 years but data not provided
 def validate_406():
     error = ErrorDefinition(

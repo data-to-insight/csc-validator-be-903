@@ -1,6 +1,36 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_229():
+    fake_data_eps = pd.DataFrame([
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR1', 'URN': 1,},  # 0 fail
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': pd.NA,},  # 1 ignore: URN is nan
+        {'CHILD': '1111', 'PLACE_PROVIDER': 'PR2', 'URN': 4,},  # 2 pass
+
+        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR1', 'URN': 'XXXXXXX',},  # 3 ignore: URN
+
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR2', 'URN': 2,},  # 4  fail
+        {'CHILD': '3333', 'PLACE_PROVIDER': 'PR1', 'URN': 2,},  # 5  pass
+
+        {'CHILD': '4444', 'PLACE_PROVIDER': 'PR2', 'URN': 3,},  # 6 pass
+
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR1', 'URN': 4,},  # 7 fail
+        {'CHILD': '5555', 'PLACE_PROVIDER': 'PR2', 'URN': 1,},  # 8 pass
+    ])
+    fake_provider_info = pd.DataFrame([
+        {'URN': 1, 'LA_CODE_INFERRED': 'other', },  # 0
+        {'URN': 2, 'LA_CODE_INFERRED': 'auth', },  # 1
+        {'URN': 3, 'LA_CODE_INFERRED': 'other', },  # 2
+        {'URN': 4, 'LA_CODE_INFERRED': pd.NA, },  # 3
+    ])
+    metadata = {'localAuthority': 'auth', 'provider_info':fake_provider_info}
+
+    fake_dfs = {'Episodes':fake_data_eps, 'metadata':metadata}
+    error_defn, error_func = validate_229()
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes':[0,4,7]}
+
 def test_validate_406():
     fake_episodes = pd.DataFrame([
         {'CHILD': '111', 'PL_DISTANCE': 'XX1'},  # 0 fail
@@ -231,8 +261,7 @@ def test_validate_218():
     fake_data_eps = pd.DataFrame([
 
         {'CHILD': '1111', 'PLACE': 'H5', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 0 ignore: of PLACE value
-        {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/06/2015', 'PL_LA': 'W06000008', 'URN': 'xx'},
-        # 1 ignore: PL_LA is Wales
+        {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/06/2015', 'PL_LA': 'W06000008', 'URN': 'xx'},  # 1 ignore: PL_LA is Wales
         {'CHILD': '1111', 'PLACE': 'C2', 'DEC': '01/02/2016', 'PL_LA': 'o', 'URN': 'xx'},  # 2 pass
 
         {'CHILD': '2222', 'PLACE': 'C2', 'DEC': '01/02/2014', 'PL_LA': 'o', 'URN': 'xx'},  # 3 ignore: DEC < coll. end
@@ -246,8 +275,7 @@ def test_validate_218():
         {'CHILD': '4444', 'PLACE': 'C2', 'DEC': '01/04/2017', 'PL_LA': 'o', 'URN': pd.NA},  # 9 fail
 
         {'CHILD': '5555', 'PLACE': 'C2', 'DEC': '31/03/2015', 'PL_LA': 'o', 'URN': pd.NA},  # 10 ignore: DEC
-        {'CHILD': '5555', 'PLACE': 'C2', 'DEC': '04/01/2016', 'PL_LA': 'SCO', 'URN': pd.NA},
-        # 11 ignore: PL_LA in Scotland
+        {'CHILD': '5555', 'PLACE': 'C2', 'DEC': '04/01/2016', 'PL_LA': 'SCO', 'URN': pd.NA},  # 11 ignore: in Scotland
     ])
 
     metadata = {'collection_start': '01/04/2015'}
@@ -310,7 +338,7 @@ def test_validate_1001():
         # [1] - FAIL: less than 91 days
         {'CHILD': '2222', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': '01/02/2014', 'REC': 'o'},  # :30:
         {'CHILD': '2222', 'LS': 'C2', 'DECOM': '01/01/2010', 'DEC': pd.NA, 'REC': 'o'},  # Duplicate DECOM, missing
-        # DEC - should get dropped
+                                                                                         # DEC - should get dropped
         {'CHILD': '2222', 'LS': 'C2', 'DECOM': '25/12/2015', 'DEC': '01/02/2016', 'REC': 'o'},  # :7:30
 
         # [2] - FAIL: more than 91 days but not after 14th bday
@@ -361,7 +389,7 @@ def test_validate_1001():
     oc3 = pd.DataFrame({
         'CHILD': ['1111', '2222', '3333', '4444',
                   '6006', '7777', '8888', '9999'
-                                          '1010101010'],  # '1010101010' not in episodes
+                  '1010101010'],  # '1010101010' not in episodes
     })
 
     header = pd.DataFrame({

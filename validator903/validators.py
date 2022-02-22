@@ -1256,7 +1256,6 @@ def validate_1014():
     return error, _validate
 
 
-# !# not sure what this rule is actually supposed to be getting at - description is confusing
 def validate_197B():
     error = ErrorDefinition(
         code='197B',
@@ -1270,20 +1269,22 @@ def validate_197B():
         oc2 = add_CLA_column(dfs, 'OC2')
 
         start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
-        endo = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
         oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+        oc2['dob_4'] = oc2['DOB'] + pd.DateOffset(years=4)
+        oc2['dob_17'] = oc2['DOB'] + pd.DateOffset(years=17)
 
-        ERRRR = (
-                (
-                        (oc2['DOB'] + pd.DateOffset(years=4) == start)  # ???
-                        | (oc2['DOB'] + pd.DateOffset(years=17) == start)
-                )
-                & oc2['CONTINUOUSLY_LOOKED_AFTER']
-                & oc2['SDQ_SCORE'].isna()
-                & oc2['SDQ_REASON'].isna()
+        errors = (
+            (
+                ((oc2['dob_4'] >= start) & (oc2['dob_4'] <= end))
+                | ((oc2['dob_17'] >= start) & (oc2['dob_17'] <= end))
+            )
+            & oc2['CONTINUOUSLY_LOOKED_AFTER']
+            & oc2['SDQ_SCORE'].isna()
+            & oc2['SDQ_REASON'].isna()
         )
 
-        return {'OC2': oc2[ERRRR].index.to_list()}
+        return {'OC2': oc2[errors].index.to_list()}
 
     return error, _validate
 

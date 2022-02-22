@@ -23,7 +23,7 @@ def test_validate_164():
         {'CHILD': '111', 'UASC': '0'}, 
         {'CHILD': '222', 'UASC': '0'}, 
         {'CHILD': '333', 'UASC': '0'}, 
-        {'CHILD': '345', 'UASC': '0'}, 
+        {'CHILD': '345', 'UASC': '1'}, 
     ])
 
     fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
@@ -3850,17 +3850,17 @@ def test_validate_151():
     assert result == {'AD1': [2, 3, 4, 5, 6, 7, 8]}
 
 
-def test_validate_164():
-    fake_data = pd.DataFrame({
-        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4', 'C2'],
-        'PL_DISTANCE': [12.0, '12', 1003.0, pd.NA, pd.NA, pd.NA, 0.0],
-    })
+#def test_validate_164():
+#    fake_data = pd.DataFrame({
+#        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4', 'C2'],
+#        'PL_DISTANCE': [12.0, '12', 1003.0, pd.NA, pd.NA, pd.NA, 0.0],
+#    })
 
-    fake_dfs = {'Episodes': fake_data}
+#    fake_dfs = {'Episodes': fake_data}
 
-    error_defn, error_func = validate_164()
+#    error_defn, error_func = validate_164()
 
-    assert error_func(fake_dfs) == {'Episodes': [2, 3]}
+#    assert error_func(fake_dfs) == {'Episodes': [2, 3]}
 
 
 def test_validate_169():

@@ -50,7 +50,7 @@ def validate_164():
                 # then we can't identify anyone as UASC/formerly UASC
                 return {}
             # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
-
+            epi = epi[epi['PL_DISTANCE'].notna()]
             err_list = epi.loc[((epi['PL_DISTANCE'].astype('float')<0.0) | (epi['PL_DISTANCE'].astype('float')>999.9)), 'orig_idx'].sort_values().unique().tolist()
 
             return {'Episodes': err_list}
@@ -5485,26 +5485,26 @@ def validate_628():
     return error, _validate
 
 
-def validate_164():
-    error = ErrorDefinition(
-        code='164',
-        description='Distance is not valid. Please check a valid postcode has been entered.',
-        affected_fields=['PL_DISTANCE'],
-    )
+#def validate_164():
+#    error = ErrorDefinition(
+#        code='164',
+#        description='Distance is not valid. Please check a valid postcode has been entered.',
+#        affected_fields=['PL_DISTANCE'],
+#    )
 
-    def _validate(dfs):
-        if 'Episodes' not in dfs:
-            return {}
-        else:
-            df = dfs['Episodes']
-            is_short_term = df['LS'].isin(['V3', 'V4'])
-            distance = pd.to_numeric(df['PL_DISTANCE'], errors='coerce')
+#    def _validate(dfs):
+#        if 'Episodes' not in dfs:
+#            return {}
+#        else:
+#            df = dfs['Episodes']
+#            is_short_term = df['LS'].isin(['V3', 'V4'])
+#            distance = pd.to_numeric(df['PL_DISTANCE'], errors='coerce')
             # Use a bit of tolerance in these bounds
-            distance_valid = distance.gt(-0.2) & distance.lt(1001.0)
-            mask = ~is_short_term & ~distance_valid
-            return {'Episodes': df.index[mask].tolist()}
+#            distance_valid = distance.gt(-0.2) & distance.lt(1001.0)
+#            mask = ~is_short_term & ~distance_valid
+#            return {'Episodes': df.index[mask].tolist()}
 
-    return error, _validate
+#    return error, _validate
 
 
 def validate_169():

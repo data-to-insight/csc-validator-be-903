@@ -1,6 +1,50 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_164():
+    fake_episodes = pd.DataFrame([
+        {'CHILD': '111', 'LS':'V3', 'PL_DISTANCE': '0.0'},  # 0 ignore: LS
+
+        {'CHILD': '222', 'LS':'V1', 'PL_DISTANCE': pd.NA},  # 1
+        {'CHILD': '222', 'LS':'V5', 'PL_DISTANCE': '-2'},  # 2 fail
+
+        {'CHILD': '333', 'LS':'V1', 'PL_DISTANCE': '3.5'},  # 3 pass
+        {'CHILD': '333', 'LS':'V2', 'PL_DISTANCE': '1000'},  # 4 fail
+
+        {'CHILD': '345', 'LS':'V7', 'PL_DISTANCE': '1380'},  # 5 ignore: UASC
+    ])
+    fake_header = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'},
+        {'CHILD': '222', 'UASC': '0'},
+        {'CHILD': '333', 'UASC': '0'},
+        {'CHILD': '345', 'UASC': '0'},
+    ])
+    fake_header_last = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'},
+        {'CHILD': '222', 'UASC': '0'},
+        {'CHILD': '333', 'UASC': '0'},
+        {'CHILD': '345', 'UASC': '1'},
+    ])
+
+    fake_dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
+
+    error_defn, error_func = validate_164()
+
+    result = error_func(fake_dfs)
+
+    assert result == {'Episodes': [2, 4]}
+
+    uasc_last = pd.DataFrame([
+        {'CHILD': '333', 'DUC': 'something'},  # [3] in episodes - passes now
+        {'CHILD': '345', 'DUC': pd.NA}   # [8] in episodes - still fails
+    ])
+
+    dfs = {'Episodes': fake_episodes,
+           'Header': fake_header,
+           'UASC_last': uasc_last}
+    result = error_func(dfs)
+    assert result == {'Episodes': [2, 5]}
+
 def test_validate_554():
     fake_placed_adoption = pd.DataFrame([
         {'CHILD': 101, 'DATE_PLACED': '26/05/2022'},
@@ -3935,20 +3979,6 @@ def test_validate_151():
 
     result = error_func(fake_dfs)
     assert result == {'AD1': [2, 3, 4, 5, 6, 7, 8]}
-
-
-def test_validate_164():
-    fake_data = pd.DataFrame({
-        'LS': ['C2', 'C2', 'C2', 'C2', 'V3', 'V4', 'C2'],
-        'PL_DISTANCE': [12.0, '12', 1003.0, pd.NA, pd.NA, pd.NA, 0.0],
-    })
-
-    fake_dfs = {'Episodes': fake_data}
-
-    error_defn, error_func = validate_164()
-
-    assert error_func(fake_dfs) == {'Episodes': [2, 3]}
-
 
 def test_validate_169():
     fake_data = pd.DataFrame({

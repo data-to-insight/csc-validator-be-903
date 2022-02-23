@@ -62,6 +62,126 @@ def validate_164():
     return error, _validate
 
 
+def validate_554():
+  error = ErrorDefinition(
+    code = '554',
+    description = 'Date of decision that the child should be placed for adoption should be on or prior to the date that the placement order was granted. [NOTE: This rule may result in false positives or false negatives if relevant episodes are in previous years; please check carefully!]',
+    affected_fields = ['DATE_PLACED', 'DECOM', 'LS']
+  )
+  def _validate(dfs):
+    if 'Episodes' not in dfs or 'PlacedAdoption' not in dfs:
+      return {}
+    else:
+      episodes = dfs['Episodes']
+      placed_adoption = dfs['PlacedAdoption']
+
+      # convert dates from string format to datetime format.
+      episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+      placed_adoption['DATE_PLACED'] = pd.to_datetime(placed_adoption['DATE_PLACED'], format='%d/%m/%Y', errors='coerce')
+
+      # Keep original index values as a column
+      episodes['eps_index'] = episodes.index
+      placed_adoption['pa_index'] = placed_adoption.index
+
+      # select the first episodes with LS==E1
+      e1_episodes = episodes.loc[episodes['LS']=='E1']
+      first_e1_eps = e1_episodes.loc[e1_episodes.groupby('CHILD')['DECOM'].idxmin()]
+
+      # merge
+      merged = first_e1_eps.merge(placed_adoption, on='CHILD', how='left')
+
+      # Where <LS> = 'E1' <DATE_PLACED> should be <= <DECOM> of first episode in <PERIOD_OF_CARE> with <LS> = 'E1'
+      mask = merged['DATE_PLACED'] > merged['DECOM']
+
+      # error locations
+      eps_error_locs = merged.loc[mask, 'eps_index']
+      pa_error_locs = merged.loc[mask, 'pa_index']
+
+      return {'Episodes':eps_error_locs.tolist(), 'PlacedAdoption':pa_error_locs.unique().tolist()}
+
+  return error, _validate
+
+def validate_392A():
+    error = ErrorDefinition(
+        code='392A',
+        description='Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <PL_DISTANCE> must be provided
+            epi = dfs['Episodes']
+            epi['orig_idx'] = epi.index
+
+
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header = pd.concat((header, dfs['Header']), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'Header_last' in dfs:
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'UASC' in header.columns:
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = epi.merge(header[['CHILD', 'UASC']], how='left', on='CHILD', indicator=True)
+                epi = epi[epi['_merge'] == 'left_only']
+            else:
+                return {}
+
+            # Check that the episodes LS are neither V3 or V4.
+            epi = epi.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
+            err_list = epi['orig_idx'].tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
+def validate_229():
+    error = ErrorDefinition(
+        code = '229',
+        description = "Placement provider does not match between the placing authority and the local authority code of "
+                      "the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may "
+                      "be inaccurate in some cases.]",
+        affected_fields = ['URN', 'PLACE_PROVIDER']
+    )
+
+    def _validate(dfs):
+        if ('Episodes' not in dfs) or ('provider_info' not in dfs['metadata']):
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            provider_info = dfs['metadata']['provider_info']
+            local_authority = dfs['metadata']['localAuthority']
+
+            # merge
+            episodes['index_eps'] = episodes.index
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
+            merged = episodes.merge(provider_info, on='URN', how='left')
+
+            # If Ofsted URN is provided and not 'XXXXXXX' then: If <PLACE_PROVIDER> = 'PR1' then <LA> must equal Ofsted URN lookup <LA code>. If <PLACE_PROVIDER> = 'PR2' then Ofsted URN lookup <LA code> must not equal <LA>.
+            mask = (
+                    (merged['PLACE_PROVIDER'].eq('PR1') & merged['LA_CODE_INFERRED'].ne(local_authority))
+                    | (merged['PLACE_PROVIDER'].eq('PR2') & merged['LA_CODE_INFERRED'].eq(local_authority))
+            )
+
+            eps_error_locations = merged.loc[mask, 'index_eps'].tolist()
+            return {'Episodes': eps_error_locations}
+
+    return error, _validate
+
 # !# False negatives if child was UASC in last 2 years but data not provided
 def validate_406():
     error = ErrorDefinition(
@@ -137,9 +257,9 @@ def validate_227():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             merged = episodes.merge(provider_info, on='URN', how='left')
-            # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
             mask = merged['REG_END'].notna() & (merged['DECOM'] >= merged['REG_END'])
 
             eps_error_locations = merged.loc[mask, 'index_eps']
@@ -164,9 +284,9 @@ def validate_224():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
-            # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
             valid = pd.Series([
                 pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
                 else False
@@ -1314,7 +1434,6 @@ def validate_1014():
     return error, _validate
 
 
-# !# not sure what this rule is actually supposed to be getting at - description is confusing
 def validate_197B():
     error = ErrorDefinition(
         code='197B',
@@ -1328,20 +1447,22 @@ def validate_197B():
         oc2 = add_CLA_column(dfs, 'OC2')
 
         start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
-        endo = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
         oc2['DOB'] = pd.to_datetime(oc2['DOB'], format='%d/%m/%Y', errors='coerce')
+        oc2['dob_4'] = oc2['DOB'] + pd.DateOffset(years=4)
+        oc2['dob_17'] = oc2['DOB'] + pd.DateOffset(years=17)
 
-        ERRRR = (
-                (
-                        (oc2['DOB'] + pd.DateOffset(years=4) == start)  # ???
-                        | (oc2['DOB'] + pd.DateOffset(years=17) == start)
-                )
-                & oc2['CONTINUOUSLY_LOOKED_AFTER']
-                & oc2['SDQ_SCORE'].isna()
-                & oc2['SDQ_REASON'].isna()
+        errors = (
+            (
+                ((oc2['dob_4'] >= start) & (oc2['dob_4'] <= end))
+                | ((oc2['dob_17'] >= start) & (oc2['dob_17'] <= end))
+            )
+            & oc2['CONTINUOUSLY_LOOKED_AFTER']
+            & oc2['SDQ_SCORE'].isna()
+            & oc2['SDQ_REASON'].isna()
         )
 
-        return {'OC2': oc2[ERRRR].index.to_list()}
+        return {'OC2': oc2[errors].index.to_list()}
 
     return error, _validate
 
@@ -5434,7 +5555,8 @@ def validate_222():
         else:
             df = dfs['Episodes']
             place_code_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
-            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘H5’; ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
+            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXXX')
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

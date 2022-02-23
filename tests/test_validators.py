@@ -3720,7 +3720,7 @@ def test_validate_214():
 
 def test_validate_222():
     fake_data = pd.DataFrame([
-        {'PLACE': 'H5', 'URN': 'XXXXXX'},  # 0
+        {'PLACE': 'H5', 'URN': 'XXXXXXX'},  # 0
         {'PLACE': 'U1', 'URN': 'Whatever'},  # 1
         {'PLACE': 'U2', 'URN': pd.NA},  # 2
         {'PLACE': 'T1', 'URN': pd.NA},  # 3

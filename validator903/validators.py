@@ -5376,7 +5376,8 @@ def validate_222():
         else:
             df = dfs['Episodes']
             place_code_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
-            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘H5’; ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
+            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXXX')
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

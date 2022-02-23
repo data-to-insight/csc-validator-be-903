@@ -1629,6 +1629,50 @@ def validate_118():
     return error, _validate
 
 
+# !# potential false negatives, as this only operates on current and previous year data
+def validate_199():
+    error = ErrorDefinition(
+        code='199',
+        description='Episode information shows child has been previously adopted from care. '
+                    '[NOTE: This only tests the current and previous year data loaded into the tool]',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            episodes = dfs['Episodes']
+            episodes['current_year_index'] = episodes.index
+
+            if 'Episodes_last' in dfs:
+                episodes_last = dfs['Episodes_last']
+                episodes = pd.concat([episodes, episodes_last], axis=0)
+
+        episodes['is_ad'] = episodes['REC'].isin(['E11', 'E12']).astype(int)
+        episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+        episodes = (episodes
+                    .dropna(subset=['DECOM'])
+                    .sort_values('DECOM'))
+
+        episodes['ads_to_d8'] = episodes.groupby('CHILD')['is_ad'].cumsum()
+        error_mask = (
+                (episodes['ads_to_d8'] > 0)  # error if there have been any adoption episodes to date...
+                & ~((episodes['ads_to_d8']) == 1 & episodes['REC'].isin(['E11', 'E12']))  # ...unless this is the first
+        )
+
+        error_locations = (episodes
+                           .loc[error_mask, 'current_year_index']
+                           .dropna()
+                           .sort_values()
+                           .astype(int)
+                           .to_list())
+
+        return {'Episodes': error_locations}
+
+    return error, _validate
+
 def validate_352():
     error = ErrorDefinition(
         code='352',

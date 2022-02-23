@@ -57,7 +57,6 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
         if table_name in data:
             data[table_name] = data[table_name].drop(columns={'_14', '_15', '_16', '_17'} & set(data[table_name].columns))
 
-
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Datastore created -- {names_and_lengths}')
     return data
@@ -65,8 +64,8 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
 
 def _process_metadata(metadata):
     collection_year = int(metadata['collectionYear'][:4])
-    metadata['collection_start'] = datetime.datetime(collection_year, 4, 1)
-    metadata['collection_end'] = datetime.datetime(collection_year + 1, 3, 31)
+    metadata['collection_start'] = f'01/04/{collection_year}'
+    metadata['collection_end'] = f'31/03/{collection_year + 1}'
     return metadata
 
 
@@ -93,17 +92,26 @@ def merge_postcodes(df: DataFrame, postcode_field: str) -> DataFrame:
 
 def _add_postcode_derived_fields(episodes_df, local_authority):
     episodes_df = episodes_df.copy()
+
     home_details = merge_postcodes(episodes_df, "HOME_POST")
     pl_details = merge_postcodes(episodes_df, "PL_POST")
 
-    # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
+    # The indices remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
     pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='LTLA21CD')
     episodes_df['PL_LA'] = pl_details['UTLA21CD']
 
     logger.info(f"Adding IN/OUT")
     episodes_df['PL_LOCATION'] = 'IN'
     episodes_df.loc[episodes_df['PL_LA'].ne(local_authority), 'PL_LOCATION'] = 'OUT'
-    episodes_df.loc[episodes_df['PL_LA'].isna(), 'PL_LOCATION'] = pd.NA
+    episodes_df.loc[pl_details['laua'].isna(), 'PL_LOCATION'] = pd.NA
+
+    # Add country codes for placements outside england
+    for letter, code in {'S': 'SCO', 'N': 'NIR', 'W': 'WAL'}.items():
+        mask = (
+            pl_details['laua'].str.upper().str.startswith(letter)
+            & episodes_df['PL_POST'].notnull()
+        )
+        episodes_df.loc[mask, ['PL_LA', 'PL_LOCATION']] = [code, 'OUT']
 
     logger.info(f"Calculating distances")
     # This formula is taken straight from the guidance, to get miles between two postcodes

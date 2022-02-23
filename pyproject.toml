@@ -1,11 +1,12 @@
 [tool.poetry]
 name = "quality-lac-data-validator"
-version = "0.2.0-alpha.4"
+version = "0.3.0-alpha"
 description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
 authors = [
     "Mark Waddoups <mark.waddoups@socialfinance.org.uk>",
     "Michael Ogunkolade <michael.ogunkolade@socialfinance.org.uk>",
     "Kaj Siebert <kaj.siebert@socialfinance.org.uk>",
+    "Tambe Tabitha Achere <tambe.tabitha@socialfinance.org.uk>",
 ]
 repository = "https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta-validator"
 license = "MIT"
@@ -21,6 +22,7 @@ numpy = "1.17.5"
 openpyxl = "^3.0.9"
 quality-lac-data-ref-authorities = ">=2021.4"
 quality-lac-data-ref-postcodes = ">=2021.8.1"
+xlrd = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

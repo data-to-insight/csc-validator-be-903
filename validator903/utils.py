@@ -2,7 +2,7 @@ import pandas as pd
 
 
 # might be worth adding 'collection_end' as an argument, though not specified in definition
-def add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(episodes, collection_start):
+def add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(episodes, collection_start, collection_end):
     """
     adds a True/False column called 'CONTINUOUSLY_LOOKED_AFTER' to the 'Episodes' table,
     which is True if they appear to have been looked after since `collection_start`
@@ -20,19 +20,41 @@ def add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(episodes, collection_start):
 
     # Set datetime types
     collection_start_dt = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
+    collection_end_dt = pd.to_datetime(collection_end, format='%d/%m/%Y', errors='coerce')
     eps_copy['DEC_dt'] = pd.to_datetime(eps_copy['DEC'], format='%d/%m/%Y', errors='coerce')
     eps_copy['DECOM_dt'] = pd.to_datetime(eps_copy['DECOM'], format='%d/%m/%Y', errors='coerce')
 
+    eps_copy['during_year'] = (
+            (eps_copy['DECOM_dt'] <= collection_end_dt)
+            & ((eps_copy['DEC_dt'] >= collection_start_dt) | eps_copy['DEC_dt'].isna())
+    )
+
     # Find CHILD id's displaying the telltale signs of <LOOKED_AFTER_CONTINUOUSLY> = 'N'
-    V3_V4_episode = eps_copy['LS'].isin(['V3', 'V4']) & ((eps_copy['DEC_dt'] >= collection_start_dt) | eps_copy['DEC'].isna())
-    final_episode = (eps_copy['REC'] != 'X1') & (eps_copy['DEC_dt'] >= collection_start_dt)
-    first_episode = (eps_copy['RNE'] == 'S') & (eps_copy['DECOM_dt'] > collection_start_dt)
+    enters_care = (
+        (eps_copy['RNE'] == 'S')
+        & (eps_copy['DECOM_dt'] > collection_start_dt)
+        & (eps_copy['DECOM_dt'] <= collection_end_dt)
+    )
+    leaves_care = (
+        (eps_copy['REC'] != 'X1')
+        & (eps_copy['DEC_dt'] >= collection_start_dt)
+        & (eps_copy['DEC_dt'] < collection_end_dt)
+    )
+    V3_V4_episode = (
+        eps_copy['LS'].isin(['V3', 'V4'])
+        & eps_copy['during_year']
+    )
 
     # if any episode fits one of these, the child was not continuously looked after
-    eps_copy['not_continuous'] = first_episode | final_episode | V3_V4_episode
-    child_not_continuous = eps_copy.groupby('CHILD')['not_continuous'].transform('max')
+    eps_copy['implies_not_continuous'] = (enters_care | leaves_care | V3_V4_episode)
 
-    episodes['CONTINUOUSLY_LOOKED_AFTER'] = ~child_not_continuous
+    in_care_at_some_point = eps_copy.groupby('CHILD')['during_year'].transform('max')
+    not_in_care_at_some_point = eps_copy.groupby('CHILD')['implies_not_continuous'].transform('max')
+
+    # the "== True/False" is to cope with weird situations which cause these to potentially be float dtype,
+    # which i don't have time to get into right now, but may be to do with missing DECOMs
+    episodes['CONTINUOUSLY_LOOKED_AFTER'] = (in_care_at_some_point == True) & (not_in_care_at_some_point == False)
+
     return episodes
 
 
@@ -50,9 +72,9 @@ def add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER(dfs, required_tables=None):
         eps = dfs['Episodes']
     except KeyError:
         raise KeyError(f"Ensure 'Episodes' and 'metadata' in `dfs` before attempting to determine "
-                       + f"CONTINUOUSLY_LOOKED_AFTER -- only received: {dfs.keys()}")
+                       + f"CONTINUOUSLY_LOOKED_AFTER -- only received: {', '.join(str(i) for i in dfs.keys())}")
 
-    eps_with_CLA = add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(eps, metadata['collection_start'])
+    eps_with_CLA = add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER(eps, metadata['collection_start'], metadata['collection_end'])
     known_CLA = eps_with_CLA.drop_duplicates('CHILD')
 
     if isinstance(required_tables, str):

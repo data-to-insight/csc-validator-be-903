@@ -72,7 +72,7 @@ def test_validate_227():
         {'CHILD': '1111', 'DECOM': '01/02/2015', 'URN': pd.NA, },  # 1 ignore: URN not provided
         {'CHILD': '1111', 'DECOM': '01/01/2016', 'URN': 3, },  # 2 pass
 
-        {'CHILD': '2222', 'DECOM': '01/01/2010', 'URN': 'XXXXXX', },  # 3 ignore
+        {'CHILD': '2222', 'DECOM': '01/01/2010', 'URN': 'XXXXXXX', },  # 3 ignore
 
         {'CHILD': '3333', 'DECOM': '01/01/2010', 'URN': 2, },  # 4 pass
         {'CHILD': '3333', 'DECOM': '25/12/2015', 'URN': 2, },  # 5 fail DECOM after REG_END
@@ -106,7 +106,7 @@ def test_validate_224():
         {'CHILD': '1111', 'PLACE_PROVIDER': 'PR5', 'URN': pd.NA, },  # 1 ignore
         {'CHILD': '1111', 'PLACE_PROVIDER': 'PR0', 'URN': 3, },  # 2 fail
 
-        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXX', },  # 3 ignore
+        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXXX', },  # 3 ignore
 
         {'CHILD': '3333', 'PLACE_PROVIDER': 'PR0', 'URN': 2, },  # 4 pass
         {'CHILD': '3333', 'PLACE_PROVIDER': 'PR3', 'URN': 2, },  # 5 fail
@@ -3804,7 +3804,7 @@ def test_validate_214():
 
 def test_validate_222():
     fake_data = pd.DataFrame([
-        {'PLACE': 'H5', 'URN': 'XXXXXX'},  # 0
+        {'PLACE': 'H5', 'URN': 'XXXXXXX'},  # 0
         {'PLACE': 'U1', 'URN': 'Whatever'},  # 1
         {'PLACE': 'U2', 'URN': pd.NA},  # 2
         {'PLACE': 'T1', 'URN': pd.NA},  # 3

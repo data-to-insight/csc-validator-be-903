@@ -160,9 +160,9 @@ def validate_227():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             merged = episodes.merge(provider_info, on='URN', how='left')
-            # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
             mask = merged['REG_END'].notna() & (merged['DECOM'] >= merged['REG_END'])
 
             eps_error_locations = merged.loc[mask, 'index_eps']
@@ -187,9 +187,9 @@ def validate_224():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
-            # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
             valid = pd.Series([
                 pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
                 else False
@@ -5458,7 +5458,8 @@ def validate_222():
         else:
             df = dfs['Episodes']
             place_code_list = ['H5', 'P1', 'P2', 'P3', 'R1', 'R2', 'R5', 'T0', 'T1', 'T2', 'T3', 'T4', 'Z1']
-            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXX')
+            # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘H5’; ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
+            mask = (df['PLACE'].isin(place_code_list)) & (df['URN'].notna()) & (df['URN'] != 'XXXXXXX')
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

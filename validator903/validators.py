@@ -79,9 +79,9 @@ def validate_227():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             merged = episodes.merge(provider_info, on='URN', how='left')
-            # If <URN> provided and <URN> not = 'XXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
             mask = merged['REG_END'].notna() & (merged['DECOM'] >= merged['REG_END'])
 
             eps_error_locations = merged.loc[mask, 'index_eps']

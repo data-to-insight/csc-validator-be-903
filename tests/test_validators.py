@@ -42,7 +42,7 @@ def test_validate_227():
         {'CHILD': '1111', 'DECOM': '01/02/2015', 'URN': pd.NA, },  # 1 ignore: URN not provided
         {'CHILD': '1111', 'DECOM': '01/01/2016', 'URN': 3, },  # 2 pass
 
-        {'CHILD': '2222', 'DECOM': '01/01/2010', 'URN': 'XXXXXX', },  # 3 ignore
+        {'CHILD': '2222', 'DECOM': '01/01/2010', 'URN': 'XXXXXXX', },  # 3 ignore
 
         {'CHILD': '3333', 'DECOM': '01/01/2010', 'URN': 2, },  # 4 pass
         {'CHILD': '3333', 'DECOM': '25/12/2015', 'URN': 2, },  # 5 fail DECOM after REG_END

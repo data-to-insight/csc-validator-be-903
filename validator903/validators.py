@@ -31,7 +31,7 @@ def validate_164():
             elif 'UASC' in dfs:
                 uasc = dfs['UASC']
                 uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
-                uasc.loc[:, 'UASC'] = '0'
+                uasc.loc[:, 'UASC'] = '1'
                 header = pd.concat((header, uasc), axis=0)
 
             if 'Header_last' in dfs:
@@ -39,12 +39,15 @@ def validate_164():
             elif 'UASC_last' in dfs:
                 uasc = dfs['UASC_last']
                 uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
-                uasc.loc[:, 'UASC'] = '0'
+                uasc.loc[:, 'UASC'] = '1'
                 header = pd.concat((header, uasc), axis=0)
 
             if 'UASC' in header.columns:
+                print(header.to_string())
                 header = header[header.UASC == '1'].drop_duplicates('CHILD')
                 # drop all CHILD IDs that ever have UASC == 1
+                print(header.to_string())
+                print(epi.to_string())
                 epi = (epi
                        .merge(header[['CHILD']], how='left', on='CHILD', indicator=True)
                        .query('_merge == "left_only"'))

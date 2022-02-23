@@ -34,6 +34,17 @@ def test_validate_164():
 
     assert result == {'Episodes': [2, 4]}
 
+    uasc_last = pd.DataFrame([
+        {'CHILD': '333', 'DUC': 'something'},  # [3] in episodes - passes now
+        {'CHILD': '345', 'DUC': pd.NA}   # [8] in episodes - still fails
+    ])
+
+    dfs = {'Episodes': fake_episodes,
+           'Header': fake_header,
+           'UASC_last': uasc_last}
+    result = error_func(dfs)
+    assert result == {'Episodes': [2, 5]}
+
 def test_validate_554():
     fake_placed_adoption = pd.DataFrame([
         {'CHILD': 101, 'DATE_PLACED': '26/05/2022'},

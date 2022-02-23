@@ -12,30 +12,41 @@ def validate_392A():
     )
 
     def _validate(dfs):
-        # comments on similar lines of code are found in validate_406()
-        if 'Episodes' not in dfs or 'Header' not in dfs or 'Header_last' not in dfs:
+        if 'Episodes' not in dfs:
             return {}
-        elif 'UASC' not in dfs['Header'].columns or 'UASC' not in dfs['Header_last'].columns:
-          return {}
         else:
             # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <PL_DISTANCE> must be provided
-                       
             epi = dfs['Episodes']
-            header = dfs['Header'] 
-            header_last = dfs['Header_last']
-
             epi['orig_idx'] = epi.index
 
-            header = header.loc[pd.to_numeric(header['UASC'])==0]
-            # Get children who are still found in the header table (that is, their UASC is 0) and who have episodes.
-            err_co = epi.merge(header, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
-            err_co.drop(['_merge'], axis=1, inplace=True)
 
-            header_last = header_last.loc[pd.to_numeric(header_last['UASC'])==0]
-            err_co = err_co.merge(header_last, how='left', on='CHILD', indicator=True).query("_merge == 'both'")
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header = pd.concat((header, dfs['Header']), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'Header_last' in dfs:
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'UASC' in header.columns:
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = epi.merge(header[['CHILD', 'UASC']], how='left', on='CHILD', indicator=True)
+                epi = epi[epi['_merge'] == 'left_only']
+            else:
+                return {}
+
             # Check that the episodes LS are neither V3 or V4.
-            err_co = err_co.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
-            err_list = err_co['orig_idx'].unique().tolist()
+            epi = epi.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
+            err_list = epi['orig_idx'].tolist()
             err_list.sort()
 
             return {'Episodes': err_list}

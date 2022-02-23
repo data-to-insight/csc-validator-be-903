@@ -106,9 +106,9 @@ def validate_224():
 
             # merge
             episodes['index_eps'] = episodes.index
-            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXX')]
+            episodes = episodes[episodes['URN'].notna() & (episodes['URN'] != 'XXXXXXX')]
             episodes = episodes.merge(provider_info, on='URN', how='left', suffixes=['_eps', '_lookup'])
-            # If <URN> provided and <URN> not = 'XXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
+            # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
             valid = pd.Series([
                 pl_pr in valid.split(',') if (pd.notna(pl_pr) and pd.notna(valid))
                 else False

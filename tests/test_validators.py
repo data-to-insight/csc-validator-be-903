@@ -76,7 +76,7 @@ def test_validate_224():
         {'CHILD': '1111', 'PLACE_PROVIDER': 'PR5', 'URN': pd.NA, },  # 1 ignore
         {'CHILD': '1111', 'PLACE_PROVIDER': 'PR0', 'URN': 3, },  # 2 fail
 
-        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXX', },  # 3 ignore
+        {'CHILD': '2222', 'PLACE_PROVIDER': 'PR3', 'URN': 'XXXXXXX', },  # 3 ignore
 
         {'CHILD': '3333', 'PLACE_PROVIDER': 'PR0', 'URN': 2, },  # 4 pass
         {'CHILD': '3333', 'PLACE_PROVIDER': 'PR3', 'URN': 2, },  # 5 fail

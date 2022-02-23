@@ -326,6 +326,54 @@ def test_validate_543():
     assert result == {'OC2': [1, 4]}
 
 
+def test_validate_392A():
+    fake_episodes = pd.DataFrame([
+        {'CHILD': '111', 'LS': 'L1', 'PL_DISTANCE': 'XX1'},  # 0
+        {'CHILD': '222', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 1 fail
+        {'CHILD': '222', 'LS': 'V3', 'PL_DISTANCE': 'XX1'},  # 2
+        {'CHILD': '333', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 3 fail
+        {'CHILD': '333', 'LS': 'V4', 'PL_DISTANCE': 'XX1'},  # 4
+        {'CHILD': '345', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 5 fail
+        {'CHILD': '444', 'LS': 'L1', 'PL_DISTANCE': 'XX1'},  # 6
+        {'CHILD': '444', 'LS': 'V3', 'PL_DISTANCE': pd.NA},  # 7 pass since LS isin [V3, V4]
+        {'CHILD': '555', 'LS': 'L1', 'PL_DISTANCE': pd.NA},  # 8 fail
+
+    ])
+    fake_header = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '1'},  # 0
+        {'CHILD': '222', 'UASC': '0'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '0'},  # 5
+        {'CHILD': '444', 'UASC': '0'},  # 6
+        {'CHILD': '555', 'UASC': '0'},  # 6
+    ])
+    fake_header_last = pd.DataFrame([
+        {'CHILD': '111', 'UASC': '0'},  # 0
+        {'CHILD': '222', 'UASC': '0'},  # 2
+        {'CHILD': '333', 'UASC': '0'},  # 4
+        {'CHILD': '345', 'UASC': '0'},  # 5
+        {'CHILD': '444', 'UASC': '1'},  # 6
+    ])
+
+
+    error_defn, error_func = validate_392A()
+
+    dfs = {'Episodes': fake_episodes, 'Header': fake_header, 'Header_last':fake_header_last}
+    result = error_func(dfs)
+    assert result == {'Episodes': [1, 3, 5, 8]}
+
+    uasc_last = pd.DataFrame([
+        {'CHILD': '333', 'DUC': 'something'},  # [3] in episodes - passes now
+        {'CHILD': '555', 'DUC': pd.NA}   # [8] in episodes - still fails
+    ])
+
+    dfs = {'Episodes': fake_episodes,
+           'Header': fake_header,
+           'UASC_last': uasc_last}
+    result = error_func(dfs)
+    assert result == {'Episodes': [1, 5, 8]}
+
+
 def test_validate_1001():
     # DOB always 01/01/2000
     # next to each episode, approx days in each age bracket is listed like so:      under 14  :  14-16  :  over 16

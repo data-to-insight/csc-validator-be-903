@@ -4,6 +4,54 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_392A():
+    error = ErrorDefinition(
+        code='392A',
+        description='Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC]',
+        affected_fields=['PL_DISTANCE'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <PL_DISTANCE> must be provided
+            epi = dfs['Episodes']
+            epi['orig_idx'] = epi.index
+
+
+            header = pd.DataFrame()
+            if 'Header' in dfs:
+                header = pd.concat((header, dfs['Header']), axis=0)
+            elif 'UASC' in dfs:
+                uasc = dfs['UASC']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'Header_last' in dfs:
+                header = pd.concat((header, dfs['Header_last']), axis=0)
+            elif 'UASC_last' in dfs:
+                uasc = dfs['UASC_last']
+                uasc = uasc.loc[uasc.drop('CHILD', axis='columns').notna().any(axis=1), ['CHILD']].copy()
+                uasc.loc[:, 'UASC'] = '1'
+                header = pd.concat((header, uasc), axis=0)
+
+            if 'UASC' in header.columns:
+                header = header[header.UASC == '1'].drop_duplicates('CHILD')
+                epi = epi.merge(header[['CHILD', 'UASC']], how='left', on='CHILD', indicator=True)
+                epi = epi[epi['_merge'] == 'left_only']
+            else:
+                return {}
+
+            # Check that the episodes LS are neither V3 or V4.
+            epi = epi.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
+            err_list = epi['orig_idx'].tolist()
+            err_list.sort()
+
+            return {'Episodes': err_list}
+
+    return error, _validate
 def validate_229():
     error = ErrorDefinition(
         code = '229',

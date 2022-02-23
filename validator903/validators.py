@@ -9,8 +9,9 @@ from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column
 def validate_199():
     error = ErrorDefinition(
         code='199',
-        description='Episode information shows child has been previously adopted from care. [NOTE: This only tests the current and previous year data loaded into the tool]',
-        affected_fields=['REC'],
+        description='Episode information shows child has been previously adopted from care. '
+                    '[NOTE: This only tests the current and previous year data loaded into the tool]',
+        affected_fields=['CHILD'],
     )
 
     def _validate(dfs):
@@ -18,62 +19,33 @@ def validate_199():
             return {}
         else:
             episodes = dfs['Episodes']
-
-            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+            episodes['current_year_index'] = episodes.index
 
             if 'Episodes_last' in dfs:
                 episodes_last = dfs['Episodes_last']
+                episodes = pd.concat([episodes, episodes_last], axis=0)
 
-                episodes_last['DECOM'] = pd.to_datetime(episodes_last['DECOM'], format='%d/%m/%Y', errors='coerce')
-                episodes_last['DEC'] = pd.to_datetime(episodes_last['DEC'], format='%d/%m/%Y', errors='coerce')
+        episodes['is_ad'] = episodes['REC'].isin(['E11', 'E12']).astype(int)
+        episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
-                # drop rows with missing DECOM as invalid/missing values can lead to errors
-                episodes = episodes.dropna(subset=['DECOM'])
+        episodes = (episodes
+                    .dropna(subset=['DECOM'])
+                    .sort_values('DECOM'))
 
-                # Drop rows missing DECOM OR DEC date to avoid errors - those lacking end dates in previous year *should* be in current year episodes above and we don't want to double-count.
-                episodes_last = episodes_last.dropna(subset=['DECOM','DEC'])
+        episodes['ads_to_d8'] = episodes.groupby('CHILD')['is_ad'].cumsum()
+        error_mask = (
+                (episodes['ads_to_d8'] > 0)  # error if there have been any adoption episodes to date...
+                & ~((episodes['ads_to_d8']) == 1 & episodes['REC'].isin(['E11', 'E12']))  # ...unless this is the first
+        )
 
-                #Combine current previous episodes files into one long list.
-                episodes_merged = pd.concat([episodes,episodes_last], keys=['episodes','episodes_last'], names=['SRC', 'index'])
+        error_locations = (episodes
+                           .loc[error_mask, 'current_year_index']
+                           .dropna()
+                           .sort_values()
+                           .astype(int)
+                           .to_list())
 
-            else:
-
-                # drop rows with missing DECOM as invalid/missing values can lead to errors
-                episodes_merged = episodes.dropna(subset=['DECOM'])
-
-                #Create multi-index to match first part of if statement.
-                episodes_merged['SRC'] = 'episodes'
-                episodes_merged = episodes_merged.reset_index().set_index(['SRC','index'])
-
-            episodes_merged.sort_values(['CHILD', 'DECOM'], inplace=True)
-            episodes_merged[['NEXT_DECOM', 'NEXT_CHILD']] = episodes_merged[['DECOM', 'CHILD']].shift(-1)
-
-            episodes_loc = episodes_merged.drop(index='episodes_last', level=0,errors='ignore')
-            episodes_last_loc = episodes_merged.drop(index='episodes', level=0,errors='ignore')
-
-            episodes_ceased_e11_e12 = episodes_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
-            episodes_has_later = episodes_loc['CHILD'] == episodes_loc['NEXT_CHILD']
-
-            episodes_last_ceased_e11_e12 = episodes_last_loc['REC'].str.upper().astype(str).isin(['E11', 'E12'])
-            episodes_last_has_later = episodes_last_loc['CHILD'] == episodes_last_loc['NEXT_CHILD']
-
-            if 'Episodes_last' in dfs:
-
-                error_mask = episodes_ceased_e11_e12 & episodes_has_later
-                error_mask_last = episodes_last_ceased_e11_e12 & episodes_last_has_later
-
-                error_locations = episodes.index[error_mask]
-                error_locations_last = episodes_last.index[error_mask_last]
-
-                return {'Episodes': error_locations.to_list(), 'Episodes_last': error_locations_last.to_list()}
-
-            else:
-
-                error_mask = episodes_ceased_e11_e12 & episodes_has_later
-
-                error_locations = episodes.index[error_mask]
-
-                return {'Episodes': error_locations.to_list()}
+        return {'Episodes': error_locations}
 
     return error, _validate
 

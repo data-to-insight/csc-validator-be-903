@@ -57,7 +57,6 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
         if table_name in data:
             data[table_name] = data[table_name].drop(columns={'_14', '_15', '_16', '_17'} & set(data[table_name].columns))
 
-
     names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
     logger.info(f'Datastore created -- {names_and_lengths}')
     return data
@@ -65,8 +64,8 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
 
 def _process_metadata(metadata):
     collection_year = int(metadata['collectionYear'][:4])
-    metadata['collection_start'] = datetime.datetime(collection_year, 4, 1)
-    metadata['collection_end'] = datetime.datetime(collection_year + 1, 3, 31)
+    metadata['collection_start'] = f'01/04/{collection_year}'
+    metadata['collection_end'] = f'31/03/{collection_year + 1}'
     return metadata
 
 

@@ -889,8 +889,8 @@ def test_validate_578():
         {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0
         {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1
       
-        {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 2 fail
-        #{'CHILD': '3', 'MIS_START': '03/06/1980', },  # 2 supposed to compare with the second DEC and pass
+        {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 2 fail1 pass2
+        {'CHILD': '3', 'MIS_START': '03/06/1985', },  # 2 supposed to compare with the second DEC and pass
       
         {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 3
         {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 4 fail
@@ -919,7 +919,7 @@ def test_validate_578():
     #test1.0 assert result == {'Episodes': [3, 6], 'Missing': [2, 5]}2m2e
     #test1.1 assert result == {'Episodes': [3, 5], 'Missing': [2, 5]}2m1e
     #test1.2 assert result == {'Episodes': [3, 6], 'Missing': [2, 4]}1m2e
-    assert result == {'Episodes': [3, 6], 'Missing': [2, 4]}
+    assert result == {'Episodes': [3, 6], 'Missing': [2, 5]}
 
 def test_validate_391():
     fake_data_oc3 = pd.DataFrame({

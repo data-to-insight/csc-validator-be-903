@@ -1011,7 +1011,8 @@ def validate_578():
             eps_error_locs = merged.loc[error_mask, 'index_eps']
             mis_error_locs = merged.loc[error_mask, 'index_ing']
 
-            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': mis_error_locs.unique().tolist()}
+            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': mis_error_locs.dropna().astype(int).unique().tolist()}
+            # .dropna().astype(int) is added because when this rule is tested such that one of the MIS_START dates lies between two DEC dates of the same child (in this case, MS>DEC1 ie fail and at the same time MS<DEC2 ie pass), the error locations are returned as floats. The presence of NaNs in the error locations array causes the whole array to be transformed into type float.
 
     return error, _validate
 

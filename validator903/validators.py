@@ -1000,6 +1000,9 @@ def validate_578():
             episodes = episodes[episodes['REC'].notna()]
             episodes = episodes[episodes['REC'] != 'X1']
 
+            # For cases where there are multiple MIS_STARTs and DECs, the MIS_STARTs will be compared with the latest (maximum) DEC. This is because this rule does not include DECOM, hence checking whether MIS_START is within a period of care is out of scope.
+            episodes['max_DEC'] = episodes.groupby('CHILD')['DEC'].transform('max')
+
             # prepare to merge
             episodes.reset_index(inplace=True)
             missing.reset_index(inplace=True)
@@ -1007,7 +1010,7 @@ def validate_578():
 
             # If <MIS_START> >=DEC, then no missing/away from placement information should be recorded
             # interpreted as: if (REC != X1) and (DEC < MIS_START) then the error should be raised. check issue description.
-            error_mask = merged['DEC'] < merged['MIS_START']
+            error_mask = merged['max_DEC'] < merged['MIS_START']
             eps_error_locs = merged.loc[error_mask, 'index_eps']
             mis_error_locs = merged.loc[error_mask, 'index_ing']
 

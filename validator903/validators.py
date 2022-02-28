@@ -994,6 +994,7 @@ def validate_578():
 
             # convert dates
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
 
             # drop episodes where REC is null
@@ -1006,16 +1007,15 @@ def validate_578():
             merged = episodes.merge(missing, on='CHILD', how='left', suffixes=['_eps', '_ing'])
 
             # If <MIS_START> >=DEC, then no missing/away from placement information should be recorded
-            # interpreted as: if (REC != X1) and (DEC < MIS_START) then the error should be raised. check issue description.
-            merged['out_of_poc'] = merged['DEC'] < merged['MIS_START']
+            # interpreted as: if (REC != X1) and MIS_START is before DECOM (MIS_START<DECOM), or after DEC (MIS_START>DEC) then the error should be raised. check issue description.
+            merged['out_of_poc'] = (merged['MIS_START'] < merged['DECOM']) | (merged['MIS_START'] > merged['DEC'])
             # poc : period of care
             merged = merged[merged['index_ing'].notna()]
             error_mask = merged.groupby('index_ing')['out_of_poc'].transform('min')
-            eps_error_locs = merged.loc[error_mask, 'index_eps']
             mis_error_locs = merged.loc[error_mask, 'index_ing']
-
-            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': mis_error_locs.dropna().astype(int).unique().tolist()}
-            # .dropna().astype(int) is added because when this rule is tested such that one of the MIS_START dates lies between two DEC dates of the same child (in this case, MS>DEC1 ie fail and at the same time MS<DEC2 ie pass), the error locations are returned as floats. The presence of NaNs in the error locations array causes the whole array to be transformed into type float.
+            
+            # In this case it is not necessary to flag the DEC or DECOM that value because that same DEC or DECOM value might have passed with other values of MIS_START. Flagging the DECOM/ DEC value is not specific enough to be helpful to the user.
+            return {'Missing': mis_error_locs.astype('int').unique().tolist()}
 
     return error, _validate
 

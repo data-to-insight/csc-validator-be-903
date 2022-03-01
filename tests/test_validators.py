@@ -1,6 +1,16 @@
 from validator903.validators import *
 import pandas as pd
 
+def test_validate_633():
+    fake_data_prevperm = pd.DataFrame({
+        'CHILD': ['101', '102', '103', '6', '7', '8'],
+        'LA_PERM': [pd.NA, '352', '204', '458', '176', 212],
+    })
+    fake_dfs = {'PrevPerm':fake_data_prevperm}
+    error_defn, error_func = validate_633()
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm':[3,4]}
+
 def test_validate_199():
     fake_data_199_episodes_last = pd.DataFrame([
         {'CHILD': '101', 'DECOM': '15/06/2016', 'DEC': '20/12/2020', 'REC': 'E11'},

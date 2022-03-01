@@ -920,23 +920,52 @@ def validate_577():
             episodes = dfs['Episodes']
             missing = dfs['Missing']
 
-            # prepare to merge
-            missing.reset_index(inplace=True)
-            episodes.reset_index(inplace=True)
+            ls_list = ['V3', 'V4']
 
-            episodes = episodes[(episodes['REC'] != 'X1') & episodes['REC'].notna()].copy()
-            missing = missing[missing['MIS_START'].notna()].copy()
-
+            episodes['original_index'] = episodes.index
+          
+            # put dates in appropriate format.
             missing['MIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+          
+            # filter data based on provided conditions.
+            missing = missing[missing['MIS_START'].notna()].copy()
+            episodes = episodes[(episodes['REC'] != 'X1') & episodes['REC'].notna()].copy()
+
+            # create period of care blocks
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+
+            episodes['index'] = pd.RangeIndex(0, len(episodes))
+            episodes['index+1'] = episodes['index'] + 1
+            episodes = episodes.merge(episodes, left_on='index', right_on='index+1',
+                                  how='left', suffixes=[None, '_prev'])
+            episodes = episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+            episodes['new_period'] = (
+                    (episodes['DECOM'] > episodes['DEC_prev'])
+                    | (episodes['CHILD'] != episodes['CHILD_prev']) 
+                    | (episodes['LS'].isin(ls_list))
+            )
+            episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
+
+            # allocate the same DECOM (min) and DEC (max) to all episodes in a period of care.
+            episodes['poc_DECOM'] = episodes.groupby('period_id')['DECOM'].transform('min')
+            episodes['poc_DEC'] = episodes.groupby('period_id')['DEC'].transform('max')
+            
+            # prepare to merge
+            missing['index_ing'] = missing.index
 
             merged = episodes.merge(missing, on='CHILD', how='inner', suffixes=['_eps', '_ing'])
-            mask = merged['MIS_END'].isna() | (merged['MIS_END'] > merged['DEC'])
-
-            eps_error_locs = merged.loc[mask, 'index_eps']
+            # poc : period of care
+            merged['out_of_poc'] = merged['MIS_END'].isna() | (merged['MIS_END'] > merged['poc_DEC']) | (merged['MIS_END'] < merged['DECOM'])
+            # Drop rows where child was not present in 'Missing' table.
+            merged = merged[merged['index_ing'].notna()]
+          
+            mask = merged.groupby('index_ing')['out_of_poc'].transform('min')
             miss_error_locs = merged.loc[mask, 'index_ing']
 
-            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': miss_error_locs.unique().tolist()}
+            return {'Missing': miss_error_locs.unique().tolist()}
 
     return error, _validate
 
@@ -1002,11 +1031,10 @@ def validate_578():
             missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
 
             # drop episodes where REC is null
-            episodes = episodes[episodes['REC'].notna()]
-            episodes = episodes[episodes['REC'] != 'X1'].copy()
+            episodes = episodes[(episodes['REC'] != 'X1') & episodes['REC'].notna()].copy()
 
             # create period of care blocks
-            #episodes = episodes.sort_values(['CHILD', 'DECOM'])
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
     
             episodes['index'] = pd.RangeIndex(0, len(episodes))
             episodes['index+1'] = episodes['index'] + 1

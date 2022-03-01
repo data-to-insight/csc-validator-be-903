@@ -992,6 +992,8 @@ def validate_578():
             episodes = dfs['Episodes']
             missing = dfs['Missing']
 
+            episodes['original_index'] = episodes.index
+          
             # convert dates
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
@@ -999,12 +1001,30 @@ def validate_578():
 
             # drop episodes where REC is null
             episodes = episodes[episodes['REC'].notna()]
-            episodes = episodes[episodes['REC'] != 'X1']
+            episodes = episodes[episodes['REC'] != 'X1'].copy()
+
+            # create period of care blocks
+            #episodes = episodes.sort_values(['CHILD', 'DECOM'])
+    
+            episodes['index'] = pd.RangeIndex(0, len(episodes))
+            episodes['index+1'] = episodes['index'] + 1
+            episodes = episodes.merge(episodes, left_on='index', right_on='index+1',
+                                  how='left', suffixes=[None, '_prev'])
+            episodes = episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+    
+            episodes['new_period'] = (
+                    (episodes['DECOM'] > episodes['DEC_prev'])
+                    | (episodes['CHILD'] != episodes['CHILD_prev'])
+            )
+            episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
+
+            # allocate the same DECOM (min) and DEC (max) to all episodes in a period of care.
+            episodes['poc_DECOM'] = episodes.groupby('period_id')['DECOM'].transform('min')
+            episodes['poc_DEC'] = episodes.groupby('period_id')['DEC'].transform('max')
 
             # prepare to merge
-            episodes.reset_index(inplace=True)
-            missing.reset_index(inplace=True)
-            merged = episodes.merge(missing, on='CHILD', how='left', suffixes=['_eps', '_ing'])
+            missing['index_ing'] = missing.index
+            merged = episodes.merge(missing, on='CHILD', how='left')
 
             # If <MIS_START> >=DEC, then no missing/away from placement information should be recorded
             # interpreted as: if (REC != X1) and MIS_START is before DECOM (MIS_START<DECOM), or after DEC (MIS_START>DEC) then the error should be raised. check issue description.

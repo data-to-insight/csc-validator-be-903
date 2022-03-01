@@ -894,7 +894,7 @@ def test_validate_578():
       
         {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 4
       
-        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 fail
+        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 passes with full period of care DECOM-DEC
         {'CHILD': '5', 'MIS_START': '01/01/1980', },  # 6 pass
       
         {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 7 fail when compared with DECOM
@@ -903,21 +903,24 @@ def test_validate_578():
     fake_data_eps = pd.DataFrame([
         {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0
         {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1
-        {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2 pass
+        {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2
       
-        {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 fail
-        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 topass
+        {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 
+        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 
       
-        {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 5 ignore
-        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 6 fail
-        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # pass
+        {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 5 
+      
+        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 6 
+        {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 7 
+      
+        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 8
     ])
 
     fake_dfs = {'Episodes': fake_data_eps, 'Missing': fake_data_mis}
     error_defn, error_func = validate_578()
     result = error_func(fake_dfs)
 
-    assert result == {'Missing': [2, 5, 7]}
+    assert result == {'Missing': [2, 7]}
 
 def test_validate_391():
     fake_data_oc3 = pd.DataFrame({

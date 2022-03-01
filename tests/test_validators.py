@@ -4,7 +4,7 @@ import pandas as pd
 def test_validate_633():
     fake_data_prevperm = pd.DataFrame({
         'CHILD': ['101', '102', '103', '6', '7', '8'],
-        'LA_PERM': [pd.NA, '352', '204', '458', '176', 212],
+        'LA_PERM': [pd.NA, 'SCO', '204', '458', '176', 212],
     })
     fake_dfs = {'PrevPerm':fake_data_prevperm}
     error_defn, error_func = validate_633()

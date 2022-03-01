@@ -889,13 +889,13 @@ def test_validate_578():
         {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0
         {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1
       
-        {'CHILD': '3', 'MIS_START': '03/06/2022', },  # 2 fail1 fail2 : fail
+        {'CHILD': '3', 'MIS_START': '03/06/2022', },  # 2 fail: fail1 fail2 
         {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 3 fail with the first, pass with the second : pass
       
         {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 4
       
-        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 passes with full period of care DECOM-DEC (6/7) and 8
-        {'CHILD': '5', 'MIS_START': '01/01/2000', },  # 6 pass: fails with first set of episodes(6/7 poc), but passes with next period of care (8)
+        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 passes with full period of care DECOM-DEC (7/8) and 9
+        {'CHILD': '5', 'MIS_START': '01/01/2000', },  # 6 pass: fails with first set of episodes(7/8 poc), but passes with next period of care (9)
       
         {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 7 fail when compared with DECOM
         {'CHILD': '77', 'MIS_START': '01/01/1981', },  # 8 pass
@@ -906,15 +906,16 @@ def test_validate_578():
         {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2
       
         {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 
-        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 
+        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 --not poc
+        {'CHILD': '3', 'DECOM':'01/01/2021', 'DEC': '05/10/2021', 'LS': 'V3', 'REC': 'kk', }, # 5 due to LS value--
       
-        {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 5 
+        {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 6 
       
-        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 6 --poc start
-        {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 7  poc end--   
-        {'CHILD': '5', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 8
+        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 7 --poc start
+        {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 8  poc end--   
+        {'CHILD': '5', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 9
 
-        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 8
+        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
       
     ])
 

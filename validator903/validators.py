@@ -992,6 +992,8 @@ def validate_578():
             episodes = dfs['Episodes']
             missing = dfs['Missing']
 
+            ls_list = ['V3', 'V4']
+
             episodes['original_index'] = episodes.index
           
             # convert dates
@@ -1014,7 +1016,8 @@ def validate_578():
     
             episodes['new_period'] = (
                     (episodes['DECOM'] > episodes['DEC_prev'])
-                    | (episodes['CHILD'] != episodes['CHILD_prev'])
+                    | (episodes['CHILD'] != episodes['CHILD_prev']) 
+                    | (episodes['LS'].isin(ls_list))
             )
             episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
 

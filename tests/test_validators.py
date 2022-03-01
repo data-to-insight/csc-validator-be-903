@@ -894,8 +894,8 @@ def test_validate_578():
       
         {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 4
       
-        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 passes with full period of care DECOM-DEC
-        {'CHILD': '5', 'MIS_START': '01/01/1980', },  # 6 pass
+        {'CHILD': '5', 'MIS_START': '01/01/1982', },  # 5 passes with full period of care DECOM-DEC (6/7) and 8
+        {'CHILD': '5', 'MIS_START': '01/01/2000', },  # 6 pass: fails with first set of episodes(6/7 poc), but passes with next period of care (8)
       
         {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 7 fail when compared with DECOM
         {'CHILD': '77', 'MIS_START': '01/01/1981', },  # 8 pass
@@ -910,10 +910,12 @@ def test_validate_578():
       
         {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 5 
       
-        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 6 
-        {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 7 
+        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 6 --poc start
+        {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 7  poc end--   
+        {'CHILD': '5', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 8
+
+        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 8
       
-        {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 8
     ])
 
     fake_dfs = {'Episodes': fake_data_eps, 'Missing': fake_data_mis}

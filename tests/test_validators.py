@@ -831,8 +831,8 @@ def test_validate_301():
 
 def test_validate_577():
     fake_data_mis = pd.DataFrame([
-        {'CHILD': '1', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, },  # 0 fail MIS_END not provided
-        {'CHILD': '2', 'MIS_START': '01/01/1981', 'MIS_END': '02/06/2020', },  # 1
+        {'CHILD': '1', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, },  # 0 ignore: REC
+        {'CHILD': '2', 'MIS_START': '01/01/1981', 'MIS_END': '02/06/2020', },  # 1 ignore: REC
       
         {'CHILD': '3', 'MIS_START': '01/01/1981', 'MIS_END': '03/06/2022', },  # 2 fail: fail1 fail2 
         {'CHILD': '3', 'MIS_START': '01/01/1981', 'MIS_END': '03/06/2020', },  # 3 pass: fail with the first, pass with the second
@@ -844,10 +844,11 @@ def test_validate_577():
       
         {'CHILD': '6', 'MIS_START': '01/01/1981', 'MIS_END': '01/01/1981', },  # 7 fail when compared with DECOM
         {'CHILD': '7', 'MIS_START': pd.NA, 'MIS_END': '01/01/1981', },  # 8 ignore fail: MIS_START is NaN
+        {'CHILD': '8', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, }, # 9 fail: MIS_END is nan
     ])
     fake_data_eps = pd.DataFrame([
-        {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0
-        {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1
+        {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0 ignore: REC
+        {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1 ignore: REC
         {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2
       
         {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 
@@ -863,6 +864,8 @@ def test_validate_577():
         {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
 
         {'CHILD': '7', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
+
+        {'CHILD': '8', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'xx', }, # 10
       
     ])
 
@@ -870,7 +873,7 @@ def test_validate_577():
     error_defn, error_func = validate_577()
     result = error_func(fake_dfs)
 
-    assert result == {'Missing': [0, 2, 7]}
+    assert result == {'Missing': [2, 7, 9]}
 
 
 def test_validate_460():

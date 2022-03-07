@@ -3,8 +3,9 @@ import os
 import pandas as pd
 from validator903.config import column_names 
 from validator903.datastore import create_datastore
+from validator903.ingress import read_from_text
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_input_files():
     return  {
         'header.csv': 'Header',
@@ -19,36 +20,35 @@ def dummy_input_files():
         'missing.csv': 'Missing',
     }
 
-@pytest.fixture
-def dummy_postcodes():
-    file_path = os.path.join(os.path.dirname(__file__), 'fake_data', 'postcodes_short.csv')
-    return pd.read_csv(file_path)
 
-@pytest.fixture
-def dummy_metadata(dummy_postcodes):
+@pytest.fixture(scope="session")
+def dummy_metadata():
     return {
         'collectionYear': '2019/20',
-        'postcodes': dummy_postcodes,
         'localAuthority': 'test_LA',
     }
 
 
-
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_input_data(dummy_input_files, dummy_metadata):
-    file_path = os.path.join(os.path.dirname(__file__), 'fake_data')
+    fake_data_dir = os.path.join(os.path.dirname(__file__), 'fake_data')
 
-    out = {}
-    for file, identifier in dummy_input_files.items():
-        path = os.path.join(file_path, file)
-        df = pd.read_csv(path)
-        out[identifier] = df
-        out[identifier + '_last'] = df.copy()
+    dummy_uploads = []
+    for filename in dummy_input_files.keys():
+        path = os.path.join(fake_data_dir, filename)
 
-    return create_datastore(out, dummy_metadata)
+        with open(path, 'rb') as live_file:
+            bytez = live_file.read()
+
+        dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'This year'})
+        dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'Prev year'})
+
+    dummy_dfs, extra_metadata = read_from_text(dummy_uploads)
+    dummy_metadata.update(extra_metadata)
+    return create_datastore(dummy_dfs, dummy_metadata)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dummy_empty_input(dummy_metadata):
     out = {
         table_name: pd.DataFrame(columns=c)

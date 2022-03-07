@@ -1,14 +1,14 @@
 import pytest
 import os
 from validator903.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
-from validator903.types import UploadException, UploadedFile
+from validator903.types import UploadError, UploadedFile
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [
         pytest.param([])
     ])
     def test_read_from_text_errors(self, files):
-        with pytest.raises(UploadException):
+        with pytest.raises(UploadError):
             read_from_text(files)
 
     def test_csv_reading(self, mocker):
@@ -35,13 +35,17 @@ def test_read_csv_from_text(dummy_input_files):
         'description': 'This year',
     } for file_name in dummy_input_files]
     
-    last_year_files = [{'fileText': d['fileText'], 'description': 'Last year'} for d in uploaded_files]
+    last_year_files = [{'fileText': d['fileText'], 'description': 'Prev year'} for d in uploaded_files]
     uploaded_files += last_year_files
 
     out = read_csvs_from_text(uploaded_files)
-    assert len(out) == 2 * len(dummy_input_files) 
+    assert len(out) == 2 * len(dummy_input_files)
     for name, val in out.items():
+        if name in ('Header', 'Header_last'):
+            assert 'UASC' in val.columns, f'UASC field not added to {name}'
         assert len(val) > 0, f'No entries found for {name}'
+        assert set(str(dtype) for dtype in val.dtypes) == {'object'}, \
+            f'Got non-object columns in {name}: \n{val.dtypes}!'
 
 
 def test_read_xml_from_text():
@@ -53,4 +57,6 @@ def test_read_xml_from_text():
 
     for name, val in out.items():
         assert len(val) > 0, f'No entries found for {name}'
-    
+        assert set(str(dtype) for dtype in val.dtypes) == {'object'}, \
+            f'Got non-objects columns in {name}: \n{val.dtypes}!'
+

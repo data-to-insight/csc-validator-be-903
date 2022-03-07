@@ -1,380 +1,34 @@
 import datetime
+import logging
+import os
+from pathlib import Path
+from typing import Dict, Any
+
 import numpy as np
 from copy import copy
 import pandas as pd
+import qlacref_authorities
+from pandas import DataFrame
+from qlacref_postcodes import Postcodes
 
-from .ingress import read_postcodes
+logger = logging.getLogger(__name__)
 
-# i am so sorry
-la_df = [
- ['E06000001', 'Hartlepool', 'E06000001', 'Hartlepool'],
- ['E06000002', 'Middlesbrough', 'E06000002', 'Middlesbrough'],
- ['E06000003', 'Redcar and Cleveland', 'E06000003', 'Redcar and Cleveland'],
- ['E06000004', 'Stockton-on-Tees', 'E06000004', 'Stockton-on-Tees'],
- ['E06000005', 'Darlington', 'E06000005', 'Darlington'],
- ['E06000006', 'Halton', 'E06000006', 'Halton'],
- ['E06000007', 'Warrington', 'E06000007', 'Warrington'],
- ['E06000008', 'Blackburn with Darwen', 'E06000008', 'Blackburn with Darwen'],
- ['E06000009', 'Blackpool', 'E06000009', 'Blackpool'],
- ['E06000010',
-  '"Kingston upon Hull, City of"',
-  'E06000010',
-  '"Kingston upon Hull, City of"'],
- ['E06000011',
-  'East Riding of Yorkshire',
-  'E06000011',
-  'East Riding of Yorkshire'],
- ['E06000012',
-  'North East Lincolnshire',
-  'E06000012',
-  'North East Lincolnshire'],
- ['E06000013', 'North Lincolnshire', 'E06000013', 'North Lincolnshire'],
- ['E06000014', 'York', 'E06000014', 'York'],
- ['E06000015', 'Derby', 'E06000015', 'Derby'],
- ['E06000016', 'Leicester', 'E06000016', 'Leicester'],
- ['E06000017', 'Rutland', 'E06000017', 'Rutland'],
- ['E06000018', 'Nottingham', 'E06000018', 'Nottingham'],
- ['E06000019',
-  '"Herefordshire, County of"',
-  'E06000019',
-  '"Herefordshire, County of"'],
- ['E06000020', 'Telford and Wrekin', 'E06000020', 'Telford and Wrekin'],
- ['E06000021', 'Stoke-on-Trent', 'E06000021', 'Stoke-on-Trent'],
- ['E06000022',
-  'Bath and North East Somerset',
-  'E06000022',
-  'Bath and North East Somerset'],
- ['E06000023', '"Bristol, City of"', 'E06000023', '"Bristol, City of"'],
- ['E06000024', 'North Somerset', 'E06000024', 'North Somerset'],
- ['E06000025', 'South Gloucestershire', 'E06000025', 'South Gloucestershire'],
- ['E06000026', 'Plymouth', 'E06000026', 'Plymouth'],
- ['E06000027', 'Torbay', 'E06000027', 'Torbay'],
- ['E06000030', 'Swindon', 'E06000030', 'Swindon'],
- ['E06000031', 'Peterborough', 'E06000031', 'Peterborough'],
- ['E06000032', 'Luton', 'E06000032', 'Luton'],
- ['E06000033', 'Southend-on-Sea', 'E06000033', 'Southend-on-Sea'],
- ['E06000034', 'Thurrock', 'E06000034', 'Thurrock'],
- ['E06000035', 'Medway', 'E06000035', 'Medway'],
- ['E06000036', 'Bracknell Forest', 'E06000036', 'Bracknell Forest'],
- ['E06000037', 'West Berkshire', 'E06000037', 'West Berkshire'],
- ['E06000038', 'Reading', 'E06000038', 'Reading'],
- ['E06000039', 'Slough', 'E06000039', 'Slough'],
- ['E06000040',
-  'Windsor and Maidenhead',
-  'E06000040',
-  'Windsor and Maidenhead'],
- ['E06000041', 'Wokingham', 'E06000041', 'Wokingham'],
- ['E06000042', 'Milton Keynes', 'E06000042', 'Milton Keynes'],
- ['E06000043', 'Brighton and Hove', 'E06000043', 'Brighton and Hove'],
- ['E06000044', 'Portsmouth', 'E06000044', 'Portsmouth'],
- ['E06000045', 'Southampton', 'E06000045', 'Southampton'],
- ['E06000046', 'Isle of Wight', 'E06000046', 'Isle of Wight'],
- ['E06000047', 'County Durham', 'E06000047', 'County Durham'],
- ['E06000049', 'Cheshire East', 'E06000049', 'Cheshire East'],
- ['E06000050',
-  'Cheshire West and Chester',
-  'E06000050',
-  'Cheshire West and Chester'],
- ['E06000051', 'Shropshire', 'E06000051', 'Shropshire'],
- ['E06000052', 'Cornwall', 'E06000052', 'Cornwall'],
- ['E06000053', 'Isles of Scilly', 'E06000053', 'Isles of Scilly'],
- ['E06000054', 'Wiltshire', 'E06000054', 'Wiltshire'],
- ['E06000055', 'Bedford', 'E06000055', 'Bedford'],
- ['E06000056', 'Central Bedfordshire', 'E06000056', 'Central Bedfordshire'],
- ['E06000057', 'Northumberland', 'E06000057', 'Northumberland'],
- ['E06000058',
-  '"Bournemouth, Christchurch and Poole"',
-  'E06000058',
-  '"Bournemouth, Christchurch and Poole"'],
- ['E06000059', 'Dorset', 'E06000059', 'Dorset'],
- ['E09000018', 'Hounslow', 'E09000018', 'Hounslow'],
- ['E09000019', 'Islington', 'E09000019', 'Islington'],
- ['E09000020',
-  'Kensington and Chelsea',
-  'E09000020',
-  'Kensington and Chelsea'],
- ['E09000021', 'Kingston upon Thames', 'E09000021', 'Kingston upon Thames'],
- ['E09000022', 'Lambeth', 'E09000022', 'Lambeth'],
- ['E09000023', 'Lewisham', 'E09000023', 'Lewisham'],
- ['E09000024', 'Merton', 'E09000024', 'Merton'],
- ['E09000025', 'Newham', 'E09000025', 'Newham'],
- ['E09000026', 'Redbridge', 'E09000026', 'Redbridge'],
- ['E06000060', 'Buckinghamshire', 'E06000060', 'Buckinghamshire'],
- ['E09000027', 'Richmond upon Thames', 'E09000027', 'Richmond upon Thames'],
- ['E09000028', 'Southwark', 'E09000028', 'Southwark'],
- ['E09000029', 'Sutton', 'E09000029', 'Sutton'],
- ['E09000030', 'Tower Hamlets', 'E09000030', 'Tower Hamlets'],
- ['E09000031', 'Waltham Forest', 'E09000031', 'Waltham Forest'],
- ['E09000032', 'Wandsworth', 'E09000032', 'Wandsworth'],
- ['E09000033', 'Westminster', 'E09000033', 'Westminster'],
- ['E07000008', 'Cambridge', 'E10000003', 'Cambridgeshire'],
- ['E07000009', 'East Cambridgeshire', 'E10000003', 'Cambridgeshire'],
- ['E07000010', 'Fenland', 'E10000003', 'Cambridgeshire'],
- ['E07000011', 'Huntingdonshire', 'E10000003', 'Cambridgeshire'],
- ['E07000012', 'South Cambridgeshire', 'E10000003', 'Cambridgeshire'],
- ['E07000026', 'Allerdale', 'E10000006', 'Cumbria'],
- ['E07000027', 'Barrow-in-Furness', 'E10000006', 'Cumbria'],
- ['E07000028', 'Carlisle', 'E10000006', 'Cumbria'],
- ['E07000029', 'Copeland', 'E10000006', 'Cumbria'],
- ['E07000030', 'Eden', 'E10000006', 'Cumbria'],
- ['E07000031', 'South Lakeland', 'E10000006', 'Cumbria'],
- ['E07000032', 'Amber Valley', 'E10000007', 'Derbyshire'],
- ['E07000033', 'Bolsover', 'E10000007', 'Derbyshire'],
- ['E07000034', 'Chesterfield', 'E10000007', 'Derbyshire'],
- ['E07000035', 'Derbyshire Dales', 'E10000007', 'Derbyshire'],
- ['E07000036', 'Erewash', 'E10000007', 'Derbyshire'],
- ['E07000037', 'High Peak', 'E10000007', 'Derbyshire'],
- ['E07000038', 'North East Derbyshire', 'E10000007', 'Derbyshire'],
- ['E07000039', 'South Derbyshire', 'E10000007', 'Derbyshire'],
- ['E07000040', 'East Devon', 'E10000008', 'Devon'],
- ['E07000041', 'Exeter', 'E10000008', 'Devon'],
- ['E07000042', 'Mid Devon', 'E10000008', 'Devon'],
- ['E07000043', 'North Devon', 'E10000008', 'Devon'],
- ['E07000044', 'South Hams', 'E10000008', 'Devon'],
- ['E07000045', 'Teignbridge', 'E10000008', 'Devon'],
- ['E07000046', 'Torridge', 'E10000008', 'Devon'],
- ['E07000047', 'West Devon', 'E10000008', 'Devon'],
- ['E07000061', 'Eastbourne', 'E10000011', 'East Sussex'],
- ['E07000062', 'Hastings', 'E10000011', 'East Sussex'],
- ['E07000063', 'Lewes', 'E10000011', 'East Sussex'],
- ['E07000064', 'Rother', 'E10000011', 'East Sussex'],
- ['E07000065', 'Wealden', 'E10000011', 'East Sussex'],
- ['E07000066', 'Basildon', 'E10000012', 'Essex'],
- ['E07000067', 'Braintree', 'E10000012', 'Essex'],
- ['E07000068', 'Brentwood', 'E10000012', 'Essex'],
- ['E07000069', 'Castle Point', 'E10000012', 'Essex'],
- ['E07000070', 'Chelmsford', 'E10000012', 'Essex'],
- ['E07000071', 'Colchester', 'E10000012', 'Essex'],
- ['E07000072', 'Epping Forest', 'E10000012', 'Essex'],
- ['E07000073', 'Harlow', 'E10000012', 'Essex'],
- ['E06000061',
-  'North Northamptonshire',
-  'E06000061',
-  'North Northamptonshire'],
- ['E06000062', 'West Northamptonshire', 'E06000062', 'West Northamptonshire'],
- ['E08000001', 'Bolton', 'E08000001', 'Bolton'],
- ['E08000002', 'Bury', 'E08000002', 'Bury'],
- ['E08000003', 'Manchester', 'E08000003', 'Manchester'],
- ['E08000004', 'Oldham', 'E08000004', 'Oldham'],
- ['E08000005', 'Rochdale', 'E08000005', 'Rochdale'],
- ['E08000006', 'Salford', 'E08000006', 'Salford'],
- ['E08000007', 'Stockport', 'E08000007', 'Stockport'],
- ['E08000008', 'Tameside', 'E08000008', 'Tameside'],
- ['E08000009', 'Trafford', 'E08000009', 'Trafford'],
- ['E08000010', 'Wigan', 'E08000010', 'Wigan'],
- ['E08000011', 'Knowsley', 'E08000011', 'Knowsley'],
- ['E08000012', 'Liverpool', 'E08000012', 'Liverpool'],
- ['E08000013', 'St. Helens', 'E08000013', 'St. Helens'],
- ['E08000014', 'Sefton', 'E08000014', 'Sefton'],
- ['E08000015', 'Wirral', 'E08000015', 'Wirral'],
- ['E08000016', 'Barnsley', 'E08000016', 'Barnsley'],
- ['E08000017', 'Doncaster', 'E08000017', 'Doncaster'],
- ['E08000018', 'Rotherham', 'E08000018', 'Rotherham'],
- ['E08000019', 'Sheffield', 'E08000019', 'Sheffield'],
- ['E08000021', 'Newcastle upon Tyne', 'E08000021', 'Newcastle upon Tyne'],
- ['E08000022', 'North Tyneside', 'E08000022', 'North Tyneside'],
- ['E08000023', 'South Tyneside', 'E08000023', 'South Tyneside'],
- ['E08000024', 'Sunderland', 'E08000024', 'Sunderland'],
- ['E08000025', 'Birmingham', 'E08000025', 'Birmingham'],
- ['E08000026', 'Coventry', 'E08000026', 'Coventry'],
- ['E08000027', 'Dudley', 'E08000027', 'Dudley'],
- ['E08000028', 'Sandwell', 'E08000028', 'Sandwell'],
- ['E08000029', 'Solihull', 'E08000029', 'Solihull'],
- ['E08000030', 'Walsall', 'E08000030', 'Walsall'],
- ['E08000031', 'Wolverhampton', 'E08000031', 'Wolverhampton'],
- ['E08000032', 'Bradford', 'E08000032', 'Bradford'],
- ['E08000033', 'Calderdale', 'E08000033', 'Calderdale'],
- ['E08000034', 'Kirklees', 'E08000034', 'Kirklees'],
- ['E08000035', 'Leeds', 'E08000035', 'Leeds'],
- ['E08000036', 'Wakefield', 'E08000036', 'Wakefield'],
- ['E08000037', 'Gateshead', 'E08000037', 'Gateshead'],
- ['E09000001', 'City of London', 'E09000001', 'City of London'],
- ['E09000002', 'Barking and Dagenham', 'E09000002', 'Barking and Dagenham'],
- ['E09000003', 'Barnet', 'E09000003', 'Barnet'],
- ['E09000004', 'Bexley', 'E09000004', 'Bexley'],
- ['E09000005', 'Brent', 'E09000005', 'Brent'],
- ['E09000006', 'Bromley', 'E09000006', 'Bromley'],
- ['E09000007', 'Camden', 'E09000007', 'Camden'],
- ['E09000008', 'Croydon', 'E09000008', 'Croydon'],
- ['E09000009', 'Ealing', 'E09000009', 'Ealing'],
- ['E09000010', 'Enfield', 'E09000010', 'Enfield'],
- ['E09000011', 'Greenwich', 'E09000011', 'Greenwich'],
- ['E09000012', 'Hackney', 'E09000012', 'Hackney'],
- ['E09000013',
-  'Hammersmith and Fulham',
-  'E09000013',
-  'Hammersmith and Fulham'],
- ['E09000014', 'Haringey', 'E09000014', 'Haringey'],
- ['E09000015', 'Harrow', 'E09000015', 'Harrow'],
- ['E09000016', 'Havering', 'E09000016', 'Havering'],
- ['E09000017', 'Hillingdon', 'E09000017', 'Hillingdon'],
- ['E07000074', 'Maldon', 'E10000012', 'Essex'],
- ['E07000075', 'Rochford', 'E10000012', 'Essex'],
- ['E07000076', 'Tendring', 'E10000012', 'Essex'],
- ['E07000077', 'Uttlesford', 'E10000012', 'Essex'],
- ['E07000078', 'Cheltenham', 'E10000013', 'Gloucestershire'],
- ['E07000079', 'Cotswold', 'E10000013', 'Gloucestershire'],
- ['E07000080', 'Forest of Dean', 'E10000013', 'Gloucestershire'],
- ['E07000081', 'Gloucester', 'E10000013', 'Gloucestershire'],
- ['E07000082', 'Stroud', 'E10000013', 'Gloucestershire'],
- ['E07000083', 'Tewkesbury', 'E10000013', 'Gloucestershire'],
- ['E07000084', 'Basingstoke and Deane', 'E10000014', 'Hampshire'],
- ['E07000085', 'East Hampshire', 'E10000014', 'Hampshire'],
- ['E07000086', 'Eastleigh', 'E10000014', 'Hampshire'],
- ['E07000087', 'Fareham', 'E10000014', 'Hampshire'],
- ['E07000088', 'Gosport', 'E10000014', 'Hampshire'],
- ['E07000089', 'Hart', 'E10000014', 'Hampshire'],
- ['E07000090', 'Havant', 'E10000014', 'Hampshire'],
- ['E07000091', 'New Forest', 'E10000014', 'Hampshire'],
- ['E07000092', 'Rushmoor', 'E10000014', 'Hampshire'],
- ['E07000093', 'Test Valley', 'E10000014', 'Hampshire'],
- ['E07000094', 'Winchester', 'E10000014', 'Hampshire'],
- ['E07000095', 'Broxbourne', 'E10000015', 'Hertfordshire'],
- ['E07000096', 'Dacorum', 'E10000015', 'Hertfordshire'],
- ['E07000098', 'Hertsmere', 'E10000015', 'Hertfordshire'],
- ['E07000099', 'North Hertfordshire', 'E10000015', 'Hertfordshire'],
- ['E07000102', 'Three Rivers', 'E10000015', 'Hertfordshire'],
- ['E07000103', 'Watford', 'E10000015', 'Hertfordshire'],
- ['E07000240', 'St Albans', 'E10000015', 'Hertfordshire'],
- ['E07000241', 'Welwyn Hatfield', 'E10000015', 'Hertfordshire'],
- ['E07000242', 'East Hertfordshire', 'E10000015', 'Hertfordshire'],
- ['E07000243', 'Stevenage', 'E10000015', 'Hertfordshire'],
- ['E07000105', 'Ashford', 'E10000016', 'Kent'],
- ['E07000106', 'Canterbury', 'E10000016', 'Kent'],
- ['E07000107', 'Dartford', 'E10000016', 'Kent'],
- ['E07000108', 'Dover', 'E10000016', 'Kent'],
- ['E07000109', 'Gravesham', 'E10000016', 'Kent'],
- ['E07000110', 'Maidstone', 'E10000016', 'Kent'],
- ['E07000111', 'Sevenoaks', 'E10000016', 'Kent'],
- ['E07000112', 'Folkestone and Hythe', 'E10000016', 'Kent'],
- ['E07000113', 'Swale', 'E10000016', 'Kent'],
- ['E07000114', 'Thanet', 'E10000016', 'Kent'],
- ['E07000115', 'Tonbridge and Malling', 'E10000016', 'Kent'],
- ['E07000116', 'Tunbridge Wells', 'E10000016', 'Kent'],
- ['E07000117', 'Burnley', 'E10000017', 'Lancashire'],
- ['E07000118', 'Chorley', 'E10000017', 'Lancashire'],
- ['E07000119', 'Fylde', 'E10000017', 'Lancashire'],
- ['E07000120', 'Hyndburn', 'E10000017', 'Lancashire'],
- ['E07000121', 'Lancaster', 'E10000017', 'Lancashire'],
- ['E07000122', 'Pendle', 'E10000017', 'Lancashire'],
- ['E07000123', 'Preston', 'E10000017', 'Lancashire'],
- ['E07000124', 'Ribble Valley', 'E10000017', 'Lancashire'],
- ['E07000125', 'Rossendale', 'E10000017', 'Lancashire'],
- ['E07000126', 'South Ribble', 'E10000017', 'Lancashire'],
- ['E07000127', 'West Lancashire', 'E10000017', 'Lancashire'],
- ['E07000128', 'Wyre', 'E10000017', 'Lancashire'],
- ['E07000129', 'Blaby', 'E10000018', 'Leicestershire'],
- ['E07000207', 'Elmbridge', 'E10000030', 'Surrey'],
- ['E07000208', 'Epsom and Ewell', 'E10000030', 'Surrey'],
- ['E07000209', 'Guildford', 'E10000030', 'Surrey'],
- ['E07000210', 'Mole Valley', 'E10000030', 'Surrey'],
- ['E07000211', 'Reigate and Banstead', 'E10000030', 'Surrey'],
- ['E07000212', 'Runnymede', 'E10000030', 'Surrey'],
- ['E07000213', 'Spelthorne', 'E10000030', 'Surrey'],
- ['E07000214', 'Surrey Heath', 'E10000030', 'Surrey'],
- ['E07000215', 'Tandridge', 'E10000030', 'Surrey'],
- ['E07000216', 'Waverley', 'E10000030', 'Surrey'],
- ['E07000217', 'Woking', 'E10000030', 'Surrey'],
- ['E07000218', 'North Warwickshire', 'E10000031', 'Warwickshire'],
- ['E07000219', 'Nuneaton and Bedworth', 'E10000031', 'Warwickshire'],
- ['E07000220', 'Rugby', 'E10000031', 'Warwickshire'],
- ['E07000221', 'Stratford-on-Avon', 'E10000031', 'Warwickshire'],
- ['E07000222', 'Warwick', 'E10000031', 'Warwickshire'],
- ['E07000223', 'Adur', 'E10000032', 'West Sussex'],
- ['E07000224', 'Arun', 'E10000032', 'West Sussex'],
- ['E07000225', 'Chichester', 'E10000032', 'West Sussex'],
- ['E07000226', 'Crawley', 'E10000032', 'West Sussex'],
- ['E07000227', 'Horsham', 'E10000032', 'West Sussex'],
- ['E07000228', 'Mid Sussex', 'E10000032', 'West Sussex'],
- ['E07000229', 'Worthing', 'E10000032', 'West Sussex'],
- ['E07000234', 'Bromsgrove', 'E10000034', 'Worcestershire'],
- ['E07000235', 'Malvern Hills', 'E10000034', 'Worcestershire'],
- ['E07000236', 'Redditch', 'E10000034', 'Worcestershire'],
- ['E07000237', 'Worcester', 'E10000034', 'Worcestershire'],
- ['E07000238', 'Wychavon', 'E10000034', 'Worcestershire'],
- ['E07000239', 'Wyre Forest', 'E10000034', 'Worcestershire'],
- ['W06000001', 'Isle of Anglesey', 'W06000001', 'Isle of Anglesey'],
- ['W06000002', 'Gwynedd', 'W06000002', 'Gwynedd'],
- ['W06000003', 'Conwy', 'W06000003', 'Conwy'],
- ['W06000004', 'Denbighshire', 'W06000004', 'Denbighshire'],
- ['W06000005', 'Flintshire', 'W06000005', 'Flintshire'],
- ['W06000006', 'Wrexham', 'W06000006', 'Wrexham'],
- ['W06000008', 'Ceredigion', 'W06000008', 'Ceredigion'],
- ['W06000009', 'Pembrokeshire', 'W06000009', 'Pembrokeshire'],
- ['W06000010', 'Carmarthenshire', 'W06000010', 'Carmarthenshire'],
- ['W06000011', 'Swansea', 'W06000011', 'Swansea'],
- ['W06000012', 'Neath Port Talbot', 'W06000012', 'Neath Port Talbot'],
- ['W06000013', 'Bridgend', 'W06000013', 'Bridgend'],
- ['W06000014', 'Vale of Glamorgan', 'W06000014', 'Vale of Glamorgan'],
- ['W06000015', 'Cardiff', 'W06000015', 'Cardiff'],
- ['W06000016', 'Rhondda Cynon Taf', 'W06000016', 'Rhondda Cynon Taf'],
- ['W06000018', 'Caerphilly', 'W06000018', 'Caerphilly'],
- ['W06000019', 'Blaenau Gwent', 'W06000019', 'Blaenau Gwent'],
- ['W06000020', 'Torfaen', 'W06000020', 'Torfaen'],
- ['W06000021', 'Monmouthshire', 'W06000021', 'Monmouthshire'],
- ['W06000022', 'Newport', 'W06000022', 'Newport'],
- ['W06000023', 'Powys', 'W06000023', 'Powys'],
- ['W06000024', 'Merthyr Tydfil', 'W06000024', 'Merthyr Tydfil'],
- ['E07000130', 'Charnwood', 'E10000018', 'Leicestershire'],
- ['E07000131', 'Harborough', 'E10000018', 'Leicestershire'],
- ['E07000132', 'Hinckley and Bosworth', 'E10000018', 'Leicestershire'],
- ['E07000133', 'Melton', 'E10000018', 'Leicestershire'],
- ['E07000134', 'North West Leicestershire', 'E10000018', 'Leicestershire'],
- ['E07000135', 'Oadby and Wigston', 'E10000018', 'Leicestershire'],
- ['E07000136', 'Boston', 'E10000019', 'Lincolnshire'],
- ['E07000137', 'East Lindsey', 'E10000019', 'Lincolnshire'],
- ['E07000138', 'Lincoln', 'E10000019', 'Lincolnshire'],
- ['E07000139', 'North Kesteven', 'E10000019', 'Lincolnshire'],
- ['E07000140', 'South Holland', 'E10000019', 'Lincolnshire'],
- ['E07000141', 'South Kesteven', 'E10000019', 'Lincolnshire'],
- ['E07000142', 'West Lindsey', 'E10000019', 'Lincolnshire'],
- ['E07000143', 'Breckland', 'E10000020', 'Norfolk'],
- ['E07000144', 'Broadland', 'E10000020', 'Norfolk'],
- ['E07000145', 'Great Yarmouth', 'E10000020', 'Norfolk'],
- ['E07000146', "King's Lynn and West Norfolk", 'E10000020', 'Norfolk'],
- ['E07000147', 'North Norfolk', 'E10000020', 'Norfolk'],
- ['E07000148', 'Norwich', 'E10000020', 'Norfolk'],
- ['E07000149', 'South Norfolk', 'E10000020', 'Norfolk'],
- ['E07000163', 'Craven', 'E10000023', 'North Yorkshire'],
- ['E07000164', 'Hambleton', 'E10000023', 'North Yorkshire'],
- ['E07000165', 'Harrogate', 'E10000023', 'North Yorkshire'],
- ['E07000166', 'Richmondshire', 'E10000023', 'North Yorkshire'],
- ['E07000167', 'Ryedale', 'E10000023', 'North Yorkshire'],
- ['E07000168', 'Scarborough', 'E10000023', 'North Yorkshire'],
- ['E07000169', 'Selby', 'E10000023', 'North Yorkshire'],
- ['E07000170', 'Ashfield', 'E10000024', 'Nottinghamshire'],
- ['E07000171', 'Bassetlaw', 'E10000024', 'Nottinghamshire'],
- ['E07000172', 'Broxtowe', 'E10000024', 'Nottinghamshire'],
- ['E07000173', 'Gedling', 'E10000024', 'Nottinghamshire'],
- ['E07000174', 'Mansfield', 'E10000024', 'Nottinghamshire'],
- ['E07000175', 'Newark and Sherwood', 'E10000024', 'Nottinghamshire'],
- ['E07000176', 'Rushcliffe', 'E10000024', 'Nottinghamshire'],
- ['E07000177', 'Cherwell', 'E10000025', 'Oxfordshire'],
- ['E07000178', 'Oxford', 'E10000025', 'Oxfordshire'],
- ['E07000179', 'South Oxfordshire', 'E10000025', 'Oxfordshire'],
- ['E07000180', 'Vale of White Horse', 'E10000025', 'Oxfordshire'],
- ['E07000181', 'West Oxfordshire', 'E10000025', 'Oxfordshire'],
- ['E07000187', 'Mendip', 'E10000027', 'Somerset'],
- ['E07000188', 'Sedgemoor', 'E10000027', 'Somerset'],
- ['E07000189', 'South Somerset', 'E10000027', 'Somerset'],
- ['E07000246', 'Somerset West and Taunton', 'E10000027', 'Somerset'],
- ['E07000192', 'Cannock Chase', 'E10000028', 'Staffordshire'],
- ['E07000193', 'East Staffordshire', 'E10000028', 'Staffordshire'],
- ['E07000194', 'Lichfield', 'E10000028', 'Staffordshire'],
- ['E07000195', 'Newcastle-under-Lyme', 'E10000028', 'Staffordshire'],
- ['E07000196', 'South Staffordshire', 'E10000028', 'Staffordshire'],
- ['E07000197', 'Stafford', 'E10000028', 'Staffordshire'],
- ['E07000198', 'Staffordshire Moorlands', 'E10000028', 'Staffordshire'],
- ['E07000199', 'Tamworth', 'E10000028', 'Staffordshire'],
- ['E07000200', 'Babergh', 'E10000029', 'Suffolk'],
- ['E07000202', 'Ipswich', 'E10000029', 'Suffolk'],
- ['E07000203', 'Mid Suffolk', 'E10000029', 'Suffolk'],
- ['E07000244', 'East Suffolk', 'E10000029', 'Suffolk'],
- ['E07000245', 'West Suffolk', 'E10000029', 'Suffolk']
-]
-la_df = pd.DataFrame(la_df, columns=['ltla_id', 'ltla_name', 'utla_id', 'ltla_name'])
+la_df = pd.DataFrame.from_records(qlacref_authorities.records)
+logger.info("Loaded authorities")
 
-def create_datastore(data, metadata):
+# A bit of a hack, but will keep things working
+if os.getenv('QLACREF_PC_KEY') is None:
+    key_file = Path(__file__).parent.parent / ".qlacref/id_rsa.pub"
+    if key_file.is_file():
+        logger.warning("Using repository key for pickle signature. "
+                       "To stay safe from tampering, set the key path in 'QLACREF_PC_KEY'")
+        os.environ['QLACREF_PC_KEY'] = str(key_file.absolute())
+
+postcodes = Postcodes()
+logger.info("Initialised Postcodes")
+
+
+def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
     """
     Returns a dictionary with keys for
     - Every table name in config.py
@@ -387,51 +41,89 @@ def create_datastore(data, metadata):
     :param data: Dict of raw DataFrames by name (from config.py) together with the '_last' data.
     :param metadata:
     """
+    logger.info(', '.join(data.keys()))
     data = copy(data)
     data['metadata'] = _process_metadata(metadata)
-    data['Episodes'] = _add_postcode_derived_fields(
-        data['Episodes'], metadata['postcodes'], metadata['localAuthority'],
-    )
+    if 'Episodes' in data:
+        data['Episodes'] = _add_postcode_derived_fields(
+            data['Episodes'], metadata['localAuthority'],
+        )
     if 'Episodes_last' in data:
         data['Episodes_last'] = _add_postcode_derived_fields(
-            data['Episodes_last'], metadata['postcodes'], metadata['localAuthority']
+            data['Episodes_last'], metadata['localAuthority']
         )
+    # quick n dirty fix for weird postcode related columns showing up in episode tables
+    for table_name in ['Episodes', 'Episodes_last']:
+        if table_name in data:
+            data[table_name] = data[table_name].drop(columns={'_14', '_15', '_16', '_17'} & set(data[table_name].columns))
+
+    names_and_lengths = ', '.join(f'{t}: {len(data[t])} rows' for t in data)
+    logger.info(f'Datastore created -- {names_and_lengths}')
     return data
+
 
 def _process_metadata(metadata):
     collection_year = int(metadata['collectionYear'][:4])
-    metadata['collection_start'] = datetime.datetime(collection_year, 4, 1)
-    metadata['collection_end'] = datetime.datetime(collection_year + 1, 3, 31)
+    metadata['collection_start'] = f'01/04/{collection_year}'
+    metadata['collection_end'] = f'31/03/{collection_year + 1}'
     return metadata
 
-def _add_postcode_derived_fields(episodes_df, postcodes, local_authority):
-    print('Adding postcodes...')
 
-    episodes_df['home_pcd'] = episodes_df['HOME_POST'].str.replace(' ', '')
-    home_details = episodes_df[['home_pcd']].merge(postcodes, how='left', left_on='home_pcd', right_on='pcd')
-    del episodes_df['home_pcd']
+def merge_postcodes(df: DataFrame, postcode_field: str) -> DataFrame:
+    df[postcode_field] = df[postcode_field].str.upper()
 
-    episodes_df['pl_pcd'] = episodes_df['PL_POST'].str.replace(' ', '')
-    pl_details = episodes_df[['pl_pcd']].merge(postcodes, how='left', left_on='pl_pcd', right_on='pcd')
-    del episodes_df['pl_pcd']
+    key_field = f'__{postcode_field}__first_letter'
+    df[key_field] = df[postcode_field].str[0]
+    pcs = df[key_field].dropna().unique()
 
-    # The indexes remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
+    logger.info(f"Loading the following postcode letters: {pcs}")
+    postcodes.load_postcodes(pcs)
 
-    pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='ltla_id')
-    episodes_df['PL_LA'] = pl_details['utla_id']
+    logger.info(f"Adding postcode abbreviations for {postcode_field}")
+    pc_abbr_field = f'__{postcode_field}__abbr'
+    df[pc_abbr_field] = df[postcode_field].str.replace(' ', '')
 
+    df_merged = df[[pc_abbr_field]].merge(postcodes.dataframe, how='left', left_on=pc_abbr_field, right_on='pcd_abbr')
+    del df[key_field]
+    del df[pc_abbr_field]
+
+    return df_merged
+
+
+def _add_postcode_derived_fields(episodes_df, local_authority):
+    episodes_df = episodes_df.copy()
+
+    home_details = merge_postcodes(episodes_df, "HOME_POST")
+    pl_details = merge_postcodes(episodes_df, "PL_POST")
+
+    # The indices remain the same post merge as the length of the dataframes doesn't change, so we can set directly.
+    pl_details = pl_details.merge(la_df, how='left', left_on='laua', right_on='LTLA21CD')
+    episodes_df['PL_LA'] = pl_details['UTLA21CD']
+
+    logger.info(f"Adding IN/OUT")
     episodes_df['PL_LOCATION'] = 'IN'
     episodes_df.loc[episodes_df['PL_LA'].ne(local_authority), 'PL_LOCATION'] = 'OUT'
-    episodes_df.loc[episodes_df['PL_LA'].isna(), 'PL_LOCATION'] = pd.NA
+    episodes_df.loc[pl_details['laua'].isna(), 'PL_LOCATION'] = pd.NA
 
+    # Add country codes for placements outside england
+    for letter, code in {'S': 'SCO', 'N': 'NIR', 'W': 'WAL'}.items():
+        mask = (
+            pl_details['laua'].str.upper().str.startswith(letter)
+            & episodes_df['PL_POST'].notnull()
+        )
+        episodes_df.loc[mask, ['PL_LA', 'PL_LOCATION']] = [code, 'OUT']
+
+    logger.info(f"Calculating distances")
     # This formula is taken straight from the guidance, to get miles between two postcodes
     episodes_df['PL_DISTANCE'] = np.sqrt(
-        (home_details['oseast1m'] - pl_details['oseast1m'])**2 + 
-        (home_details['osnrth1m'] - pl_details['osnrth1m'])**2 
+        (home_details['oseast1m'] - pl_details['oseast1m']) ** 2 +
+        (home_details['osnrth1m'] - pl_details['osnrth1m']) ** 2
     ) / 1000 / 1.6093
     episodes_df['PL_DISTANCE'] = episodes_df['PL_DISTANCE'].round(decimals=1)
 
+    logger.info(f"Completed postcode calculations")
     return episodes_df
+
 
 def copy_datastore(data_store):
     """

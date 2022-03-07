@@ -4,27 +4,23 @@ from .types import ErrorDefinition
 #!# big potential false positives, as this only operates on the current and previous year data
 def validate_1002():
     error = ErrorDefinition(
-        code = '1002',
-        description = 'This child has no previous episodes of care, therefore should not have care leaver information recorded. [NOTE: This only tests the current and previous year data loaded into the tool]',
+        code='1002',
+        description='This child has no previous episodes of care, therefore should not have care leaver information '
+                     'recorded. [NOTE: This only tests the current and previous year data loaded into the tool]',
         affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
     )
 
     def _validate(dfs):
-        if 'Episodes' not in dfs or 'OC3' not in dfs:
+        if 'Episodes' not in dfs or 'OC3' not in dfs or 'Episodes_last' not in dfs:
             return {}
-
         else:
             episodes = dfs['Episodes']
             oc3 = dfs['OC3']
 
-            if 'Episodes_last' in dfs:
-                episodes_last = dfs['Episodes_last']
-                has_previous_episodes = oc3['CHILD'].isin(episodes_last['CHILD'])
-                has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
-                error_mask = ~has_current_episodes & ~has_previous_episodes
-            else:
-                has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
-                error_mask = ~has_current_episodes
+            episodes_last = dfs['Episodes_last']
+            has_previous_episodes = oc3['CHILD'].isin(episodes_last['CHILD'])
+            has_current_episodes = oc3['CHILD'].isin(episodes['CHILD'])
+            error_mask = ~has_current_episodes & ~has_previous_episodes
 
             validation_error_locations = oc3.index[error_mask]
 

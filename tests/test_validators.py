@@ -22,10 +22,6 @@ def test_validate_1002():
     result = error_func(fake_dfs)
     assert result == {'OC3': [3]}
 
-    fake_dfs = {'Episodes': fake_episodes, 'OC3': fake_oc3}
-    result = error_func(fake_dfs)
-    assert result == {'OC3': [1, 2, 3]}
-
 
 def test_validate_158():
     fake_data = pd.DataFrame({

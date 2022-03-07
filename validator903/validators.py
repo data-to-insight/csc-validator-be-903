@@ -1091,7 +1091,7 @@ def validate_577():
     error = ErrorDefinition(
         code='577',
         description='Child ceased to be looked after but there is a missing/away from placement without authorisation period without an end date.',
-        affected_fields=['MIS_END', 'MIS_START', 'DEC', 'REC']
+        affected_fields=['MIS_END']
     )
 
     def _validate(dfs):
@@ -1101,23 +1101,62 @@ def validate_577():
             episodes = dfs['Episodes']
             missing = dfs['Missing']
 
-            # prepare to merge
-            missing.reset_index(inplace=True)
-            episodes.reset_index(inplace=True)
-
-            episodes = episodes[(episodes['REC'] != 'X1') & episodes['REC'].notna()].copy()
-            missing = missing[missing['MIS_START'].notna()].copy()
-
+            episodes['original_index'] = episodes.index
+          
+            # put dates in appropriate format.
             missing['MIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
+            missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
 
-            merged = episodes.merge(missing, on='CHILD', how='inner', suffixes=['_eps', '_ing'])
-            mask = merged['MIS_END'].isna() | (merged['MIS_END'] > merged['DEC'])
+            # filter data based on provided conditions.
+            missing = missing[missing['MIS_START'].notna()].copy()
+            episodes = episodes.dropna(subset=['DECOM'])
 
-            eps_error_locs = merged.loc[mask, 'index_eps']
-            miss_error_locs = merged.loc[mask, 'index_ing']
+            # create period of care blocks
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
 
-            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': miss_error_locs.unique().tolist()}
+            episodes['index'] = pd.RangeIndex(0, len(episodes))
+            episodes['index+1'] = episodes['index'] + 1
+            episodes = episodes.merge(episodes, left_on='index', right_on='index+1',
+                                  how='left', suffixes=[None, '_prev'])
+            episodes = episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+
+            episodes['new_period'] = (
+                (episodes['DECOM'] > episodes['DEC_prev'])
+                | (episodes['CHILD'] != episodes['CHILD_prev'])
+            )
+            episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
+
+            # allocate the same DECOM (min) and DEC (max) to all episodes in a period of care.
+            pocs = pd.DataFrame()
+            pocs[['CHILD', 'poc_DECOM']] = episodes.groupby('period_id')[['CHILD', 'DECOM']].first()
+            pocs['poc_DEC'] = episodes.groupby('period_id')['DEC'].nth(-1)
+
+            # prepare to merge
+            missing['index_ing'] = missing.index
+
+            pocs = pocs.merge(missing, on='CHILD', how='right', suffixes=['_eps', '_ing'])
+            # poc : period of care
+            pocs['out_of_poc'] = (
+                # (a) POC is over, but Missing ep is ongoing:
+                (pocs['MIS_START'].notna() & pocs['MIS_END'].isna() & pocs['poc_DEC'].notna())
+                # (b) Ongoing Missing ep, but started before POC:
+                | (pocs['MIS_END'].isna() & (pocs['MIS_START'] < pocs['poc_DECOM']))
+                # (c) Missing ep ends after POC:
+                | (pocs['MIS_END'] > pocs['poc_DEC'])
+                # (d) Missing ep ends before POC:
+                | (pocs['MIS_END'] < pocs['poc_DECOM'])
+                # (e?) Starts during a previous poc??? (row 12 of Missing table in test_validate_577)
+            )
+
+            # Drop rows where child was not present in 'Missing' table.
+            pocs = pocs[pocs['index_ing'].notna()]
+          
+            mask = pocs.groupby('index_ing')['out_of_poc'].transform('min')
+            miss_error_locs = pocs.loc[mask, 'index_ing'].astype(int).unique().tolist()
+
+            return {'Missing': miss_error_locs}
 
     return error, _validate
 
@@ -1162,7 +1201,7 @@ def validate_578():
     error = ErrorDefinition(
         code='578',
         description='The date that the child started to be missing is after the child ceased to be looked after.',
-        affected_fields=['REC', 'DEC', 'MIS_START']
+        affected_fields=['MIS_START']
     )
 
     def _validate(dfs):
@@ -1173,26 +1212,55 @@ def validate_578():
             episodes = dfs['Episodes']
             missing = dfs['Missing']
 
+            episodes['original_index'] = episodes.index
+          
             # convert dates
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
+            episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
 
-            # drop episodes where REC is null
-            episodes = episodes[episodes['REC'].notna()]
-            episodes = episodes[episodes['REC'] != 'X1']
+            # create period of care blocks
+            episodes = episodes.sort_values(['CHILD', 'DECOM'])
+            episodes = episodes.dropna(subset=['DECOM'])
+
+            episodes['index'] = pd.RangeIndex(0, len(episodes))
+            episodes['index+1'] = episodes['index'] + 1
+            episodes = episodes.merge(episodes, left_on='index', right_on='index+1',
+                                  how='left', suffixes=[None, '_prev'])
+            episodes = episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
+    
+            episodes['new_period'] = (
+                    (episodes['DECOM'] > episodes['DEC_prev'])
+                    | (episodes['CHILD'] != episodes['CHILD_prev']) 
+            )
+            episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
+
+            # allocate the same DECOM (min) and DEC (max) to all episodes in a period of care.
+            episodes['poc_DECOM'] = episodes.groupby('period_id')['DECOM'].transform('min')
+            episodes['poc_DEC'] = episodes.groupby('period_id')['DEC'].transform('max')
 
             # prepare to merge
-            episodes.reset_index(inplace=True)
-            missing.reset_index(inplace=True)
-            merged = episodes.merge(missing, on='CHILD', how='left', suffixes=['_eps', '_ing'])
+            missing['index_ing'] = missing.index
 
+            pocs = pd.DataFrame()
+            pocs[['CHILD', 'poc_DECOM']] = episodes.groupby('period_id')[['CHILD', 'DECOM']].first()
+            pocs['poc_DEC'] = episodes.groupby('period_id')['DEC'].nth(-1)
+
+            pocs = pocs.merge(missing, on='CHILD', how='right', suffixes=['_eps', '_ing'])
             # If <MIS_START> >=DEC, then no missing/away from placement information should be recorded
-            # interpreted as: if (REC != X1) and (DEC < MIS_START) then the error should be raised. check issue description.
-            error_mask = merged['DEC'] < merged['MIS_START']
-            eps_error_locs = merged.loc[error_mask, 'index_eps']
-            mis_error_locs = merged.loc[error_mask, 'index_ing']
+            pocs['out_of_poc'] = (
+                (pocs['MIS_START'] < pocs['poc_DECOM'])
+                | ((pocs['MIS_START'] > pocs['poc_DEC']) & pocs['poc_DEC'].notna())
+            )
 
-            return {'Episodes': eps_error_locs.unique().tolist(), 'Missing': mis_error_locs.unique().tolist()}
+            # Drop rows where child was not present in 'Missing' table.
+            pocs = pocs[pocs['index_ing'].notna()]
+
+            mask = pocs.groupby('index_ing')['out_of_poc'].transform('min')
+            miss_error_locs = pocs.loc[mask, 'index_ing'].astype(int).unique().tolist()
+
+            # In this case it is not necessary to flag the DEC or DECOM that value because that same DEC or DECOM value might have passed with other values of MIS_START. Flagging the DECOM/ DEC value is not specific enough to be helpful to the user.
+            return {'Missing': miss_error_locs}
 
     return error, _validate
 

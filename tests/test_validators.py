@@ -1018,8 +1018,9 @@ def test_validate_301():
 
 def test_validate_577():
     fake_data_mis = pd.DataFrame([
-        {'CHILD': '1', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, },  # 0 ignore: REC
-        {'CHILD': '2', 'MIS_START': '01/01/1981', 'MIS_END': '02/06/2020', },  # 1 ignore: REC
+        {'CHILD': '1', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, },  # 0
+
+        {'CHILD': '2', 'MIS_START': '01/01/1981', 'MIS_END': '02/06/2020', },  # 1
       
         {'CHILD': '3', 'MIS_START': '01/01/1981', 'MIS_END': '03/06/2022', },  # 2 fail: fail1 fail2 
         {'CHILD': '3', 'MIS_START': '01/01/1981', 'MIS_END': '03/06/2020', },  # 3 pass: fail with the first, pass with the second
@@ -1032,15 +1033,20 @@ def test_validate_577():
         {'CHILD': '6', 'MIS_START': '01/01/1981', 'MIS_END': '01/01/1981', },  # 7 fail when compared with DECOM
         {'CHILD': '7', 'MIS_START': pd.NA, 'MIS_END': '01/01/1981', },  # 8 ignore fail: MIS_START is NaN
         {'CHILD': '8', 'MIS_START': '01/01/1981', 'MIS_END': pd.NA, }, # 9 fail: MIS_END is nan
+
+        {'CHILD': '9', 'MIS_START': '01/01/2020', 'MIS_END': pd.NA, },  # 10 fail: MIS_END is nan
+        {'CHILD': '9', 'MIS_START': '01/01/2021', 'MIS_END': pd.NA, }, # 11 pass: ongoing mis-ep during ongoing poc
+        {'CHILD': '9', 'MIS_START': '04/06/2020', 'MIS_END': '04/06/2021', },  # 12 pass: ends during a poc (?!)
+
     ])
     fake_data_eps = pd.DataFrame([
-        {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0 ignore: REC
-        {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1 ignore: REC
+        {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0
+        {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1
         {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2
-      
+
         {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 
-        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 --not poc
-        {'CHILD': '3', 'DECOM':'01/01/2021', 'DEC': '05/10/2021', 'LS': 'V3', 'REC': 'kk', }, # 5 due to LS value--
+        {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4
+        {'CHILD': '3', 'DECOM':'01/01/2021', 'DEC': '05/10/2021', 'LS': 'V3', 'REC': 'kk', }, # 5
       
         {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 6 
       
@@ -1050,17 +1056,25 @@ def test_validate_577():
 
         {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
 
-        {'CHILD': '7', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
+        {'CHILD': '7', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 11
 
-        {'CHILD': '8', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'xx', }, # 10
-      
+        {'CHILD': '8', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'xx', }, # 12
+
+        {'CHILD': '9', 'DECOM': '01/01/2020', 'DEC': '04/06/2020', 'LS': 'o', 'REC': '<--', },  # 10
+        {'CHILD': '9', 'DECOM': '04/06/2020', 'DEC': '11/08/2020', 'LS': 'o', 'REC': '-', },  # 10
+        {'CHILD': '9', 'DECOM': '11/08/2020', 'DEC': '01/12/2020', 'LS': 'o', 'REC': '-->', },  # 10
+        {'CHILD': '9', 'DECOM': '22/12/2020', 'DEC': '25/12/2020', 'LS': 'o', 'REC': '<->', },  # 10
+        {'CHILD': '9', 'DECOM': '01/01/2021', 'DEC': '22/02/2021', 'LS': 'o', 'REC': '<--', },  # 10
+        {'CHILD': '9', 'DECOM': '22/02/2021', 'DEC': '08/08/2021', 'LS': 'V3', 'REC': '-', },  # 10
+        {'CHILD': '9', 'DECOM': '08/08/2021', 'DEC': pd.NA, 'LS': 'o', 'REC': '--o', },  # 10
+
     ])
 
     fake_dfs = {'Episodes': fake_data_eps, 'Missing': fake_data_mis}
     error_defn, error_func = validate_577()
     result = error_func(fake_dfs)
 
-    assert result == {'Missing': [2, 7, 9]}
+    assert result == {'Missing': [0, 1, 2, 7, 9, 10]}
 
 
 def test_validate_460():
@@ -1086,10 +1100,10 @@ def test_validate_460():
 
 def test_validate_578():
     fake_data_mis = pd.DataFrame([
-        {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0
-        {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1
+        {'CHILD': '1', 'MIS_START': '01/06/2020', },  # 0 fail
+        {'CHILD': '2', 'MIS_START': '02/06/2020', },  # 1 fail
       
-        {'CHILD': '3', 'MIS_START': '03/06/2022', },  # 2 fail: fail1 fail2 
+        {'CHILD': '3', 'MIS_START': '03/06/2022', },  # 2 fail: fail1 fail2
         {'CHILD': '3', 'MIS_START': '03/06/2020', },  # 3 fail with the first, pass with the second : pass
       
         {'CHILD': '4', 'MIS_START': '04/06/2020', },  # 4
@@ -1099,31 +1113,35 @@ def test_validate_578():
       
         {'CHILD': '6', 'MIS_START': '01/01/1981', },  # 7 fail when compared with DECOM
         {'CHILD': '77', 'MIS_START': '01/01/1981', },  # 8 pass
+        {'CHILD': '8888', 'MIS_START': '01/01/2049', },  # 8 pass
     ])
     fake_data_eps = pd.DataFrame([
         {'CHILD': '1', 'DECOM':'01/04/1977', 'DEC': '31/03/1981', 'LS': 'o', 'REC': 'X1', }, # 0
         {'CHILD': '2', 'DECOM':'01/04/1979', 'DEC': '30/03/1981', 'LS': 'o', 'REC': pd.NA, }, # 1
         {'CHILD': '88','DECOM':'01/05/1980', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 2
       
-        {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3 
+        {'CHILD': '3', 'DECOM':'01/04/1980', 'DEC': '01/01/1981', 'LS': 'V3', 'REC': 'kk', },  # 3
         {'CHILD': '3', 'DECOM':'01/04/2020', 'DEC': '01/01/2021', 'LS': 'V3', 'REC': 'kk', }, # 4 --not poc
         {'CHILD': '3', 'DECOM':'01/01/2021', 'DEC': '05/10/2021', 'LS': 'V3', 'REC': 'kk', }, # 5 due to LS value--
       
         {'CHILD': '4', 'DECOM':'01/04/1981', 'DEC': pd.NA, 'LS': 'o', 'REC': '!!', },  # 6 
       
-        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'xx', },  # 7 --poc start
+        {'CHILD': '5', 'DECOM':'01/04/1978', 'DEC': '01/01/1981', 'LS': 'o', 'REC': 'X1', },  # 7 --poc start
         {'CHILD': '5', 'DECOM':'01/01/1981', 'DEC': '01/01/1990', 'LS': 'o', 'REC': 'xx', },  # 8  poc end--   
         {'CHILD': '5', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 9
 
         {'CHILD': '6', 'DECOM':'01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', }, # 10
-      
+
+        {'CHILD': '8888', 'DECOM': '01/04/1983', 'DEC': '04/06/2020', 'LS': 'o', 'REC': 'kk', },  # 10
+        {'CHILD': '8888', 'DECOM': '04/06/2020', 'DEC': pd.NA, 'LS': 'o', 'REC': 'kk', },  # 10
+
     ])
 
     fake_dfs = {'Episodes': fake_data_eps, 'Missing': fake_data_mis}
     error_defn, error_func = validate_578()
     result = error_func(fake_dfs)
 
-    assert result == {'Missing': [2, 7]}
+    assert result == {'Missing': [0, 1, 2, 7]}
 
 def test_validate_391():
     fake_data_oc3 = pd.DataFrame({

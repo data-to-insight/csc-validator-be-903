@@ -5,30 +5,32 @@ import pandas as pd
 # Tests for 205A-205D all use these dataframes:
 
 fake_uasc_205 = pd.DataFrame([
-    {'CHILD': '101', 'DOB': '28/10/2004', 'DUC': pd.NA, 'UASC': '0'},#Pass C
-    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': '20/01/2020', 'UASC': '0'},#Pass A
-    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020', 'UASC': '0'},#Fail A
-    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021', 'UASC': '0'},#Fail A
-    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019', 'UASC': '1'},#Fail B
-    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '16/06/2021', 'UASC': '1'},#Fail B
-    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020', 'UASC': '1'},#Pass B
-    {'CHILD': '108', 'DOB': '19/02/2003', 'DUC': pd.NA, 'UASC': '0'},#Fail C
-    {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021', 'UASC': '1'},#Fail D
+    {'CHILD': '101', 'DOB': '28/10/2004', 'DUC': pd.NA},#Pass C
+    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': pd.NA},#Pass A
+    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020'},#Fail A
+    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021'},#Fail A
+    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Fail B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '16/06/2021'},#Fail B
+    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020'},#Pass B
+    {'CHILD': '108', 'DOB': '19/02/2003', 'DUC': pd.NA},#Fail C
+    {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021'},#Fail D
+    {'CHILD': '110', 'DOB': '14/06/2003', 'DUC': pd.NA},  # Fail D
 ])
 
 fake_uasc_prev_205 = pd.DataFrame([
-    {'CHILD': '101', 'DOB': '28/10/2004', 'DUC': pd.NA, 'UASC': '0'},#Pass C
-    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': '20/01/2020', 'UASC': '1'},#Pass A
-    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020', 'UASC': '1'},#Fail A
-    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021', 'UASC': '1'},#Fail A
-    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019', 'UASC': '1'},#Fail B
-    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '04/11/2023', 'UASC': '1'},#Fail B
-    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020', 'UASC': '1'},#Pass B
-    {'CHILD': '108', 'DOB': '19/02/2003', 'DUC': '19/02/2021', 'UASC': '0'},#Fail C
-    {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021', 'UASC': '0'},#Fail D
+    {'CHILD': '101', 'DOB': '28/10/2004', 'DUC': pd.NA},#Pass C
+    {'CHILD': '102', 'DOB': '04/06/2004', 'DUC': '20/01/2020'},#Pass A
+    {'CHILD': '103', 'DOB': '03/03/2002', 'DUC': '10/07/2020'},#Fail A
+    {'CHILD': '104', 'DOB': '28/03/2003', 'DUC': '14/05/2021'},#Fail A
+    {'CHILD': '105', 'DOB': '16/04/2001', 'DUC': '16/04/2019'},#Fail B
+    {'CHILD': '106', 'DOB': '04/11/2004', 'DUC': '04/11/2023'},#Fail B
+    {'CHILD': '107', 'DOB': '23/07/2002', 'DUC': '23/07/2020'},#Pass B
+    {'CHILD': '108', 'DOB': '19/02/2003', 'DUC': '19/02/2021'},#Fail C
+    {'CHILD': '109', 'DOB': '14/06/2003', 'DUC': '14/06/2021'},#Fail D
+    {'CHILD': '110', 'DOB': '14/06/2003', 'DUC': '14/06/2021'},  # Fail D
 ])
 
-fake_uasc_header_205 = pd.DataFrame([
+fake_header_205 = pd.DataFrame([
     {'CHILD': '101', 'DOB': '28/10/2004', 'UASC': '0'},#Pass C
     {'CHILD': '108', 'DOB': '19/02/2003', 'UASC': '0'},#Fail C
     {'CHILD': '109', 'DOB': '14/06/2003', 'UASC': '1'},#Fail D
@@ -38,9 +40,11 @@ fake_uasc_header_205 = pd.DataFrame([
     {'CHILD': '105', 'DOB': '16/04/2001', 'UASC': '1'},#Fail B
     {'CHILD': '106', 'DOB': '04/11/2004', 'UASC': '1'},#Fail B
     {'CHILD': '107', 'DOB': '23/07/2002', 'UASC': '1'},#Pass B
+    {'CHILD': '110', 'DOB': '03/03/2002', 'UASC': '0'},
+
 ])
 
-fake_uasc_prev_header_205 = pd.DataFrame([
+prev_fake_header_205 = pd.DataFrame([
     {'CHILD': '102', 'DOB': '04/06/2004', 'UASC': '1'},#Pass A
     {'CHILD': '103', 'DOB': '03/03/2002', 'UASC': '1'},#Fail A
     {'CHILD': '104', 'DOB': '28/03/2003', 'UASC': '1'},#Fail A
@@ -50,40 +54,95 @@ fake_uasc_prev_header_205 = pd.DataFrame([
     {'CHILD': '107', 'DOB': '23/07/2002', 'UASC': '1'},#Pass B
     {'CHILD': '108', 'DOB': '19/02/2003', 'UASC': '0'},#Fail C
     {'CHILD': '109', 'DOB': '14/06/2003', 'UASC': '0'},#Fail D
+    {'CHILD': '110', 'DOB': '03/03/2002', 'UASC': '0'},
 ])
 
 metadata_205 = {
         'collection_start': '01/04/2020',
-        'collection_end': '31/03/2021'
-    }
+        'collection_end': '31/03/2021',
+}
 
-fake_dfs_205 = {
+fake_dfs_205_xml = {
     'UASC': fake_uasc_205,
     'UASC_last': fake_uasc_prev_205,
-    'Header': fake_uasc_header_205,
-    'Header_last': fake_uasc_prev_header_205,
-    'metadata': metadata_205
+    'Header': fake_header_205,
+    'Header_last': prev_fake_header_205,
+    'metadata': {**metadata_205, **{'file_format': 'xml'}},
 }
+fake_dfs_205_csv_1 = {
+    'UASC': fake_uasc_205,
+    'UASC_last': fake_uasc_prev_205,
+    'Header': fake_header_205,
+    'metadata': {**metadata_205, **{'file_format': 'csv'}},
+}
+fake_dfs_205_csv_2 = {
+    'UASC': fake_uasc_205,
+    'UASC_last': fake_uasc_prev_205,
+    'metadata': {**metadata_205, **{'file_format': 'csv'}},
+}
+
 
 def test_validate_205A():
     error_defn, error_func = validate_205A()
-    result = error_func(fake_dfs_205)
-    assert result == {'UASC':[2,3], 'UASC_last':[2,3], 'Header':[4,5], 'Header_last':[1,2]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': [2, 3], 'Header': [4, 5]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_1.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': [2, 3, 7, 9], 'Header': [1, 4, 5, 9]}
+
 
 def test_validate_205B():
     error_defn, error_func = validate_205B()
-    result = error_func(fake_dfs_205)
-    assert result == {'UASC':[4,5], 'UASC_last': [4,5], 'Header': [6,7], 'Header_last': [4,5]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': [5], 'Header':[7]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_1.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': [5], 'Header': [7]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_2.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': [2, 3, 5]}
+
 
 def test_validate_205C():
     error_defn, error_func = validate_205C()
-    result = error_func(fake_dfs_205)
-    assert result == {'UASC':[7], 'UASC_last': [7], 'Header': [1], 'Header_last': [7]}
+    dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
+    dfs['Header'].loc['1001'] = {'CHILD': '1001', 'DOB': 'asdsad', 'UASC': '0'}
+    dfs['UASC'].loc['1001'] = {'CHILD': '1001', 'DOB': '23/07/2002', 'DUC': '01/01/2020'}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
+    result = error_func(dfs)
+    assert result == {'Header': [1, 9], 'UASC': [7, 9]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_1.items()}
+    result = error_func(dfs)
+    assert result == {'Header': [], 'UASC': []}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_2.items()}
+    result = error_func(dfs)
+    assert result == {'UASC': []}
+
 
 def test_validate_205D():
     error_defn, error_func = validate_205D()
-    result = error_func(fake_dfs_205)
-    assert result == {'UASC':[8], 'UASC_last': [8], 'Header': [2], 'Header_last': [8]}
+    result = error_func(fake_dfs_205_xml)
+    assert result == {'Header': [2]}
+
+    dfs = {k: v.copy() for k, v in fake_dfs_205_csv_2.items()}
+    dfs['UASC_last'].loc['1001'] = {'CHILD': '1001', 'DOB': '23/07/2002', 'DUC': '01/01/2020'}
+    dfs['UASC'].loc['1001'] = {'CHILD': '1001', 'DOB': '23/07/2002', 'DUC': '99/bad/date'}
+    dfs['UASC'].loc['1022'] = {'CHILD': '1022', 'DOB': '23/07/2002', 'DUC': '01/01/2020'}
+    dfs['UASC_last'].loc['1022'] = {'CHILD': '1022', 'DOB': '23/07/2002', 'DUC': pd.NA}
+
+    result = error_func(dfs)
+    assert result == {'UASC': ['1022']}
+
 
 def test_validate_199():
     fake_data_199_episodes_last = pd.DataFrame([
@@ -707,9 +766,13 @@ def test_validate_105():
     fake_header = pd.DataFrame({
         'UASC': [0, 1, pd.NA, '', '0', '1', '2', 2]
     })
-
-    fake_dfs = {'Header': fake_header}
     error_defn, error_func = validate_105()
+
+    fake_dfs = {'Header': fake_header, 'metadata': {'file_format': 'csv'}}
+    result = error_func(fake_dfs)
+    assert result == {}
+
+    fake_dfs = {'Header': fake_header, 'metadata': {'file_format': 'xml'}}
     result = error_func(fake_dfs)
     assert result == {'Header': [2, 3, 6, 7]}
 

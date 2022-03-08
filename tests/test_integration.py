@@ -2,10 +2,10 @@
 import pytest
 from validator903.config import configured_errors, column_names
 import pandas as pd
-from validator903.types import ErrorDefinition
+from validator903.types import ErrorDefinition, MissingMetadataError
 from validator903.datastore import copy_datastore
 
-def test_all_configured_errors():
+def test_all_configured_error_definitions():
     codes = []
     for error, _ in configured_errors:
         # Check that all errors are ErrorDefinition
@@ -29,8 +29,10 @@ def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_in
     dummy_data = eval(data_choice)
     for error_code, error_func in configured_errors:
         dummy_data_copy = copy_datastore(dummy_data)
-
-        result = error_func(dummy_data_copy)
+        try:
+            result = error_func(dummy_data_copy)
+        except MissingMetadataError:
+            result = {}
 
         for table_name, error_list in result.items():
             assert table_name in dummy_data_copy, f'Returned error table name {table_name} not recognized!'
@@ -40,7 +42,7 @@ def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_in
 
 
 def test_has_correct_table_names(dummy_input_data):
-    for error_code, error_func in configured_errors:
+    for error_def, error_func in configured_errors:
         dummy_input_data_copy = copy_datastore(dummy_input_data)
 
         # lazy engineer's no-change workaround - if Header's 'UASC' column or metadata's 'provider_info' is missing,
@@ -49,12 +51,15 @@ def test_has_correct_table_names(dummy_input_data):
         dummy_provider_info = pd.DataFrame(
             columns=['URN', 'LA_NAME_FROM_FILE', 'PLACE_CODES', 'PROVIDER_CODES',
                      'REG_END', 'POSTCODE', 'LA_NAME_INFERRED', 'LA_CODE_INFERRED'],
-            index=[0,1,2,3,4,5],
+            index=[0, 1, 2, 3, 4, 5],
             data='nonsense'
         )
         dummy_input_data_copy['metadata'].update({'provider_info': dummy_provider_info})
 
         result = error_func(dummy_input_data_copy)
-        assert len(result) > 0, f'Validator for {error_code} does not appear to operate on any configured table names - check spelling!'
-        assert all(r in dummy_input_data_copy for r in result), f'Validator for {error_code} returns a wrong table name!'
+
+        errors_skipped_for_csv = ('105', )
+        if error_def.code.lower() not in errors_skipped_for_csv:
+            assert len(result) > 0, f'Validator for {error_def} does not appear to operate on any configured table names - check spelling!'
+        assert all(r in dummy_input_data_copy for r in result), f'Validator for {error_def} returns a wrong table name!'
 

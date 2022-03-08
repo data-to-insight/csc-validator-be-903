@@ -61,3 +61,6 @@ class UploadedFile(TypedDict):
 class UploadError(Exception):
     pass
 
+class MissingMetadataError(KeyError):
+    pass
+

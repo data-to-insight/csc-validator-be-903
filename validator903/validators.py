@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .datastore import merge_postcodes
-from .types import ErrorDefinition
+from .types import ErrorDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
 def validate_633():
@@ -130,11 +130,8 @@ def validate_164():
                 header = pd.concat((header, uasc), axis=0)
 
             if 'UASC' in header.columns:
-                print(header.to_string())
                 header = header[header.UASC == '1'].drop_duplicates('CHILD')
                 # drop all CHILD IDs that ever have UASC == 1
-                print(header.to_string())
-                print(epi.to_string())
                 epi = (epi
                        .merge(header[['CHILD']], how='left', on='CHILD', indicator=True)
                        .query('_merge == "left_only"'))
@@ -239,6 +236,8 @@ def validate_392A():
             return {'Episodes': err_list}
 
     return error, _validate
+
+
 def validate_229():
     error = ErrorDefinition(
         code = '229',
@@ -802,7 +801,6 @@ def validate_434():
             return {}
         else:
             episodes = dfs['Episodes']
-            print(episodes)
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             # create columns of previous values
 
@@ -851,7 +849,6 @@ def validate_336():
             episodes['is_first_episode'] = False
             episodes.loc[sorted_and_grouped_eps['DECOM'].idxmin(), 'is_first_episode'] = True
 
-            print(episodes)
             # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of:
             # ('A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6')
             mask = (
@@ -875,9 +872,16 @@ def validate_105():
     )
 
     def _validate(dfs):
-        if ('Header' not in dfs) or ('UASC' not in dfs['Header'].columns):
+        if 'Header' not in dfs:
             return {}
         else:
+            try:
+                file_format = dfs['metadata']['file_format']
+            except KeyError as e:
+                raise MissingMetadataError(*e.args)
+            if file_format == 'csv':
+                return {}
+
             header = dfs['Header']
             code_list = [0, 1]
 
@@ -3244,6 +3248,369 @@ def validate_217():
 
     return error, _validate
 
+
+def validate_205A():
+    error = ErrorDefinition(
+        code = '205A',
+        description = 'Child identified as UASC last year is no longer UASC this year, but date UASC ceased in both '
+                      'years does not support this.',
+        affected_fields=['CHILD', 'UASC'],
+    )
+
+    def _validate(dfs):
+        try:
+            file_format = dfs['metadata']['file_format']
+        except KeyError as e:
+            raise MissingMetadataError(*e.args)
+
+        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+            return {}
+        elif file_format == 'xml' and ('Header' not in dfs or 'Header_last' not in dfs):
+            return {}
+        elif all(i in dfs for i in ('Header', 'Header_last', 'UASC', 'UASC_last')):
+            return_header_errors = True
+
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+        elif file_format == 'csv':
+            # for csv uploads, the Header table gets the UASC column added in ingress if UASC is present,
+            # as does Header_last if UASC_last is present.  Therefore use Header['UASC'] if present, else make our own
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            if 'Header' in dfs:
+                return_header_errors = True
+
+                header = dfs['Header']
+            else:
+                return_header_errors = False
+
+                header = uasc[['CHILD']].copy()
+                header['UASC'] = '0'
+                uasc_inds = uasc.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header.loc[uasc_inds, 'UASC'] = '1'
+            if 'Header_last' in dfs:
+                header_last = dfs['Header_last']
+            else:
+                header_last = uasc_last[['CHILD']].copy()
+                header_last['UASC'] = '0'
+                uasc_inds = uasc_last.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header_last.loc[uasc_inds, 'UASC'] = '1'
+        else:
+            raise RuntimeError("Table selection failed (205C). This shouldn't be possible.")
+        if 'UASC' not in header.columns or 'UASC' not in header_last.columns:
+            return {}
+
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'], format='%d/%m/%Y', errors='coerce')
+        collection_end = pd.to_datetime(dfs['metadata']['collection_end'], format='%d/%m/%Y', errors='coerce')
+        collection_start_last = collection_start + pd.offsets.DateOffset(years=-1)
+        collection_end_last = collection_end + pd.offsets.DateOffset(years=-1)
+
+        uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'],format='%d/%m/%Y',errors='coerce')
+
+        header.reset_index(inplace=True)
+        uasc.reset_index(inplace=True)
+
+        merged_current = (uasc[['CHILD', 'DUC', 'index']]
+                          .merge(header[['CHILD', 'UASC', 'index']], how='left',
+                                 on='CHILD', suffixes=('_uasc','_header')))
+
+        merged_last = (uasc_last[['CHILD', 'DUC']]
+                       .merge(header_last[['CHILD', 'UASC']], how='left',
+                                   on='CHILD'))
+
+        all_merged = (merged_current
+                      .merge(merged_last, how='left',
+                              on=['CHILD'], suffixes=('', '_last'), indicator=True))
+
+        last_year_only = (
+                (all_merged['UASC'].astype(str) != '1')
+                & (all_merged['UASC_last'].astype(str) == '1')
+        )
+        duc_last_in_prev_year = (
+                (all_merged['DUC_last'] >= collection_start_last)
+                & (all_merged['DUC_last'] <= collection_end_last)
+        )
+        uasc_current_duc = all_merged['DUC'].notna()
+
+        error_mask = last_year_only & (uasc_current_duc | ~duc_last_in_prev_year)
+
+        error_locations_uasc = (all_merged
+                                .loc[error_mask, 'index_uasc']
+                                .dropna()
+                                .astype(int)
+                                .sort_values())
+        error_locations_header = (all_merged.loc[error_mask, 'index_header']
+                                  .dropna()
+                                  .astype(int)
+                                  .sort_values())
+        if return_header_errors:
+            return {'UASC': error_locations_uasc.to_list(),
+                    'Header': error_locations_header.to_list()}
+        else:
+            return {'UASC': error_locations_uasc.to_list()}
+
+    return error, _validate
+
+def validate_205B():
+    error = ErrorDefinition(
+        code = '205B',
+        description = 'Child previously identified as UASC is also UASC this year, but date UASC ceased in both years does not support this.',
+        affected_fields=['DUC', 'UASC'],
+    )
+
+    def _validate(dfs):
+        try:
+            file_format = dfs['metadata']['file_format']
+        except KeyError as e:
+            raise MissingMetadataError(*e.args)
+
+        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+            return {}
+        elif file_format == 'xml' and ('Header' not in dfs or 'Header_last' not in dfs):
+            return {}
+        elif all(i in dfs for i in ('Header', 'Header_last', 'UASC', 'UASC_last')):
+            return_header_errors = True
+
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+        elif file_format == 'csv':
+            # for csv uploads, the Header table gets the UASC column added in ingress if UASC is present,
+            # as does Header_last if UASC_last is present.  Therefore use Header['UASC'] if present, else make our own
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            if 'Header' in dfs:
+                return_header_errors = True
+
+                header = dfs['Header']
+            else:
+                return_header_errors = False
+
+                header = uasc[['CHILD']].copy()
+                header['UASC'] = '0'
+                uasc_inds = uasc.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header.loc[uasc_inds , 'UASC'] = '1'
+            if 'Header_last' in dfs:
+                header_last = dfs['Header_last']
+            else:
+                header_last = uasc_last[['CHILD']].copy()
+                header_last['UASC'] = '0'
+                uasc_inds = uasc_last.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header_last.loc[uasc_inds, 'UASC'] = '1'
+        else:
+            raise RuntimeError("Table selection failed (205B). This shouldn't be possible.")
+        if 'UASC' not in header.columns or 'UASC' not in header_last.columns:
+            return {}
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+        collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+        collection_start_last = collection_start + pd.offsets.DateOffset(years=-1)
+        collection_end_last = collection_end + pd.offsets.DateOffset(years=-1)
+
+        uasc['DOB'] = pd.to_datetime(uasc['DOB'], format='%d/%m/%Y', errors='coerce')
+        uasc['DUC'] = pd.to_datetime(uasc['DUC'], format='%d/%m/%Y', errors='coerce')
+        uasc_last['DOB'] = pd.to_datetime(uasc_last['DOB'], format='%d/%m/%Y', errors='coerce')
+        uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'], format='%d/%m/%Y', errors='coerce')
+        uasc['DOB18'] = uasc_last['DOB'] + pd.offsets.DateOffset(years=18)
+
+        header['HDR_INDEX'] = header.index
+        header_last.reset_index(inplace=True)
+
+        header.reset_index(inplace=True)
+        uasc.reset_index(inplace=True)
+
+        merged_current = (uasc[['CHILD', 'DUC', 'DOB18', 'index']]
+                          .merge(header[['CHILD', 'UASC', 'index']], how='left',
+                                 on='CHILD', suffixes=('_uasc','_header')))
+
+        merged_last = (uasc_last[['CHILD', 'DUC']]
+                       .merge(header_last[['CHILD', 'UASC']], how='left',
+                                   on='CHILD'))
+
+        all_merged = (merged_current
+                      .merge(merged_last, how='left',
+                              on=['CHILD'], suffixes=('', '_last'), indicator=True))
+
+        uasc_in_both_years = ((all_merged['UASC'].astype(str) == '1')
+                              & (all_merged['UASC_last'].astype(str) == '1'))
+        uasc_current_duc = (all_merged['DUC'] >= collection_start) & (all_merged['DUC'] <= collection_end)
+        prev_duc_is_18th = all_merged['DUC_last'] == all_merged['DOB18']
+        current_duc_is_18th = all_merged['DUC'] == all_merged['DUC_last']
+
+        print(pd.concat((all_merged, pd.DataFrame({'b': uasc_in_both_years,
+                                                   'cd':uasc_current_duc,
+                                                   'c18': current_duc_is_18th,
+                                                   'p18': prev_duc_is_18th})), axis=1).to_string())
+
+        error_mask = uasc_in_both_years & ((~uasc_current_duc & ~current_duc_is_18th) | ~prev_duc_is_18th)
+
+        error_locations_uasc = all_merged.loc[error_mask, 'index_uasc']
+        error_locations_header = all_merged.loc[error_mask, 'index_header']
+
+        if return_header_errors:
+            return {'UASC': error_locations_uasc.to_list(),
+                    'Header': error_locations_header.to_list()}
+        else:
+            return {'UASC': error_locations_uasc.to_list()}
+
+    return error, _validate
+
+def validate_205C():
+    error = ErrorDefinition(
+        code = '205C',
+        description = 'Child not identified as UASC either this year or last year but date UASC ceased has been provided.',
+        affected_fields=['DUC','UASC'],
+    )
+
+    def _validate(dfs):
+        try:
+            file_format = dfs['metadata']['file_format']
+        except KeyError as e:
+            raise MissingMetadataError(*e.args)
+
+        if 'UASC' not in dfs or 'UASC_last' not in dfs:
+            return {}
+        elif file_format == 'xml' and ('Header' not in dfs or 'Header_last' not in dfs):
+            return {}
+        elif all(i in dfs for i in ('Header', 'Header_last', 'UASC', 'UASC_last')):
+            return_header_errors = True
+
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            header = dfs['Header']
+            header_last = dfs['Header_last']
+        elif file_format == 'csv':
+            # for csv uploads, the Header table gets the UASC column added in ingress if UASC is present,
+            # as does Header_last if UASC_last is present.  Therefore use Header['UASC'] if present, else make our own
+            uasc = dfs['UASC']
+            uasc_last = dfs['UASC_last']
+            if 'Header' in dfs:
+                return_header_errors = True
+
+                header = dfs['Header']
+            else:
+                return_header_errors = False
+
+                header = uasc[['CHILD']].copy()
+                header['UASC'] = '0'
+                uasc_inds = uasc.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header.loc[uasc_inds , 'UASC'] = '1'
+            if 'Header_last' in dfs:
+                header_last = dfs['Header_last']
+            else:
+                header_last = uasc_last[['CHILD']].copy()
+                header_last['UASC'] = '0'
+                uasc_inds = uasc_last.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+                header_last.loc[uasc_inds, 'UASC'] = '1'
+        else:
+            raise RuntimeError("Table selection failed (205C). This shouldn't be possible.")
+        if 'UASC' not in header.columns or 'UASC' not in header_last.columns:
+            return {}
+
+        collection_start = pd.to_datetime(dfs['metadata']['collection_start'],format='%d/%m/%Y',errors='coerce')
+        collection_end = pd.to_datetime(dfs['metadata']['collection_end'],format='%d/%m/%Y',errors='coerce')
+        collection_start_last = collection_start + pd.offsets.DateOffset(years=-1)
+        collection_end_last = collection_end + pd.offsets.DateOffset(years=-1)
+
+        uasc['DOB'] = pd.to_datetime(uasc['DOB'], format='%d/%m/%Y', errors='coerce')
+        uasc['DUC'] = pd.to_datetime(uasc['DUC'], format='%d/%m/%Y', errors='coerce')
+        uasc_last['DOB'] = pd.to_datetime(uasc_last['DOB'], format='%d/%m/%Y', errors='coerce')
+        uasc_last['DUC'] = pd.to_datetime(uasc_last['DUC'], format='%d/%m/%Y', errors='coerce')
+        uasc['DOB18'] = uasc_last['DOB'] + pd.offsets.DateOffset(years=18)
+
+        header['HDR_INDEX'] = header.index
+        header_last.reset_index(inplace=True)
+
+        header.reset_index(inplace=True)
+        uasc.reset_index(inplace=True)
+
+        merged_current = (uasc[['CHILD', 'DUC', 'DOB18', 'index']]
+                          .merge(header[['CHILD', 'UASC', 'index']], how='left',
+                                 on='CHILD', suffixes=('_uasc','_header')))
+
+        merged_last = (uasc_last[['CHILD', 'DUC']]
+                       .merge(header_last[['CHILD', 'UASC']], how='left',
+                                   on='CHILD'))
+
+        all_merged = (merged_current
+                      .merge(merged_last, how='left',
+                              on=['CHILD'], suffixes=('', '_last'), indicator=True))
+
+        never_uasc = ((all_merged[['UASC', 'UASC_last']] == '0')
+                      | all_merged[['UASC', 'UASC_last']].isna()).all(axis=1)
+        has_duc = all_merged[['DUC', 'DUC_last']].notna().any(axis=1)
+
+        error_mask = never_uasc & has_duc
+
+        error_locations_uasc = (all_merged.loc[error_mask, 'index_uasc']
+                                .dropna()
+                                .astype(int)
+                                .sort_values())
+        error_locations_header = (all_merged.loc[error_mask, 'index_header']
+                                             .dropna()
+                                             .astype(int)
+                                             .sort_values())
+        print(pd.concat((all_merged, pd.DataFrame({'u':never_uasc, 'd':has_duc})), axis=1).to_string())
+        if return_header_errors:
+            return {'UASC': error_locations_uasc.to_list(),
+                    'Header': error_locations_header.to_list()}
+        else:
+            return {'UASC': error_locations_uasc.to_list()}
+
+    return error, _validate
+
+
+def validate_205D():
+    error = ErrorDefinition(
+        code = '205D',
+        description = 'Child identified as UASC this year but not identified as UASC status provided for the child last year.',
+        affected_fields=['UASC', 'CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' in dfs:
+            return_header_errors = True
+
+            header = dfs['Header']
+        elif 'UASC' in dfs:
+            uasc = dfs['UASC']
+            return_header_errors = False
+
+            header = uasc[['CHILD']].copy()
+            header['UASC'] = '0'
+            uasc_inds = uasc.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+            header.loc[uasc_inds , 'UASC'] = '1'
+        else:
+            return {}
+        if 'Header_last' in dfs:
+            header_last = dfs['Header_last']
+        elif 'UASC_last' in dfs:
+            uasc_last = dfs['UASC_last']
+            header_last = uasc_last[['CHILD']].copy()
+            header_last['UASC'] = '0'
+            uasc_inds = uasc_last.drop(['CHILD', 'DOB'], axis='columns').notna().any(axis=1)
+            header_last.loc[uasc_inds, 'UASC'] = '1'
+        else:
+            return {}
+        if 'UASC' not in header.columns or 'UASC' not in header_last.columns:
+            return {}
+        print(header.to_string())
+        print(header_last.to_string())
+        all_merged = (header
+                      .reset_index()
+                      .merge(header_last, how='inner',
+                             on=['CHILD'], suffixes=('', '_last'), indicator=True))
+
+        error_mask = (all_merged['UASC'] == '1') & (all_merged['UASC_last'] != '1')
+        print(all_merged.to_string())
+        errors = all_merged.loc[error_mask, 'index'].to_list()
+        if return_header_errors:
+            return {'Header': errors}
+        else:
+            return {'UASC': errors}
+    return error, _validate
 
 def validate_518():
     error = ErrorDefinition(

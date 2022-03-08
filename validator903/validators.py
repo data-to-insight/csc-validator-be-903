@@ -4,6 +4,35 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_633():
+    error = ErrorDefinition(
+      code = '633',
+      description = 'Local authority code where previous permanence option was arranged is not a valid value.',
+      affected_fields = ['LA_PERM']
+    )
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        else:
+            prevperm = dfs['PrevPerm']
+            la_codes = '800,889,822,301,304,303,330,825,837,302,846,370,350,890,867,380,305,801,351,873,823,895,896,' \
+                       '381,909,202,908,331,306,841,830,831,878,371,835,332,840,307,308,811,881,845,390,916,203,876,' \
+                       '850,311,204,884,312,205,313,805,919,310,309,420,921,206,207,886,810,382,314,340,888,208,856,' \
+                       '383,855,209,925,341,201,821,352,806,887,826,315,929,812,391,926,892,813,802,928,891,392,316,' \
+                       '815,353,931,879,836,851,874,807,354,317,870,318,372,857,333,935,343,803,373,342,893,356,355,' \
+                       '871,394,334,933,882,936,861,852,319,860,808,393,866,210,357,894,883,880,358,211,937,869,320,' \
+                       '359,865,384,335,336,212,868,872,885,344,877,213,938,816,999'
+            out_of_uk_codes = ['WAL', 'SCO', 'NUK', 'NIR']
+            valid_values = la_codes.split(',') + out_of_uk_codes
+
+            # Where provided <LA_PERM> must be a valid value
+            mask = prevperm['LA_PERM'].notna() & (~prevperm['LA_PERM'].astype('str').isin(valid_values))
+
+            # error locations
+            error_locs = prevperm.index[mask]
+            return {'PrevPerm': error_locs.tolist()}
+    return error, _validate
+
 
 def validate_426():
     error = ErrorDefinition(
@@ -1160,7 +1189,7 @@ def validate_577():
             missing = dfs['Missing']
 
             episodes['original_index'] = episodes.index
-          
+
             # put dates in appropriate format.
             missing['MIS_END'] = pd.to_datetime(missing['MIS_END'], format='%d/%m/%Y', errors='coerce')
             missing['MIS_START'] = pd.to_datetime(missing['MIS_START'], format='%d/%m/%Y', errors='coerce')
@@ -1210,7 +1239,7 @@ def validate_577():
 
             # Drop rows where child was not present in 'Missing' table.
             pocs = pocs[pocs['index_ing'].notna()]
-          
+
             mask = pocs.groupby('index_ing')['out_of_poc'].transform('min')
             miss_error_locs = pocs.loc[mask, 'index_ing'].astype(int).unique().tolist()
 
@@ -1271,7 +1300,7 @@ def validate_578():
             missing = dfs['Missing']
 
             episodes['original_index'] = episodes.index
-          
+
             # convert dates
             episodes['DEC'] = pd.to_datetime(episodes['DEC'], format='%d/%m/%Y', errors='coerce')
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
@@ -1286,10 +1315,10 @@ def validate_578():
             episodes = episodes.merge(episodes, left_on='index', right_on='index+1',
                                   how='left', suffixes=[None, '_prev'])
             episodes = episodes[['original_index', 'DECOM', 'DEC', 'DEC_prev', 'CHILD', 'CHILD_prev', 'LS']]
-    
+
             episodes['new_period'] = (
                     (episodes['DECOM'] > episodes['DEC_prev'])
-                    | (episodes['CHILD'] != episodes['CHILD_prev']) 
+                    | (episodes['CHILD'] != episodes['CHILD_prev'])
             )
             episodes['period_id'] = episodes['new_period'].astype(int).cumsum()
 

@@ -33,6 +33,36 @@ def validate_633():
             return {'PrevPerm': error_locs.tolist()}
     return error, _validate
 
+
+def validate_426():
+    error = ErrorDefinition(
+        code='426',
+        description='A child receiving respite care cannot be recorded under a legal status of V3 and V4 in ' +
+                    'the same year.',
+        affected_fields=['LS'],
+    )
+
+    def _validate(dfs):
+        if 'Episodes' not in dfs:
+            return {}
+        else:
+            epi = dfs['Episodes']
+            epi_v3 = epi[epi['LS'] == 'V3']
+            epi_v4 = epi[epi['LS'] == 'V4']
+
+            m_coh = epi_v3.merge(epi_v4, on='CHILD', how='inner')
+            err_child = m_coh['CHILD'].unique().tolist()
+
+            err_l1 = epi_v3[epi_v3['CHILD'].isin(err_child)].index.tolist()
+            err_l2 = epi_v4[epi_v4['CHILD'].isin(err_child)].index.tolist()
+
+            err_list = err_l1 + err_l2
+            err_list.sort()
+            return {'Episodes': err_list}
+
+    return error, _validate
+
+
 #!# big potential false positives, as this only operates on the current and previous year data
 def validate_1002():
     error = ErrorDefinition(

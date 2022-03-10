@@ -5189,7 +5189,7 @@ def validate_131():
             'NREQ',
             'RHOM'
         ]
-        mask = care_leavers['IN_TOUCH'].isin(code_list) | care_leavers['IN_TOUCH'].isna()
+        mask = care_leavers['IN_TOUCH'].isin(code_list)
 
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]

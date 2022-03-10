@@ -2315,7 +2315,7 @@ def test_validate_133():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [5, 6]}
+    assert result == {'OC3': [2, 5, 6]}
 
 
 def test_validate_565():

@@ -3057,7 +3057,7 @@ def validate_133():
                            'R2', 'S2', 'T1', 'T2', 'U1', 'U2', 'V1', 'V2', 'W1', 'W2', 'X2', 'Y1', 'Y2', 'Z1', 'Z2',
                            '0']
 
-            error_mask = ~oc3['ACCOM'].isna() & ~oc3['ACCOM'].isin(valid_codes)
+            error_mask = ~oc3['ACCOM'].isin(valid_codes)
 
             error_locations = oc3.index[error_mask]
 

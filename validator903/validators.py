@@ -3057,7 +3057,7 @@ def validate_133():
                            'R2', 'S2', 'T1', 'T2', 'U1', 'U2', 'V1', 'V2', 'W1', 'W2', 'X2', 'Y1', 'Y2', 'Z1', 'Z2',
                            '0']
 
-            error_mask = ~oc3['ACCOM'].isin(valid_codes)
+            error_mask = ~oc3['ACCOM'].isna() & ~oc3['ACCOM'].isin(valid_codes)
 
             error_locations = oc3.index[error_mask]
 
@@ -5159,7 +5159,7 @@ def validate_132():
             'G6',
             '0'
         ]
-        mask = care_leavers['ACTIV'].astype(str).isin(code_list)
+        mask = care_leavers['ACTIV'].astype(str).isin(code_list) | care_leavers['ACTIV'].isna()
 
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]
@@ -5189,7 +5189,7 @@ def validate_131():
             'NREQ',
             'RHOM'
         ]
-        mask = care_leavers['IN_TOUCH'].isin(code_list)
+        mask = care_leavers['IN_TOUCH'].isin(code_list) | care_leavers['IN_TOUCH'].isna()
 
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]

@@ -4,6 +4,231 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+def validate_INT01():
+    error = ErrorDefinition(
+        code='INT01',
+        description='Internal Check: Child in AD1 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['AD1']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.tolist()}
+
+    return error, _validate
+
+
+def validate_INT02():
+    error = ErrorDefinition(
+        code='INT02',
+        description='Internal Check: Child in PlacedAdoption does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PlacedAdoption']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'PlacedAdoption': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT03():
+    error = ErrorDefinition(
+        code='INT03',
+        description='Internal Check: Child in Episodes does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Episodes']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'Episodes': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT04():
+    error = ErrorDefinition(
+        code='INT04',
+        description='Internal Check: Child in Missing does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Missing']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'Missing': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT05():
+    error = ErrorDefinition(
+        code='INT05',
+        description='Internal Check: Child in OC2 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC2' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC2']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT06():
+    error = ErrorDefinition(
+        code='INT06',
+        description='Internal Check: Child in OC3 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC3']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT07():
+    error = ErrorDefinition(
+        code='INT07',
+        description='Internal Check: Child in PrevPerm does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PrevPerm' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PrevPerm']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT08():
+    error = ErrorDefinition(
+        code='INT08',
+        description='Internal Check: Child in Reviews does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Reviews' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Reviews']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'Reviews': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
+def validate_INT09():
+    error = ErrorDefinition(
+        code='INT09',
+        description='Internal Check: Child in UASC does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.tolist()}
+
+    return error, _validate 
+
+
 def validate_633():
     error = ErrorDefinition(
       code = '633',

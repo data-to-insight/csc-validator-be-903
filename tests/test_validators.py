@@ -165,6 +165,93 @@ def test_validate_426():
     assert result == {'Episodes': [2, 3, 6, 7, 8]}
 
 
+#All of the INTx rules use the following two dataframes.
+
+fake_INT_header = pd.DataFrame({
+    'CHILD': ['101','102','103','104'],
+    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA],
+    'SEX': ['M', 'F', 'M', 'F']
+    })
+
+fake_INT_file = pd.DataFrame({
+    'CHILD': ['101','102','103','105'],
+    'DOB': ['01/04/2020', pd.NA, '04/01/2020', '01/04/2020'],
+    'SEX': ['M', 'F', 'F', 'F']
+    })
+
+def test_validate_INT01():
+
+    erro_defn, error_func = validate_INT01()
+
+    fake_dfs = {'Header': fake_INT_header, 'AD1': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [3]}
+
+def test_validate_INT02():
+
+    erro_defn, error_func = validate_INT02()
+
+    fake_dfs = {'Header': fake_INT_header, 'PlacedAdoption': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [3]}
+
+def test_validate_INT03():
+
+    erro_defn, error_func = validate_INT03()
+
+    fake_dfs = {'Header': fake_INT_header, 'Episodes': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [3]}
+
+def test_validate_INT04():
+
+    erro_defn, error_func = validate_INT04()
+
+    fake_dfs = {'Header': fake_INT_header, 'Missing': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Missing': [3]}
+
+def test_validate_INT05():
+
+    erro_defn, error_func = validate_INT05()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC2': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [3]}
+
+def test_validate_INT06():
+
+    erro_defn, error_func = validate_INT06()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC3': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [3]}
+
+def test_validate_INT07():
+
+    erro_defn, error_func = validate_INT07()
+
+    fake_dfs = {'Header': fake_INT_header, 'PrevPerm': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [3]}
+
+def test_validate_INT08():
+
+    erro_defn, error_func = validate_INT08()
+
+    fake_dfs = {'Header': fake_INT_header, 'Reviews': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Reviews': [3]}
+
+def test_validate_INT09():
+
+    erro_defn, error_func = validate_INT09()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [3]}
+
+
 def test_validate_1002():
     fake_episodes_prev = pd.DataFrame({
       'CHILD': ['101','101','102','102','103'],

@@ -2134,8 +2134,8 @@ def test_validate_345():
     fake_data_oc3 = pd.DataFrame({
         'CHILD': ['A', 'B', 'C', 'D', 'E'],
         'IN_TOUCH': ['No', 'YES', 'YES', pd.NA, 'Yes'],
-        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
-        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX'],
+        'ACTIV': [pd.NA, 0, 'XXX', pd.NA, 'XXX'],
+        'ACCOM': [pd.NA, pd.NA, '0', 'XXX', 'XXX'],
     })
     fake_dfs = {'OC3': fake_data_oc3}
     error_defn, error_func = validate_345()

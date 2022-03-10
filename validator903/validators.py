@@ -2758,8 +2758,8 @@ def validate_345():
             return {}
         else:
             oc3 = dfs['OC3']
-            # If <IN_TOUCH> = 'Yes' then <ACTIV> and <ACCOM> must be provided
-            mask = (oc3['IN_TOUCH'] == 'YES') & (oc3['ACTIV'].isna() | oc3['ACCOM'].isna())
+            # If <IN_TOUCH> = 'Yes' then <ACTIV> and <ACCOM> must not be 0
+            mask = (oc3['IN_TOUCH'] == 'YES') & ((oc3['ACTIV'].astype(str) == '0') | (oc3['ACCOM'].astype(str) == '0'))
             error_locations = oc3.index[mask]
             return {'OC3': error_locations.to_list()}
 

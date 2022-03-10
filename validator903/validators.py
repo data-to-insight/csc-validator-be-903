@@ -5159,7 +5159,7 @@ def validate_132():
             'G6',
             '0'
         ]
-        mask = care_leavers['ACTIV'].astype(str).isin(code_list) | care_leavers['ACTIV'].isna()
+        mask = care_leavers['ACTIV'].astype(str).isin(code_list)
 
         validation_error_mask = ~mask
         validation_error_locations = care_leavers.index[validation_error_mask]

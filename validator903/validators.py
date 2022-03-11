@@ -813,7 +813,7 @@ def validate_434():
                     & (episodes['RNE'] == 'L')
                     & (
                             (episodes['LS'] == episodes['LS'].shift(1))
-                            | (episodes[cols] != episodes[cols].shift(1)).any(axis=1)
+                            | (episodes[cols].fillna('') != episodes[cols].shift(1).fillna('')).any(axis=1)
                     )
             )
             # error locations

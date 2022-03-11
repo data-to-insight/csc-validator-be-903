@@ -453,6 +453,31 @@ def validate_INT18():
     return error, _validate
 
 
+def validate_INT21():
+    error = ErrorDefinition(
+        code='INT21',
+        description='Internal Check: SEX in UASC is different to SEX in Header.',
+        affected_fields=['SEX'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'SEX', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['SEX_header'] != merged['SEX_file']) & (merged['SEX_header'].notna() & merged['SEX_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
 def validate_633():
     error = ErrorDefinition(
       code = '633',

@@ -315,6 +315,14 @@ def test_validate_INT18():
     result = error_func(fake_dfs)
     assert result == {'UASC': [2]}
 
+def test_validate_INT21():
+
+    erro_defn, error_func = validate_INT21()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [2]}
+
 
 def test_validate_1002():
     fake_episodes_prev = pd.DataFrame({

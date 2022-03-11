@@ -168,9 +168,9 @@ def test_validate_426():
 #All of the INTx rules use the following two dataframes.
 
 fake_INT_header = pd.DataFrame({
-    'CHILD': ['101','102','103','104'],
-    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA],
-    'SEX': ['M', 'F', 'M', 'F']
+    'CHILD': ['101','102','103','104','101','102','103','104'],
+    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA],
+    'SEX': ['M', 'F', 'M', 'F', 'M', 'F', 'M', 'F']
     })
 
 fake_INT_file = pd.DataFrame({
@@ -250,6 +250,70 @@ def test_validate_INT09():
     fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
     result = error_func(fake_dfs)
     assert result == {'UASC': [3]}
+
+def test_validate_INT11():
+
+    erro_defn, error_func = validate_INT11()
+
+    fake_dfs = {'Header': fake_INT_header, 'AD1': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [2]}
+
+def test_validate_INT12():
+
+    erro_defn, error_func = validate_INT12()
+
+    fake_dfs = {'Header': fake_INT_header, 'PlacedAdoption': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [2]}
+
+def test_validate_INT13():
+
+    erro_defn, error_func = validate_INT13()
+
+    fake_dfs = {'Header': fake_INT_header, 'Missing': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Missing': [2]}
+
+def test_validate_INT14():
+
+    erro_defn, error_func = validate_INT14()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC2': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [2]}
+
+def test_validate_INT15():
+
+    erro_defn, error_func = validate_INT15()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC3': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [2]}
+
+def test_validate_INT16():
+
+    erro_defn, error_func = validate_INT16()
+
+    fake_dfs = {'Header': fake_INT_header, 'PrevPerm': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [2]}
+
+def test_validate_INT17():
+
+    erro_defn, error_func = validate_INT17()
+
+    fake_dfs = {'Header': fake_INT_header, 'Reviews': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Reviews': [2]}
+
+def test_validate_INT18():
+
+    erro_defn, error_func = validate_INT18()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [2]}
 
 
 def test_validate_1002():

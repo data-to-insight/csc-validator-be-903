@@ -20,11 +20,11 @@ def validate_INT01():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'AD1': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
 
     return error, _validate
 
@@ -45,11 +45,11 @@ def validate_INT02():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'PlacedAdoption': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PlacedAdoption': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -70,11 +70,11 @@ def validate_INT03():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'Episodes': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Episodes': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -95,11 +95,11 @@ def validate_INT04():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'Missing': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Missing': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -120,11 +120,11 @@ def validate_INT05():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'OC2': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -145,11 +145,11 @@ def validate_INT06():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'OC3': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -170,11 +170,11 @@ def validate_INT07():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'PrevPerm': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -195,11 +195,11 @@ def validate_INT08():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'Reviews': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Reviews': eps_error_locations.unique().tolist()}
 
     return error, _validate 
 
@@ -220,13 +220,237 @@ def validate_INT09():
 
             file['index_file'] = file.index
           
-            merged = header.merge(file['CHILD'], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
-            eps_error_locations = file.loc[mask, 'index_file']
-            return {'UASC': eps_error_locations.tolist()}
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
 
     return error, _validate 
+
+
+def validate_INT11():
+    error = ErrorDefinition(
+        code='INT11',
+        description='Internal Check: DOB in AD1 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['AD1']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT12():
+    error = ErrorDefinition(
+        code='INT12',
+        description='Internal Check: DOB in PlacedAdoption is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PlacedAdoption']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PlacedAdoption': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT13():
+    error = ErrorDefinition(
+        code='INT13',
+        description='Internal Check: DOB in Missing is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Missing']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Missing': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT14():
+    error = ErrorDefinition(
+        code='INT14',
+        description='Internal Check: DOB in OC2 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC2' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC2']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT15():
+    error = ErrorDefinition(
+        code='INT15',
+        description='Internal Check: DOB in OC3 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC3']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT16():
+    error = ErrorDefinition(
+        code='INT16',
+        description='Internal Check: DOB in PrevPerm is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PrevPerm' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PrevPerm']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT17():
+    error = ErrorDefinition(
+        code='INT17',
+        description='Internal Check: DOB in Reviews is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Reviews' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Reviews']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Reviews': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT18():
+    error = ErrorDefinition(
+        code='INT18',
+        description='Internal Check: DOB in UASC is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+          
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
 
 
 def validate_633():

@@ -53,6 +53,7 @@ List of all configured errors for validation.
 These all should have return type (Error, Dict[str, DataFrame])
 """
 configured_errors = sorted([
+    validate_EPI(),
     validate_INT01(),
     validate_INT02(),
     validate_INT03(),

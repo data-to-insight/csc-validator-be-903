@@ -4,6 +4,44 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+#EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
+def validate_EPI():
+    error = ErrorDefinition(
+        code='EPI',
+        description='WARNING: Episodes need to be loaded for this child before further validation is possible',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            
+            if 'Episodes' not in dfs:
+                episodes = pd.DataFrame(columns = ['CHILD'])
+            else:
+                episodes = dfs['Episodes']
+
+            if 'OC3' not in dfs:
+                oc3 = pd.DataFrame(columns = ['CHILD'])
+            else:
+                oc3 = dfs['OC3']
+
+            header['index_header'] = header.index
+          
+            merged = header.merge(episodes['CHILD'], on='CHILD', indicator='_merge_eps', how='left', suffixes=['', '_episodes'])
+
+            merged = merged.merge(oc3['CHILD'], on='CHILD', indicator='_merge_oc3', how='left', suffixes=['','_oc3'])
+
+            mask = (merged['_merge_eps'] == 'left_only') & (merged['_merge_oc3'] == 'left_only')
+            eps_error_locations = merged.loc[mask, 'index_header']
+            return {'Header': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+#INT are non-DFE rules created for internal validation in the tool only.
 def validate_INT01():
     error = ErrorDefinition(
         code='INT01',

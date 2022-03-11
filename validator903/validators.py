@@ -516,6 +516,149 @@ def validate_INT21():
     return error, _validate
 
 
+def validate_INT31():
+    error = ErrorDefinition(
+        code='INT31',
+        description='Internal Check: Child should only exist once in AD1.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            file = dfs['AD1']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT32():
+    error = ErrorDefinition(
+        code='INT32',
+        description='Internal Check: Child should only exist once in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            file = dfs['Header']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'Header': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+def validate_INT33():
+    error = ErrorDefinition(
+        code='INT33',
+        description='Internal Check: Child should only exist once in OC2.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            file = dfs['OC2']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT34():
+    error = ErrorDefinition(
+        code='INT34',
+        description='Internal Check: Child should only exist once in OC3.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+            return {}
+        else:
+            file = dfs['OC3']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT35():
+    error = ErrorDefinition(
+        code='INT35',
+        description='Internal Check: Child should only exist once in PrevPerm.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        else:
+            file = dfs['PrevPerm']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT36():
+    error = ErrorDefinition(
+        code='INT36',
+        description='Internal Check: Child should only exist once in UASC.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
 def validate_633():
     error = ErrorDefinition(
       code = '633',

@@ -208,9 +208,9 @@ def test_validate_EPI2():
 #All of the INTx rules use the following two dataframes.
 
 fake_INT_header = pd.DataFrame({
-    'CHILD': ['101','102','103','104','101','102','103','104'],
-    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA],
-    'SEX': ['M', 'F', 'M', 'F', 'M', 'F', 'M', 'F']
+    'CHILD': ['101','102','103','104','101','102','103','104','106'],
+    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, pd.NA],
+    'SEX': ['M', 'F', 'M', 'F', 'M', 'F', 'M', 'F', pd.NA]
     })
 
 fake_INT_file = pd.DataFrame({
@@ -362,6 +362,54 @@ def test_validate_INT21():
     fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
     result = error_func(fake_dfs)
     assert result == {'UASC': [2]}
+
+def test_validate_INT31():
+
+    erro_defn, error_func = validate_INT31()
+
+    fake_dfs = {'AD1': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT32():
+
+    erro_defn, error_func = validate_INT32()
+
+    fake_dfs = {'Header': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT33():
+
+    erro_defn, error_func = validate_INT33()
+
+    fake_dfs = {'OC2': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT34():
+
+    erro_defn, error_func = validate_INT34()
+
+    fake_dfs = {'OC3': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT35():
+
+    erro_defn, error_func = validate_INT35()
+
+    fake_dfs = {'PrevPerm': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT36():
+
+    erro_defn, error_func = validate_INT36()
+
+    fake_dfs = {'UASC': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [0,1,2,3,4,5,6,7]}
 
 
 def test_validate_1002():

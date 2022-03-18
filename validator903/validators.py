@@ -2710,14 +2710,13 @@ def validate_442():
 
             code_list = ['V3', 'V4']
 
-            # merge left on episodes to get all children for which episodes have been recorded even if they do not exist on the header.
-            merged = episodes.merge(header, on=['CHILD'], how='left', suffixes=['_eps', '_er'])
+            # merge to get all children for which episodes have been recorded.
+            merged = episodes.merge(header, on=['CHILD'], how='inner', suffixes=['_eps', '_er'])
             # Where any episode present, with an <LS> not = 'V3' or 'V4' then <UPN> must be provided
             mask = (~merged['LS'].isin(code_list)) & merged['UPN'].isna()
-            episode_error_locs = merged.loc[mask, 'index_eps']
             header_error_locs = merged.loc[mask, 'index_er']
 
-            return {'Episodes': episode_error_locs.tolist(),
+            return {
                     # Select unique values since many episodes are joined to one header
                     # and multiple errors will be raised for the same index.
                     'Header': header_error_locs.dropna().unique().tolist()}

@@ -2117,7 +2117,7 @@ def test_validate_442():
     error_defn, error_func = validate_442()
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [0, 4, 7], 'Header': [0, 4]}
+    assert result == {'Header': [0, 4]}
 
 
 def test_validate_344():

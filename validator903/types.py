@@ -52,6 +52,11 @@ class ErrorDefinition:
         return self.sortable_code < other.sortable_code
 
 
+class IntegrityCheckDefinition(ErrorDefinition):
+    pass
+
+
+
 class UploadedFile(TypedDict):
     name: str
     fileText: bytes

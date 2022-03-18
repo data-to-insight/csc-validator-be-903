@@ -1,49 +1,12 @@
 import pandas as pd
 
 from .datastore import merge_postcodes
-from .types import ErrorDefinition, MissingMetadataError
+from .types import ErrorDefinition, IntegrityCheckDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
-
-#EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
-def validate_EPI():
-    error = ErrorDefinition(
-        code='EPI',
-        description='WARNING: Episodes need to be loaded for this child before further validation is possible',
-        affected_fields=['CHILD'],
-    )
-
-    def _validate(dfs):
-        if 'Header' not in dfs:
-            return {}
-        else:
-            header = dfs['Header']
-            
-            if 'Episodes' not in dfs:
-                episodes = pd.DataFrame(columns = ['CHILD'])
-            else:
-                episodes = dfs['Episodes']
-
-            if 'OC3' not in dfs:
-                oc3 = pd.DataFrame(columns = ['CHILD'])
-            else:
-                oc3 = dfs['OC3']
-
-            header['index_header'] = header.index
-          
-            merged = header.merge(episodes['CHILD'], on='CHILD', indicator='_merge_eps', how='left', suffixes=['', '_episodes'])
-
-            merged = merged.merge(oc3['CHILD'], on='CHILD', indicator='_merge_oc3', how='left', suffixes=['','_oc3'])
-
-            mask = (merged['_merge_eps'] == 'left_only') & (merged['_merge_oc3'] == 'left_only')
-            eps_error_locations = merged.loc[mask, 'index_header']
-            return {'Header': eps_error_locations.unique().tolist()}
-
-    return error, _validate
-
 
 #INT are non-DFE rules created for internal validation in the tool only.
 def validate_INT01():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT01',
         description='Internal Check: Child in AD1 does not exist in Header.',
         affected_fields=['CHILD'],
@@ -68,7 +31,7 @@ def validate_INT01():
 
 
 def validate_INT02():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT02',
         description='Internal Check: Child in PlacedAdoption does not exist in Header.',
         affected_fields=['CHILD'],
@@ -93,7 +56,7 @@ def validate_INT02():
 
 
 def validate_INT03():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT03',
         description='Internal Check: Child in Episodes does not exist in Header.',
         affected_fields=['CHILD'],
@@ -118,7 +81,7 @@ def validate_INT03():
 
 
 def validate_INT04():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT04',
         description='Internal Check: Child in Missing does not exist in Header.',
         affected_fields=['CHILD'],
@@ -143,7 +106,7 @@ def validate_INT04():
 
 
 def validate_INT05():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT05',
         description='Internal Check: Child in OC2 does not exist in Header.',
         affected_fields=['CHILD'],
@@ -168,7 +131,7 @@ def validate_INT05():
 
 
 def validate_INT06():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT06',
         description='Internal Check: Child in OC3 does not exist in Header.',
         affected_fields=['CHILD'],
@@ -193,7 +156,7 @@ def validate_INT06():
 
 
 def validate_INT07():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT07',
         description='Internal Check: Child in PrevPerm does not exist in Header.',
         affected_fields=['CHILD'],
@@ -218,7 +181,7 @@ def validate_INT07():
 
 
 def validate_INT08():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT08',
         description='Internal Check: Child in Reviews does not exist in Header.',
         affected_fields=['CHILD'],
@@ -243,7 +206,7 @@ def validate_INT08():
 
 
 def validate_INT09():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT09',
         description='Internal Check: Child in UASC does not exist in Header.',
         affected_fields=['CHILD'],
@@ -268,7 +231,7 @@ def validate_INT09():
 
 
 def validate_INT11():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT11',
         description='Internal Check: DOB in AD1 is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -296,7 +259,7 @@ def validate_INT11():
 
 
 def validate_INT12():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT12',
         description='Internal Check: DOB in PlacedAdoption is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -324,7 +287,7 @@ def validate_INT12():
 
 
 def validate_INT13():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT13',
         description='Internal Check: DOB in Missing is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -352,7 +315,7 @@ def validate_INT13():
 
 
 def validate_INT14():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT14',
         description='Internal Check: DOB in OC2 is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -380,7 +343,7 @@ def validate_INT14():
 
 
 def validate_INT15():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT15',
         description='Internal Check: DOB in OC3 is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -408,7 +371,7 @@ def validate_INT15():
 
 
 def validate_INT16():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT16',
         description='Internal Check: DOB in PrevPerm is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -436,7 +399,7 @@ def validate_INT16():
 
 
 def validate_INT17():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT17',
         description='Internal Check: DOB in Reviews is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -464,7 +427,7 @@ def validate_INT17():
 
 
 def validate_INT18():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT18',
         description='Internal Check: DOB in UASC is different to DOB in Header.',
         affected_fields=['DOB'],
@@ -492,7 +455,7 @@ def validate_INT18():
 
 
 def validate_INT21():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT21',
         description='Internal Check: SEX in UASC is different to SEX in Header.',
         affected_fields=['SEX'],
@@ -517,7 +480,7 @@ def validate_INT21():
 
 
 def validate_INT31():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT31',
         description='Internal Check: Child should only exist once in AD1.',
         affected_fields=['CHILD'],
@@ -541,7 +504,7 @@ def validate_INT31():
 
 
 def validate_INT32():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT32',
         description='Internal Check: Child should only exist once in Header.',
         affected_fields=['CHILD'],
@@ -564,7 +527,7 @@ def validate_INT32():
     return error, _validate
 
 def validate_INT33():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT33',
         description='Internal Check: Child should only exist once in OC2.',
         affected_fields=['CHILD'],
@@ -588,7 +551,7 @@ def validate_INT33():
 
 
 def validate_INT34():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT34',
         description='Internal Check: Child should only exist once in OC3.',
         affected_fields=['CHILD'],
@@ -612,7 +575,7 @@ def validate_INT34():
 
 
 def validate_INT35():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT35',
         description='Internal Check: Child should only exist once in PrevPerm.',
         affected_fields=['CHILD'],
@@ -636,7 +599,7 @@ def validate_INT35():
 
 
 def validate_INT36():
-    error = ErrorDefinition(
+    error = IntegrityCheckDefinition(
         code='INT36',
         description='Internal Check: Child should only exist once in UASC.',
         affected_fields=['CHILD'],

@@ -67,8 +67,9 @@ def validate_426():
 def validate_1002():
     error = ErrorDefinition(
         code='1002',
-        description='This child has no previous episodes of care, therefore should not have care leaver information '
-                     'recorded. [NOTE: This only tests the current and previous year data loaded into the tool]',
+        description='This child has no previous episodes of care, therefore should not have care leaver information recorded. '
+                     '[NOTE: This tool can only test the current and previous year data loaded into the tool - this '
+                    'check may generate false positives if a child had episodes prior to last year\'s collection.]',
         affected_fields=['IN_TOUCH', 'ACTIV', 'ACCOM'],
     )
 

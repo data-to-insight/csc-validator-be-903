@@ -843,6 +843,9 @@ def test_validate_434():
         {'CHILD': '222', 'DECOM': '01/03/2020', 'RNE': 'L', 'LS': 'oo', 'PL_POST': '---', 'URN': 'xxx'},  # 6 fail: URN
         {'CHILD': '222', 'DECOM': '01/04/2020', 'RNE': 'L', 'LS': 'oo', 'PL_POST': 'xxx', 'URN': 'xxx'},
         # 7 fail: PL_POST
+        {'CHILD': '333', 'DECOM': '01/03/2020', 'RNE': 'P', 'LS': 'C1', 'PL_POST': '---', 'URN': pd.NA},  # 8
+        {'CHILD': '333', 'DECOM': '01/04/2020', 'RNE': 'L', 'LS': 'C2', 'PL_POST': '---', 'URN': pd.NA},  # 9
+      
     ])
     fake_eps['PLACE'] = '---'
     fake_eps['PLACE_PROVIDER'] = '---'

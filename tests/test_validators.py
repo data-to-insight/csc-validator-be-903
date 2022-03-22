@@ -2565,7 +2565,7 @@ def test_validate_133():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [5, 6]}
+    assert result == {'OC3': [2, 5, 6]}
 
 
 def test_validate_565():
@@ -3892,7 +3892,7 @@ def test_validate_132():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [0, 2, 4, 6]}
+    assert result == {'OC3': [0, 2, 4, 6, 7]}
 
 
 def test_validate_131():
@@ -3906,7 +3906,7 @@ def test_validate_131():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC3': [0, 2, 3, 5]}
+    assert result == {'OC3': [0, 2, 3, 5, 6]}
 
 
 def test_validate_120():

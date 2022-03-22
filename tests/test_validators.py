@@ -165,6 +165,253 @@ def test_validate_426():
     assert result == {'Episodes': [2, 3, 6, 7, 8]}
 
 
+#EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
+
+#Testing rule with only Header and Episodes provided.  Rule will also function with only Header provided as per DFE portal.
+def test_validate_EPI():
+    fake_header = pd.DataFrame({
+      'CHILD': ['101','102','103','106'],
+    })
+
+    fake_episodes = pd.DataFrame({
+      'CHILD': ['101','101','103'],
+    })
+
+    erro_defn, error_func = validate_EPI()
+
+    fake_dfs = {'Header': fake_header, 'Episodes': fake_episodes}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [1, 3]}
+
+#Testing rule with Header, Episodes and OC3 provided.
+def test_validate_EPI2():
+    fake_header = pd.DataFrame({
+      'CHILD': ['101','102','103','106'],
+    })
+
+    fake_episodes = pd.DataFrame({
+      'CHILD': ['101','101','103'],
+    })
+
+    fake_oc3 = pd.DataFrame({
+      'CHILD': ['101','102','103','104']
+    })
+
+    erro_defn, error_func = validate_EPI()
+
+    fake_dfs = {'Header': fake_header, 'Episodes': fake_episodes, 'OC3': fake_oc3}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [3]}
+
+
+#INT are non-DFE rules created for internal validation in the tool only.
+#All of the INTx rules use the following two dataframes.
+
+fake_INT_header = pd.DataFrame({
+    'CHILD': ['101','102','103','104','101','102','103','104','106'],
+    'DOB': ['01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, '01/04/2020', pd.NA, pd.NA],
+    'SEX': ['M', 'F', 'M', 'F', 'M', 'F', 'M', 'F', pd.NA]
+    })
+
+fake_INT_file = pd.DataFrame({
+    'CHILD': ['101','102','103','105'],
+    'DOB': ['01/04/2020', pd.NA, '04/01/2020', '01/04/2020'],
+    'SEX': ['M', 'F', 'F', 'F']
+    })
+
+def test_validate_INT01():
+
+    erro_defn, error_func = validate_INT01()
+
+    fake_dfs = {'Header': fake_INT_header, 'AD1': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [3]}
+
+def test_validate_INT02():
+
+    erro_defn, error_func = validate_INT02()
+
+    fake_dfs = {'Header': fake_INT_header, 'PlacedAdoption': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [3]}
+
+def test_validate_INT03():
+
+    erro_defn, error_func = validate_INT03()
+
+    fake_dfs = {'Header': fake_INT_header, 'Episodes': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Episodes': [3]}
+
+def test_validate_INT04():
+
+    erro_defn, error_func = validate_INT04()
+
+    fake_dfs = {'Header': fake_INT_header, 'Missing': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Missing': [3]}
+
+def test_validate_INT05():
+
+    erro_defn, error_func = validate_INT05()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC2': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [3]}
+
+def test_validate_INT06():
+
+    erro_defn, error_func = validate_INT06()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC3': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [3]}
+
+def test_validate_INT07():
+
+    erro_defn, error_func = validate_INT07()
+
+    fake_dfs = {'Header': fake_INT_header, 'PrevPerm': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [3]}
+
+def test_validate_INT08():
+
+    erro_defn, error_func = validate_INT08()
+
+    fake_dfs = {'Header': fake_INT_header, 'Reviews': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Reviews': [3]}
+
+def test_validate_INT09():
+
+    erro_defn, error_func = validate_INT09()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [3]}
+
+def test_validate_INT11():
+
+    erro_defn, error_func = validate_INT11()
+
+    fake_dfs = {'Header': fake_INT_header, 'AD1': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [2]}
+
+def test_validate_INT12():
+
+    erro_defn, error_func = validate_INT12()
+
+    fake_dfs = {'Header': fake_INT_header, 'PlacedAdoption': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PlacedAdoption': [2]}
+
+def test_validate_INT13():
+
+    erro_defn, error_func = validate_INT13()
+
+    fake_dfs = {'Header': fake_INT_header, 'Missing': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Missing': [2]}
+
+def test_validate_INT14():
+
+    erro_defn, error_func = validate_INT14()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC2': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [2]}
+
+def test_validate_INT15():
+
+    erro_defn, error_func = validate_INT15()
+
+    fake_dfs = {'Header': fake_INT_header, 'OC3': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [2]}
+
+def test_validate_INT16():
+
+    erro_defn, error_func = validate_INT16()
+
+    fake_dfs = {'Header': fake_INT_header, 'PrevPerm': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [2]}
+
+def test_validate_INT17():
+
+    erro_defn, error_func = validate_INT17()
+
+    fake_dfs = {'Header': fake_INT_header, 'Reviews': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'Reviews': [2]}
+
+def test_validate_INT18():
+
+    erro_defn, error_func = validate_INT18()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [2]}
+
+def test_validate_INT21():
+
+    erro_defn, error_func = validate_INT21()
+
+    fake_dfs = {'Header': fake_INT_header, 'UASC': fake_INT_file}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [2]}
+
+def test_validate_INT31():
+
+    erro_defn, error_func = validate_INT31()
+
+    fake_dfs = {'AD1': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'AD1': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT32():
+
+    erro_defn, error_func = validate_INT32()
+
+    fake_dfs = {'Header': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT33():
+
+    erro_defn, error_func = validate_INT33()
+
+    fake_dfs = {'OC2': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC2': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT34():
+
+    erro_defn, error_func = validate_INT34()
+
+    fake_dfs = {'OC3': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'OC3': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT35():
+
+    erro_defn, error_func = validate_INT35()
+
+    fake_dfs = {'PrevPerm': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'PrevPerm': [0,1,2,3,4,5,6,7]}
+
+def test_validate_INT36():
+
+    erro_defn, error_func = validate_INT36()
+
+    fake_dfs = {'UASC': fake_INT_header}
+    result = error_func(fake_dfs)
+    assert result == {'UASC': [0,1,2,3,4,5,6,7]}
+
+
 def test_validate_1002():
     fake_episodes_prev = pd.DataFrame({
       'CHILD': ['101','101','102','102','103'],

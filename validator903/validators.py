@@ -1,8 +1,666 @@
 import pandas as pd
 
 from .datastore import merge_postcodes
-from .types import ErrorDefinition, MissingMetadataError
+from .types import ErrorDefinition, IntegrityCheckDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
+
+
+# EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
+def validate_EPI():
+    error = ErrorDefinition(
+        code='EPI',
+        description='WARNING: Episodes need to be loaded for this child before further validation is possible '
+                    '[NOTE: This refers to the DfE portal - here, all checks that can be performed with only the '
+                    'available data will be.]',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+
+            if 'Episodes' not in dfs:
+                episodes = pd.DataFrame(columns=['CHILD'])
+            else:
+                episodes = dfs['Episodes']
+
+            if 'OC3' not in dfs:
+                oc3 = pd.DataFrame(columns=['CHILD'])
+            else:
+                oc3 = dfs['OC3']
+
+            header['index_header'] = header.index
+
+            merged = header.merge(episodes['CHILD'], on='CHILD', indicator='_merge_eps', how='left',
+                                  suffixes=['', '_episodes'])
+
+            merged = merged.merge(oc3['CHILD'], on='CHILD', indicator='_merge_oc3', how='left', suffixes=['', '_oc3'])
+
+            mask = (merged['_merge_eps'] == 'left_only') & (merged['_merge_oc3'] == 'left_only')
+            eps_error_locations = merged.loc[mask, 'index_header']
+            return {'Header': eps_error_locations.unique().tolist()}
+    return error, _validate
+
+
+#INT are non-DFE rules created for internal validation in the tool only.
+def validate_INT01():
+    error = IntegrityCheckDefinition(
+        code='INT01',
+        description='Data Integrity Check: Child in AD1 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['AD1']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT02():
+    error = IntegrityCheckDefinition(
+        code='INT02',
+        description='Internal Check: Child in PlacedAdoption does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PlacedAdoption']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PlacedAdoption': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT03():
+    error = IntegrityCheckDefinition(
+        code='INT03',
+        description='Internal Check: Child in Episodes does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Episodes' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Episodes']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Episodes': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT04():
+    error = IntegrityCheckDefinition(
+        code='INT04',
+        description='Internal Check: Child in Missing does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Missing']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Missing': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT05():
+    error = IntegrityCheckDefinition(
+        code='INT05',
+        description='Internal Check: Child in OC2 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC2' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC2']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT06():
+    error = IntegrityCheckDefinition(
+        code='INT06',
+        description='Internal Check: Child in OC3 does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC3']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT07():
+    error = IntegrityCheckDefinition(
+        code='INT07',
+        description='Internal Check: Child in PrevPerm does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PrevPerm' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PrevPerm']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT08():
+    error = IntegrityCheckDefinition(
+        code='INT08',
+        description='Internal Check: Child in Reviews does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Reviews' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Reviews']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Reviews': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT09():
+    error = IntegrityCheckDefinition(
+        code='INT09',
+        description='Internal Check: Child in UASC does not exist in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = merged['_merge'] == 'right_only'
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT11():
+    error = IntegrityCheckDefinition(
+        code='INT11',
+        description='Internal Check: DOB in AD1 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'AD1' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['AD1']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT12():
+    error = IntegrityCheckDefinition(
+        code='INT12',
+        description='Internal Check: DOB in PlacedAdoption is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PlacedAdoption' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PlacedAdoption']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PlacedAdoption': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT13():
+    error = IntegrityCheckDefinition(
+        code='INT13',
+        description='Internal Check: DOB in Missing is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Missing' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Missing']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Missing': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT14():
+    error = IntegrityCheckDefinition(
+        code='INT14',
+        description='Internal Check: DOB in OC2 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC2' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC2']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT15():
+    error = IntegrityCheckDefinition(
+        code='INT15',
+        description='Internal Check: DOB in OC3 is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'OC3' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['OC3']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT16():
+    error = IntegrityCheckDefinition(
+        code='INT16',
+        description='Internal Check: DOB in PrevPerm is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'PrevPerm' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['PrevPerm']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT17():
+    error = IntegrityCheckDefinition(
+        code='INT17',
+        description='Internal Check: DOB in Reviews is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'Reviews' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['Reviews']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'Reviews': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT18():
+    error = IntegrityCheckDefinition(
+        code='INT18',
+        description='Internal Check: DOB in UASC is different to DOB in Header.',
+        affected_fields=['DOB'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            header['DOB'] =  pd.to_datetime(header['DOB'], format='%d/%m/%Y', errors='coerce')
+            file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT21():
+    error = IntegrityCheckDefinition(
+        code='INT21',
+        description='Internal Check: SEX in UASC is different to SEX in Header.',
+        affected_fields=['SEX'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs or 'UASC' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+
+            merged = header.merge(file[['CHILD', 'SEX', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
+
+            mask = (merged['SEX_header'] != merged['SEX_file']) & (merged['SEX_header'].notna() & merged['SEX_file'].notna()) & (merged['_merge'] != 'right_only')
+            eps_error_locations = merged.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT31():
+    error = IntegrityCheckDefinition(
+        code='INT31',
+        description='Internal Check: Child should only exist once in AD1.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'AD1' not in dfs:
+            return {}
+        else:
+            file = dfs['AD1']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'AD1': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT32():
+    error = IntegrityCheckDefinition(
+        code='INT32',
+        description='Internal Check: Child should only exist once in Header.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            file = dfs['Header']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'Header': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+def validate_INT33():
+    error = IntegrityCheckDefinition(
+        code='INT33',
+        description='Internal Check: Child should only exist once in OC2.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'OC2' not in dfs:
+            return {}
+        else:
+            file = dfs['OC2']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC2': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT34():
+    error = IntegrityCheckDefinition(
+        code='INT34',
+        description='Internal Check: Child should only exist once in OC3.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'OC3' not in dfs:
+            return {}
+        else:
+            file = dfs['OC3']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'OC3': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT35():
+    error = IntegrityCheckDefinition(
+        code='INT35',
+        description='Internal Check: Child should only exist once in PrevPerm.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'PrevPerm' not in dfs:
+            return {}
+        else:
+            file = dfs['PrevPerm']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'PrevPerm': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
+
+def validate_INT36():
+    error = IntegrityCheckDefinition(
+        code='INT36',
+        description='Internal Check: Child should only exist once in UASC.',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'UASC' not in dfs:
+            return {}
+        else:
+            file = dfs['UASC']
+
+            file['index_file'] = file.index
+
+            file['CHILD_COUNT'] = file.groupby('CHILD')['CHILD'].transform('count')
+
+            mask = (file['CHILD_COUNT'] > 1)
+            eps_error_locations = file.loc[mask, 'index_file']
+            return {'UASC': eps_error_locations.unique().tolist()}
+
+    return error, _validate
+
 
 def validate_633():
     error = ErrorDefinition(

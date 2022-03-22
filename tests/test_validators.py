@@ -164,6 +164,46 @@ def test_validate_426():
 
     assert result == {'Episodes': [2, 3, 6, 7, 8]}
 
+
+#EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
+
+#Testing rule with only Header and Episodes provided.  Rule will also function with only Header provided as per DFE portal.
+def test_validate_EPI():
+    fake_header = pd.DataFrame({
+      'CHILD': ['101','102','103','106'],
+    })
+
+    fake_episodes = pd.DataFrame({
+      'CHILD': ['101','101','103'],
+    })
+
+    erro_defn, error_func = validate_EPI()
+
+    fake_dfs = {'Header': fake_header, 'Episodes': fake_episodes}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [1, 3]}
+
+#Testing rule with Header, Episodes and OC3 provided.
+def test_validate_EPI2():
+    fake_header = pd.DataFrame({
+      'CHILD': ['101','102','103','106'],
+    })
+
+    fake_episodes = pd.DataFrame({
+      'CHILD': ['101','101','103'],
+    })
+
+    fake_oc3 = pd.DataFrame({
+      'CHILD': ['101','102','103','104']
+    })
+
+    erro_defn, error_func = validate_EPI()
+
+    fake_dfs = {'Header': fake_header, 'Episodes': fake_episodes, 'OC3': fake_oc3}
+    result = error_func(fake_dfs)
+    assert result == {'Header': [3]}
+
+
 #INT are non-DFE rules created for internal validation in the tool only.
 #All of the INTx rules use the following two dataframes.
 

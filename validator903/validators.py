@@ -4,11 +4,51 @@ from .datastore import merge_postcodes
 from .types import ErrorDefinition, IntegrityCheckDefinition, MissingMetadataError
 from .utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!
 
+
+# EPI is an undocumented rule in the DFE portal. It checks whether each Child ID in the Header file exists in either the Episodes or OC3 file.
+def validate_EPI():
+    error = ErrorDefinition(
+        code='EPI',
+        description='WARNING: Episodes need to be loaded for this child before further validation is possible '
+                    '[NOTE: This refers to the DfE portal - here, all checks that can be performed with only the '
+                    'available data will be.]',
+        affected_fields=['CHILD'],
+    )
+
+    def _validate(dfs):
+        if 'Header' not in dfs:
+            return {}
+        else:
+            header = dfs['Header']
+
+            if 'Episodes' not in dfs:
+                episodes = pd.DataFrame(columns=['CHILD'])
+            else:
+                episodes = dfs['Episodes']
+
+            if 'OC3' not in dfs:
+                oc3 = pd.DataFrame(columns=['CHILD'])
+            else:
+                oc3 = dfs['OC3']
+
+            header['index_header'] = header.index
+
+            merged = header.merge(episodes['CHILD'], on='CHILD', indicator='_merge_eps', how='left',
+                                  suffixes=['', '_episodes'])
+
+            merged = merged.merge(oc3['CHILD'], on='CHILD', indicator='_merge_oc3', how='left', suffixes=['', '_oc3'])
+
+            mask = (merged['_merge_eps'] == 'left_only') & (merged['_merge_oc3'] == 'left_only')
+            eps_error_locations = merged.loc[mask, 'index_header']
+            return {'Header': eps_error_locations.unique().tolist()}
+    return error, _validate
+
+
 #INT are non-DFE rules created for internal validation in the tool only.
 def validate_INT01():
     error = IntegrityCheckDefinition(
         code='INT01',
-        description='Internal Check: Child in AD1 does not exist in Header.',
+        description='Data Integrity Check: Child in AD1 does not exist in Header.',
         affected_fields=['CHILD'],
     )
 
@@ -20,7 +60,7 @@ def validate_INT01():
             file = dfs['AD1']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
@@ -45,14 +85,14 @@ def validate_INT02():
             file = dfs['PlacedAdoption']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'PlacedAdoption': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT03():
@@ -70,14 +110,14 @@ def validate_INT03():
             file = dfs['Episodes']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'Episodes': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT04():
@@ -95,14 +135,14 @@ def validate_INT04():
             file = dfs['Missing']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'Missing': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT05():
@@ -120,14 +160,14 @@ def validate_INT05():
             file = dfs['OC2']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'OC2': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT06():
@@ -145,14 +185,14 @@ def validate_INT06():
             file = dfs['OC3']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'OC3': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT07():
@@ -170,14 +210,14 @@ def validate_INT07():
             file = dfs['PrevPerm']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'PrevPerm': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT08():
@@ -195,14 +235,14 @@ def validate_INT08():
             file = dfs['Reviews']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'Reviews': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT09():
@@ -220,14 +260,14 @@ def validate_INT09():
             file = dfs['UASC']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = merged['_merge'] == 'right_only'
             eps_error_locations = merged.loc[mask, 'index_file']
             return {'UASC': eps_error_locations.unique().tolist()}
 
-    return error, _validate 
+    return error, _validate
 
 
 def validate_INT11():
@@ -248,7 +288,7 @@ def validate_INT11():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -276,7 +316,7 @@ def validate_INT12():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -304,7 +344,7 @@ def validate_INT13():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -332,7 +372,7 @@ def validate_INT14():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -360,7 +400,7 @@ def validate_INT15():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -388,7 +428,7 @@ def validate_INT16():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -416,7 +456,7 @@ def validate_INT17():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -444,7 +484,7 @@ def validate_INT18():
             file['DOB'] =  pd.to_datetime(file['DOB'], format='%d/%m/%Y', errors='coerce')
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'DOB', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['DOB_header'] != merged['DOB_file']) & (merged['DOB_header'].notna() & merged['DOB_file'].notna()) & (merged['_merge'] != 'right_only')
@@ -469,7 +509,7 @@ def validate_INT21():
             file = dfs['UASC']
 
             file['index_file'] = file.index
-          
+
             merged = header.merge(file[['CHILD', 'SEX', 'index_file']], on='CHILD', indicator=True, how='right', suffixes=['_header', '_file'])
 
             mask = (merged['SEX_header'] != merged['SEX_file']) & (merged['SEX_header'].notna() & merged['SEX_file'].notna()) & (merged['_merge'] != 'right_only')

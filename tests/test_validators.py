@@ -2973,7 +2973,7 @@ def test_validate_191():
 
     result = error_func(fake_dfs)
 
-    assert result == {'OC2': [1, 6]}
+    assert result == {'OC2': [1, 6], 'Episodes':[3]}
 
 
 def test_validate_516():

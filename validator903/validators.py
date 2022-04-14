@@ -2744,7 +2744,7 @@ def validate_191():
         code='191',
         description="Child has been looked after continuously for at least 12 months at 31 March but one or more "
                     "data items relating to children looked after for 12 months have been left blank.",
-        affected_fields=['IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT', 'SUBSTANCE_MISUSE'],  # OC2
+        affected_fields=['IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT', 'SUBSTANCE_MISUSE', 'CHILD'],  # OC2 and Episodes
     )
 
     def _validate(dfs):
@@ -2754,15 +2754,27 @@ def validate_191():
         ):
             return {}
 
+        
+          
         # add 'CONTINUOUSLY_LOOKED_AFTER' column
         oc2 = add_CLA_column(dfs, 'OC2')
+        eps = add_CLA_column(dfs, 'Episodes')
 
+        # CHILD is in OC2 but missing data
         should_be_present = ['IMMUNISATIONS', 'TEETH_CHECK', 'HEALTH_ASSESSMENT', 'SUBSTANCE_MISUSE']
+        mask_oc2 = oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2[should_be_present].isna().any(axis=1)
+        oc2_error_locs = oc2[mask_oc2].index.to_list()
 
-        mask = oc2['CONTINUOUSLY_LOOKED_AFTER'] & oc2[should_be_present].isna().any(axis=1)
-        error_locs = oc2[mask].index.to_list()
-
-        return {'OC2': error_locs}
+        # CHILD is not in OC2 at all
+        eps['DECOM'] = pd.to_datetime(eps['DECOM'], format='%d/%m/%Y', errors='coerce')  
+        eps = eps.reset_index()
+        eps = eps.loc[eps.groupby('CHILD')['DECOM'].idxmin()]
+        merged_eps = eps.merge(oc2[['CHILD']], on='CHILD', how='left', indicator=True)
+        mask_eps = merged_eps['CONTINUOUSLY_LOOKED_AFTER'] & (merged_eps['_merge'] == 'left_only')
+        eps_error_locs = merged_eps.loc[mask_eps, 'index'].to_list()
+      
+      
+        return {'OC2': oc2_error_locs, 'Episodes': eps_error_locs}
 
     return error, _validate
 

@@ -7980,16 +7980,17 @@ def validate_503_Generic(subval):
             epi_last = dfs['Episodes_last']
             epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
             epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+            epi_last['DEC'] = pd.to_datetime(epi_last['DEC'], format='%d/%m/%Y', errors='coerce')
 
             epi.reset_index(inplace=True)
 
-            grp_decom_by_child = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
-            min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
+            first_ep_inds = epi.groupby(['CHILD'])['DECOM'].idxmin(skipna=True)
+            min_decom = epi.loc[first_ep_inds, :]
 
-            grp_last_decom_by_child = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
-            max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
+            last_ep_inds = epi_last.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[last_ep_inds, :]
 
-            merged_co = min_decom.merge(max_last_decom, how='inner', on=['CHILD', 'DECOM'], suffixes=['', '_PRE'])
+            merged_co = min_decom.merge(max_last_decom, how='inner', on=['CHILD'], suffixes=['', '_PRE'])
 
             this_one = Gen_503_dict[subval]['Fields']
             pre_one = this_one + '_PRE'
@@ -7998,6 +7999,7 @@ def validate_503_Generic(subval):
                 err_mask = abs(merged_co[this_one].astype(float) - merged_co[pre_one].astype(float)) >= 0.2
             else:
                 err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
+            err_mask = err_mask & merged_co['DEC_PRE'].isna()
 
             err_list = merged_co['index'][err_mask].unique().tolist()
             err_list.sort()

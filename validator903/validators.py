@@ -3343,7 +3343,8 @@ def validate_1007():
             oc3.reset_index(inplace=True)
             merged = episodes.merge(oc3, on='CHILD', how='left', suffixes=['_eps', '_oc3'])
 
-            # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC> not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
+            # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC>
+            # not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
             check_age = (merged['DOB'] + pd.offsets.DateOffset(years=17) <= collection_end) & (
                     merged['DOB'] + pd.offsets.DateOffset(years=19) > collection_end)
             # That is, check that 17<=age<19
@@ -6445,7 +6446,7 @@ def validate_213():
             return {}
         else:
             df = dfs['Episodes']
-            mask = df['PLACE'].isin(['T0', 'T1', 'T2', 'T3', 'T4', 'Z1']) & df['PLACE_PROVIDER'].notna()
+            mask = df['PLACE'].isin(['T0', 'T1', 'T2', 'T3', 'T4']) & df['PLACE_PROVIDER'].notna()
             return {'Episodes': df.index[mask].tolist()}
 
     return error, _validate

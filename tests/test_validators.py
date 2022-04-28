@@ -4192,8 +4192,12 @@ def test_validate_392c():
 
 def test_validate_213():
     fake_data = pd.DataFrame({
-        'PLACE': ['T0', 'U6', 'U1', 'U4', 'P1', 'T2', 'T3', pd.NA],
-        'PLACE_PROVIDER': [pd.NA, pd.NA, 'PR3', 'PR4', 'PR0', 'PR2', 'PR1', pd.NA],
+        'PLACE': ['T0', 'U6', 'U1', 'U4',
+                  'P1', 'T2', 'T3', pd.NA,
+                  'Z1', 'Z1'],
+        'PLACE_PROVIDER': [pd.NA, pd.NA, 'PR3', 'PR4',
+                           'PR0', 'PR2', 'PR1', pd.NA,
+                           pd.NA, 'notna'],
     })
 
     fake_dfs = {'Episodes': fake_data}

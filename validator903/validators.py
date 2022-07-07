@@ -3408,7 +3408,7 @@ def validate_344():
             return {}
         else:
             oc3 = dfs['OC3']
-            # If <IN_TOUCH> = 'DIED' or 'RHOM' then <ACTIV> and <ACCOM> should not be provided (0)
+            # If <IN_TOUCH> = 'DIED' or 'RHOM' then <ACTIV> and <ACCOM> should not be provided (0 for this)
             mask = ((oc3['IN_TOUCH'] == 'DIED') | (oc3['IN_TOUCH'] == 'RHOM')) & (
                     (oc3['ACTIV'].astype(str) != '0') | (oc3['ACCOM'].astype(str) != '0'))
             error_locations = oc3.index[mask]

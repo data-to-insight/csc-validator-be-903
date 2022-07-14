@@ -7438,7 +7438,8 @@ def validate_574():
             mis['MIS_START'] = pd.to_datetime(mis['MIS_START'], format='%d/%m/%Y', errors='coerce')
             mis['MIS_END'] = pd.to_datetime(mis['MIS_END'], format='%d/%m/%Y', errors='coerce')
 
-            mis.sort_values(['CHILD', 'MIS_END', 'MIS_START'], inplace=True)
+            mis['MIS_END_FILL'] = mis['MIS_END'].fillna(mis['MIS_START'])
+            mis.sort_values(['CHILD', 'MIS_END_FILL', 'MIS_START'], inplace=True)
 
             mis.reset_index(inplace=True)
             mis.reset_index(inplace=True)  # Twice on purpose

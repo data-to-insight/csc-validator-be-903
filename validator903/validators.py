@@ -4721,7 +4721,7 @@ def validate_207():
             header_last = dfs['Header_last']
             episodes = dfs['Episodes']
 
-            header.reset_index()
+            header.reset_index(inplace=True)
           
             header_merged = header.merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'),
                                                        indicator=True)
@@ -4735,9 +4735,9 @@ def validate_207():
 
             error_mask = in_both_years & ~has_no_episodes & mother_is_different & mother_was_true
 
-            error_locations = header.index[error_mask]
+            error_locations = list(header_merged.loc[error_mask, 'index'].unique())
 
-            return {'Header': error_locations.to_list()}
+            return {'Header': error_locations}
 
     return error, _validate
 

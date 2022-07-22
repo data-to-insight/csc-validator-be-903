@@ -3169,7 +3169,7 @@ def test_validate_207():
     })
 
     fake_episodes = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
+        'CHILD': ['101', '101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
     })
 
     fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev, 'Episodes': fake_episodes}

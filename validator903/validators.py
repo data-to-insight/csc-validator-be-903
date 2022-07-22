@@ -4714,20 +4714,26 @@ def validate_207():
     )
 
     def _validate(dfs):
-        if 'Header' not in dfs or 'Header_last' not in dfs:
+        if 'Header' not in dfs or 'Header_last' not in dfs or 'Episodes' not in dfs:
             return {}
         else:
             header = dfs['Header']
             header_last = dfs['Header_last']
+            episodes = dfs['Episodes']
 
-            header_merged = header.reset_index().merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'),
-                                                       indicator=True).set_index('index')
+            header.reset_index()
+          
+            header_merged = header.merge(header_last, how='left', on=['CHILD'], suffixes=('', '_last'),
+                                                       indicator=True)
+
+            header_merged = header_merged.merge(episodes[['CHILD']], on='CHILD', how='left', suffixes=('', '_eps'), indicator='_eps')
 
             in_both_years = header_merged['_merge'] == 'both'
+            has_no_episodes = header_merged['_eps'] == 'left_only'
             mother_is_different = header_merged['MOTHER'].astype(str) != header_merged['MOTHER_last'].astype(str)
             mother_was_true = header_merged['MOTHER_last'].astype(str) == '1'
 
-            error_mask = in_both_years & mother_is_different & mother_was_true
+            error_mask = in_both_years & ~has_no_episodes & mother_is_different & mother_was_true
 
             error_locations = header.index[error_mask]
 

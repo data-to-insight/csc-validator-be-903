@@ -3159,16 +3159,20 @@ def test_validate_557():
 
 def test_validate_207():
     fake_data = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109', '110'],
-        'MOTHER': ['1', 0, '1', pd.NA, pd.NA, '1', pd.NA, '0', '2'],
+        'CHILD': ['101', '102', '103', '104', '105', '106', '108', '109', '110', '111'],
+        'MOTHER': ['1', 0, '1', pd.NA, pd.NA, '1', pd.NA, '0', '2', pd.NA],
     })
 
     fake_data_prev = pd.DataFrame({
-        'CHILD': ['101', '102', '103', '104', '105', '107', '108', '109', '110'],
-        'MOTHER': ['1', 1, '0', 1, pd.NA, '1', '0', pd.NA, '1'],
+        'CHILD': ['101', '102', '103', '104', '105', '107', '108', '109', '110', '111'],
+        'MOTHER': ['1', 1, '0', 1, pd.NA, '1', '0', pd.NA, '1', '1'],
     })
 
-    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev}
+    fake_episodes = pd.DataFrame({
+        'CHILD': ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110'],
+    })
+
+    fake_dfs = {'Header': fake_data, 'Header_last': fake_data_prev, 'Episodes': fake_episodes}
 
     error_defn, error_func = validate_207()
 

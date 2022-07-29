@@ -3358,7 +3358,7 @@ def validate_1007():
 
             in_care_on_bday = (
                 (merged['DECOM'] <= merged['bday'])
-                & (merged['DEC'] >= merged['bday'])
+                & (merged['DEC'] > merged['bday'])
             )
             print(in_care_on_bday)
             # if either DEC or REC are absent

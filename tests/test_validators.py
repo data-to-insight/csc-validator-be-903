@@ -1988,7 +1988,7 @@ def test_validate_1007():
     fake_dfs = {'Episodes': fake_data_episodes, 'OC3': fake_data_oc3, 'metadata': metadata}
     error_defn, error_func = validate_1007()
     result = error_func(fake_dfs)
-    assert result == {'OC3': [0, 1]}
+    assert result == {'OC3': [0, ]}
 
 
 def test_validate_210():

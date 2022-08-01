@@ -4910,16 +4910,20 @@ def test_validate_1011():
 
 
 def test_validate_574():
+  
     fake_mis = pd.DataFrame([
-        {'CHILD': '111', 'MIS_START': '01/06/2020', 'MIS_END': '05/06/2020'},  # 0
-        {'CHILD': '111', 'MIS_START': '04/06/2020', 'MIS_END': pd.NA},  # 1 Fails overlaps
+        {'CHILD': '111', 'MIS_START': '01/06/2020', 'MIS_END': '05/06/2020'},  # 0 Fails, previous end is null
+        {'CHILD': '111', 'MIS_START': '04/06/2020', 'MIS_END': pd.NA},  # 1
         {'CHILD': '222', 'MIS_START': '03/06/2020', 'MIS_END': '04/06/2020'},  # 2
         {'CHILD': '222', 'MIS_START': '04/06/2020', 'MIS_END': pd.NA},  # 3
         {'CHILD': '222', 'MIS_START': '07/06/2020', 'MIS_END': '09/06/2020'},  # 4 Fails, previous end is null
         {'CHILD': '333', 'MIS_START': '02/06/2020', 'MIS_END': '04/06/2020'},  # 5
-        {'CHILD': '333', 'MIS_START': '03/06/2020', 'MIS_END': '09/06/2020'},  # 6 Fails overlaps
-        {'CHILD': '555', 'MIS_START': pd.NA, 'MIS_END': '05/06/2020'},  # 7
-        {'CHILD': '555', 'MIS_START': pd.NA, 'MIS_END': '05/06/2020'},  # 8
+        {'CHILD': '333', 'MIS_START': '03/06/2020', 'MIS_END': '09/06/2020'},  # 6 Fails, overlaps previous
+        {'CHILD': '444', 'MIS_START': '06/06/2020', 'MIS_END': '08/06/2020'},  # 7 
+        {'CHILD': '444', 'MIS_START': '10/06/2020', 'MIS_END': '10/06/2020'},  # 8 
+        {'CHILD': '444', 'MIS_START': '08/06/2020', 'MIS_END': '10/08/2020'},  # 9 Fails, overlaps previous
+        {'CHILD': '555', 'MIS_START': pd.NA, 'MIS_END': '05/06/2020'},  # 10
+        {'CHILD': '555', 'MIS_START': pd.NA, 'MIS_END': '05/06/2020'},  # 11
     ])
 
     fake_dfs = {'Missing': fake_mis}
@@ -4928,7 +4932,7 @@ def test_validate_574():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Missing': [1, 4, 6]}
+    assert result == {'Missing': [0, 4, 6, 9]}
 
 
 def test_validate_564():

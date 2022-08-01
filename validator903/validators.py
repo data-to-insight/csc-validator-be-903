@@ -2629,7 +2629,7 @@ def validate_186():
                 (oc2['4th_bday'] <= collection_start)
                 & (oc2['17th_bday'] > collection_end)
                 & oc2['CONTINUOUSLY_LOOKED_AFTER']
-                & oc2['SDQ_SCORE'].isna()
+                & oc2[['SDQ_SCORE', 'SDQ_REASON']].isna().any(axis=1)
         )
 
         oc2_errors = oc2.loc[error_mask].index.to_list()

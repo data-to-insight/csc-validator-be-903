@@ -2775,11 +2775,13 @@ def test_validate_186():
     ])
 
     oc2 = pd.DataFrame({'CHILD': ['999999', '1', '2', '3',
-                                  '9999', '8', '5555'],
+                                  '9999', '8', '5555','789'],
                         'DOB': ['01/01/1974', '01/04/1976', '01/01/1978', '01/01/1974',
-                                '01/01/1974', '01/01/1974', '01/01/1955'],
+                                '01/01/1974', '01/01/1974', '01/01/1955', '01/04/1976'],
                         'SDQ_SCORE': ['OO', pd.NA, 'OO', 'OO',
-                                      pd.NA, pd.NA, pd.NA]})
+                                      pd.NA, pd.NA, pd.NA, pd.NA],
+                         'SDQ_REASON': [pd.NA, pd.NA, pd.NA, pd.NA, 
+                                      pd.NA, pd.NA, pd.NA, 'SDQ1']})
 
     fake_dfs = {'Episodes': eps,
                 'OC2': oc2,

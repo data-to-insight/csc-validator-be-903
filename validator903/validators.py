@@ -1690,7 +1690,7 @@ def validate_521():
             merged = episodes.merge(ad1, how='left', on='CHILD', suffixes=['_eps', '_ad1'])
 
             # <DATE_INT> must be <= <DECOM> where <PLACED_FOR_ADOPTION> = 'Y'
-            mask = merged['PLACE'].isin(code_list) & (merged['DATE_INT'] <= merged['DECOM'])
+            mask = merged['PLACE'].isin(code_list) & (merged['DATE_INT'] > merged['DECOM'])
             # error locations
             ad1_error_locs = merged.loc[mask, 'index_ad1']
             eps_error_locs = merged.loc[mask, 'index_eps']

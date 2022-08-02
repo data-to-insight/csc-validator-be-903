@@ -1967,28 +1967,28 @@ def test_validate_352():
     assert result == {'Episodes': [4]}
 
 
-def test_validators_1007():
-    # TODO change name to test_validate_1007()
+def test_validate_1007():
     fake_data_oc3 = pd.DataFrame({
-        'CHILD': ['A', 'B', 'C', 'D', 'E'],
-        'DOB': ['01/01/2001', '01/01/2016', '20/12/1997', '01/01/2000', '03/01/2000', ],
-        'IN_TOUCH': ['DIED', 'Yes', 'RHOM', pd.NA, 'DIED'],
-        'ACTIV': [pd.NA, pd.NA, 'XXX', pd.NA, 'XXX'],
-        'ACCOM': [pd.NA, pd.NA, pd.NA, 'XXX', 'XXX'],
+        'CHILD': ['F', 'G', 'H', 'I'],
+        'DOB': ['01/02/2000', '01/09/1999', '01/02/2000', '01/09/1999'],
+        'IN_TOUCH': ['notNA', 'notNA', 'notNA', pd.NA],
+        'ACTIV': [pd.NA, pd.NA, pd.NA, pd.NA],
+        'ACCOM': [pd.NA, pd.NA, pd.NA, pd.NA],
     })
     fake_data_episodes = pd.DataFrame({
-        'CHILD': ['A', 'B', 'C', 'D', 'E'],
-        'REC': [pd.NA, 'E12', 'X1', pd.NA, 'E11'],
-        'DEC': ['15/03/2021', pd.NA, '20/03/2020', pd.NA, '23/08/2020'],
+        'CHILD': ['F', 'G', 'H', 'I'],
+        'DECOM': ['01/02/2015', '01/09/2015', '01/02/2015', '01/09/2015'],
+        'DEC': ['01/03/2017', '01/09/2016', '01/01/2017', '01/09/2017'],
     })
+
     metadata = {
-        'collection_end': '31/03/2018'
+        'collection_end': '31/03/2017'
     }
 
     fake_dfs = {'Episodes': fake_data_episodes, 'OC3': fake_data_oc3, 'metadata': metadata}
     error_defn, error_func = validate_1007()
     result = error_func(fake_dfs)
-    assert result == {'Episodes': [0, 3], 'OC3': [0, 3]}
+    assert result == {'OC3': [0, ]}
 
 
 def test_validate_210():

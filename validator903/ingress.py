@@ -191,6 +191,7 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
             raise print(f'Failed to find required columns in Childrens Homes list "Provider information"'
                               f' sheet. Expected: {", ".join(CH_cols[:])}')
         CH_df = CH_providers
+        del CH_providers, CH_address
 
     #if not check whether file includes separate setting and address sheets
     elif 'Settings and Inspection Info' in CH_sheets and 'Address Details' in CH_sheets:

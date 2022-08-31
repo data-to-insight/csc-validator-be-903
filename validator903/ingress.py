@@ -166,42 +166,73 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
     logger.info(f'URN lookup bytes recieved. Reading excel files... {sc.t}')
 
     # read childrens homes file
-    # this sheet contains all columns except the postcode
-    CH_setting = pd.read_excel(CH_bytes, sheet_name=0, engine='openpyxl')
-    logger.debug(f'Reading CH setting info from excel done. cols:{CH_setting.columns} {sc.t}')
-    # from this sheet we need only the postcode
-    CH_address = pd.read_excel(CH_bytes, sheet_name=2, engine='openpyxl')
-    logger.debug(f'Reading CH address info from excel done. cols:{CH_address.columns} {sc.t}')
-
+    CH_sheets = pd.ExcelFile(CH_bytes).sheet_names
     CH_cols = ['URN', 'Local Authority', 'Provider Code', 'Provider Placement Code', 'Closed Date', 'Setting Postcode']
 
-    try:
-        CH_address = CH_address[['URN', 'Setting Postcode']]
-    except KeyError:
-        try:
-            CH_address = (
-                CH_address[['URN', 'Setting Address Postcode']]
-                .rename(columns={'Setting Address Postcode': 'Setting Postcode'})
-            )
-        except KeyError:
-            raise UploadError('Failed to find postcode column in Childrens Homes list '
-                              '"Address Details sheet. Expected "Setting Postcode"')
-    try:
-        CH_setting = CH_setting[CH_cols[: -1]]
-    except KeyError:
-        raise UploadError(f'Failed to find required columns in Childrens Homes list "Setting and Inspection Info"'
-                          f' sheet. Expected: {", ".join(CH_cols[: -1])}')
+    # check whether file includes consolidated provider information sheet
+    if 'Provider information' in CH_sheets:
+        CH_providers = pd.read_excel(CH_bytes, sheet_name='Provider information', engine='openpyxl')
+        logger.debug(f'Reading CH provider info from excel done. cols:{CH_providers.columns} {sc.t}')
 
-    # combine the postcode with the rest of the columns
-    CH_df = pd.merge(
-        left=CH_setting, right=CH_address,
-        on='URN', how='inner'
-    )
+        try:
+            CH_address = CH_providers[['URN', 'Setting Postcode']]
+        except KeyError:
+            try:
+                CH_providers = (
+                    CH_providers
+                    .rename(columns={'Setting Address Postcode': 'Setting Postcode'})
+                )
+            except KeyError:
+              raise print('Failed to find postcode column in Childrens Homes list '
+                                  '"Provider information" sheet. Expected "Setting Postcode"')
+        try:
+            CH_providers = CH_providers[CH_cols[:]]
+        except KeyError:
+            raise print(f'Failed to find required columns in Childrens Homes list "Provider information"'
+                              f' sheet. Expected: {", ".join(CH_cols[:])}')
+        CH_df = CH_providers
+
+    #if not check whether file includes separate setting and address sheets
+    elif 'Settings and Inspection Info' in CH_sheets and 'Address Details' in CH_sheets:
+      
+        # this sheet contains all columns except the postcode
+        CH_setting = pd.read_excel(CH_bytes, sheet_name='Settings and Inspection Info', engine='openpyxl')
+        logger.debug(f'Reading CH setting info from excel done. cols:{CH_setting.columns} {sc.t}')
+        # from this sheet we need only the postcode
+        CH_address = pd.read_excel(CH_bytes, sheet_name='Address Details', engine='openpyxl')
+        logger.debug(f'Reading CH address info from excel done. cols:{CH_address.columns} {sc.t}')
+
+        try:
+            CH_address = CH_address[['URN', 'Setting Postcode']]
+        except KeyError:
+            try:
+                CH_address = (
+                    CH_address[['URN', 'Setting Address Postcode']]
+                    .rename(columns={'Setting Address Postcode': 'Setting Postcode'})
+                )
+            except KeyError:
+                raise UploadError('Failed to find postcode column in Childrens Homes list '
+                                  '"Address Details" sheet. Expected "Setting Postcode"')
+        try:
+            CH_setting = CH_setting[CH_cols[: -1]]
+        except KeyError:
+            raise UploadError(f'Failed to find required columns in Childrens Homes list "Setting and Inspection Info"'
+                              f' sheet. Expected: {", ".join(CH_cols[: -1])}')
+
+        # combine the postcode with the rest of the columns
+        CH_df = pd.merge(
+            left=CH_setting, right=CH_address,
+            on='URN', how='inner'
+        )
+        del CH_setting, CH_address
+
+    else:
+        raise UploadError(f'Failed to find expected sheet names in Childrens Home List.')
 
     CH_df['source'] = "CH List"
     CH_df['Provider Placement Code'] = CH_df['Provider Placement Code'].str.replace('/', ',')
     provider_info_df = CH_df.rename(columns=dict(zip(CH_cols, provider_info_cols)))
-    del CH_setting, CH_address, CH_df
+    del CH_df
     logger.info(f'CH dataframe complete. Creating SCP dataframe {sc.t}')
 
     # read social care providers file

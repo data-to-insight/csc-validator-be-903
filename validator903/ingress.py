@@ -228,7 +228,8 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
         del CH_setting, CH_address
 
     else:
-        raise UploadError(f'Failed to find expected sheet names in Childrens Home List.')
+        raise UploadError('Failed to find expected sheet names in Childrens Homes List. '
+                          'Expected "Provider information" or "Setting and Inspection Info" and "Address Details"')
 
     CH_df['source'] = "CH List"
     CH_df['Provider Placement Code'] = CH_df['Provider Placement Code'].str.replace('/', ',')

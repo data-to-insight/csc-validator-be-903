@@ -178,7 +178,8 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
             CH_address = CH_providers[['URN', 'Setting Postcode']]
         except KeyError:
             try:
-                CH_address = (
+                CH_address = CH_providers[['URN']]
+                CH_providers = (
                     CH_providers
                     .rename(columns={'Setting Address Postcode': 'Setting Postcode'})
                 )

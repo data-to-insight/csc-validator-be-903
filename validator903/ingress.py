@@ -188,7 +188,7 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
         try:
             CH_providers = CH_providers[CH_cols[:]]
         except KeyError:
-            raise print(f'Failed to find required columns in Childrens Homes list "Provider information"'
+            raise UploadError(f'Failed to find required columns in Childrens Homes list "Provider information"'
                               f' sheet. Expected: {", ".join(CH_cols[:])}')
         CH_df = CH_providers
         del CH_providers, CH_address

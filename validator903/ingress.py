@@ -166,7 +166,7 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
     logger.info(f'URN lookup bytes recieved. Reading excel files... {sc.t}')
 
     # read childrens homes file
-    CH_sheets = pd.ExcelFile(CH_bytes).sheet_names
+    CH_sheets = pd.ExcelFile(CH_bytes, engine='openpyxl').sheet_names
     CH_cols = ['URN', 'Local Authority', 'Provider Code', 'Provider Placement Code', 'Closed Date', 'Setting Postcode']
 
     # check whether file includes consolidated provider information sheet
@@ -178,7 +178,7 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
             CH_address = CH_providers[['URN', 'Setting Postcode']]
         except KeyError:
             try:
-                CH_providers = (
+                CH_address = (
                     CH_providers
                     .rename(columns={'Setting Address Postcode': 'Setting Postcode'})
                 )

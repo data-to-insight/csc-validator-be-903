@@ -6466,15 +6466,6 @@ def validate_392d():
             not_p1 = episodes[~(episodes['PLACE'] == 'P1')]
 
             error_mask = not_p1[not_p1['HOME_POST'] == not_p1['PL_POST']]
-            # home_provided = episodes['HOME_POST'].notna()
-            # home_details = merge_postcodes(episodes, "HOME_POST")
-            # home_valid = home_details['pcd'].notna()
-
-            # pl_provided = episodes['PL_POST'].notna()
-            # pl_details = merge_postcodes(episodes, "PL_POST")
-            # pl_valid = pl_details['pcd'].notna()
-
-            # error_mask = (home_provided & ~home_valid) | (pl_provided & ~pl_valid)
 
             return {'Episodes': episodes.index[error_mask].tolist()}
 

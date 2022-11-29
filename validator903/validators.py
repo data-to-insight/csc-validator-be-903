@@ -3207,7 +3207,7 @@ def validate_189():
             collection_start = pd.to_datetime(collection_start, format='%d/%m/%Y', errors='coerce')
 
             # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
-            mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) >= collection_start) & (
+            mask = ((oc2['DOB'] + pd.offsets.DateOffset(years=17)) < collection_start) & (
                     oc2['SDQ_REASON'].notna() | oc2['SDQ_SCORE'].notna())
             # That is, raise error if collection_start > DOB + 17years
             oc_error_locs = oc2.index[mask]

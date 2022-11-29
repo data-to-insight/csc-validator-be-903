@@ -4363,7 +4363,7 @@ def validate_558():
             merged = placeEpisodes.merge(placedAdoptions, how='left', on='CHILD').set_index('index')
 
             episodes_with_errors = merged[merged['DATE_PLACED_CEASED'].notnull()]
-
+            
             error_mask = episodes.index.isin(episodes_with_errors.index)
 
             error_locations = episodes.index[error_mask]

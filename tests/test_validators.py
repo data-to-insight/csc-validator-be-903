@@ -4198,14 +4198,14 @@ def test_validate_392c():
 
 def test_validate_392d():
     fake_data = pd.DataFrame([
-    {'PLACE':'P1',
-    'HOME_POST':'BN20',
-    'PL_POST':'BN20'},
-    {'PLACE':'P1',
-    'HOME_POST':'BN21',
-    'PL_POST':'BN20'},
     {'PLACE':'P2',
     'HOME_POST':'BN20',
+    'PL_POST':'BN20'},
+    {'PLACE':'P1',
+    'HOME_POST':'BN20',
+    'PL_POST':'BN20'},
+    {'PLACE':'P2',
+    'HOME_POST':'BN21',
     'PL_POST':'BN20'},
     ])
 
@@ -4215,7 +4215,7 @@ def test_validate_392d():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [2,]}
+    assert result == {'Episodes': [0,]}
 
 def test_validate_213():
     fake_data = pd.DataFrame({

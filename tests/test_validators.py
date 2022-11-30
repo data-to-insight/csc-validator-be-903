@@ -2721,7 +2721,7 @@ def test_validate_558():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [4,4]}
+    assert result == {'Episodes': [4]}
 
 
 def test_validate_185():

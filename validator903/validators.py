@@ -4343,7 +4343,7 @@ def validate_517():
 def validate_558():
     error = ErrorDefinition(
         code='558',
-        description='If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank. if the REC code is either E11 or E12 then the DATE PLACED CEASED date should not be provided',
+        description='If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank.',
         affected_fields=['DATE_PLACED_CEASED', 'REC'],
     )
 
@@ -4362,7 +4362,17 @@ def validate_558():
 
             merged = placeEpisodes.merge(placedAdoptions, how='left', on='CHILD').set_index('index')
 
-            episodes_with_errors = merged[merged['DATE_PLACED_CEASED'].notnull()]
+            # Add's a year column for grouping by year later.
+            merged['YEAR'] = pd.DatetimeIndex(merged['DATE_PLACED_CEASED'], dayfirst=True).year
+
+            # List of children who have null dates to be excluded (assumes the null is their most recent)
+            children_with_null = merged[(merged['DATE_PLACED_CEASED'].isna())]['CHILD'].tolist()
+
+            episodes_not_null = merged[~(merged['CHILD'].isin(children_with_null))]
+
+            episodes_not_null['COUNT'] = episodes_not_null.groupby(['CHILD', 'YEAR'], group_keys=False)['DATE_PLACED_CEASED'].transform('count')
+
+            episodes_with_errors = episodes_not_null[episodes_not_null['COUNT'] > 1]
             
             error_mask = episodes.index.isin(episodes_with_errors.index)
 

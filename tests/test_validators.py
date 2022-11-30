@@ -2707,12 +2707,12 @@ def test_validate_517():
 
 def test_validate_558():
     fake_data_episodes = pd.DataFrame({
-        'CHILD': ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
-        'REC': ['x', 'E11', 'E12', 'E11', 'E12', 'E11', 'E12', 'E11', 'E11', 'A3'],
+        'CHILD': ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', ],
+        'REC': ['x', 'E11', 'E12', 'E11', 'E12', 'E11', 'E12', 'E11', 'E11', 'E12', ],
     })
     fake_data_placed_adoption = pd.DataFrame({
-        'CHILD': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-        'DATE_PLACED_CEASED': [pd.NA, pd.NA, pd.NA, pd.NA, '01/01/2020', '15/04/2020', pd.NA, '28th Jan 1930'],
+        'CHILD': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'D', 'E', 'I', 'I', 'I'],
+        'DATE_PLACED_CEASED': [pd.NA, pd.NA, pd.NA, '01/01/2020', '01/01/2020', '15/04/2020', pd.NA, '28th Jan 1930', '02/01/2020', '01/01/1930', '01/01/1930', '02/01/1930',pd.NA],
     })
 
     fake_dfs = {'Episodes': fake_data_episodes, 'PlacedAdoption': fake_data_placed_adoption}
@@ -2721,7 +2721,7 @@ def test_validate_558():
 
     result = error_func(fake_dfs)
 
-    assert result == {'Episodes': [5, 6, 8]}
+    assert result == {'Episodes': [4,4]}
 
 
 def test_validate_185():

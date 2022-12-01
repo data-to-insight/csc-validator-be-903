@@ -4200,7 +4200,7 @@ def test_validate_392d():
     fake_data = pd.DataFrame({
         'PLACE':['P2', 'P1','P2'],
         'PL_POST':['BN20', 'BN20', 'BN21',],
-        'PL_HOME':['BN20', 'BN20', 'BN20',],
+        'HOME_POST':['BN20', 'BN20', 'BN20',],
     })
 
     fake_dfs = {'Episodes': fake_data}

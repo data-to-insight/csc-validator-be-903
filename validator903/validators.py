@@ -6463,7 +6463,7 @@ def validate_392d():
         else:
             episodes = dfs['Episodes']
 
-            not_p1 = episodes[~(episodes['PLACE'] == 'P1')]
+            not_p1 = episodes[(episodes['PLACE'] != 'P1')]
 
             error_mask = not_p1[not_p1['HOME_POST'] == not_p1['PL_POST']]
 

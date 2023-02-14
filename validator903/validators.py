@@ -4780,7 +4780,7 @@ def validate_523():
             ad1 = ad1[ad1["DATE_INT"].notna()]
 
             # bring corresponding values together from both dataframes
-            merged_df = placed_adoption.merge(ad1, on=['CHILD'], how='inner', suffixes=["_AD", "_PA"])
+            merged_df = placed_adoption.merge(ad1, on=['CHILD'], how='inner', suffixes=["_PA", "_AD"])
             # find error values
             different_dates = merged_df['DATE_INT'] != merged_df['DATE_PLACED']
             # map error locations to corresponding indices

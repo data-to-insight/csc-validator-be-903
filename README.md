@@ -68,11 +68,13 @@ tests. Please do not submit a pull-request without a comprehensive test.
 
 ### Development
 
-To install the code and dependencies. Then from the main project directory run
+To install the code and dependencies, from the main project directory run:
 
 ```
 poetry install
 ```
+
+If this does not work, it might be because you're running the wrong version of Python, the version of Numpy used by the 903 validator is locked at 3.9. The devcontainer and dockerfile should ensure you are running 3.9 and you may simply require a rebuild. If not, ensure you are working in an environment or venv with Python 3.9 as your interpreter.
 
 ### Adding validators
 

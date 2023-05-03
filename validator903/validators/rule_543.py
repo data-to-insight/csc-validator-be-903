@@ -1,0 +1,147 @@
+import pandas as pd
+
+from validator903.types import ErrorDefinition
+from validator903.utils import (
+    add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
+)  # Check 'Episodes' present before use!
+
+
+def validate():
+    error = ErrorDefinition(
+        code="543",
+        description="Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.",
+        affected_fields=["DOB", "CONVICTED"],
+    )
+
+    def _validate(dfs):
+        if "OC2" not in dfs or "Episodes" not in dfs:
+            return {}
+        else:
+            oc2 = dfs["OC2"]
+            collection_end = dfs["metadata"]["collection_end"]
+            # add CLA column
+            oc2 = add_CLA_column(dfs, "OC2")
+
+            # to datetime
+            oc2["DOB"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+            collection_end = pd.to_datetime(
+                collection_end, format="%d/%m/%Y", errors="coerce"
+            )
+
+            # If <DOB> >= 10 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER> = 'Y' then <CONVICTED> should be provided
+            mask = (
+                (collection_end > (oc2["DOB"] + pd.offsets.DateOffset(years=10)))
+                & oc2["CONTINUOUSLY_LOOKED_AFTER"]
+                & oc2["CONVICTED"].isna()
+            )
+            error_locations = oc2.index[mask]
+            return {"OC2": error_locations.tolist()}
+
+    return error, _validate
+
+
+def test_validate():
+    import pandas as pd
+
+    fake_data_episodes = pd.DataFrame(
+        [
+            {
+                "CHILD": 101,
+                "DECOM": "01/03/1980",
+                "DEC": "31/03/1981",
+                "LS": "o",
+                "REC": "X1",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 102,
+                "DECOM": "01/03/1980",
+                "DEC": "30/03/1981",
+                "LS": "o",
+                "REC": "X1",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 103,
+                "DECOM": "01/03/1980",
+                "DEC": "01/01/1981",
+                "LS": "o",
+                "REC": "X1",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 104,
+                "DECOM": "01/02/1970",
+                "DEC": pd.NA,
+                "LS": "o",
+                "REC": "!!",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 105,
+                "DECOM": "01/03/1979",
+                "DEC": "01/01/1981",
+                "LS": "o",
+                "REC": "X1",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 105,
+                "DECOM": "01/01/1981",
+                "DEC": "01/01/1983",
+                "LS": "o",
+                "REC": "oo",
+                "RNE": "o",
+            },  # CLA
+            {
+                "CHILD": 106,
+                "DECOM": "01/03/1980",
+                "DEC": "01/01/1982",
+                "LS": "V3",
+                "REC": "X1",
+                "RNE": "o",
+            },  # not CLA: V3
+            {
+                "CHILD": 107,
+                "DECOM": "01/03/1980",
+                "DEC": "01/01/1982",
+                "LS": "V3",
+                "REC": "!!",
+                "RNE": "o",
+            },  # not CLA: REC
+        ]
+    )
+    fake_data = pd.DataFrame(
+        {
+            "CHILD": [101, 102, 103, 104, 105, 106, 107, 333],
+            "DOB": [
+                "08/03/1973",
+                "22/06/1968",
+                pd.NA,
+                "13/10/1968",
+                "10/01/1966",
+                "01/01/1965",
+                "01/01/1965",
+                "01/01/1965",
+            ],
+            "CONVICTED": [pd.NA, pd.NA, pd.NA, 1, pd.NA, pd.NA, pd.NA, pd.NA],
+            # 0 pass: under 10
+            # 1 fail : CLA is true, over 10, and CONVICTED is not provided
+            # 2 pass: DOB is nan
+            # 3 pass: under 5 (born in future), but CONVICTED provided
+            # 4 fail: CLA is true, over 10, and CONVICTED is not provided
+            # 5 pass: not CLA
+            # 6 pass: not CLA
+            # 7 pass: not in episodes -> not CLA
+        }
+    )
+
+    metadata = {"collection_start": "01/04/1980", "collection_end": "31/03/1981"}
+
+    fake_dfs = {"OC2": fake_data, "metadata": metadata, "Episodes": fake_data_episodes}
+
+    error_defn, error_func = validate()
+
+    result = error_func(fake_dfs)
+
+    assert result == {"OC2": [1, 4]}

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,38 +12,38 @@ from validator903.types import ErrorDefinition
     affected_fields=["DATE_PLACED"],
 )
 def validate(dfs):
-    if "PlacedAdoption" not in dfs or "PlacedAdoptionlast" not in dfs:
+    if "PlacedAdoption" not in dfs or "PlacedAdoption_last" not in dfs:
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
-        palast = dfs["PlacedAdoptionlast"]
-        collectionstart = dfs["metadata"]["collectionstart"]
+        placed_adoption = dfs["PlacedAdoption"]
+        pa_last = dfs["PlacedAdoption_last"]
+        collection_start = dfs["metadata"]["collection_start"]
 
         # convert dates to appropriate format
-        palast["DATEPLACED"] = pd.todatetime(
-            palast["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        pa_last["DATE_PLACED"] = pd.to_datetime(
+            pa_last["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
 
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        palast.resetindex(inplace=True)
-        merged = placedadoption.merge(
-            palast, how="left", on="CHILD", suffixes=["now", "last"]
+        placed_adoption.reset_index(inplace=True)
+        pa_last.reset_index(inplace=True)
+        merged = placed_adoption.merge(
+            pa_last, how="left", on="CHILD", suffixes=["_now", "_last"]
         )
 
-        # If <DATEPLACED> < <COLLECTIONSTARTDATE> then <CURRENTCOLLECTIONYEAR> -1 <DATEPLACED> cannot be Null
-        mask = (merged["DATEPLACEDnow"] < collectionstart) & merged[
-            "DATEPLACEDlast"
+        # If <DATE_PLACED> < <COLLECTION_START_DATE> then <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> cannot be Null
+        mask = (merged["DATE_PLACED_now"] < collection_start) & merged[
+            "DATE_PLACED_last"
         ].isna()
         # error locations
-        errorlocs = merged.loc[mask, "indexnow"]
-        return {"PlacedAdoption": errorlocs.tolist()}
+        error_locs = merged.loc[mask, "index_now"]
+        return {"PlacedAdoption": error_locs.tolist()}
 
 
 def test_validate():

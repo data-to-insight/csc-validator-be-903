@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,12 +14,12 @@ def validate(dfs):
         return {}
     else:
         oc3 = dfs["OC3"]
-        # If <INTOUCH> = 'DIED' or 'RHOM' then <ACTIV> and <ACCOM> should not be provided (0 for this)
-        mask = ((oc3["INTOUCH"] == "DIED") | (oc3["INTOUCH"] == "RHOM")) & (
+        # If <IN_TOUCH> = 'DIED' or 'RHOM' then <ACTIV> and <ACCOM> should not be provided (0 for this)
+        mask = ((oc3["IN_TOUCH"] == "DIED") | (oc3["IN_TOUCH"] == "RHOM")) & (
             (oc3["ACTIV"].astype(str) != "0") | (oc3["ACCOM"].astype(str) != "0")
         )
-        errorlocations = oc3.index[mask]
-        return {"OC3": errorlocations.tolist()}
+        error_locations = oc3.index[mask]
+        return {"OC3": error_locations.to_list()}
 
 
 def test_validate():

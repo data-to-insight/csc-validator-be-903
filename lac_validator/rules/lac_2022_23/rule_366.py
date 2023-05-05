@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(

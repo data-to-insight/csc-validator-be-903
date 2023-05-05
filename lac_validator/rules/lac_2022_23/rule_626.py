@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,31 +13,33 @@ from validator903.types import ErrorDefinition
     affected_fields=["MOTHER", "MC_DOB"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs:
         return {}
     else:
         header = dfs["Header"]
-        headerprev = dfs["Headerlast"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        header["MCDOB"] = pd.todatetime(
-            header["MCDOB"], format="%d/%m/%Y", errors="coerce"
+        header_prev = dfs["Header_last"]
+        collection_start = dfs["metadata"]["collection_start"]
+        header["MC_DOB"] = pd.to_datetime(
+            header["MC_DOB"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        header["origidx"] = header.index
-        header = header.query("MCDOB.notna()")
-        merged = header.merge(headerprev, how="inner", on="CHILD", suffixes=["", "PRE"])
-        merged["MOTHER"] = pd.tonumeric(merged["MOTHER"], errors="coerce")
-        merged["MOTHERPRE"] = pd.tonumeric(merged["MOTHERPRE"], errors="coerce")
-        errco = merged[
+        header["orig_idx"] = header.index
+        header = header.query("MC_DOB.notna()")
+        merged = header.merge(
+            header_prev, how="inner", on="CHILD", suffixes=["", "_PRE"]
+        )
+        merged["MOTHER"] = pd.to_numeric(merged["MOTHER"], errors="coerce")
+        merged["MOTHER_PRE"] = pd.to_numeric(merged["MOTHER_PRE"], errors="coerce")
+        err_co = merged[
             (merged["MOTHER"] == 1)
-            & (merged["MOTHERPRE"] == 0)
-            & (merged["MCDOB"] < collectionstart)
+            & (merged["MOTHER_PRE"] == 0)
+            & (merged["MC_DOB"] < collection_start)
         ]
-        errlist = errco["origidx"].unique().tolist()
-        errlist.sort()
-        return {"Header": errlist}
+        err_list = err_co["orig_idx"].unique().tolist()
+        err_list.sort()
+        return {"Header": err_list}
 
 
 def test_validate():

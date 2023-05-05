@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,23 +17,23 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         oc3 = dfs["OC3"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
 
-        # If final <REC> = 'E3' then <INTOUCH>; <ACTIV> and <ACCOM> should not be provided
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        groupeddecombychild = epi.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
-        maxdecomonly = epi.loc[epi.index.isin(groupeddecombychild), :]
-        E3islast = maxdecomonly[maxdecomonly["REC"] == "E3"]
+        # If final <REC> = 'E3' then <IN_TOUCH>; <ACTIV> and <ACCOM> should not be provided
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        grouped_decom_by_child = epi.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
+        max_decom_only = epi.loc[epi.index.isin(grouped_decom_by_child), :]
+        E3_is_last = max_decom_only[max_decom_only["REC"] == "E3"]
 
-        oc3.resetindex(inplace=True)
-        cohorttocheck = oc3.merge(E3islast, on="CHILD", how="inner")
-        errormask = cohorttocheck[["INTOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)
+        oc3.reset_index(inplace=True)
+        cohort_to_check = oc3.merge(E3_is_last, on="CHILD", how="inner")
+        error_mask = cohort_to_check[["IN_TOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)
 
-        errorlist = cohorttocheck["index"][errormask].tolist()
-        errorlist = list(set(errorlist))
-        errorlist.sort()
+        error_list = cohort_to_check["index"][error_mask].to_list()
+        error_list = list(set(error_list))
+        error_list.sort()
 
-        return {"OC3": errorlist}
+        return {"OC3": error_list}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,18 +15,20 @@ def validate(dfs):
     if "Episodes" not in dfs:
         return {}
     episodes = dfs["Episodes"]
-    collectionendstr = dfs["metadata"]["collectionend"]
+    collection_end_str = dfs["metadata"]["collection_end"]
 
-    episodes.loc[episodes["DEC"].isna(), "DEC"] = collectionendstr
-    episodes["DECOM"] = pd.todatetime(
+    episodes.loc[episodes["DEC"].isna(), "DEC"] = collection_end_str
+    episodes["DECOM"] = pd.to_datetime(
         episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
     )
-    episodes["DEC"] = pd.todatetime(episodes["DEC"], format="%d/%m/%Y", errors="coerce")
+    episodes["DEC"] = pd.to_datetime(
+        episodes["DEC"], format="%d/%m/%Y", errors="coerce"
+    )
 
-    over17days = episodes["DEC"] > episodes["DECOM"] + pd.DateOffset(days=17)
-    errormask = (episodes["LS"] == "V3") & over17days
+    over_17_days = episodes["DEC"] > episodes["DECOM"] + pd.DateOffset(days=17)
+    error_mask = (episodes["LS"] == "V3") & over_17_days
 
-    return {"Episodes": episodes.index[errormask].tolist()}
+    return {"Episodes": episodes.index[error_mask].to_list()}
 
 
 def test_validate():

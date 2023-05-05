@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,45 +16,45 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
 
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
-        epi["LAGINDEX"] = epi["level0"].shift(-1)
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
+        epi["LAG_INDEX"] = epi["level_0"].shift(-1)
         epi.fillna(
             value={
                 "LS": "*",
                 "PLACE": "*",
-                "PLPOST": "*",
+                "PL_POST": "*",
                 "URN": "*",
-                "PLACEPROVIDER": "*",
+                "PLACE_PROVIDER": "*",
             },
             inplace=True,
         )
-        epimerge = epi.merge(
+        epi_merge = epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "PRE"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_PRE"],
         )
 
-        epimultirow = epimerge[epimerge["CHILD"] == epimerge["CHILDPRE"]]
-        epihasBU = epimultirow[epimultirow["RNE"].isin(["U", "B"])]
+        epi_multi_row = epi_merge[epi_merge["CHILD"] == epi_merge["CHILD_PRE"]]
+        epi_has_B_U = epi_multi_row[epi_multi_row["RNE"].isin(["U", "B"])]
 
-        maskls = epihasBU["LS"] == epihasBU["LSPRE"]
+        mask_ls = epi_has_B_U["LS"] == epi_has_B_U["LS_PRE"]
 
-        mask1 = epihasBU["PLACE"] == epihasBU["PLACEPRE"]
-        mask2 = epihasBU["PLPOST"] == epihasBU["PLPOSTPRE"]
-        mask3 = epihasBU["URN"] == epihasBU["URNPRE"]
-        mask4 = epihasBU["PLACEPROVIDER"] == epihasBU["PLACEPROVIDERPRE"]
+        mask1 = epi_has_B_U["PLACE"] == epi_has_B_U["PLACE_PRE"]
+        mask2 = epi_has_B_U["PL_POST"] == epi_has_B_U["PL_POST_PRE"]
+        mask3 = epi_has_B_U["URN"] == epi_has_B_U["URN_PRE"]
+        mask4 = epi_has_B_U["PLACE_PROVIDER"] == epi_has_B_U["PLACE_PROVIDER_PRE"]
 
-        errormask = maskls | (mask1 & mask2 & mask3 & mask4)
+        error_mask = mask_ls | (mask1 & mask2 & mask3 & mask4)
 
-        errorlist = epihasBU[errormask]["index"].tolist()
-        errorlist.sort()
-        return {"Episodes": errorlist}
+        error_list = epi_has_B_U[error_mask]["index"].to_list()
+        error_list.sort()
+        return {"Episodes": error_list}
 
 
 def test_validate():

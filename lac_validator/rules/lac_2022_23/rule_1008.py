@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,21 +10,21 @@ from validator903.types import ErrorDefinition
     affected_fields=["URN"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "providerinfo" not in dfs["metadata"]:
+    if "Episodes" not in dfs or "provider_info" not in dfs["metadata"]:
         return {}
     else:
         episodes = dfs["Episodes"]
-        providers = dfs["metadata"]["providerinfo"]
+        providers = dfs["metadata"]["provider_info"]
 
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[
             episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")
         ].copy()
         episodes["URN"] = episodes["URN"].astype(str)
         episodes = episodes.merge(providers, on="URN", how="left", indicator=True)
-        mask = episodes["merge"] == "leftonly"
-        epserrorlocations = episodes.loc[mask, "indexeps"]
-        return {"Episodes": epserrorlocations.tolist()}
+        mask = episodes["_merge"] == "left_only"
+        eps_error_locations = episodes.loc[mask, "index_eps"]
+        return {"Episodes": eps_error_locations.tolist()}
 
 
 def test_validate():

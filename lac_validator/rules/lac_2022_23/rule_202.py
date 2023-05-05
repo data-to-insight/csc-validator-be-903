@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,34 +10,34 @@ from validator903.types import ErrorDefinition
     affected_fields=["SEX"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs:
         return {}
     else:
         header = dfs["Header"]
-        headerlast = dfs["Headerlast"]
+        header_last = dfs["Header_last"]
 
-        headermerged = (
-            header.resetindex()
+        header_merged = (
+            header.reset_index()
             .merge(
-                headerlast,
+                header_last,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "last"),
+                suffixes=("", "_last"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        inbothyears = headermerged["merge"] == "both"
-        sexisdifferent = headermerged["SEX"].astype(str) != headermerged[
-            "SEXlast"
+        in_both_years = header_merged["_merge"] == "both"
+        sex_is_different = header_merged["SEX"].astype(str) != header_merged[
+            "SEX_last"
         ].astype(str)
 
-        errormask = inbothyears & sexisdifferent
+        error_mask = in_both_years & sex_is_different
 
-        errorlocations = headermerged.index[errormask]
+        error_locations = header_merged.index[error_mask]
 
-        return {"Header": errorlocations.tolist()}
+        return {"Header": error_locations.to_list()}
 
 
 def test_validate():

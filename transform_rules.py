@@ -3,7 +3,16 @@ from os.path import isfile, join
 
 dirpath ="validator903\\validators"
 onlyfiles = [f for f in listdir(dirpath) if isfile(join(dirpath, f))]
-onlyfiles.remove("__init__.py")
+# onlyfiles.remove("__init__.py")
+
+def update_imports(imprts):
+    
+    imprts = imprts + "\nimport pandas as pd"
+    if "from validator903.types import ErrorDefinition" in imprts:
+        imprts = imprts.replace("from validator903.types import ErrorDefinition", "from lac_validator.rule_engine import rule_definition")
+    else:
+        imprts = imprts + "\nfrom lac_validator.rule_engine import rule_definition"
+    return imprts
 
 def transform_rule(rule_file_name):
     # Read file contents.
@@ -18,23 +27,17 @@ def transform_rule(rule_file_name):
     subvalidate_end = validate.rfind("return") # finds the outer last return statement such that it can be excluded.
 
     subvalidate_start = validate.find("def _validate(dfs)")
-    subvalidate = validate[subvalidate_start: subvalidate_end].replace("_", "")
+    subvalidate = validate[subvalidate_start: subvalidate_end].replace("_validate", "validate")
 
     rule_def_start = validate.find("error = ErrorDefinition")
     rule_def = validate[rule_def_start:subvalidate_start]
     rule_def = rule_def.replace("error = ErrorDefinition", "@rule_definition").replace("description", "message").strip()
 
-    imports = rule_content[:validate_start]
-    def de_tab(line):
-        if line[:8].isspace():
-            return line[8:]
-        else: 
-            return line
-            something
-
+    imprts = rule_content[:validate_start]
+    imprts_updated = update_imports(imprts)
     # write new content to files.
     with open(f".\lac_validator\\rules\lac_2022_23\{rule_file_name}", "w") as rule_file:
-        rule_file.write(f"{imports}\n{rule_def}\n{subvalidate}\n{test_validate}")
+        rule_file.write(f"{imprts_updated}\n{rule_def}\n{subvalidate}\n{test_validate}")
 
 for rule_file in onlyfiles:
     transform_rule(rule_file)

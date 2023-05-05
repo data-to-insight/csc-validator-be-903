@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,9 +14,9 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        localauthority = dfs["metadata"]["localAuthority"]
+        local_authority = dfs["metadata"]["localAuthority"]
 
-        mask = df["PLLOCATION"].eq("IN") & df["PLLA"].ne(localauthority)
+        mask = df["PL_LOCATION"].eq("IN") & df["PL_LA"].ne(local_authority)
 
         return {"Episodes": df.index[mask].tolist()}
 

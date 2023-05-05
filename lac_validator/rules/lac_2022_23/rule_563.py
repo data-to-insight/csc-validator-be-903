@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,14 +13,14 @@ def validate(dfs):
     if "PlacedAdoption" not in dfs:
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         mask = (
-            placedadoption["REASONPLACEDCEASED"].notna()
-            & placedadoption["DATEPLACEDCEASED"].notna()
-            & placedadoption["DATEPLACED"].isna()
+            placed_adoption["REASON_PLACED_CEASED"].notna()
+            & placed_adoption["DATE_PLACED_CEASED"].notna()
+            & placed_adoption["DATE_PLACED"].isna()
         )
-        errorlocations = placedadoption.index[mask]
-        return {"PlacedAdoption": errorlocations.tolist()}
+        error_locations = placed_adoption.index[mask]
+        return {"PlacedAdoption": error_locations.to_list()}
 
 
 def test_validate():

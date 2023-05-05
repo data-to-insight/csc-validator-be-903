@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,42 +16,44 @@ def validate(dfs):
     if "Episodes" not in dfs:
         return {}
     episodes = dfs["Episodes"]
-    collectionendstr = dfs["metadata"]["collectionend"]
+    collection_end_str = dfs["metadata"]["collection_end"]
 
-    J2eps = episodes[episodes["LS"] == "J2"].copy()
-    J2eps["originalindex"] = J2eps.index
+    J2_eps = episodes[episodes["LS"] == "J2"].copy()
+    J2_eps["original_index"] = J2_eps.index
 
-    J2eps["DECOM"] = pd.todatetime(J2eps["DECOM"], format="%d/%m/%Y", errors="coerce")
-    J2eps = J2eps[J2eps["DECOM"].notna()]
-    J2eps.loc[J2eps["DEC"].isna(), "DEC"] = collectionendstr
-    J2eps["DEC"] = pd.todatetime(J2eps["DEC"], format="%d/%m/%Y", errors="coerce")
-
-    J2eps.sortvalues(["CHILD", "DECOM"])
-
-    J2eps["index"] = pd.RangeIndex(0, len(J2eps))
-    J2eps["indexprev"] = J2eps["index"] + 1
-    J2eps = J2eps.merge(
-        J2eps,
-        lefton="index",
-        righton="indexprev",
-        how="left",
-        suffixes=[None, "prev"],
+    J2_eps["DECOM"] = pd.to_datetime(
+        J2_eps["DECOM"], format="%d/%m/%Y", errors="coerce"
     )
-    J2eps = J2eps[
-        ["originalindex", "DECOM", "DEC", "DECprev", "CHILD", "CHILDprev", "LS"]
+    J2_eps = J2_eps[J2_eps["DECOM"].notna()]
+    J2_eps.loc[J2_eps["DEC"].isna(), "DEC"] = collection_end_str
+    J2_eps["DEC"] = pd.to_datetime(J2_eps["DEC"], format="%d/%m/%Y", errors="coerce")
+
+    J2_eps.sort_values(["CHILD", "DECOM"])
+
+    J2_eps["index"] = pd.RangeIndex(0, len(J2_eps))
+    J2_eps["index_prev"] = J2_eps["index"] + 1
+    J2_eps = J2_eps.merge(
+        J2_eps,
+        left_on="index",
+        right_on="index_prev",
+        how="left",
+        suffixes=[None, "_prev"],
+    )
+    J2_eps = J2_eps[
+        ["original_index", "DECOM", "DEC", "DEC_prev", "CHILD", "CHILD_prev", "LS"]
     ]
 
-    J2eps["newperiod"] = (J2eps["DECOM"] > J2eps["DECprev"]) | (
-        J2eps["CHILD"] != J2eps["CHILDprev"]
+    J2_eps["new_period"] = (J2_eps["DECOM"] > J2_eps["DEC_prev"]) | (
+        J2_eps["CHILD"] != J2_eps["CHILD_prev"]
     )
 
-    J2eps["duration"] = (J2eps["DEC"] - J2eps["DECOM"]).dt.days
-    J2eps["periodid"] = J2eps["newperiod"].astype(int).cumsum()
-    J2eps["periodduration"] = J2eps.groupby("periodid")["duration"].transform(sum)
+    J2_eps["duration"] = (J2_eps["DEC"] - J2_eps["DECOM"]).dt.days
+    J2_eps["period_id"] = J2_eps["new_period"].astype(int).cumsum()
+    J2_eps["period_duration"] = J2_eps.groupby("period_id")["duration"].transform(sum)
 
-    errormask = J2eps["periodduration"] > 21
+    error_mask = J2_eps["period_duration"] > 21
 
-    return {"Episodes": J2eps.loc[errormask, "originalindex"].tolist()}
+    return {"Episodes": J2_eps.loc[error_mask, "original_index"].to_list()}
 
 
 def test_validate():

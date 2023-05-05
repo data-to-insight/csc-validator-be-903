@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,13 +17,13 @@ def validate(dfs):
     else:
         review = dfs["Reviews"]
 
-        errormask = pd.todatetime(
+        error_mask = pd.to_datetime(
             review["REVIEW"], format="%d/%m/%Y", errors="coerce"
         ).isna()
 
-        validationerrorlocations = review.index[errormask]
+        validation_error_locations = review.index[error_mask]
 
-        return {"Reviews": validationerrorlocations.tolist()}
+        return {"Reviews": validation_error_locations.to_list()}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,25 +17,26 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
 
-        codelist = ["T0", "T1", "T2", "T3", "T4"]
+        code_list = ["T0", "T1", "T2", "T3", "T4"]
 
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        # create column to see previous REASONPLACECHANGE
-        episodes = episodes.sortvalues(["CHILD", "DECOM"])
-        episodes["PREVIOUSREASON"] = episodes.groupby("CHILD")[
-            "REASONPLACECHANGE"
+        # create column to see previous REASON_PLACE_CHANGE
+        episodes = episodes.sort_values(["CHILD", "DECOM"])
+        episodes["PREVIOUS_REASON"] = episodes.groupby("CHILD")[
+            "REASON_PLACE_CHANGE"
         ].shift(1)
-        # If <PL> = 'T0'; 'T1'; 'T2'; 'T3' or 'T4' then <REASONPLACECHANGE> should be null in current episode and current episode - 1
-        mask = episodes["PLACE"].isin(codelist) & (
-            episodes["REASONPLACECHANGE"].notna() | episodes["PREVIOUSREASON"].notna()
+        # If <PL> = 'T0'; 'T1'; 'T2'; 'T3' or 'T4' then <REASON_PLACE_CHANGE> should be null in current episode and current episode - 1
+        mask = episodes["PLACE"].isin(code_list) & (
+            episodes["REASON_PLACE_CHANGE"].notna()
+            | episodes["PREVIOUS_REASON"].notna()
         )
 
         # error locations
-        errorlocs = episodes.index[mask]
-    return {"Episodes": errorlocs.tolist()}
+        error_locs = episodes.index[mask]
+    return {"Episodes": error_locs.tolist()}
 
 
 def test_validate():

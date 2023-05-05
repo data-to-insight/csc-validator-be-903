@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,13 +16,13 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Missing"]
-        df["DOB"] = pd.todatetime(df["DOB"], format="%d/%m/%Y", errors="coerce")
-        df["MISSTART"] = pd.todatetime(
-            df["MISSTART"], format="%d/%m/%Y", errors="coerce"
+        df["DOB"] = pd.to_datetime(df["DOB"], format="%d/%m/%Y", errors="coerce")
+        df["MIS_START"] = pd.to_datetime(
+            df["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
 
-        errormask = df["MISSTART"].notna() & (df["MISSTART"] <= df["DOB"])
-        return {"Missing": df.index[errormask].tolist()}
+        error_mask = df["MIS_START"].notna() & (df["MIS_START"] <= df["DOB"])
+        return {"Missing": df.index[error_mask].to_list()}
 
 
 def test_validate():

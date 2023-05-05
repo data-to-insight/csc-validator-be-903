@@ -1,7 +1,10 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -24,27 +27,31 @@ def validate(dfs):
     if "OC3" not in dfs or "AD1" not in dfs or "Episodes" not in dfs:
         return {}
 
-    # add 'CONTINUOUSLYLOOKEDAFTER' column
-    ad1, oc3 = addCLAcolumn(dfs, ["AD1", "OC3"])
+    # add 'CONTINUOUSLY_LOOKED_AFTER' column
+    ad1, oc3 = add_CLA_column(dfs, ["AD1", "OC3"])
 
     # OC3
-    shouldbeblank = ["INTOUCH", "ACTIV", "ACCOM"]
-    oc3mask = oc3["CONTINUOUSLYLOOKEDAFTER"] & oc3[shouldbeblank].notna().any(axis=1)
-    oc3errorlocs = oc3[oc3mask].index.tolist()
+    should_be_blank = ["IN_TOUCH", "ACTIV", "ACCOM"]
+    oc3_mask = oc3["CONTINUOUSLY_LOOKED_AFTER"] & oc3[should_be_blank].notna().any(
+        axis=1
+    )
+    oc3_error_locs = oc3[oc3_mask].index.to_list()
 
     # AD1
-    shouldbeblank = [
-        "DATEINT",
-        "DATEMATCH",
-        "FOSTERCARE",
-        "NBADOPTR",
-        "SEXADOPTR",
-        "LSADOPTR",
+    should_be_blank = [
+        "DATE_INT",
+        "DATE_MATCH",
+        "FOSTER_CARE",
+        "NB_ADOPTR",
+        "SEX_ADOPTR",
+        "LS_ADOPTR",
     ]
-    ad1mask = ad1["CONTINUOUSLYLOOKEDAFTER"] & ad1[shouldbeblank].notna().any(axis=1)
-    ad1errorlocs = ad1[ad1mask].index.tolist()
+    ad1_mask = ad1["CONTINUOUSLY_LOOKED_AFTER"] & ad1[should_be_blank].notna().any(
+        axis=1
+    )
+    ad1_error_locs = ad1[ad1_mask].index.to_list()
 
-    return {"AD1": ad1errorlocs, "OC3": oc3errorlocs}
+    return {"AD1": ad1_error_locs, "OC3": oc3_error_locs}
 
 
 def test_validate():

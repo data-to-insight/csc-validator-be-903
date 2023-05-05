@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,23 +17,23 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         hea = dfs["Header"]
-        hea["DOB"] = pd.todatetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionend = pd.todatetime(
-            dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+        hea["DOB"] = pd.to_datetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
         )
 
-        epi.resetindex(inplace=True)
-        epi = epi.merge(hea, on="CHILD", how="left", suffixes=["", "HEA"])
+        epi.reset_index(inplace=True)
+        epi = epi.merge(hea, on="CHILD", how="left", suffixes=["", "_HEA"])
 
-        maskolder18 = (epi["DOB"] + pd.offsets.DateOffset(years=18)) < collectionend
-        masknulldec = epi["DEC"].isna()
-        maskisV2K2 = (epi["LS"] == "V2") & (epi["PLACE"] == "K2")
+        mask_older_18 = (epi["DOB"] + pd.offsets.DateOffset(years=18)) < collection_end
+        mask_null_dec = epi["DEC"].isna()
+        mask_is_V2_K2 = (epi["LS"] == "V2") & (epi["PLACE"] == "K2")
 
-        errormask = maskolder18 & masknulldec & ~maskisV2K2
-        errorlist = epi["index"][errormask].tolist()
-        errorlist = list(set(errorlist))
+        error_mask = mask_older_18 & mask_null_dec & ~mask_is_V2_K2
+        error_list = epi["index"][error_mask].to_list()
+        error_list = list(set(error_list))
 
-        return {"Episodes": errorlist}
+        return {"Episodes": error_list}
 
 
 def test_validate():

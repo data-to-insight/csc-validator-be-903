@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,43 +10,45 @@ from validator903.types import ErrorDefinition
     affected_fields=["MOTHER"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs or "Episodes" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs or "Episodes" not in dfs:
         return {}
     else:
         header = dfs["Header"]
-        headerlast = dfs["Headerlast"]
+        header_last = dfs["Header_last"]
         episodes = dfs["Episodes"]
 
-        header.resetindex(inplace=True)
+        header.reset_index(inplace=True)
 
-        headermerged = header.merge(
-            headerlast,
+        header_merged = header.merge(
+            header_last,
             how="left",
             on=["CHILD"],
-            suffixes=("", "last"),
+            suffixes=("", "_last"),
             indicator=True,
         )
 
-        headermerged = headermerged.merge(
+        header_merged = header_merged.merge(
             episodes[["CHILD"]],
             on="CHILD",
             how="left",
-            suffixes=("", "eps"),
-            indicator="eps",
+            suffixes=("", "_eps"),
+            indicator="_eps",
         )
 
-        inbothyears = headermerged["merge"] == "both"
-        hasnoepisodes = headermerged["eps"] == "leftonly"
-        motherisdifferent = headermerged["MOTHER"].astype(str) != headermerged[
-            "MOTHERlast"
+        in_both_years = header_merged["_merge"] == "both"
+        has_no_episodes = header_merged["_eps"] == "left_only"
+        mother_is_different = header_merged["MOTHER"].astype(str) != header_merged[
+            "MOTHER_last"
         ].astype(str)
-        motherwastrue = headermerged["MOTHERlast"].astype(str) == "1"
+        mother_was_true = header_merged["MOTHER_last"].astype(str) == "1"
 
-        errormask = inbothyears & ~hasnoepisodes & motherisdifferent & motherwastrue
+        error_mask = (
+            in_both_years & ~has_no_episodes & mother_is_different & mother_was_true
+        )
 
-        errorlocations = list(headermerged.loc[errormask, "index"].unique())
+        error_locations = list(header_merged.loc[error_mask, "index"].unique())
 
-        return {"Header": errorlocations}
+        return {"Header": error_locations}
 
 
 def test_validate():

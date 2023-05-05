@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,8 +16,8 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        pllist = [
+        collection_start = dfs["metadata"]["collection_start"]
+        pl_list = [
             "H5",
             "P1",
             "P2",
@@ -31,33 +34,33 @@ def validate(dfs):
         ]
 
         # convert string date values to datetime format to enable comparison.
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECdt"] = pd.todatetime(
+        episodes["DEC_dt"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
-        outofengland = (
-            episodes["PLLA"]
+        out_of_england = (
+            episodes["PL_LA"]
             .astype("str")
             .str.upper()
             .str.startswith(("N", "W", "S", "C"))
         )
-        placeexempt = episodes["PLACE"].isin(pllist)
-        endsaftercollectionstart = (episodes["DECdt"] >= collectionstart) | episodes[
-            "DEC"
-        ].isna()
+        place_exempt = episodes["PLACE"].isin(pl_list)
+        ends_after_collection_start = (
+            episodes["DEC_dt"] >= collection_start
+        ) | episodes["DEC"].isna()
 
         mask = (
-            endsaftercollectionstart
+            ends_after_collection_start
             & episodes["URN"].isna()
-            & ~placeexempt
-            & ~outofengland
+            & ~place_exempt
+            & ~out_of_england
         )
 
-        errorlocations = episodes.index[mask]
-        return {"Episodes": errorlocations.tolist()}
+        error_locations = episodes.index[mask]
+        return {"Episodes": error_locations.tolist()}
 
 
 def test_validate():

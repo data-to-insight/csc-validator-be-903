@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,9 +15,9 @@ def validate(dfs):
     if "Episodes" not in dfs:
         return {}
     else:
-        # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <PLDISTANCE> must be provided
+        # If <LS> not = 'V3' or 'V4' and <UASC> = '0' and <COLLECTION YEAR> - 1 <UASC> = '0' and <COLLECTION YEAR> - 2 <UASC> = '0' then <PL_DISTANCE> must be provided
         epi = dfs["Episodes"]
-        epi["origidx"] = epi.index
+        epi["orig_idx"] = epi.index
 
         header = pd.DataFrame()
         if "Header" in dfs:
@@ -27,10 +30,10 @@ def validate(dfs):
             uasc.loc[:, "UASC"] = "1"
             header = pd.concat((header, uasc), axis=0)
 
-        if "Headerlast" in dfs:
-            header = pd.concat((header, dfs["Headerlast"]), axis=0)
-        elif "UASClast" in dfs:
-            uasc = dfs["UASClast"]
+        if "Header_last" in dfs:
+            header = pd.concat((header, dfs["Header_last"]), axis=0)
+        elif "UASC_last" in dfs:
+            uasc = dfs["UASC_last"]
             uasc = uasc.loc[
                 uasc.drop("CHILD", axis="columns").notna().any(axis=1), ["CHILD"]
             ].copy()
@@ -38,20 +41,20 @@ def validate(dfs):
             header = pd.concat((header, uasc), axis=0)
 
         if "UASC" in header.columns:
-            header = header[header.UASC == "1"].dropduplicates("CHILD")
+            header = header[header.UASC == "1"].drop_duplicates("CHILD")
             epi = epi.merge(
                 header[["CHILD", "UASC"]], how="left", on="CHILD", indicator=True
             )
-            epi = epi[epi["merge"] == "leftonly"]
+            epi = epi[epi["_merge"] == "left_only"]
         else:
             return {}
 
         # Check that the episodes LS are neither V3 or V4.
-        epi = epi.query("(~LS.isin(['V3','V4'])) & ( PLDISTANCE.isna())")
-        errlist = epi["origidx"].tolist()
-        errlist.sort()
+        epi = epi.query("(~LS.isin(['V3','V4'])) & ( PL_DISTANCE.isna())")
+        err_list = epi["orig_idx"].tolist()
+        err_list.sort()
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

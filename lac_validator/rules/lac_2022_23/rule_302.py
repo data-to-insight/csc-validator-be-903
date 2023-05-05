@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -17,28 +20,30 @@ def validate(dfs):
         header = dfs["Header"]
         episodes = dfs["Episodes"]
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        episodes["DECOM"] = pd.todatetime(
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        episodes = episodes.resetindex()
-        header = header.resetindex()
+        episodes = episodes.reset_index()
+        header = header.reset_index()
 
         episodes = episodes.loc[episodes.groupby("CHILD")["DECOM"].idxmin()]
 
         merged = episodes.merge(
-            header, how="left", on=["CHILD"], suffixes=("eps", "hdr")
+            header, how="left", on=["CHILD"], suffixes=("_eps", "_hdr")
         )
 
         # omitting looking for the 'S' episode as we may not have it in current year's data
-        # carestart = merged['RNE'].str.upper().astype(str).isin(['S'])
+        # care_start = merged['RNE'].str.upper().astype(str).isin(['S'])
 
-        startedbeforeborn = merged["DOB"] > merged["DECOM"]
+        started_before_born = merged["DOB"] > merged["DECOM"]
 
-        epserrors = merged.loc[startedbeforeborn, "indexeps"].tolist()
-        hdrerrors = merged.loc[startedbeforeborn, "indexhdr"].tolist()
-        return {"Episodes": epserrors, "Header": hdrerrors}
+        eps_errors = merged.loc[started_before_born, "index_eps"].to_list()
+        hdr_errors = merged.loc[started_before_born, "index_hdr"].to_list()
+        return {"Episodes": eps_errors, "Header": hdr_errors}
 
 
 def test_validate():

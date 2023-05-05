@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,32 +17,32 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi["idxorig"] = epi.index
-        epi.resetindex(inplace=True)
-        epi["idxordered"] = epi.index
-        epi["idxprevious"] = epi.index + 1
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi["idx_orig"] = epi.index
+        epi.reset_index(inplace=True)
+        epi["idx_ordered"] = epi.index
+        epi["idx_previous"] = epi.index + 1
 
-        errco = (
+        err_co = (
             epi.merge(
                 epi,
                 how="inner",
-                lefton="idxordered",
-                righton="idxprevious",
-                suffixes=["", "PRE"],
+                left_on="idx_ordered",
+                right_on="idx_previous",
+                suffixes=["", "_PRE"],
             )
-            .query("RNE.isin(['P', 'T']) & CHILD == CHILDPRE")
+            .query("RNE.isin(['P', 'T']) & CHILD == CHILD_PRE")
             .query(
-                "(LS != LSPRE) | ((PLACE == PLACEPRE) & (PLPOST == PLPOSTPRE) & (URN == URNPRE) & "
-                + "(PLACEPROVIDER == PLACEPROVIDERPRE))"
+                "(LS != LS_PRE) | ((PLACE == PLACE_PRE) & (PL_POST == PL_POST_PRE) & (URN == URN_PRE) & "
+                + "(PLACE_PROVIDER == PLACE_PROVIDER_PRE))"
             )
         )
 
-        errlist = errco["idxorig"].unique().tolist()
-        errlist.sort()
+        err_list = err_co["idx_orig"].unique().tolist()
+        err_list.sort()
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

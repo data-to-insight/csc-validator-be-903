@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,23 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         placedAdoptions = dfs["PlacedAdoption"]
 
-        episodes = episodes.resetindex()
+        episodes = episodes.reset_index()
 
-        placecodes = ["A3", "A4", "A5", "A6"]
+        place_codes = ["A3", "A4", "A5", "A6"]
 
-        placeEpisodes = episodes[episodes["PLACE"].isin(placecodes)]
+        placeEpisodes = episodes[episodes["PLACE"].isin(place_codes)]
 
-        merged = placeEpisodes.merge(placedAdoptions, how="left", on="CHILD").setindex(
+        merged = placeEpisodes.merge(placedAdoptions, how="left", on="CHILD").set_index(
             "index"
         )
 
-        episodeswitherrors = merged[merged["DATEPLACED"].isna()]
+        episodes_with_errors = merged[merged["DATE_PLACED"].isna()]
 
-        errormask = episodes.index.isin(episodeswitherrors.index)
+        error_mask = episodes.index.isin(episodes_with_errors.index)
 
-        errorlocations = episodes.index[errormask]
+        error_locations = episodes.index[error_mask]
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

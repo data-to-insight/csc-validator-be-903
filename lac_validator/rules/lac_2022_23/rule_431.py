@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,31 +16,31 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
 
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
-        epi["LAGINDEX"] = epi["level0"].shift(-1)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
+        epi["LAG_INDEX"] = epi["level_0"].shift(-1)
 
-        mepi = epi.merge(
+        m_epi = epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "PREV"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_PREV"],
         )
 
-        mepi = mepi[(mepi["CHILD"] == mepi["CHILDPREV"]) & (mepi["RNE"] == "S")]
-        errormask = mepi["DECOM"] <= mepi["DECPREV"]
-        errorlist = mepi["index"][errormask].tolist()
-        errorlist.sort()
-        return {"Episodes": errorlist}
+        m_epi = m_epi[(m_epi["CHILD"] == m_epi["CHILD_PREV"]) & (m_epi["RNE"] == "S")]
+        error_mask = m_epi["DECOM"] <= m_epi["DEC_PREV"]
+        error_list = m_epi["index"][error_mask].to_list()
+        error_list.sort()
+        return {"Episodes": error_list}
 
 
-def validate503Generic(subval):
-    Gen503dict = {
+def validate_503_Generic(subval):
+    Gen_503_dict = {
         "A": {
             "Desc": "The reason for new episode in the first episode does not match open episode at end of last year.",
             "Fields": "RNE",
@@ -56,7 +59,7 @@ def validate503Generic(subval):
         },
         "E": {
             "Desc": "The placement provider in the first episode does not match open episode at end of last year.",
-            "Fields": "PLACEPROVIDER",
+            "Fields": "PLACE_PROVIDER",
         },
         "F": {
             "Desc": "The Ofsted URN in the  first episode does not match open episode at end of last year.",
@@ -64,68 +67,71 @@ def validate503Generic(subval):
         },
         "G": {
             "Desc": "The distance in first episode does not match open episode at end of last year.",
-            "Fields": "PLDISTANCE",
+            "Fields": "PL_DISTANCE",
         },
         "H": {
             "Desc": "The placement LA in first episode does not match open episode at end of last year.",
-            "Fields": "PLLA",
+            "Fields": "PL_LA",
         },
         "J": {
             "Desc": "The placement location in first episode does not match open episode at end of last year.",
-            "Fields": "PLLOCATION",
+            "Fields": "PL_LOCATION",
         },
     }
     error = ErrorDefinition(
         code="503" + subval,
-        description=Gen503dict[subval]["Desc"],
-        affectedfields=[Gen503dict[subval]["Fields"]],
+        description=Gen_503_dict[subval]["Desc"],
+        affected_fields=[Gen_503_dict[subval]["Fields"]],
     )
 
     def validate(dfs):
-        if "Episodes" not in dfs or "Episodeslast" not in dfs:
+        if "Episodes" not in dfs or "Episodes_last" not in dfs:
             return {}
         else:
             epi = dfs["Episodes"]
-            epilast = dfs["Episodeslast"]
-            epi["DECOM"] = pd.todatetime(
+            epi_last = dfs["Episodes_last"]
+            epi["DECOM"] = pd.to_datetime(
                 epi["DECOM"], format="%d/%m/%Y", errors="coerce"
             )
-            epilast["DECOM"] = pd.todatetime(
-                epilast["DECOM"], format="%d/%m/%Y", errors="coerce"
+            epi_last["DECOM"] = pd.to_datetime(
+                epi_last["DECOM"], format="%d/%m/%Y", errors="coerce"
             )
-            epilast["DEC"] = pd.todatetime(
-                epilast["DEC"], format="%d/%m/%Y", errors="coerce"
-            )
-
-            epi.resetindex(inplace=True)
-
-            firstepinds = epi.groupby(["CHILD"])["DECOM"].idxmin(skipna=True)
-            mindecom = epi.loc[firstepinds, :]
-
-            lastepinds = epilast.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
-            maxlastdecom = epilast.loc[lastepinds, :]
-
-            mergedco = mindecom.merge(
-                maxlastdecom, how="inner", on=["CHILD"], suffixes=["", "PRE"]
+            epi_last["DEC"] = pd.to_datetime(
+                epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
             )
 
-            thisone = Gen503dict[subval]["Fields"]
-            preone = thisone + "PRE"
+            epi.reset_index(inplace=True)
+
+            first_ep_inds = epi.groupby(["CHILD"])["DECOM"].idxmin(skipna=True)
+            min_decom = epi.loc[first_ep_inds, :]
+
+            last_ep_inds = epi_last.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
+            max_last_decom = epi_last.loc[last_ep_inds, :]
+
+            merged_co = min_decom.merge(
+                max_last_decom, how="inner", on=["CHILD"], suffixes=["", "_PRE"]
+            )
+
+            this_one = Gen_503_dict[subval]["Fields"]
+            pre_one = this_one + "_PRE"
 
             if subval == "G":
-                errmask = (
+                err_mask = (
                     abs(
-                        mergedco[thisone].astype(float) - mergedco[preone].astype(float)
+                        merged_co[this_one].astype(float)
+                        - merged_co[pre_one].astype(float)
                     )
                     >= 0.2
                 )
             else:
-                errmask = mergedco[thisone].astype(str) != mergedco[preone].astype(str)
-            errmask = errmask & mergedco["DECPRE"].isna()
+                err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(
+                    str
+                )
+            err_mask = err_mask & merged_co["DEC_PRE"].isna()
 
-            errlist = mergedco["index"][errmask].unique().tolist()
-            errlist.sort()
-            return {"Episodes": errlist}
+            err_list = merged_co["index"][err_mask].unique().tolist()
+            err_list.sort()
+            return {"Episodes": err_list}
 
 
 def test_validate():

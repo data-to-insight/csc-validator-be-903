@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,37 +16,37 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
 
         # convert dates from string format to datetime format.
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
 
         # Keep original index values as a column
-        episodes["epsindex"] = episodes.index
-        placedadoption["paindex"] = placedadoption.index
+        episodes["eps_index"] = episodes.index
+        placed_adoption["pa_index"] = placed_adoption.index
 
         # select the first episodes with LS==E1
-        e1episodes = episodes.loc[episodes["LS"] == "E1"]
-        firste1eps = e1episodes.loc[e1episodes.groupby("CHILD")["DECOM"].idxmin()]
+        e1_episodes = episodes.loc[episodes["LS"] == "E1"]
+        first_e1_eps = e1_episodes.loc[e1_episodes.groupby("CHILD")["DECOM"].idxmin()]
 
         # merge
-        merged = firste1eps.merge(placedadoption, on="CHILD", how="left")
+        merged = first_e1_eps.merge(placed_adoption, on="CHILD", how="left")
 
-        # Where <LS> = 'E1' <DATEPLACED> should be <= <DECOM> of first episode in <PERIODOFCARE> with <LS> = 'E1'
-        mask = merged["DATEPLACED"] > merged["DECOM"]
+        # Where <LS> = 'E1' <DATE_PLACED> should be <= <DECOM> of first episode in <PERIOD_OF_CARE> with <LS> = 'E1'
+        mask = merged["DATE_PLACED"] > merged["DECOM"]
 
         # error locations
-        epserrorlocs = merged.loc[mask, "epsindex"]
-        paerrorlocs = merged.loc[mask, "paindex"]
+        eps_error_locs = merged.loc[mask, "eps_index"]
+        pa_error_locs = merged.loc[mask, "pa_index"]
 
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "PlacedAdoption": paerrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "PlacedAdoption": pa_error_locs.unique().tolist(),
         }
 
 

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,8 +16,8 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        placecodelist = ["A3", "A4"]
-        prevcodelist = [
+        place_code_list = ["A3", "A4"]
+        prev_code_list = [
             "A3",
             "A4",
             "A5",
@@ -27,28 +30,30 @@ def validate(dfs):
             "U6",
         ]
 
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
         # new column that contains place of previous episode
 
-        sortedandgroupedeps = episodes.sortvalues("DECOM").groupby("CHILD")
+        sorted_and_grouped_eps = episodes.sort_values("DECOM").groupby("CHILD")
 
-        episodes["PLACEprev"] = sortedandgroupedeps["PLACE"].shift(1)
-        episodes["isfirstepisode"] = False
-        episodes.loc[sortedandgroupedeps["DECOM"].idxmin(), "isfirstepisode"] = True
+        episodes["PLACE_prev"] = sorted_and_grouped_eps["PLACE"].shift(1)
+        episodes["is_first_episode"] = False
+        episodes.loc[
+            sorted_and_grouped_eps["DECOM"].idxmin(), "is_first_episode"
+        ] = True
 
         # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of:
         # ('A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6')
         mask = (
-            (episodes["PLACE"].isin(placecodelist))
-            & ~episodes["PLACEprev"].isin(prevcodelist)
-            & ~episodes["isfirstepisode"]  # omit first eps, as prevPLACE is NaN
+            (episodes["PLACE"].isin(place_code_list))
+            & ~episodes["PLACE_prev"].isin(prev_code_list)
+            & ~episodes["is_first_episode"]  # omit first eps, as prev_PLACE is NaN
         )
 
         # error locations
-        errorlocs = episodes.index[mask]
-        return {"Episodes": errorlocs.tolist()}
+        error_locs = episodes.index[mask]
+        return {"Episodes": error_locs.tolist()}
 
 
 def test_validate():

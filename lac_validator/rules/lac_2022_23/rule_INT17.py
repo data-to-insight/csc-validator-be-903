@@ -3,6 +3,10 @@ import pandas as pd
 from validator903.types import IntegrityCheckDefinition
 
 
+import pandas as pd
+from lac_validator.rule_engine import rule_definition
+
+
 def validate(dfs):
     if "Header" not in dfs or "Reviews" not in dfs:
         return {}
@@ -10,26 +14,28 @@ def validate(dfs):
         header = dfs["Header"]
         file = dfs["Reviews"]
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        file["DOB"] = pd.todatetime(file["DOB"], format="%d/%m/%Y", errors="coerce")
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        file["DOB"] = pd.to_datetime(file["DOB"], format="%d/%m/%Y", errors="coerce")
 
-        file["indexfile"] = file.index
+        file["index_file"] = file.index
 
         merged = header.merge(
-            file[["CHILD", "DOB", "indexfile"]],
+            file[["CHILD", "DOB", "index_file"]],
             on="CHILD",
             indicator=True,
             how="right",
-            suffixes=["header", "file"],
+            suffixes=["_header", "_file"],
         )
 
         mask = (
-            (merged["DOBheader"] != merged["DOBfile"])
-            & (merged["DOBheader"].notna() & merged["DOBfile"].notna())
-            & (merged["merge"] != "rightonly")
+            (merged["DOB_header"] != merged["DOB_file"])
+            & (merged["DOB_header"].notna() & merged["DOB_file"].notna())
+            & (merged["_merge"] != "right_only")
         )
-        epserrorlocations = merged.loc[mask, "indexfile"]
-        return {"Reviews": epserrorlocations.unique().tolist()}
+        eps_error_locations = merged.loc[mask, "index_file"]
+        return {"Reviews": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

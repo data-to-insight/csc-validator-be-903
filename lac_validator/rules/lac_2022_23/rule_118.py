@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,50 +15,50 @@ def validate(dfs):
     if ("PlacedAdoption" not in dfs) or ("Episodes" not in dfs):
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         episodes = dfs["Episodes"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        codelist = ["V3", "V4"]
+        collection_start = dfs["metadata"]["collection_start"]
+        code_list = ["V3", "V4"]
 
         # datetime
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        placedadoption["DATEPLACEDCEASED"] = pd.todatetime(
-            placedadoption["DATEPLACEDCEASED"],
+        placed_adoption["DATE_PLACED_CEASED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED_CEASED"],
             format="%d/%m/%Y",
             errors="coerce",
         )
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
 
         # <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
-        filterbyls = episodes[~(episodes["LS"].isin(codelist))]
-        earliestepisodeidxs = filterbyls.groupby("CHILD")["DECOM"].idxmin()
-        earliestepisodes = episodes[episodes.index.isin(earliestepisodeidxs)]
+        filter_by_ls = episodes[~(episodes["LS"].isin(code_list))]
+        earliest_episode_idxs = filter_by_ls.groupby("CHILD")["DECOM"].idxmin()
+        earliest_episodes = episodes[episodes.index.isin(earliest_episode_idxs)]
 
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        earliestepisodes.resetindex(inplace=True)
+        placed_adoption.reset_index(inplace=True)
+        earliest_episodes.reset_index(inplace=True)
 
         # merge
-        merged = earliestepisodes.merge(
-            placedadoption, on="CHILD", how="left", suffixes=["eps", "pa"]
+        merged = earliest_episodes.merge(
+            placed_adoption, on="CHILD", how="left", suffixes=["_eps", "_pa"]
         )
 
-        # drop rows where DATEPLACEDCEASED is not provided
-        merged = merged.dropna(subset=["DATEPLACEDCEASED"])
-        # If provided <DATEPLACEDCEASED> must not be prior to <COLLECTIONSTARTDATE> or <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
-        mask = (merged["DATEPLACEDCEASED"] < merged["DECOM"]) | (
-            merged["DATEPLACEDCEASED"] < collectionstart
+        # drop rows where DATE_PLACED_CEASED is not provided
+        merged = merged.dropna(subset=["DATE_PLACED_CEASED"])
+        # If provided <DATE_PLACED_CEASED> must not be prior to <COLLECTION_START_DATE> or <DECOM> of the earliest episode with an <LS> not = 'V3' or 'V4'
+        mask = (merged["DATE_PLACED_CEASED"] < merged["DECOM"]) | (
+            merged["DATE_PLACED_CEASED"] < collection_start
         )
         # error locations
-        paerrorlocs = merged.loc[mask, "indexpa"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
+        pa_error_locs = merged.loc[mask, "index_pa"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "PlacedAdoption": paerrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "PlacedAdoption": pa_error_locs.unique().tolist(),
         }
 
 

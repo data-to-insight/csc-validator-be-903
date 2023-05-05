@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,25 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        placedadoption = dfs["PlacedAdoption"]
-        collectionend = dfs["metadata"]["collectionend"]
+        placed_adoption = dfs["PlacedAdoption"]
+        collection_end = dfs["metadata"]["collection_end"]
 
         # datetime
-        placedadoption["DATEPLACEDCEASED"] = pd.todatetime(
-            placedadoption["DATEPLACEDCEASED"],
+        placed_adoption["DATE_PLACED_CEASED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED_CEASED"],
             format="%d/%m/%Y",
             errors="coerce",
         )
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        episodes["DEC"] = pd.todatetime(
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
@@ -40,27 +45,27 @@ def validate(dfs):
         episodes = episodes.loc[episodes.groupby("CHILD")["DECOM"].idxmax()]
 
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        placed_adoption.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
 
-        p4acols = ["DATEPLACED", "DATEPLACEDCEASED"]
+        p4a_cols = ["DATE_PLACED", "DATE_PLACED_CEASED"]
 
         # latest episodes
         merged = episodes.merge(
-            placedadoption, on="CHILD", how="left", suffixes=["eps", "pa"]
+            placed_adoption, on="CHILD", how="left", suffixes=["_eps", "_pa"]
         )
         mask = (
-            (merged["DATEPLACED"] > collectionend)
-            | (merged["DATEPLACED"] > merged["DEC"])
-            | (merged["DATEPLACEDCEASED"] > collectionend)
-            | (merged["DATEPLACEDCEASED"] > merged["DEC"])
+            (merged["DATE_PLACED"] > collection_end)
+            | (merged["DATE_PLACED"] > merged["DEC"])
+            | (merged["DATE_PLACED_CEASED"] > collection_end)
+            | (merged["DATE_PLACED_CEASED"] > merged["DEC"])
         )
-        # If provided <DATEPLACED> and/or <DATEPLACEDCEASED> must not be > <COLLECTIONENDDATE> or <DEC> of latest episode where <REC> not = 'X1'
-        paerrorlocs = merged.loc[mask, "indexpa"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
+        # If provided <DATE_PLACED> and/or <DATE_PLACED_CEASED> must not be > <COLLECTION_END_DATE> or <DEC> of latest episode where <REC> not = 'X1'
+        pa_error_locs = merged.loc[mask, "index_pa"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "PlacedAdoption": paerrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "PlacedAdoption": pa_error_locs.unique().tolist(),
         }
 
 

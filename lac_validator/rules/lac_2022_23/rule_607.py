@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,46 +17,52 @@ def validate(dfs):
     else:
         header = dfs["Header"]
         episodes = dfs["Episodes"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        collectionend = dfs["metadata"]["collectionend"]
-        codelist = ["V3", "V4"]
+        collection_start = dfs["metadata"]["collection_start"]
+        collection_end = dfs["metadata"]["collection_end"]
+        code_list = ["V3", "V4"]
 
         # convert to datetiime format
-        episodes["DEC"] = pd.todatetime(
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
 
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        header.resetindex(inplace=True)
+        episodes.reset_index(inplace=True)
+        header.reset_index(inplace=True)
 
-        merged = episodes.merge(header, on="CHILD", how="left", suffixes=["eps", "er"])
+        merged = episodes.merge(
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
+        )
 
-        # CEASEDTOBELOOKEDAFTER = DEC is not null and REC is filled but not equal to X1
-        CEASEDTOBELOOKEDAFTER = merged["DEC"].notna() & (
+        # CEASED_TO_BE_LOOKED_AFTER = DEC is not null and REC is filled but not equal to X1
+        CEASED_TO_BE_LOOKED_AFTER = merged["DEC"].notna() & (
             (merged["REC"] != "X1") & merged["REC"].notna()
         )
         # and <LS> not = ‘V3’ or ‘V4’
-        checkLS = ~(merged["LS"].isin(codelist))
-        # and <DEC> is in <CURRENTCOLLECTIONYEAR
-        checkDEC = (collectionstart <= merged["DEC"]) & (merged["DEC"] <= collectionend)
-        # Where <CEASEDTOBELOOKEDAFTER> = ‘Y’, and <LS> not = ‘V3’ or ‘V4’ and <DEC> is in <CURRENTCOLLECTIONYEAR> and <SEX> = ‘2’ then <MOTHER> should be provided.
+        check_LS = ~(merged["LS"].isin(code_list))
+        # and <DEC> is in <CURRENT_COLLECTION_YEAR
+        check_DEC = (collection_start <= merged["DEC"]) & (
+            merged["DEC"] <= collection_end
+        )
+        # Where <CEASED_TO_BE_LOOKED_AFTER> = ‘Y’, and <LS> not = ‘V3’ or ‘V4’ and <DEC> is in <CURRENT_COLLECTION_YEAR> and <SEX> = ‘2’ then <MOTHER> should be provided.
         mask = (
-            CEASEDTOBELOOKEDAFTER
-            & checkLS
-            & checkDEC
+            CEASED_TO_BE_LOOKED_AFTER
+            & check_LS
+            & check_DEC
             & (merged["SEX"] == "2")
             & (merged["MOTHER"].isna())
         )
-        headererrorlocs = merged.loc[mask, "indexer"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
+        header_error_locs = merged.loc[mask, "index_er"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "Header": headererrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "Header": header_error_locs.unique().tolist(),
         }
 
 

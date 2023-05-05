@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,8 +16,8 @@ def validate(dfs):
         return {}
     else:
         mis = dfs["Missing"]
-        errormask = mis["MISSING"].isna() & mis["MISEND"].notna()
-        return {"Missing": mis.index[errormask].tolist()}
+        error_mask = mis["MISSING"].isna() & mis["MIS_END"].notna()
+        return {"Missing": mis.index[error_mask].to_list()}
 
 
 def test_validate():

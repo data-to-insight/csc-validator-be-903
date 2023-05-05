@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,30 +19,30 @@ def validate(dfs):
         ad1 = dfs["AD1"]
 
         # to datetime
-        ad1["DATEINT"] = pd.todatetime(
-            ad1["DATEINT"], format="%d/%m/%Y", errors="coerce"
+        ad1["DATE_INT"] = pd.to_datetime(
+            ad1["DATE_INT"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
         # select the earliest episodes with RNE =  S
-        epsrne = episodes[episodes["RNE"] == "S"]
-        lastepsidxs = epsrne.groupby("CHILD")["DECOM"].idxmax()
-        lasteps = epsrne.loc[lastepsidxs]
+        eps_rne = episodes[episodes["RNE"] == "S"]
+        last_eps_idxs = eps_rne.groupby("CHILD")["DECOM"].idxmax()
+        last_eps = eps_rne.loc[last_eps_idxs]
 
         # prepare to merge
-        ad1.resetindex(inplace=True)
-        lasteps.resetindex(inplace=True)
-        merged = lasteps.merge(ad1, how="left", on="CHILD", suffixes=["eps", "ad1"])
+        ad1.reset_index(inplace=True)
+        last_eps.reset_index(inplace=True)
+        merged = last_eps.merge(ad1, how="left", on="CHILD", suffixes=["_eps", "_ad1"])
 
-        # <DATEPLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
-        mask = merged["DATEINT"] < merged["DECOM"]
+        # <DATE_PLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
+        mask = merged["DATE_INT"] < merged["DECOM"]
 
-        epserrorlocs = merged.loc[mask, "indexeps"]
-        ad1errorlocs = merged.loc[mask, "indexad1"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
+        ad1_error_locs = merged.loc[mask, "index_ad1"]
 
-        return {"Episodes": epserrorlocs.tolist(), "AD1": ad1errorlocs.tolist()}
+        return {"Episodes": eps_error_locs.tolist(), "AD1": ad1_error_locs.tolist()}
 
 
 def test_validate():

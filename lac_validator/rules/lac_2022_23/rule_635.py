@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,14 +13,14 @@ def validate(dfs):
     if "PrevPerm" not in dfs:
         return {}
     else:
-        prevperm = dfs["PrevPerm"]
-        # raise and error if either LAPERM or DATEPERM are present, yet PREVPERM is absent.
-        mask = (prevperm["LAPERM"].notna() | prevperm["DATEPERM"].notna()) & prevperm[
-            "PREVPERM"
-        ].isna()
+        prev_perm = dfs["PrevPerm"]
+        # raise and error if either LA_PERM or DATE_PERM are present, yet PREV_PERM is absent.
+        mask = (
+            prev_perm["LA_PERM"].notna() | prev_perm["DATE_PERM"].notna()
+        ) & prev_perm["PREV_PERM"].isna()
 
-        errorlocations = prevperm.index[mask]
-    return {"PrevPerm": errorlocations.tolist()}
+        error_locations = prev_perm.index[mask]
+    return {"PrevPerm": error_locations.to_list()}
 
 
 def test_validate():

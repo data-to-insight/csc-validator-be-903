@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,7 +14,7 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        placecodelist = [
+        place_code_list = [
             "H5",
             "P1",
             "P2",
@@ -28,7 +31,7 @@ def validate(dfs):
         ]
         # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘H5’; ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
         mask = (
-            (df["PLACE"].isin(placecodelist))
+            (df["PLACE"].isin(place_code_list))
             & (df["URN"].notna())
             & (df["URN"] != "XXXXXXX")
         )

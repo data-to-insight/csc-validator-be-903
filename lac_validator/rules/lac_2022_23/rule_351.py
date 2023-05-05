@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,19 +19,21 @@ def validate(dfs):
 
     else:
         header = dfs["Header"]
-        collectionstart = dfs["metadata"]["collectionstart"]
+        collection_start = dfs["metadata"]["collection_start"]
 
         # Convert from string to date to appropriate format
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
 
-        mask = collectionstart > (header["DOB"] + pd.DateOffset(years=21))
+        mask = collection_start > (header["DOB"] + pd.DateOffset(years=21))
         # error locations
-        headererrorlocs = header.index[mask]
+        header_error_locs = header.index[mask]
 
-        return {"Header": headererrorlocs.tolist()}
+        return {"Header": header_error_locs.tolist()}
 
 
 def test_validate():

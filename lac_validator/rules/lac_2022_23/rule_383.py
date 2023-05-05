@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,38 +16,38 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
 
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
-        epi["LAGINDEX"] = epi["level0"].shift(-1)
-        epi["LEADINDEX"] = epi["level0"].shift(1)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
+        epi["LAG_INDEX"] = epi["level_0"].shift(-1)
+        epi["LEAD_INDEX"] = epi["level_0"].shift(1)
 
-        mepi = epi.merge(
+        m_epi = epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "TOP"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_TOP"],
         )
-        mepi = mepi.merge(
+        m_epi = m_epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LEADINDEX",
-            suffixes=["", "BOTM"],
+            left_on="level_0",
+            right_on="LEAD_INDEX",
+            suffixes=["", "_BOTM"],
         )
-        mepi = mepi[mepi["CHILD"] == mepi["CHILDTOP"]]
-        mepi = mepi[mepi["CHILD"] == mepi["CHILDBOTM"]]
-        mepi = mepi[mepi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])]
+        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_TOP"]]
+        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_BOTM"]]
+        m_epi = m_epi[m_epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])]
 
-        mask1 = mepi["RNEBOTM"] != "P"
-        mask2 = mepi["PLACEBOTM"] != mepi["PLACETOP"]
-        errmask = mask1 | mask2
-        errlist = mepi["index"][errmask].unique().tolist()
-        errlist.sort()
-        return {"Episodes": errlist}
+        mask1 = m_epi["RNE_BOTM"] != "P"
+        mask2 = m_epi["PLACE_BOTM"] != m_epi["PLACE_TOP"]
+        err_mask = mask1 | mask2
+        err_list = m_epi["index"][err_mask].unique().tolist()
+        err_list.sort()
+        return {"Episodes": err_list}
 
 
 def test_validate():

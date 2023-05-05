@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,57 +16,57 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        df["DECOM"] = pd.todatetime(df["DECOM"], format="%d/%m/%Y", errors="coerce")
-        df["DEC"] = pd.todatetime(df["DEC"], format="%d/%m/%Y", errors="coerce")
+        df["DECOM"] = pd.to_datetime(df["DECOM"], format="%d/%m/%Y", errors="coerce")
+        df["DEC"] = pd.to_datetime(df["DEC"], format="%d/%m/%Y", errors="coerce")
 
         df["DECOM"] = df["DECOM"].fillna(
             "01/01/1901"
         )  # Watch for potential future issues
-        df = df.sortvalues(["CHILD", "DECOM"])
+        df = df.sort_values(["CHILD", "DECOM"])
 
-        df["DECOMNEXTEPISODE"] = df.groupby(["CHILD"])["DECOM"].shift(-1)
+        df["DECOM_NEXT_EPISODE"] = df.groupby(["CHILD"])["DECOM"].shift(-1)
 
         # The max DECOM for each child is also the one with no next episode
         # And we also add the skipna option
-        # groupeddecombychild = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
-        nonext = df.DECOMNEXTEPISODE.isna() & df.CHILD.notna()
+        # grouped_decom_by_child = df.groupby(['CHILD'])['DECOM'].idxmax(skipna=True)
+        no_next = df.DECOM_NEXT_EPISODE.isna() & df.CHILD.notna()
 
         # Dataframe with the maximum DECOM removed
-        maxdecomremoved = df[~nonext]
+        max_decom_removed = df[~no_next]
         # Dataframe with the maximum DECOM only
-        maxdecomonly = df[nonext]
+        max_decom_only = df[no_next]
 
         # Case 1: If reason episode ceased is coded X1 there must be a subsequent episode
         #        starting on the same day.
-        case1 = maxdecomremoved[
-            (maxdecomremoved["REC"] == "X1")
-            & (maxdecomremoved["DEC"].notna())
-            & (maxdecomremoved["DECOMNEXTEPISODE"].notna())
-            & (maxdecomremoved["DEC"] != maxdecomremoved["DECOMNEXTEPISODE"])
+        case1 = max_decom_removed[
+            (max_decom_removed["REC"] == "X1")
+            & (max_decom_removed["DEC"].notna())
+            & (max_decom_removed["DECOM_NEXT_EPISODE"].notna())
+            & (max_decom_removed["DEC"] != max_decom_removed["DECOM_NEXT_EPISODE"])
         ]
 
         # Case 2: If an episode ends but the child continues to be looked after, a new
         #        episode should start on the same day.The reason episode ceased code of
         #        the episode which ends must be X1.
-        case2 = maxdecomremoved[
-            (maxdecomremoved["REC"] != "X1")
-            & (maxdecomremoved["REC"].notna())
-            & (maxdecomremoved["DEC"].notna())
-            & (maxdecomremoved["DECOMNEXTEPISODE"].notna())
-            & (maxdecomremoved["DEC"] == maxdecomremoved["DECOMNEXTEPISODE"])
+        case2 = max_decom_removed[
+            (max_decom_removed["REC"] != "X1")
+            & (max_decom_removed["REC"].notna())
+            & (max_decom_removed["DEC"].notna())
+            & (max_decom_removed["DECOM_NEXT_EPISODE"].notna())
+            & (max_decom_removed["DEC"] == max_decom_removed["DECOM_NEXT_EPISODE"])
         ]
 
         # Case 3: If a child ceases to be looked after reason episode ceased code X1 must
         #        not be used.
-        case3 = maxdecomonly[
-            (maxdecomonly["DEC"].notna()) & (maxdecomonly["REC"] == "X1")
+        case3 = max_decom_only[
+            (max_decom_only["DEC"].notna()) & (max_decom_only["REC"] == "X1")
         ]
 
-        maskcase1 = case1.index.tolist()
-        maskcase2 = case2.index.tolist()
-        maskcase3 = case3.index.tolist()
+        mask_case1 = case1.index.tolist()
+        mask_case2 = case2.index.tolist()
+        mask_case3 = case3.index.tolist()
 
-        mask = maskcase1 + maskcase2 + maskcase3
+        mask = mask_case1 + mask_case2 + mask_case3
 
         mask.sort()
         return {"Episodes": mask}

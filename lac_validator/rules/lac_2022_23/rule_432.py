@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,14 +18,14 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
 
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
 
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
 
-        recvals1 = ["E2", "E3", "E4A", "E4B", "E5", "E6", "E7", "E8", "E9", "E11"]
-        recvals2 = [
+        rec_vals1 = ["E2", "E3", "E4A", "E4B", "E5", "E6", "E7", "E8", "E9", "E11"]
+        rec_vals2 = [
             "E12",
             "E13",
             "E14",
@@ -35,22 +38,22 @@ def validate(dfs):
             "E47",
             "E48",
         ]
-        recvals = recvals1 + recvals2
+        rec_vals = rec_vals1 + rec_vals2
 
-        epi["LAG"] = epi["level0"].shift(-1)
+        epi["LAG"] = epi["level_0"].shift(-1)
 
-        errco = epi.merge(
+        err_co = epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LAG",
-            suffixes=["", "PRE"],
-        ).query("CHILD == CHILDPRE & RECPRE.isin(@recvals) & RNE != 'S'")
+            left_on="level_0",
+            right_on="LAG",
+            suffixes=["", "_PRE"],
+        ).query("CHILD == CHILD_PRE & REC_PRE.isin(@rec_vals) & RNE != 'S'")
 
-        errlist = errco["index"].unique().tolist()
-        errlist.sort()
+        err_list = err_co["index"].unique().tolist()
+        err_list.sort()
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

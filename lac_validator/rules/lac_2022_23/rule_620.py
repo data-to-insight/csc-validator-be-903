@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,17 +16,17 @@ def validate(dfs):
         return {}
     else:
         hea = dfs["Header"]
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
-        hea["DOB"] = pd.todatetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
+        hea["DOB"] = pd.to_datetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
 
-        heamother = hea[hea["MOTHER"].astype(str) == "1"]
-        errorcohort = (
-            heamother["DOB"] + pd.offsets.DateOffset(years=11)
-        ) > collectionstart
+        hea_mother = hea[hea["MOTHER"].astype(str) == "1"]
+        error_cohort = (
+            hea_mother["DOB"] + pd.offsets.DateOffset(years=11)
+        ) > collection_start
 
-        return {"Header": heamother.index[errorcohort].tolist()}
+        return {"Header": hea_mother.index[error_cohort].to_list()}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,16 +16,16 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
         # create columns of previous values
 
-        cols = ["PLACE", "PLPOST", "URN", "PLACEPROVIDER"]
+        cols = ["PLACE", "PL_POST", "URN", "PLACE_PROVIDER"]
 
-        episodes = episodes.sortvalues(["CHILD", "DECOM"])
+        episodes = episodes.sort_values(["CHILD", "DECOM"])
 
-        errormask = (
+        error_mask = (
             (episodes["CHILD"] == episodes["CHILD"].shift(1))
             & (episodes["RNE"] == "L")
             & (
@@ -33,8 +36,8 @@ def validate(dfs):
             )
         )
         # error locations
-        errorlocs = episodes.index[errormask].tolist()
-        return {"Episodes": errorlocs}
+        error_locs = episodes.index[error_mask].to_list()
+        return {"Episodes": error_locs}
 
 
 def test_validate():

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -23,33 +26,33 @@ def validate(dfs):
         eps = dfs["Episodes"]
         placed = dfs["PlacedAdoption"]
 
-        eps = eps.resetindex()
-        placed = placed.resetindex()
+        eps = eps.reset_index()
+        placed = placed.reset_index()
 
-        childplaced = eps["PLACE"].isin(["A3", "A4", "A5", "A6"])
-        ordergranted = eps["LS"].isin(["D1", "E1"])
-        notadopted = (
+        child_placed = eps["PLACE"].isin(["A3", "A4", "A5", "A6"])
+        order_granted = eps["LS"].isin(["D1", "E1"])
+        not_adopted = (
             ~eps["REC"].isin(["E11", "E12"]) & eps["REC"].notna() & (eps["REC"] != "X1")
         )
 
-        placed["ceasedincomplete"] = (
-            placed["DATEPLACEDCEASED"].isna() | placed["REASONPLACEDCEASED"].isna()
+        placed["ceased_incomplete"] = (
+            placed["DATE_PLACED_CEASED"].isna() | placed["REASON_PLACED_CEASED"].isna()
         )
 
-        eps = eps[(childplaced | ordergranted) & notadopted]
+        eps = eps[(child_placed | order_granted) & not_adopted]
 
         eps = eps.merge(
-            placed, on="CHILD", how="left", suffixes=["EP", "PA"], indicator=True
+            placed, on="CHILD", how="left", suffixes=["_EP", "_PA"], indicator=True
         )
 
-        eps = eps[(eps["merge"] == "leftonly") | eps["ceasedincomplete"]]
+        eps = eps[(eps["_merge"] == "left_only") | eps["ceased_incomplete"]]
 
-        EPerrors = eps["indexEP"]
-        PAerrors = eps["indexPA"].dropna()
+        EP_errors = eps["index_EP"]
+        PA_errors = eps["index_PA"].dropna()
 
         return {
-            "Episodes": EPerrors.tolist(),
-            "PlacedAdoption": PAerrors.tolist(),
+            "Episodes": EP_errors.to_list(),
+            "PlacedAdoption": PA_errors.to_list(),
         }
 
 

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,62 +16,62 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        errormask = (
+        error_mask = (
             ~epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4", "Z1"])
-            & epi["PLACEPROVIDER"].isna()
+            & epi["PLACE_PROVIDER"].isna()
         )
-        return {"Episodes": epi.index[errormask].tolist()}
+        return {"Episodes": epi.index[error_mask].to_list()}
 
 
-def validate370to376and379(subval):
-    Gen370dict = {
+def validate_370to376and379(subval):
+    Gen_370_dict = {
         "370": {
             "Desc": "Child in independent living should be at least 15.",
-            "PCode": "P2",
-            "Ygap": 15,
+            "P_Code": "P2",
+            "Y_gap": 15,
         },
         "371": {
             "Desc": "Child in semi-independent living accommodation not subject to children’s homes regulations "
             + "should be at least 14.",
-            "PCode": "H5",
-            "Ygap": 14,
+            "P_Code": "H5",
+            "Y_gap": 14,
         },
         "372": {
             "Desc": "Child in youth custody or prison should be at least 10.",
-            "PCode": "R5",
-            "Ygap": 10,
+            "P_Code": "R5",
+            "Y_gap": 10,
         },
         "373": {
             "Desc": "Child placed in a school should be at least 4 years old.",
-            "PCode": "S1",
-            "Ygap": 4,
+            "P_Code": "S1",
+            "Y_gap": 4,
         },
         "374": {
             "Desc": "Child in residential employment should be at least 14 years old.",
-            "PCode": "P3",
-            "Ygap": 14,
+            "P_Code": "P3",
+            "Y_gap": 14,
         },
         "375": {
             "Desc": "Hospitalisation coded as a temporary placement exceeds six weeks.",
-            "PCode": "T1",
-            "Ygap": 42,
+            "P_Code": "T1",
+            "Y_gap": 42,
         },
         "376": {
             "Desc": "Temporary placements coded as being due to holiday of usual foster carer(s) cannot exceed "
             + "three weeks.",
-            "PCode": "T3",
-            "Ygap": 21,
+            "P_Code": "T3",
+            "Y_gap": 21,
         },
         "379": {
             "Desc": "Temporary placements for unspecified reason (placement code T4) cannot exceed seven days.",
-            "PCode": "T4",
-            "Ygap": 7,
+            "P_Code": "T4",
+            "Y_gap": 7,
         },
     }
     error = ErrorDefinition(
         code=str(subval),
-        description=Gen370dict[subval]["Desc"],
-        affectedfields=["DECOM", "PLACE"],
+        description=Gen_370_dict[subval]["Desc"],
+        affected_fields=["DECOM", "PLACE"],
     )
 
     def validate(dfs):
@@ -77,26 +80,26 @@ def validate370to376and379(subval):
         else:
             epi = dfs["Episodes"]
             hea = dfs["Header"]
-            hea["DOB"] = pd.todatetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
-            epi["DECOM"] = pd.todatetime(
+            hea["DOB"] = pd.to_datetime(hea["DOB"], format="%d/%m/%Y", errors="coerce")
+            epi["DECOM"] = pd.to_datetime(
                 epi["DECOM"], format="%d/%m/%Y", errors="coerce"
             )
-            epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
-            epi.resetindex(inplace=True)
-            epip2 = epi[epi["PLACE"] == Gen370dict[subval]["PCode"]]
-            mergede = epip2.merge(hea, how="inner", on="CHILD")
-            mergede = mergede.dropna(subset=["DECOM", "DEC", "DOB"])
+            epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+            epi.reset_index(inplace=True)
+            epi_p2 = epi[epi["PLACE"] == Gen_370_dict[subval]["P_Code"]]
+            merged_e = epi_p2.merge(hea, how="inner", on="CHILD")
+            merged_e = merged_e.dropna(subset=["DECOM", "DEC", "DOB"])
             if subval in ["370", "371", "372", "373", "374"]:
-                errormask = mergede["DECOM"] < (
-                    mergede["DOB"]
-                    + pd.offsets.DateOffset(years=Gen370dict[subval]["Ygap"])
+                error_mask = merged_e["DECOM"] < (
+                    merged_e["DOB"]
+                    + pd.offsets.DateOffset(years=Gen_370_dict[subval]["Y_gap"])
                 )
             else:
-                errormask = mergede["DEC"] > (
-                    mergede["DECOM"]
-                    + pd.offsets.DateOffset(days=Gen370dict[subval]["Ygap"])
+                error_mask = merged_e["DEC"] > (
+                    merged_e["DECOM"]
+                    + pd.offsets.DateOffset(days=Gen_370_dict[subval]["Y_gap"])
                 )
-            return {"Episodes": mergede["index"][errormask].unique().tolist()}
+            return {"Episodes": merged_e["index"][error_mask].unique().tolist()}
 
 
 def test_validate():

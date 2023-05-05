@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,36 +12,36 @@ from validator903.types import ErrorDefinition
     affected_fields=["DECOM"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "Episodeslast" not in dfs:
+    if "Episodes" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
         episodes = dfs["Episodes"]
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodeslast = dfs["Episodeslast"]
-        episodeslast["DECOM"] = pd.todatetime(
-            episodeslast["DECOM"], format="%d/%m/%Y", errors="coerce"
+        episodes_last = dfs["Episodes_last"]
+        episodes_last["DECOM"] = pd.to_datetime(
+            episodes_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
-        )
-
-        episodesbeforeyear = episodes[episodes["DECOM"] < collectionstart]
-
-        episodesmerged = (
-            episodesbeforeyear.resetindex()
-            .merge(episodeslast, how="left", on=["CHILD"], indicator=True)
-            .setindex("index")
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
 
-        episodesnotmatched = episodesmerged[episodesmerged["merge"] == "leftonly"]
+        episodes_before_year = episodes[episodes["DECOM"] < collection_start]
 
-        errormask = episodes.index.isin(episodesnotmatched.index)
+        episodes_merged = (
+            episodes_before_year.reset_index()
+            .merge(episodes_last, how="left", on=["CHILD"], indicator=True)
+            .set_index("index")
+        )
 
-        errorlocations = episodes.index[errormask]
+        episodes_not_matched = episodes_merged[episodes_merged["_merge"] == "left_only"]
 
-        return {"Episodes": errorlocations.tolist()}
+        error_mask = episodes.index.isin(episodes_not_matched.index)
+
+        error_locations = episodes.index[error_mask]
+
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -26,27 +26,29 @@ def validate(dfs):
         else:
             oc3 = dfs["OC3"]
 
-        header["indexheader"] = header.index
+        header["index_header"] = header.index
 
         merged = header.merge(
             episodes["CHILD"],
             on="CHILD",
-            indicator="mergeeps",
+            indicator="_merge_eps",
             how="left",
-            suffixes=["", "episodes"],
+            suffixes=["", "_episodes"],
         )
 
         merged = merged.merge(
             oc3["CHILD"],
             on="CHILD",
-            indicator="mergeoc3",
+            indicator="_merge_oc3",
             how="left",
-            suffixes=["", "oc3"],
+            suffixes=["", "_oc3"],
         )
 
-        mask = (merged["mergeeps"] == "leftonly") & (merged["mergeoc3"] == "leftonly")
-        epserrorlocations = merged.loc[mask, "indexheader"]
-        return {"Header": epserrorlocations.unique().tolist()}
+        mask = (merged["_merge_eps"] == "left_only") & (
+            merged["_merge_oc3"] == "left_only"
+        )
+        eps_error_locations = merged.loc[mask, "index_header"]
+        return {"Header": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

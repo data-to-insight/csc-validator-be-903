@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,10 +14,10 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        errormask = (epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])) & (
+        error_mask = (epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])) & (
             ~epi["RNE"].isin(["P", "B"])
         )
-        return {"Episodes": epi.index[errormask].tolist()}
+        return {"Episodes": epi.index[error_mask].to_list()}
 
 
 def test_validate():

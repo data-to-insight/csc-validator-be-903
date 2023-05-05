@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,29 +10,29 @@ from validator903.types import ErrorDefinition
     affected_fields=["PL_POST"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
-        lslist = ["V3", "V4"]
-        placelist = ["K1", "K2", "R3", "S1"]
+        provider_info = dfs["metadata"]["provider_info"]
+        ls_list = ["V3", "V4"]
+        place_list = ["K1", "K2", "R3", "S1"]
         xxx = "X" * 7
         # merge
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[
             episodes["URN"].notna()
             & (episodes["URN"] != xxx)
-            & (~episodes["LS"].isin(lslist))
-            & episodes["PLACE"].isin(placelist)
-            & episodes["PLPOST"].notna()
+            & (~episodes["LS"].isin(ls_list))
+            & episodes["PLACE"].isin(place_list)
+            & episodes["PL_POST"].notna()
         ]
-        merged = episodes.merge(providerinfo, on="URN", how="left")
-        # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PLPOST> provided, <PLPOST> should = URN Lookup <Provider Postcode>
-        mask = merged["PLPOST"].str.replace(" ", "") != merged["POSTCODE"]
+        merged = episodes.merge(provider_info, on="URN", how="left")
+        # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
+        mask = merged["PL_POST"].str.replace(" ", "") != merged["POSTCODE"]
 
-        epserrorlocations = merged.loc[mask, "indexeps"]
-        return {"Episodes": epserrorlocations.unique().tolist()}
+        eps_error_locations = merged.loc[mask, "index_eps"]
+        return {"Episodes": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

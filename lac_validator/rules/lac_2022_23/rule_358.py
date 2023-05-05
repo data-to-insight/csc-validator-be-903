@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,31 +17,35 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         header = dfs["Header"]
-        codelist = ["J1", "J2", "J3"]
+        code_list = ["J1", "J2", "J3"]
 
         # convert dates to datetime format
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        header.resetindex(inplace=True)
-        merged = episodes.merge(header, on="CHILD", how="left", suffixes=["eps", "er"])
+        episodes.reset_index(inplace=True)
+        header.reset_index(inplace=True)
+        merged = episodes.merge(
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
+        )
 
         # Where <LS> = ‘J1’ or ‘J2’ or ‘J3’ then <DOB> should <= to 10 years prior to <DECOM>
-        mask = merged["LS"].isin(codelist) & (
+        mask = merged["LS"].isin(code_list) & (
             merged["DOB"] + pd.offsets.DateOffset(years=10) >= merged["DECOM"]
         )
         # That is, raise error if DECOM <= DOB + 10years
 
         # error locations
-        headererrorlocs = merged.loc[mask, "indexer"]
-        episodeerrorlocs = merged.loc[mask, "indexeps"]
+        header_error_locs = merged.loc[mask, "index_er"]
+        episode_error_locs = merged.loc[mask, "index_eps"]
         # one to many join implies use .unique on the 'one'
         return {
-            "Episodes": episodeerrorlocs.tolist(),
-            "Header": headererrorlocs.unique().tolist(),
+            "Episodes": episode_error_locs.tolist(),
+            "Header": header_error_locs.unique().tolist(),
         }
 
 

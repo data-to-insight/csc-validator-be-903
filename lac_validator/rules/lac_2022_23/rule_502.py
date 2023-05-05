@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,34 +12,38 @@ from validator903.types import ErrorDefinition
     affected_fields=["DECOM"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "Episodeslast" not in dfs:
+    if "Episodes" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
         epi = dfs["Episodes"]
-        epilast = dfs["Episodeslast"]
-        epi = epi.resetindex()
+        epi_last = dfs["Episodes_last"]
+        epi = epi.reset_index()
 
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epilast["DECOM"] = pd.todatetime(
-            epilast["DECOM"], format="%d/%m/%Y", errors="coerce"
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi_last["DECOM"] = pd.to_datetime(
+            epi_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        epilastnodec = epilast[epilast["DEC"].isna()]
+        epi_last_no_dec = epi_last[epi_last["DEC"].isna()]
 
-        epimindecomsindex = epi[["CHILD", "DECOM"]].groupby(["CHILD"])["DECOM"].idxmin()
+        epi_min_decoms_index = (
+            epi[["CHILD", "DECOM"]].groupby(["CHILD"])["DECOM"].idxmin()
+        )
 
-        epimindecomdf = epi.loc[epimindecomsindex, :]
+        epi_min_decom_df = epi.loc[epi_min_decoms_index, :]
 
-        mergedepisodes = epimindecomdf.merge(epilastnodec, on="CHILD", how="inner")
-        errorcohort = mergedepisodes[
-            mergedepisodes["DECOMx"] != mergedepisodes["DECOMy"]
+        merged_episodes = epi_min_decom_df.merge(
+            epi_last_no_dec, on="CHILD", how="inner"
+        )
+        error_cohort = merged_episodes[
+            merged_episodes["DECOM_x"] != merged_episodes["DECOM_y"]
         ]
 
-        errorlist = errorcohort["index"].tolist()
-        errorlist = list(set(errorlist))
-        errorlist.sort()
+        error_list = error_cohort["index"].to_list()
+        error_list = list(set(error_list))
+        error_list.sort()
 
-        return {"Episodes": errorlist}
+        return {"Episodes": error_list}
 
 
 def test_validate():

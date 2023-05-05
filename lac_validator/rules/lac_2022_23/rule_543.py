@@ -1,9 +1,12 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,22 +19,24 @@ def validate(dfs):
         return {}
     else:
         oc2 = dfs["OC2"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_end = dfs["metadata"]["collection_end"]
         # add CLA column
-        oc2 = addCLAcolumn(dfs, "OC2")
+        oc2 = add_CLA_column(dfs, "OC2")
 
         # to datetime
-        oc2["DOB"] = pd.todatetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
+        oc2["DOB"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
 
-        # If <DOB> >= 10 years prior to <COLLECTIONENDDATE>and<CONTINUOUSLYLOOKEDAFTER> = 'Y' then <CONVICTED> should be provided
+        # If <DOB> >= 10 years prior to <COLLECTION_END_DATE>and<CONTINUOUSLY_LOOKED_AFTER> = 'Y' then <CONVICTED> should be provided
         mask = (
-            (collectionend > (oc2["DOB"] + pd.offsets.DateOffset(years=10)))
-            & oc2["CONTINUOUSLYLOOKEDAFTER"]
+            (collection_end > (oc2["DOB"] + pd.offsets.DateOffset(years=10)))
+            & oc2["CONTINUOUSLY_LOOKED_AFTER"]
             & oc2["CONVICTED"].isna()
         )
-        errorlocations = oc2.index[mask]
-        return {"OC2": errorlocations.tolist()}
+        error_locations = oc2.index[mask]
+        return {"OC2": error_locations.tolist()}
 
 
 def test_validate():

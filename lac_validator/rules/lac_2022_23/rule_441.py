@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,23 @@ def validate(dfs):
         return {}
     else:
         reviews = dfs["Reviews"]
-        reviews["DOB"] = pd.todatetime(
+        reviews["DOB"] = pd.to_datetime(
             reviews["DOB"], format="%d/%m/%Y", errors="coerce"
         )
-        reviews["REVIEW"] = pd.todatetime(
+        reviews["REVIEW"] = pd.to_datetime(
             reviews["REVIEW"], format="%d/%m/%Y", errors="coerce"
         )
         reviews = reviews.dropna(subset=["REVIEW", "DOB"])
 
-        mask = reviews["REVIEWCODE"].isin(
+        mask = reviews["REVIEW_CODE"].isin(
             ["PN1", "PN2", "PN3", "PN4", "PN5", "PN6", "PN7"]
         ) & (reviews["REVIEW"] < reviews["DOB"] + pd.offsets.DateOffset(years=4))
 
-        validationerrormask = mask
+        validation_error_mask = mask
 
-        validationerrorlocations = reviews.index[validationerrormask]
+        validation_error_locations = reviews.index[validation_error_mask]
 
-        return {"Reviews": validationerrorlocations.tolist()}
+        return {"Reviews": validation_error_locations.tolist()}
 
 
 def test_validate():

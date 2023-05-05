@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,12 +16,12 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        mindecomallowed = pd.todatetime(
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        min_decom_allowed = pd.to_datetime(
             "14/10/1991", format="%d/%m/%Y", errors="coerce"
         )
-        errormask = epi["DECOM"] < mindecomallowed
-        return {"Episodes": epi.index[errormask].tolist()}
+        error_mask = epi["DECOM"] < min_decom_allowed
+        return {"Episodes": epi.index[error_mask].to_list()}
 
 
 def test_validate():

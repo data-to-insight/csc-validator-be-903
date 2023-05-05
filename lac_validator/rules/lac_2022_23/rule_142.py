@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,8 +16,8 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        df["DECOM"] = pd.todatetime(df["DECOM"], format="%d/%m/%Y", errors="coerce")
-        df["DEC"] = pd.todatetime(df["DEC"], format="%d/%m/%Y", errors="coerce")
+        df["DECOM"] = pd.to_datetime(df["DECOM"], format="%d/%m/%Y", errors="coerce")
+        df["DEC"] = pd.to_datetime(df["DEC"], format="%d/%m/%Y", errors="coerce")
 
         df["DECOM"] = df["DECOM"].fillna(
             "01/01/1901"
@@ -22,17 +25,17 @@ def validate(dfs):
 
         df["DECOM"] = df["DECOM"].replace("01/01/1901", pd.NA)
 
-        lastepisodes = (
-            df.sortvalues("DECOM").resetindex().groupby(["CHILD"])["index"].last()
+        last_episodes = (
+            df.sort_values("DECOM").reset_index().groupby(["CHILD"])["index"].last()
         )
-        endedepisodesdf = df.loc[~df.index.isin(lastepisodes)]
+        ended_episodes_df = df.loc[~df.index.isin(last_episodes)]
 
-        endedepisodesdf = endedepisodesdf[
-            (endedepisodesdf["DEC"].isna() | endedepisodesdf["REC"].isna())
-            & endedepisodesdf["CHILD"].notna()
-            & endedepisodesdf["DECOM"].notna()
+        ended_episodes_df = ended_episodes_df[
+            (ended_episodes_df["DEC"].isna() | ended_episodes_df["REC"].isna())
+            & ended_episodes_df["CHILD"].notna()
+            & ended_episodes_df["DECOM"].notna()
         ]
-        mask = endedepisodesdf.index.tolist()
+        mask = ended_episodes_df.index.tolist()
 
         return {"Episodes": mask}
 

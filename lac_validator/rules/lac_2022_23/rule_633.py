@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,7 +14,7 @@ def validate(dfs):
         return {}
     else:
         prevperm = dfs["PrevPerm"]
-        lacodes = (
+        la_codes = (
             "800,889,822,301,304,303,330,825,837,302,846,370,350,890,867,380,305,801,351,873,823,895,896,"
             "381,909,202,908,331,306,841,830,831,878,371,835,332,840,307,308,811,881,845,390,916,203,876,"
             "850,311,204,884,312,205,313,805,919,310,309,420,921,206,207,886,810,382,314,340,888,208,856,"
@@ -20,17 +23,17 @@ def validate(dfs):
             "871,394,334,933,882,936,861,852,319,860,808,393,866,210,357,894,883,880,358,211,937,869,320,"
             "359,865,384,335,336,212,868,872,885,344,877,213,938,816,999"
         )
-        outofukcodes = ["WAL", "SCO", "NUK", "NIR"]
-        validvalues = lacodes.split(",") + outofukcodes
+        out_of_uk_codes = ["WAL", "SCO", "NUK", "NIR"]
+        valid_values = la_codes.split(",") + out_of_uk_codes
 
-        # Where provided <LAPERM> must be a valid value
-        mask = prevperm["LAPERM"].notna() & (
-            ~prevperm["LAPERM"].astype("str").isin(validvalues)
+        # Where provided <LA_PERM> must be a valid value
+        mask = prevperm["LA_PERM"].notna() & (
+            ~prevperm["LA_PERM"].astype("str").isin(valid_values)
         )
 
         # error locations
-        errorlocs = prevperm.index[mask]
-        return {"PrevPerm": errorlocs.tolist()}
+        error_locs = prevperm.index[mask]
+        return {"PrevPerm": error_locs.tolist()}
 
 
 def test_validate():

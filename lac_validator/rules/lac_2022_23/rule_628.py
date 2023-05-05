@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,18 +17,18 @@ def validate(dfs):
         epi = dfs["Episodes"]
         oc3 = dfs["OC3"]
 
-        hea = hea.resetindex()
-        oc3nonulls = oc3[oc3[["INTOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)]
+        hea = hea.reset_index()
+        oc3_no_nulls = oc3[oc3[["IN_TOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)]
 
-        heamergeepi = hea.merge(epi, how="left", on="CHILD", indicator=True)
-        heanotinepi = heamergeepi[heamergeepi["merge"] == "leftonly"]
+        hea_merge_epi = hea.merge(epi, how="left", on="CHILD", indicator=True)
+        hea_not_in_epi = hea_merge_epi[hea_merge_epi["_merge"] == "left_only"]
 
-        cohorttocheck = heanotinepi.merge(oc3nonulls, how="inner", on="CHILD")
-        errorcohort = cohorttocheck[cohorttocheck["MOTHER"].notna()]
+        cohort_to_check = hea_not_in_epi.merge(oc3_no_nulls, how="inner", on="CHILD")
+        error_cohort = cohort_to_check[cohort_to_check["MOTHER"].notna()]
 
-        errorlist = list(set(errorcohort["index"].tolist()))
-        errorlist.sort()
-        return {"Header": errorlist}
+        error_list = list(set(error_cohort["index"].to_list()))
+        error_list.sort()
+        return {"Header": error_list}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,28 +19,28 @@ def validate(dfs):
         eps = dfs["Episodes"]
 
         # Save indexes of each table so we can retreive the original positions in each for our error rows
-        adt["AD1index"] = adt.index
-        eps["Episodesindex"] = eps.index
+        adt["AD1_index"] = adt.index
+        eps["Episodes_index"] = eps.index
 
-        adt["DATEMATCH"] = pd.todatetime(
-            adt["DATEMATCH"], format="%d/%m/%Y", errors="coerce"
+        adt["DATE_MATCH"] = pd.to_datetime(
+            adt["DATE_MATCH"], format="%d/%m/%Y", errors="coerce"
         )
-        eps["DECOM"] = pd.todatetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
+        eps["DECOM"] = pd.to_datetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
 
         # Only keep the episodes where <Adopted> = 'Y'
-        adoptioneps = eps[eps["REC"].isin(["E11", "E12"])]
+        adoption_eps = eps[eps["REC"].isin(["E11", "E12"])]
 
-        # Merge AD1 and Episodes so we can compare DATEMATCH and DECOM
-        adoptioneps = adoptioneps.merge(adt, on="CHILD")
+        # Merge AD1 and Episodes so we can compare DATE_MATCH and DECOM
+        adoption_eps = adoption_eps.merge(adt, on="CHILD")
 
         # A child cannot be placed for adoption before the child has been matched with prospective adopter(s).
-        errormask = adoptioneps["DATEMATCH"] > adoptioneps["DECOM"]
+        error_mask = adoption_eps["DATE_MATCH"] > adoption_eps["DECOM"]
 
         # Get the rows of each table where the dates clash
-        AD1errs = list(adoptioneps.loc[errormask, "AD1index"].unique())
-        Episodeserrs = list(adoptioneps.loc[errormask, "Episodesindex"].unique())
+        AD1_errs = list(adoption_eps.loc[error_mask, "AD1_index"].unique())
+        Episodes_errs = list(adoption_eps.loc[error_mask, "Episodes_index"].unique())
 
-        return {"AD1": AD1errs, "Episodes": Episodeserrs}
+        return {"AD1": AD1_errs, "Episodes": Episodes_errs}
 
 
 def test_validate():

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,25 +17,25 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         oc3 = dfs["OC3"]
 
-        episodesendede2 = episodes["REC"].str.upper().astype(str).isin(["E2"])
-        episodes = episodes.loc[episodesendede2]
+        episodes_ended_e2 = episodes["REC"].str.upper().astype(str).isin(["E2"])
+        episodes = episodes.loc[episodes_ended_e2]
 
-        if "Episodeslast" in dfs:
-            episodeslast = dfs["Episodeslast"]
-            episodeslastendede2 = (
-                episodeslast["REC"].str.upper().astype(str).isin(["E2"])
+        if "Episodes_last" in dfs:
+            episodes_last = dfs["Episodes_last"]
+            episodes_last_ended_e2 = (
+                episodes_last["REC"].str.upper().astype(str).isin(["E2"])
             )
-            episodeslast = episodeslast.loc[episodeslastendede2]
-            haspreviouse2 = oc3["CHILD"].isin(episodeslast["CHILD"])
-            hascurrente2 = oc3["CHILD"].isin(episodes["CHILD"])
-            errormask = hascurrente2 | haspreviouse2
+            episodes_last = episodes_last.loc[episodes_last_ended_e2]
+            has_previous_e2 = oc3["CHILD"].isin(episodes_last["CHILD"])
+            has_current_e2 = oc3["CHILD"].isin(episodes["CHILD"])
+            error_mask = has_current_e2 | has_previous_e2
         else:
-            hascurrente2 = oc3["CHILD"].isin(episodes["CHILD"])
-            errormask = hascurrente2
+            has_current_e2 = oc3["CHILD"].isin(episodes["CHILD"])
+            error_mask = has_current_e2
 
-        validationerrorlocations = oc3.index[errormask]
+        validation_error_locations = oc3.index[error_mask]
 
-        return {"OC3": validationerrorlocations.tolist()}
+        return {"OC3": validation_error_locations.tolist()}
 
 
 def test_validate():

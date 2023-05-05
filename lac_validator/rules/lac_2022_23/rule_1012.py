@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,18 +15,18 @@ def validate(dfs):
 
     epi = dfs["Episodes"]
 
-    errordict = {}
+    error_dict = {}
     for table in ["PlacedAdoption", "Missing", "Reviews", "AD1", "PrevPerm", "OC2"]:
         if table in dfs.keys():
             df = dfs[table]
-            errordict[table] = (
-                df.resetindex()
+            error_dict[table] = (
+                df.reset_index()
                 .merge(epi, how="left", on="CHILD", indicator=True)
-                .query("merge == 'leftonly'")["index"]
+                .query("_merge == 'left_only'")["index"]
                 .unique()
                 .tolist()
             )
-    return errordict
+    return error_dict
 
 
 def test_validate():

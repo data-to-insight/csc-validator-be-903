@@ -1,9 +1,12 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -22,29 +25,33 @@ def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:
         return {}
 
-    # add 'CONTINUOUSLYLOOKEDAFTER' column
-    oc2 = addCLAcolumn(dfs, "OC2")
-    eps = addCLAcolumn(dfs, "Episodes")
+    # add 'CONTINUOUSLY_LOOKED_AFTER' column
+    oc2 = add_CLA_column(dfs, "OC2")
+    eps = add_CLA_column(dfs, "Episodes")
 
     # CHILD is in OC2 but missing data
-    shouldbepresent = [
+    should_be_present = [
         "IMMUNISATIONS",
-        "TEETHCHECK",
-        "HEALTHASSESSMENT",
-        "SUBSTANCEMISUSE",
+        "TEETH_CHECK",
+        "HEALTH_ASSESSMENT",
+        "SUBSTANCE_MISUSE",
     ]
-    maskoc2 = oc2["CONTINUOUSLYLOOKEDAFTER"] & oc2[shouldbepresent].isna().any(axis=1)
-    oc2errorlocs = oc2[maskoc2].index.tolist()
+    mask_oc2 = oc2["CONTINUOUSLY_LOOKED_AFTER"] & oc2[should_be_present].isna().any(
+        axis=1
+    )
+    oc2_error_locs = oc2[mask_oc2].index.to_list()
 
     # CHILD is not in OC2 at all
-    eps["DECOM"] = pd.todatetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
-    eps = eps.resetindex()
+    eps["DECOM"] = pd.to_datetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
+    eps = eps.reset_index()
     eps = eps.loc[eps.groupby("CHILD")["DECOM"].idxmin()]
-    mergedeps = eps.merge(oc2[["CHILD"]], on="CHILD", how="left", indicator=True)
-    maskeps = mergedeps["CONTINUOUSLYLOOKEDAFTER"] & (mergedeps["merge"] == "leftonly")
-    epserrorlocs = mergedeps.loc[maskeps, "index"].tolist()
+    merged_eps = eps.merge(oc2[["CHILD"]], on="CHILD", how="left", indicator=True)
+    mask_eps = merged_eps["CONTINUOUSLY_LOOKED_AFTER"] & (
+        merged_eps["_merge"] == "left_only"
+    )
+    eps_error_locs = merged_eps.loc[mask_eps, "index"].to_list()
 
-    return {"OC2": oc2errorlocs, "Episodes": epserrorlocs}
+    return {"OC2": oc2_error_locs, "Episodes": eps_error_locs}
 
 
 def test_validate():

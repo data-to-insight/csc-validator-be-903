@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,27 +10,27 @@ from validator903.types import ErrorDefinition
     affected_fields=["DATE_PLACED"],
 )
 def validate(dfs):
-    if "PlacedAdoption" not in dfs or "PlacedAdoptionlast" not in dfs:
+    if "PlacedAdoption" not in dfs or "PlacedAdoption_last" not in dfs:
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
-        palast = dfs["PlacedAdoptionlast"]
+        placed_adoption = dfs["PlacedAdoption"]
+        pa_last = dfs["PlacedAdoption_last"]
 
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        palast.resetindex(inplace=True)
-        merged = placedadoption.merge(
-            palast, how="inner", on="CHILD", suffixes=["now", "last"]
+        placed_adoption.reset_index(inplace=True)
+        pa_last.reset_index(inplace=True)
+        merged = placed_adoption.merge(
+            pa_last, how="inner", on="CHILD", suffixes=["_now", "_last"]
         )
 
-        # If <CURRENTCOLLECTIONYEAR> <DATEPLACED> is = <CURRENTCOLLECTIONYEAR> -1 <DATEPLACED> then <CURRENTCOLLECTIONYEAR> -1 <DATEPLACEDCEASED> and <REASONPLACEDCEASED> should be Null
-        mask = (merged["DATEPLACEDnow"] == merged["DATEPLACEDlast"]) & merged[
-            ["REASONPLACEDCEASEDlast", "DATEPLACEDCEASEDlast"]
+        # If <CURRENT_COLLECTION_YEAR> <DATE_PLACED> is = <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> then <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED_CEASED> and <REASON_PLACED_CEASED> should be Null
+        mask = (merged["DATE_PLACED_now"] == merged["DATE_PLACED_last"]) & merged[
+            ["REASON_PLACED_CEASED_last", "DATE_PLACED_CEASED_last"]
         ].notna().any(axis=1)
 
         # error locations
-        errorlocs = merged.loc[mask, "indexnow"]
-        return {"PlacedAdoption": errorlocs.tolist()}
+        error_locs = merged.loc[mask, "index_now"]
+        return {"PlacedAdoption": error_locs.tolist()}
 
 
 def test_validate():

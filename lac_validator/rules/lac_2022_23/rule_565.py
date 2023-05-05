@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,9 +14,9 @@ def validate(dfs):
         return {}
     else:
         missing = dfs["Missing"]
-        mask = missing["MISSTART"].notna() & missing["MISSING"].isna()
-        errorlocations = missing.index[mask]
-        return {"Missing": errorlocations.tolist()}
+        mask = missing["MIS_START"].notna() & missing["MISSING"].isna()
+        error_locations = missing.index[mask]
+        return {"Missing": error_locations.to_list()}
 
 
 def test_validate():

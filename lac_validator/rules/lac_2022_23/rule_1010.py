@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,38 +13,38 @@ from validator903.types import ErrorDefinition
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "Episodeslast" not in dfs or "OC3" not in dfs:
+    if "Episodes" not in dfs or "Episodes_last" not in dfs or "OC3" not in dfs:
         return {}
 
     else:
         episodes = dfs["Episodes"]
-        episodeslast = dfs["Episodeslast"]
+        episodes_last = dfs["Episodes_last"]
         oc3 = dfs["OC3"]
 
         # convert DECOM to datetime, drop missing/invalid sort by CHILD then DECOM,
-        episodeslast["DECOM"] = pd.todatetime(
-            episodeslast["DECOM"], format="%d/%m/%Y", errors="coerce"
+        episodes_last["DECOM"] = pd.to_datetime(
+            episodes_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodeslast = episodeslast.dropna(subset=["DECOM"]).sortvalues(
+        episodes_last = episodes_last.dropna(subset=["DECOM"]).sort_values(
             ["CHILD", "DECOM"], ascending=True
         )
 
         # Keep only the final episode for each child (ie where the following row has a different CHILD value)
-        episodeslast = episodeslast[
-            episodeslast["CHILD"].shift(-1) != episodeslast["CHILD"]
+        episodes_last = episodes_last[
+            episodes_last["CHILD"].shift(-1) != episodes_last["CHILD"]
         ]
         # Keep only the final episodes that were still open
-        episodeslast = episodeslast[episodeslast["DEC"].isna()]
+        episodes_last = episodes_last[episodes_last["DEC"].isna()]
 
         # The remaining children ought to have episode data in the current year if they are in OC3
-        hascurrentepisodes = oc3["CHILD"].isin(episodes["CHILD"])
-        hasopenepisodelast = oc3["CHILD"].isin(episodeslast["CHILD"])
+        has_current_episodes = oc3["CHILD"].isin(episodes["CHILD"])
+        has_open_episode_last = oc3["CHILD"].isin(episodes_last["CHILD"])
 
-        errormask = ~hascurrentepisodes & hasopenepisodelast
+        error_mask = ~has_current_episodes & has_open_episode_last
 
-        validationerrorlocations = oc3.index[errormask]
+        validation_error_locations = oc3.index[error_mask]
 
-        return {"OC3": validationerrorlocations.tolist()}
+        return {"OC3": validation_error_locations.tolist()}
 
 
 def test_validate():

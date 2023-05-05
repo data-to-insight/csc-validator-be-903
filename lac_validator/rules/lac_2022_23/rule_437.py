@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,24 +19,24 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
 
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        episodes.sortvalues(["CHILD", "DECOM"], inplace=True)
-        episodes[["NEXTDECOM", "NEXTCHILD"]] = episodes[["DECOM", "CHILD"]].shift(-1)
+        episodes.sort_values(["CHILD", "DECOM"], inplace=True)
+        episodes[["NEXT_DECOM", "NEXT_CHILD"]] = episodes[["DECOM", "CHILD"]].shift(-1)
 
         # drop rows with missing DECOM as invalid/missing values can lead to errors
         episodes = episodes.dropna(subset=["DECOM"])
 
-        ceasede2e15 = episodes["REC"].str.upper().astype(str).isin(["E2", "E15"])
-        haslaterepisode = episodes["CHILD"] == episodes["NEXTCHILD"]
+        ceased_e2_e15 = episodes["REC"].str.upper().astype(str).isin(["E2", "E15"])
+        has_later_episode = episodes["CHILD"] == episodes["NEXT_CHILD"]
 
-        errormask = ceasede2e15 & haslaterepisode
+        error_mask = ceased_e2_e15 & has_later_episode
 
-        errorlocations = episodes.index[errormask]
+        error_locations = episodes.index[error_mask]
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,7 +15,7 @@ def validate(dfs):
     else:
         df = dfs["Episodes"]
         mask = df["LS"].isin(["V3", "V4"]) & (
-            (df["PLPOST"].notna()) | (df["URN"].notna())
+            (df["PL_POST"].notna()) | (df["URN"].notna())
         )
         return {"Episodes": df.index[mask].tolist()}
 

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -18,30 +21,30 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         sho = dfs["PlacedAdoption"]
-        sho.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
+        sho.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
 
-        epihase1 = epi[epi["LS"] == "E1"]
-        mergewsho = epihase1.merge(
-            sho, how="left", on="CHILD", suffixes=["EP", "PA"], indicator=True
+        epi_has_e1 = epi[epi["LS"] == "E1"]
+        merge_w_sho = epi_has_e1.merge(
+            sho, how="left", on="CHILD", suffixes=["_EP", "_PA"], indicator=True
         )
 
         # E1 episodes without a corresponding PlacedAdoption entry
-        errlistepi = (
-            mergewsho.query("(merge == 'leftonly')")["indexEP"].unique().tolist()
+        err_list_epi = (
+            merge_w_sho.query("(_merge == 'left_only')")["index_EP"].unique().tolist()
         )
 
-        # Open E1 Episodes where DATEPLACEDCEASED or REASONPLACEDCEASED is filled in
-        epiopene1 = epi[(epi["LS"] == "E1") & epi["DEC"].isna()]
-        mergewsho2 = epiopene1.merge(
-            sho, how="inner", on="CHILD", suffixes=["EP", "PA"]
+        # Open E1 Episodes where DATE_PLACED_CEASED or REASON_PLACED_CEASED is filled in
+        epi_open_e1 = epi[(epi["LS"] == "E1") & epi["DEC"].isna()]
+        merge_w_sho2 = epi_open_e1.merge(
+            sho, how="inner", on="CHILD", suffixes=["_EP", "_PA"]
         )
-        errlistsho = mergewsho2["indexPA"][
-            mergewsho2["DATEPLACEDCEASED"].notna()
-            | mergewsho2["REASONPLACEDCEASED"].notna()
+        err_list_sho = merge_w_sho2["index_PA"][
+            merge_w_sho2["DATE_PLACED_CEASED"].notna()
+            | merge_w_sho2["REASON_PLACED_CEASED"].notna()
         ]
-        errlistsho = errlistsho.unique().tolist()
-        return {"Episodes": errlistepi, "PlacedAdoption": errlistsho}
+        err_list_sho = err_list_sho.unique().tolist()
+        return {"Episodes": err_list_epi, "PlacedAdoption": err_list_sho}
 
 
 def test_validate():

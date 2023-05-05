@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,57 +14,60 @@ from validator903.types import ErrorDefinition
 def validate(dfs):
     if "Episodes" not in dfs:
         return {}
-    if "Episodeslast" not in dfs:
+    if "Episodes_last" not in dfs:
         return {}
     else:
         episodes = dfs["Episodes"]
-        episodeslast = dfs["Episodeslast"]
+        episodes_last = dfs["Episodes_last"]
 
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodeslast["DECOM"] = pd.todatetime(
-            episodeslast["DECOM"], format="%d/%m/%Y", errors="coerce"
+        episodes_last["DECOM"] = pd.to_datetime(
+            episodes_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["PLDISTANCE"] = pd.tonumeric(episodes["PLDISTANCE"], errors="coerce")
-        episodeslast["PLDISTANCE"] = pd.tonumeric(
-            episodeslast["PLDISTANCE"], errors="coerce"
+        episodes["PL_DISTANCE"] = pd.to_numeric(
+            episodes["PL_DISTANCE"], errors="coerce"
+        )
+        episodes_last["PL_DISTANCE"] = pd.to_numeric(
+            episodes_last["PL_DISTANCE"], errors="coerce"
         )
 
         # drop rows with missing DECOM before finding idxmin/max, as invalid/missing values can lead to errors
         episodes = episodes.dropna(subset=["DECOM"])
-        episodeslast = episodeslast.dropna(subset=["DECOM"])
+        episodes_last = episodes_last.dropna(subset=["DECOM"])
 
-        episodesmin = episodes.groupby("CHILD")["DECOM"].idxmin()
-        episodeslastmax = episodeslast.groupby("CHILD")["DECOM"].idxmax()
+        episodes_min = episodes.groupby("CHILD")["DECOM"].idxmin()
+        episodes_last_max = episodes_last.groupby("CHILD")["DECOM"].idxmax()
 
-        episodes = episodes[episodes.index.isin(episodesmin)]
-        episodeslast = episodeslast[episodeslast.index.isin(episodeslastmax)]
+        episodes = episodes[episodes.index.isin(episodes_min)]
+        episodes_last = episodes_last[episodes_last.index.isin(episodes_last_max)]
 
-        episodesmerged = (
-            episodes.resetindex()
+        episodes_merged = (
+            episodes.reset_index()
             .merge(
-                episodeslast,
+                episodes_last,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "last"),
+                suffixes=("", "_last"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        inbothyears = episodesmerged["merge"] == "both"
-        samerne = episodesmerged["RNE"] == episodesmerged["RNElast"]
-        lastyearopen = episodesmerged["DEClast"].isna()
-        differentpldist = (
-            abs(episodesmerged["PLDISTANCE"] - episodesmerged["PLDISTANCElast"]) >= 0.2
+        in_both_years = episodes_merged["_merge"] == "both"
+        same_rne = episodes_merged["RNE"] == episodes_merged["RNE_last"]
+        last_year_open = episodes_merged["DEC_last"].isna()
+        different_pl_dist = (
+            abs(episodes_merged["PL_DISTANCE"] - episodes_merged["PL_DISTANCE_last"])
+            >= 0.2
         )
 
-        errormask = inbothyears & samerne & lastyearopen & differentpldist
+        error_mask = in_both_years & same_rne & last_year_open & different_pl_dist
 
-        validationerrorlocations = episodes.index[errormask]
+        validation_error_locations = episodes.index[error_mask]
 
-        return {"Episodes": validationerrorlocations.tolist()}
+        return {"Episodes": validation_error_locations.tolist()}
 
 
 def test_validate():

@@ -1,6 +1,10 @@
 from validator903.types import IntegrityCheckDefinition
 
 
+import pandas as pd
+from lac_validator.rule_engine import rule_definition
+
+
 def validate(dfs):
     if "Header" not in dfs or "OC3" not in dfs:
         return {}
@@ -8,19 +12,19 @@ def validate(dfs):
         header = dfs["Header"]
         file = dfs["OC3"]
 
-        file["indexfile"] = file.index
+        file["index_file"] = file.index
 
         merged = header.merge(
-            file[["CHILD", "indexfile"]],
+            file[["CHILD", "index_file"]],
             on="CHILD",
             indicator=True,
             how="right",
-            suffixes=["header", "file"],
+            suffixes=["_header", "_file"],
         )
 
-        mask = merged["merge"] == "rightonly"
-        epserrorlocations = merged.loc[mask, "indexfile"]
-        return {"OC3": epserrorlocations.unique().tolist()}
+        mask = merged["_merge"] == "right_only"
+        eps_error_locations = merged.loc[mask, "index_file"]
+        return {"OC3": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

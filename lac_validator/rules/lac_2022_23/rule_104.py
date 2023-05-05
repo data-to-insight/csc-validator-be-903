@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,15 +16,15 @@ def validate(dfs):
         return {}
     else:
         uasc = dfs["UASC"]
-        uasc["DUCdt"] = pd.todatetime(uasc["DUC"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        uasc["DUC_dt"] = pd.to_datetime(uasc["DUC"], format="%d/%m/%Y", errors="coerce")
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
-        mask = (uasc["DUCdt"].isna() & uasc["DUC"].notna()) | (
-            uasc["DUCdt"] < collectionstart
+        mask = (uasc["DUC_dt"].isna() & uasc["DUC"].notna()) | (
+            uasc["DUC_dt"] < collection_start
         )
 
-        return {"UASC": uasc.index[mask].tolist()}
+        return {"UASC": uasc.index[mask].to_list()}
 
 
 def test_validate():

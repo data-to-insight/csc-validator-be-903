@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,71 +17,73 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
 
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
-        collectionend = pd.todatetime(
-            dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
         )
 
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
 
-        epi["LAG"] = epi["level0"] - 1
+        epi["LAG"] = epi["level_0"] - 1
 
-        epi["DEC"].fillna(collectionend, inplace=True)
+        epi["DEC"].fillna(collection_end, inplace=True)
 
-        errco = epi.merge(
+        err_co = epi.merge(
             epi,
             how="left",
-            lefton="level0",
-            righton="LAG",
-            suffixes=["", "NEXT"],
+            left_on="level_0",
+            right_on="LAG",
+            suffixes=["", "_NEXT"],
         ).query("LS == 'L2'")
 
         # Create a partition "FLOWS" for two or more separate flow sequences of L2 code dates within the same child.
-        # when the dec / decomnext dates stop flowing or the child id changes
+        # when the dec / decom_next dates stop flowing or the child id changes
         # the cumsum is incremented this can then be used as the partition.
-        errco["FLOWS"] = (errco["DEC"] == errco["DECOMNEXT"]) & (
-            errco["CHILD"] == errco["CHILDNEXT"]
+        err_co["FLOWS"] = (err_co["DEC"] == err_co["DECOM_NEXT"]) & (
+            err_co["CHILD"] == err_co["CHILD_NEXT"]
         )
-        errco["FLOWS"] = errco["FLOWS"].shift(1)
-        errco["FLOWS"].fillna(False, inplace=True)
-        errco["FLOWS"] = ~errco["FLOWS"]
-        errco["FLOWS"] = errco["FLOWS"].astype(int).cumsum()
+        err_co["FLOWS"] = err_co["FLOWS"].shift(1)
+        err_co["FLOWS"].fillna(False, inplace=True)
+        err_co["FLOWS"] = ~err_co["FLOWS"]
+        err_co["FLOWS"] = err_co["FLOWS"].astype(int).cumsum()
 
         # Calc the min decom and max dec in each group so the days between them can be calculated.
-        grpdecom = (
-            errco.groupby(["CHILD", "FLOWS"])["DECOM"]
+        grp_decom = (
+            err_co.groupby(["CHILD", "FLOWS"])["DECOM"]
             .min()
-            .toframe(name="MINDECOM")
-            .resetindex()
+            .to_frame(name="MIN_DECOM")
+            .reset_index()
         )
-        grpdec = (
-            errco.groupby(["CHILD", "FLOWS"])["DEC"]
+        grp_dec = (
+            err_co.groupby(["CHILD", "FLOWS"])["DEC"]
             .max()
-            .toframe(name="MAXDEC")
-            .resetindex()
+            .to_frame(name="MAX_DEC")
+            .reset_index()
         )
-        grplenl2 = grpdecom.merge(grpdec, how="inner", on=["CHILD", "FLOWS"])
+        grp_len_l2 = grp_decom.merge(grp_dec, how="inner", on=["CHILD", "FLOWS"])
 
         # Throw out anything <= 21 days.
-        grplenl2["DAYDIF"] = (grplenl2["MAXDEC"] - grplenl2["MINDECOM"]).dt.days
-        grplenl2 = grplenl2.query("DAYDIF > 21").copy()
+        grp_len_l2["DAY_DIF"] = (
+            grp_len_l2["MAX_DEC"] - grp_len_l2["MIN_DECOM"]
+        ).dt.days
+        grp_len_l2 = grp_len_l2.query("DAY_DIF > 21").copy()
 
-        # Inner join back to the errco and get the original index out.
-        errco["MERGEKEY"] = errco["CHILD"].astype(str) + errco["FLOWS"].astype(str)
-        grplenl2["MERGEKEY"] = grplenl2["CHILD"].astype(str) + grplenl2["FLOWS"].astype(
-            str
+        # Inner join back to the err_co and get the original index out.
+        err_co["MERGE_KEY"] = err_co["CHILD"].astype(str) + err_co["FLOWS"].astype(str)
+        grp_len_l2["MERGE_KEY"] = grp_len_l2["CHILD"].astype(str) + grp_len_l2[
+            "FLOWS"
+        ].astype(str)
+        err_final = err_co.merge(
+            grp_len_l2, how="inner", on=["MERGE_KEY"], suffixes=["", "_IG"]
         )
-        errfinal = errco.merge(
-            grplenl2, how="inner", on=["MERGEKEY"], suffixes=["", "IG"]
-        )
 
-        errlist = errfinal["index"].unique().tolist()
-        errlist.sort()
+        err_list = err_final["index"].unique().tolist()
+        err_list.sort()
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

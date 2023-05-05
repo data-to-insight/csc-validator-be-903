@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,23 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         header = dfs["Header"]
 
-        episodes.resetindex(inplace=True)
-        header.resetindex(inplace=True)
+        episodes.reset_index(inplace=True)
+        header.reset_index(inplace=True)
 
-        codelist = ["V3", "V4"]
+        code_list = ["V3", "V4"]
 
         # merge to get all children for which episodes have been recorded.
         merged = episodes.merge(
-            header, on=["CHILD"], how="inner", suffixes=["eps", "er"]
+            header, on=["CHILD"], how="inner", suffixes=["_eps", "_er"]
         )
         # Where any episode present, with an <LS> not = 'V3' or 'V4' then <UPN> must be provided
-        mask = (~merged["LS"].isin(codelist)) & merged["UPN"].isna()
-        headererrorlocs = merged.loc[mask, "indexer"]
+        mask = (~merged["LS"].isin(code_list)) & merged["UPN"].isna()
+        header_error_locs = merged.loc[mask, "index_er"]
 
         return {
             # Select unique values since many episodes are joined to one header
             # and multiple errors will be raised for the same index.
-            "Header": headererrorlocs.dropna()
+            "Header": header_error_locs.dropna()
             .unique()
             .tolist()
         }

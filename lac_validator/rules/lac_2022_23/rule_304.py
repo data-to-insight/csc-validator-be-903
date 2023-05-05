@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,13 +16,13 @@ def validate(dfs):
         return {}
     else:
         uasc = dfs["UASC"]
-        uasc["DOB"] = pd.todatetime(uasc["DOB"], format="%d/%m/%Y", errors="coerce")
-        uasc["DUC"] = pd.todatetime(uasc["DUC"], format="%d/%m/%Y", errors="coerce")
+        uasc["DOB"] = pd.to_datetime(uasc["DOB"], format="%d/%m/%Y", errors="coerce")
+        uasc["DUC"] = pd.to_datetime(uasc["DUC"], format="%d/%m/%Y", errors="coerce")
         mask = uasc["DUC"].notna() & (
             uasc["DUC"] > uasc["DOB"] + pd.offsets.DateOffset(years=18)
         )
 
-        return {"UASC": uasc.index[mask].tolist()}
+        return {"UASC": uasc.index[mask].to_list()}
 
 
 def test_validate():

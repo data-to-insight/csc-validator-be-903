@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,35 +16,37 @@ def validate(dfs):
         return {}
 
     episodes = dfs["Episodes"]
-    V3eps = episodes[episodes["LS"] == "V3"]
+    V3_eps = episodes[episodes["LS"] == "V3"]
 
-    V3eps = V3eps.dropna(
+    V3_eps = V3_eps.dropna(
         subset=["DECOM"]
     )  # missing DECOM should get fixed before looking for this error
 
-    collectionstart = pd.todatetime(
-        dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+    collection_start = pd.to_datetime(
+        dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
     )
-    collectionend = pd.todatetime(
-        dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+    collection_end = pd.to_datetime(
+        dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
     )
-    V3eps["DECOMdt"] = pd.todatetime(V3eps["DECOM"], format="%d/%m/%Y", errors="coerce")
-    V3eps["DECdt"] = pd.todatetime(V3eps["DEC"], format="%d/%m/%Y", errors="coerce")
+    V3_eps["DECOM_dt"] = pd.to_datetime(
+        V3_eps["DECOM"], format="%d/%m/%Y", errors="coerce"
+    )
+    V3_eps["DEC_dt"] = pd.to_datetime(V3_eps["DEC"], format="%d/%m/%Y", errors="coerce")
 
     # truncate episode start/end dates to collection start/end respectively
-    V3eps.loc[
-        V3eps["DEC"].isna() | (V3eps["DECdt"] > collectionend), "DECdt"
-    ] = collectionend
-    V3eps.loc[V3eps["DECOMdt"] < collectionstart, "DECOMdt"] = collectionstart
+    V3_eps.loc[
+        V3_eps["DEC"].isna() | (V3_eps["DEC_dt"] > collection_end), "DEC_dt"
+    ] = collection_end
+    V3_eps.loc[V3_eps["DECOM_dt"] < collection_start, "DECOM_dt"] = collection_start
 
-    V3eps["duration"] = (V3eps["DECdt"] - V3eps["DECOMdt"]).dt.days
-    V3eps = V3eps[V3eps["duration"] > 0]
+    V3_eps["duration"] = (V3_eps["DEC_dt"] - V3_eps["DECOM_dt"]).dt.days
+    V3_eps = V3_eps[V3_eps["duration"] > 0]
 
-    V3eps["yeartotalduration"] = V3eps.groupby("CHILD")["duration"].transform(sum)
+    V3_eps["year_total_duration"] = V3_eps.groupby("CHILD")["duration"].transform(sum)
 
-    errormask = V3eps["yeartotalduration"] > 75
+    error_mask = V3_eps["year_total_duration"] > 75
 
-    return {"Episodes": V3eps.index[errormask].tolist()}
+    return {"Episodes": V3_eps.index[error_mask].to_list()}
 
 
 def test_validate():

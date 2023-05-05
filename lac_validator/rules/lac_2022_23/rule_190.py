@@ -1,7 +1,10 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -23,24 +26,24 @@ def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:
         return {}
 
-    # add 'CONTINUOUSLYLOOKEDAFTER' column
-    oc2 = addCLAcolumn(dfs, "OC2")
+    # add 'CONTINUOUSLY_LOOKED_AFTER' column
+    oc2 = add_CLA_column(dfs, "OC2")
 
-    shouldbeblank = [
+    should_be_blank = [
         "CONVICTED",
-        "HEALTHCHECK",
+        "HEALTH_CHECK",
         "IMMUNISATIONS",
-        "TEETHCHECK",
-        "HEALTHASSESSMENT",
-        "SUBSTANCEMISUSE",
-        "INTERVENTIONRECEIVED",
-        "INTERVENTIONOFFERED",
+        "TEETH_CHECK",
+        "HEALTH_ASSESSMENT",
+        "SUBSTANCE_MISUSE",
+        "INTERVENTION_RECEIVED",
+        "INTERVENTION_OFFERED",
     ]
 
-    mask = ~oc2["CONTINUOUSLYLOOKEDAFTER"] & oc2[shouldbeblank].notna().any(axis=1)
-    errorlocs = oc2[mask].index.tolist()
+    mask = ~oc2["CONTINUOUSLY_LOOKED_AFTER"] & oc2[should_be_blank].notna().any(axis=1)
+    error_locs = oc2[mask].index.to_list()
 
-    return {"OC2": errorlocs}
+    return {"OC2": error_locs}
 
 
 def test_validate():

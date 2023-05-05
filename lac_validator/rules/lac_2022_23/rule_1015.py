@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,9 +14,9 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        localauthority = dfs["metadata"]["localAuthority"]
+        local_authority = dfs["metadata"]["localAuthority"]
 
-        placementfosteringoradoption = df["PLACE"].isin(
+        placement_fostering_or_adoption = df["PLACE"].isin(
             [
                 "A3",
                 "A4",
@@ -27,13 +30,15 @@ def validate(dfs):
                 "U6",
             ]
         )
-        ownprovision = df["PLACEPROVIDER"].eq("PR1")
-        isshortterm = df["LS"].isin(["V3", "V4"])
-        isplla = df["PLLA"].eq(localauthority)
+        own_provision = df["PLACE_PROVIDER"].eq("PR1")
+        is_short_term = df["LS"].isin(["V3", "V4"])
+        is_pl_la = df["PL_LA"].eq(local_authority)
 
-        checkedepisodes = ~placementfosteringoradoption & ~isshortterm & ownprovision
-        checkedepisodes = checkedepisodes & df["LS"].notna() & df["PLACE"].notna()
-        mask = checkedepisodes & ~isplla
+        checked_episodes = (
+            ~placement_fostering_or_adoption & ~is_short_term & own_provision
+        )
+        checked_episodes = checked_episodes & df["LS"].notna() & df["PLACE"].notna()
+        mask = checked_episodes & ~is_pl_la
 
         return {"Episodes": df.index[mask].tolist()}
 

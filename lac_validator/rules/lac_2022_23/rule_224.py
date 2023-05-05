@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,31 +12,31 @@ from validator903.types import ErrorDefinition
     affected_fields=["PLACE_PROVIDER"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
+        provider_info = dfs["metadata"]["provider_info"]
 
         # merge
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
         episodes = episodes.merge(
-            providerinfo, on="URN", how="left", suffixes=["eps", "lookup"]
+            provider_info, on="URN", how="left", suffixes=["_eps", "_lookup"]
         )
-        # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACEPROVIDER> must = URN Lookup <PLACEPROVIDER>
+        # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
         valid = pd.Series(
             [
-                plpr in valid.split(",")
-                if (pd.notna(plpr) and pd.notna(valid))
+                pl_pr in valid.split(",")
+                if (pd.notna(pl_pr) and pd.notna(valid))
                 else False
-                for plpr, valid in zip(
-                    episodes["PLACEPROVIDER"], episodes["PROVIDERCODES"]
+                for pl_pr, valid in zip(
+                    episodes["PLACE_PROVIDER"], episodes["PROVIDER_CODES"]
                 )
             ]
         )
-        epserrorlocations = episodes.loc[~valid, "indexeps"]
-        return {"Episodes": epserrorlocations.unique().tolist()}
+        eps_error_locations = episodes.loc[~valid, "index_eps"]
+        return {"Episodes": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,10 +14,10 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        errlist = epi.query(
+        err_list = epi.query(
             "LS.isin(['V3', 'V4']) & PLACE.isin(['T0', 'T1', 'T2', 'T3', 'T4'])"
         ).index.tolist()
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

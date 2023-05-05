@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,31 +17,35 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         header = dfs["Header"]
-        codelist = ["E45", "E46", "E47", "E48"]
+        code_list = ["E45", "E46", "E47", "E48"]
 
         # convert dates to datetime format
-        episodes["DEC"] = pd.todatetime(
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        header.resetindex(inplace=True)
-        merged = episodes.merge(header, on="CHILD", how="left", suffixes=["eps", "er"])
+        episodes.reset_index(inplace=True)
+        header.reset_index(inplace=True)
+        merged = episodes.merge(
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
+        )
 
         # If <REC> = ‘E45’ or ‘E46’ or ‘E47’ or ‘E48’ then <DOB> must be < 18 years prior to <DEC>
-        mask = merged["REC"].isin(codelist) & (
+        mask = merged["REC"].isin(code_list) & (
             merged["DOB"] + pd.offsets.DateOffset(years=18) < merged["DEC"]
         )
         # That is, raise error if DEC > DOB + 10years
 
         # error locations
-        headererrorlocs = merged.loc[mask, "indexer"]
-        episodeerrorlocs = merged.loc[mask, "indexeps"]
+        header_error_locs = merged.loc[mask, "index_er"]
+        episode_error_locs = merged.loc[mask, "index_eps"]
         # one to many join implies use .unique on the 'one'
         return {
-            "Episodes": episodeerrorlocs.tolist(),
-            "Header": headererrorlocs.unique().tolist(),
+            "Episodes": episode_error_locs.tolist(),
+            "Header": header_error_locs.unique().tolist(),
         }
 
 

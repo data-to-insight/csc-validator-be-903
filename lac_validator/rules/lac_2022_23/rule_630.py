@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,40 +18,42 @@ def validate(dfs):
         epi = dfs["Episodes"]
         pre = dfs["PrevPerm"]
 
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
 
-        epi = epi.resetindex()
+        epi = epi.reset_index()
 
         # Form the episode dataframe which has an 'RNE' of 'S' in this financial year
-        epihasrneofSinyear = epi[
-            (epi["RNE"] == "S") & (epi["DECOM"] >= collectionstart)
+        epi_has_rne_of_S_in_year = epi[
+            (epi["RNE"] == "S") & (epi["DECOM"] >= collection_start)
         ]
         # Merge to see
         # 1) which CHILD ids are missing from the PrevPerm file
-        # 2) which CHILD are in the prevPerm file, but don't have the LAPERM/DATEPERM field completed where they should be
-        # 3) which CHILD are in the PrevPerm file, but don't have the PREVPERM field completed.
-        mergedepipreperm = epihasrneofSinyear.merge(
+        # 2) which CHILD are in the prevPerm file, but don't have the LA_PERM/DATE_PERM field completed where they should be
+        # 3) which CHILD are in the PrevPerm file, but don't have the PREV_PERM field completed.
+        merged_epi_preperm = epi_has_rne_of_S_in_year.merge(
             pre, on="CHILD", how="left", indicator=True
         )
 
-        errornotinpreperm = mergedepipreperm["merge"] == "leftonly"
-        errorwrongvaluesinpreperm = (mergedepipreperm["PREVPERM"] != "Z1") & (
-            mergedepipreperm[["LAPERM", "DATEPERM"]].isna().any(axis=1)
+        error_not_in_preperm = merged_epi_preperm["_merge"] == "left_only"
+        error_wrong_values_in_preperm = (merged_epi_preperm["PREV_PERM"] != "Z1") & (
+            merged_epi_preperm[["LA_PERM", "DATE_PERM"]].isna().any(axis=1)
         )
-        errornullprevperm = (mergedepipreperm["merge"] == "both") & (
-            mergedepipreperm["PREVPERM"].isna()
+        error_null_prev_perm = (merged_epi_preperm["_merge"] == "both") & (
+            merged_epi_preperm["PREV_PERM"].isna()
         )
 
-        errormask = errornotinpreperm | errorwrongvaluesinpreperm | errornullprevperm
+        error_mask = (
+            error_not_in_preperm | error_wrong_values_in_preperm | error_null_prev_perm
+        )
 
-        errorlist = mergedepipreperm[errormask]["index"].tolist()
-        errorlist = list(set(errorlist))
-        errorlist.sort()
+        error_list = merged_epi_preperm[error_mask]["index"].to_list()
+        error_list = list(set(error_list))
+        error_list.sort()
 
-        return {"Episodes": errorlist}
+        return {"Episodes": error_list}
 
 
 def test_validate():

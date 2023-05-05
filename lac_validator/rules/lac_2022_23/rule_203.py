@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,39 +12,41 @@ from validator903.types import ErrorDefinition
     affected_fields=["DOB"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs:
         return {}
     else:
         header = dfs["Header"]
-        headerlast = dfs["Headerlast"]
+        header_last = dfs["Header_last"]
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        headerlast["DOB"] = pd.todatetime(
-            headerlast["DOB"], format="%d/%m/%Y", errors="coerce"
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        header_last["DOB"] = pd.to_datetime(
+            header_last["DOB"], format="%d/%m/%Y", errors="coerce"
         )
 
-        headermerged = (
-            header.resetindex()
+        header_merged = (
+            header.reset_index()
             .merge(
-                headerlast,
+                header_last,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "last"),
+                suffixes=("", "_last"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        inbothyears = headermerged["merge"] == "both"
-        dobisdifferent = headermerged["DOB"].astype(str) != headermerged[
-            "DOBlast"
+        in_both_years = header_merged["_merge"] == "both"
+        dob_is_different = header_merged["DOB"].astype(str) != header_merged[
+            "DOB_last"
         ].astype(str)
 
-        errormask = inbothyears & dobisdifferent
+        error_mask = in_both_years & dob_is_different
 
-        errorlocations = header.index[errormask]
+        error_locations = header.index[error_mask]
 
-        return {"Header": errorlocations.tolist()}
+        return {"Header": error_locations.to_list()}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,25 +16,26 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi = epi.resetindex()
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        epi = epi.reset_index()
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
 
-        epi = epi.sortvalues(["CHILD", "DECOM"])
+        epi = epi.sort_values(["CHILD", "DECOM"])
 
-        epilead = epi.shift(1)
-        epilead = epilead.resetindex()
+        epi_lead = epi.shift(1)
+        epi_lead = epi_lead.reset_index()
 
-        mepi = epi.merge(
-            epilead, lefton="index", righton="level0", suffixes=("", "prev")
+        m_epi = epi.merge(
+            epi_lead, left_on="index", right_on="level_0", suffixes=("", "_prev")
         )
 
-        errorcohort = mepi[
-            (mepi["CHILD"] == mepi["CHILDprev"]) & (mepi["DECOM"] < mepi["DECprev"])
+        error_cohort = m_epi[
+            (m_epi["CHILD"] == m_epi["CHILD_prev"])
+            & (m_epi["DECOM"] < m_epi["DEC_prev"])
         ]
-        errorlist = errorcohort["index"].tolist()
-        errorlist.sort()
-        return {"Episodes": errorlist}
+        error_list = error_cohort["index"].to_list()
+        error_list.sort()
+        return {"Episodes": error_list}
 
 
 def test_validate():

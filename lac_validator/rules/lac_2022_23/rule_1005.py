@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,18 +16,18 @@ def validate(dfs):
         return {}
     else:
         missing = dfs["Missing"]
-        missing["fMISEND"] = pd.todatetime(
-            missing["MISEND"], format="%d/%m/%Y", errors="coerce"
+        missing["fMIS_END"] = pd.to_datetime(
+            missing["MIS_END"], format="%d/%m/%Y", errors="coerce"
         )
 
-        missingenddate = missing["MISEND"].isna()
-        invalidenddate = missing["fMISEND"].isna()
+        missing_end_date = missing["MIS_END"].isna()
+        invalid_end_date = missing["fMIS_END"].isna()
 
-        errormask = ~missingenddate & invalidenddate
+        error_mask = ~missing_end_date & invalid_end_date
 
-        errorlocations = missing.index[errormask]
+        error_locations = missing.index[error_mask]
 
-        return {"Missing": errorlocations.tolist()}
+        return {"Missing": error_locations.to_list()}
 
 
 def test_validate():

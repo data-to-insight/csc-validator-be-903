@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,7 +16,7 @@ def validate(dfs):
         return {}
     else:
         # function to check that date is of the right format
-        def validdate(dte):
+        def valid_date(dte):
             try:
                 lst = dte.split("/")
             except AttributeError:
@@ -24,74 +27,74 @@ def validate(dfs):
             if len(lst) != 3:
                 return pd.NaT
 
-            zlist = ["ZZ", "ZZ", "ZZZZ"]
+            z_list = ["ZZ", "ZZ", "ZZZZ"]
             # We set the date to the latest possible value to avoid false positives
-            offsetlist = [
+            offset_list = [
                 pd.DateOffset(months=1, days=-1),
                 pd.DateOffset(years=1, days=-1),
                 None,
             ]
             # that is, go to the next month/year and take the day before that
-            alreadyfoundnonzeds = False
-            datebits = []
+            already_found_non_zeds = False
+            date_bits = []
 
-            for i, zeds, offset in zip(lst, zlist, offsetlist):
+            for i, zeds, offset in zip(lst, z_list, offset_list):
                 if i == zeds:
                     # I'm assuming it is invalid to have a date like '01/ZZ/ZZZZ'
-                    if alreadyfoundnonzeds:
+                    if already_found_non_zeds:
                         return pd.NaT
                     # Replace day & month zeds with '01' so we can check if the resulting date is valid
                     # and set the offset so we can compare the latest corresponding date
                     elif i == "ZZ":
                         i = "01"
-                        offsettouse = offset
+                        offset_to_use = offset
                 else:
-                    alreadyfoundnonzeds = True
-                datebits.append(i)
+                    already_found_non_zeds = True
+                date_bits.append(i)
 
-            asdatetime = pd.todatetime(
-                "/".join(datebits), format="%d/%m/%Y", errors="coerce"
+            as_datetime = pd.to_datetime(
+                "/".join(date_bits), format="%d/%m/%Y", errors="coerce"
             )
             try:
-                asdatetime += offsettouse
-            except NameError:  # offsettouse only defined if needed
+                as_datetime += offset_to_use
+            except NameError:  # offset_to_use only defined if needed
                 pass
-            return asdatetime
+            return as_datetime
 
         episodes = dfs["Episodes"]
         prevperm = dfs["PrevPerm"]
 
         # convert dates from strings to appropriate format.
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        prevperm["DATEPERMdt"] = prevperm["DATEPERM"].apply(validdate)
+        prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(valid_date)
 
         # select first episodes
-        firstepsidxs = episodes.groupby("CHILD")["DECOM"].idxmin()
-        firsteps = episodes[episodes.index.isin(firstepsidxs)]
+        first_eps_idxs = episodes.groupby("CHILD")["DECOM"].idxmin()
+        first_eps = episodes[episodes.index.isin(first_eps_idxs)]
 
         # prepare to merge
-        firsteps.resetindex(inplace=True)
-        prevperm.resetindex(inplace=True)
-        merged = firsteps.merge(
-            prevperm, on="CHILD", how="left", suffixes=["eps", "prev"]
+        first_eps.reset_index(inplace=True)
+        prevperm.reset_index(inplace=True)
+        merged = first_eps.merge(
+            prevperm, on="CHILD", how="left", suffixes=["_eps", "_prev"]
         )
 
-        # If provided <DATEPERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by ZZ if part of the date element is not known.
-        mask = (merged["DATEPERMdt"] >= merged["DECOM"]) | (
-            merged["DATEPERM"].notna()
-            & merged["DATEPERMdt"].isna()
-            & (merged["DATEPERM"] != "ZZ/ZZ/ZZZZ")
+        # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by ZZ if part of the date element is not known.
+        mask = (merged["DATE_PERM_dt"] >= merged["DECOM"]) | (
+            merged["DATE_PERM"].notna()
+            & merged["DATE_PERM_dt"].isna()
+            & (merged["DATE_PERM"] != "ZZ/ZZ/ZZZZ")
         )
 
         # error locations
-        preverrorlocs = merged.loc[mask, "indexprev"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
+        prev_error_locs = merged.loc[mask, "index_prev"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
 
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "PrevPerm": preverrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "PrevPerm": prev_error_locs.unique().tolist(),
         }
 
 

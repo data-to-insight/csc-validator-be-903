@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -18,31 +21,31 @@ def validate(dfs):
     if "PlacedAdoption" not in dfs or "AD1" not in dfs:
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         ad1 = dfs["AD1"]
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        ad1.resetindex(inplace=True)
+        placed_adoption.reset_index(inplace=True)
+        ad1.reset_index(inplace=True)
 
-        merged = placedadoption.merge(
-            ad1, on="CHILD", how="left", suffixes=["placed", "ad1"]
+        merged = placed_adoption.merge(
+            ad1, on="CHILD", how="left", suffixes=["_placed", "_ad1"]
         )
-        # If <DATEPLACEDCEASED> not Null, then <DATEINT>; <DATEMATCH>; <FOSTERCARE>; <NBADOPTR>; <SEXADOPTR>; and <LSADOPTR> should not be provided
-        mask = merged["DATEPLACEDCEASED"].notna() & (
-            merged["DATEINT"].notna()
-            | merged["DATEMATCH"].notna()
-            | merged["FOSTERCARE"].notna()
-            | merged["NBADOPTR"].notna()
-            | merged["SEXADOPTR"].notna()
-            | merged["LSADOPTR"].notna()
+        # If <DATE_PLACED_CEASED> not Null, then <DATE_INT>; <DATE_MATCH>; <FOSTER_CARE>; <NB_ADOPTR>; <SEX_ADOPTR>; and <LS_ADOPTR> should not be provided
+        mask = merged["DATE_PLACED_CEASED"].notna() & (
+            merged["DATE_INT"].notna()
+            | merged["DATE_MATCH"].notna()
+            | merged["FOSTER_CARE"].notna()
+            | merged["NB_ADOPTR"].notna()
+            | merged["SEX_ADOPTR"].notna()
+            | merged["LS_ADOPTR"].notna()
         )
         # error locations
-        paerrorlocs = merged.loc[mask, "indexplaced"]
-        aderrorlocs = merged.loc[mask, "indexad1"]
+        pa_error_locs = merged.loc[mask, "index_placed"]
+        ad_error_locs = merged.loc[mask, "index_ad1"]
         # return result
         return {
-            "PlacedAdoption": paerrorlocs.tolist(),
-            "AD1": aderrorlocs.tolist(),
+            "PlacedAdoption": pa_error_locs.tolist(),
+            "AD1": ad_error_locs.tolist(),
         }
 
 

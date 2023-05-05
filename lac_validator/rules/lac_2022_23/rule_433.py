@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,29 +16,31 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        episodes["DECOMdt"] = pd.todatetime(
+        episodes["DECOM_dt"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECdt"] = pd.todatetime(
+        episodes["DEC_dt"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
-        episodes["originalindex"] = episodes.index
-        episodes.sortvalues(["CHILD", "DECOMdt", "DECdt"], inplace=True)
-        episodes[["PREVIOUSDEC", "PREVIOUSCHILD"]] = episodes[["DEC", "CHILD"]].shift(1)
+        episodes["original_index"] = episodes.index
+        episodes.sort_values(["CHILD", "DECOM_dt", "DEC_dt"], inplace=True)
+        episodes[["PREVIOUS_DEC", "PREVIOUS_CHILD"]] = episodes[["DEC", "CHILD"]].shift(
+            1
+        )
 
-        rneisongoing = (
+        rne_is_ongoing = (
             episodes["RNE"].str.upper().astype(str).isin(["P", "L", "T", "U", "B"])
         )
-        datemismatch = episodes["PREVIOUSDEC"] != episodes["DECOM"]
-        missingdate = episodes["PREVIOUSDEC"].isna() | episodes["DECOM"].isna()
-        samechild = episodes["PREVIOUSCHILD"] == episodes["CHILD"]
+        date_mismatch = episodes["PREVIOUS_DEC"] != episodes["DECOM"]
+        missing_date = episodes["PREVIOUS_DEC"].isna() | episodes["DECOM"].isna()
+        same_child = episodes["PREVIOUS_CHILD"] == episodes["CHILD"]
 
-        errormask = rneisongoing & (datemismatch | missingdate) & samechild
+        error_mask = rne_is_ongoing & (date_mismatch | missing_date) & same_child
 
-        errorlocations = episodes["originalindex"].loc[errormask].sortvalues()
+        error_locations = episodes["original_index"].loc[error_mask].sort_values()
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

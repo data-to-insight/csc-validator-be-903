@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,10 +14,10 @@ def validate(dfs):
         return {}
     else:
         df = dfs["Episodes"]
-        isshortterm = df["LS"].isin(["V3", "V4"])
+        is_short_term = df["LS"].isin(["V3", "V4"])
 
-        # Because PLLA is derived, it will always be valid if present
-        mask = ~isshortterm & df["PLLA"].isna()
+        # Because PL_LA is derived, it will always be valid if present
+        mask = ~is_short_term & df["PL_LA"].isna()
         return {"Episodes": df.index[mask].tolist()}
 
 

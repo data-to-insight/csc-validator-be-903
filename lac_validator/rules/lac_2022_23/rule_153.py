@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,15 +15,15 @@ def validate(dfs):
 
     oc3 = dfs["OC3"]
 
-    oc3notna = oc3["INTOUCH"].notna() & oc3["ACTIV"].notna() & oc3["ACCOM"].notna()
+    oc3_not_na = oc3["IN_TOUCH"].notna() & oc3["ACTIV"].notna() & oc3["ACCOM"].notna()
 
-    oc3allna = oc3["INTOUCH"].isna() & oc3["ACTIV"].isna() & oc3["ACCOM"].isna()
+    oc3_all_na = oc3["IN_TOUCH"].isna() & oc3["ACTIV"].isna() & oc3["ACCOM"].isna()
 
-    validationerror = ~oc3notna & ~oc3allna
+    validation_error = ~oc3_not_na & ~oc3_all_na
 
-    validationerrorlocations = oc3.index[validationerror]
+    validation_error_locations = oc3.index[validation_error]
 
-    return {"OC3": validationerrorlocations.tolist()}
+    return {"OC3": validation_error_locations.to_list()}
 
 
 def test_validate():

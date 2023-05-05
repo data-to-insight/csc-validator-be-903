@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,15 +13,18 @@ def validate(dfs):
     if "Missing" not in dfs:
         return {}
 
-    missingfromcare = dfs["Missing"]
-    codelist = ["M", "A"]
+    missing_from_care = dfs["Missing"]
+    code_list = ["M", "A"]
 
-    mask = missingfromcare["MISSING"].isin(codelist) | missingfromcare["MISSING"].isna()
+    mask = (
+        missing_from_care["MISSING"].isin(code_list)
+        | missing_from_care["MISSING"].isna()
+    )
 
-    validationerrormask = ~mask
-    validationerrorlocations = missingfromcare.index[validationerrormask]
+    validation_error_mask = ~mask
+    validation_error_locations = missing_from_care.index[validation_error_mask]
 
-    return {"Missing": validationerrorlocations.tolist()}
+    return {"Missing": validation_error_locations.tolist()}
 
 
 def test_validate():

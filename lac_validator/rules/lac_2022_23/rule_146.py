@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,7 +14,7 @@ def validate(dfs):
         return {}
 
     episodes = dfs["Episodes"]
-    codelist = [
+    code_list = [
         "A3",
         "A4",
         "A5",
@@ -41,12 +44,12 @@ def validate(dfs):
         "Z1",
     ]
 
-    mask = episodes["PLACE"].isin(codelist) | episodes["PLACE"].isna()
+    mask = episodes["PLACE"].isin(code_list) | episodes["PLACE"].isna()
 
-    validationerrormask = ~mask
-    validationerrorlocations = episodes.index[validationerrormask]
+    validation_error_mask = ~mask
+    validation_error_locations = episodes.index[validation_error_mask]
 
-    return {"Episodes": validationerrorlocations.tolist()}
+    return {"Episodes": validation_error_locations.tolist()}
 
 
 def test_validate():

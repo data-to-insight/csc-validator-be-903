@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,28 +17,28 @@ def validate(dfs):
         ad1 = dfs["AD1"]
 
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        ad1.resetindex(inplace=True)
-        merged = episodes.merge(ad1, on="CHILD", how="left", suffixes=["eps", "ad1"])
+        episodes.reset_index(inplace=True)
+        ad1.reset_index(inplace=True)
+        merged = episodes.merge(ad1, on="CHILD", how="left", suffixes=["_eps", "_ad1"])
 
-        # Where <PL> = 'A2', 'A3' or 'A5' and <DEC> = 'E1', 'E11', 'E12' <FOSTERCARE> should not be '0'; Where <PL> = ‘A1’, ‘A4’ or ‘A6’ and <REC> = ‘E1’, ‘E11’, ‘E12’ <FOSTERCARE> should not be ‘1’.
+        # Where <PL> = 'A2', 'A3' or 'A5' and <DEC> = 'E1', 'E11', 'E12' <FOSTER_CARE> should not be '0'; Where <PL> = ‘A1’, ‘A4’ or ‘A6’ and <REC> = ‘E1’, ‘E11’, ‘E12’ <FOSTER_CARE> should not be ‘1’.
         mask = merged["REC"].isin(["E1", "E11", "E12"]) & (
             (
                 merged["PLACE"].isin(["A2", "A3", "A5"])
-                & (merged["FOSTERCARE"].astype(str) == "0")
+                & (merged["FOSTER_CARE"].astype(str) == "0")
             )
             | (
                 merged["PLACE"].isin(["A1", "A4", "A6"])
-                & (merged["FOSTERCARE"].astype(str) == "1")
+                & (merged["FOSTER_CARE"].astype(str) == "1")
             )
         )
-        epserrorlocs = merged.loc[mask, "indexeps"]
-        ad1errorlocs = merged.loc[mask, "indexad1"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
+        ad1_error_locs = merged.loc[mask, "index_ad1"]
 
         # use .unique since join is many to one
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "AD1": ad1errorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "AD1": ad1_error_locs.unique().tolist(),
         }
 
 

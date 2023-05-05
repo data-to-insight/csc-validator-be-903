@@ -1,19 +1,23 @@
 from validator903.types import IntegrityCheckDefinition
 
 
+import pandas as pd
+from lac_validator.rule_engine import rule_definition
+
+
 def validate(dfs):
     if "OC3" not in dfs:
         return {}
     else:
         file = dfs["OC3"]
 
-        file["indexfile"] = file.index
+        file["index_file"] = file.index
 
-        file["CHILDCOUNT"] = file.groupby("CHILD")["CHILD"].transform("count")
+        file["CHILD_COUNT"] = file.groupby("CHILD")["CHILD"].transform("count")
 
-        mask = file["CHILDCOUNT"] > 1
-        epserrorlocations = file.loc[mask, "indexfile"]
-        return {"OC3": epserrorlocations.unique().tolist()}
+        mask = file["CHILD_COUNT"] > 1
+        eps_error_locations = file.loc[mask, "index_file"]
+        return {"OC3": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

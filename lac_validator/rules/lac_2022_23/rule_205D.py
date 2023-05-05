@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -8,45 +11,45 @@ from validator903.types import ErrorDefinition
 )
 def validate(dfs):
     if "Header" in dfs:
-        returnheadererrors = True
+        return_header_errors = True
 
         header = dfs["Header"]
     elif "UASC" in dfs:
         uasc = dfs["UASC"]
-        returnheadererrors = False
+        return_header_errors = False
 
         header = uasc[["CHILD"]].copy()
         header["UASC"] = "0"
-        uascinds = uasc.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
-        header.loc[uascinds, "UASC"] = "1"
+        uasc_inds = uasc.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
+        header.loc[uasc_inds, "UASC"] = "1"
     else:
         return {}
-    if "Headerlast" in dfs:
-        headerlast = dfs["Headerlast"]
-    elif "UASClast" in dfs:
-        uasclast = dfs["UASClast"]
-        headerlast = uasclast[["CHILD"]].copy()
-        headerlast["UASC"] = "0"
-        uascinds = uasclast.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
-        headerlast.loc[uascinds, "UASC"] = "1"
+    if "Header_last" in dfs:
+        header_last = dfs["Header_last"]
+    elif "UASC_last" in dfs:
+        uasc_last = dfs["UASC_last"]
+        header_last = uasc_last[["CHILD"]].copy()
+        header_last["UASC"] = "0"
+        uasc_inds = uasc_last.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
+        header_last.loc[uasc_inds, "UASC"] = "1"
     else:
         return {}
-    if "UASC" not in header.columns or "UASC" not in headerlast.columns:
+    if "UASC" not in header.columns or "UASC" not in header_last.columns:
         return {}
-    print(header.tostring())
-    print(headerlast.tostring())
-    allmerged = header.resetindex().merge(
-        headerlast,
+    print(header.to_string())
+    print(header_last.to_string())
+    all_merged = header.reset_index().merge(
+        header_last,
         how="inner",
         on=["CHILD"],
-        suffixes=("", "last"),
+        suffixes=("", "_last"),
         indicator=True,
     )
 
-    errormask = (allmerged["UASC"] == "1") & (allmerged["UASClast"] != "1")
-    print(allmerged.tostring())
-    errors = allmerged.loc[errormask, "index"].tolist()
-    if returnheadererrors:
+    error_mask = (all_merged["UASC"] == "1") & (all_merged["UASC_last"] != "1")
+    print(all_merged.to_string())
+    errors = all_merged.loc[error_mask, "index"].to_list()
+    if return_header_errors:
         return {"Header": errors}
     else:
         return {"UASC": errors}

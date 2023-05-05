@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,26 +12,26 @@ from validator903.types import ErrorDefinition
     affected_fields=["URN", "DECOM"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
+        provider_info = dfs["metadata"]["provider_info"]
 
-        # convert date fields from strings to datetime format. NB. REGEND is in datetime format already.
-        episodes["DECOM"] = pd.todatetime(
+        # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
         # merge
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
-        merged = episodes.merge(providerinfo, on="URN", how="left")
-        # If <URN> provided and <URN> not = 'XXXXXXX', then if <URN> and <REGEND> are provided then <DECOM> must be before <REGEND>
-        mask = merged["REGEND"].notna() & (merged["DECOM"] >= merged["REGEND"])
+        merged = episodes.merge(provider_info, on="URN", how="left")
+        # If <URN> provided and <URN> not = 'XXXXXXX', then if <URN> and <REG_END> are provided then <DECOM> must be before <REG_END>
+        mask = merged["REG_END"].notna() & (merged["DECOM"] >= merged["REG_END"])
 
-        epserrorlocations = merged.loc[mask, "indexeps"]
-        return {"Episodes": epserrorlocations.tolist()}
+        eps_error_locations = merged.loc[mask, "index_eps"]
+        return {"Episodes": eps_error_locations.tolist()}
 
 
 def test_validate():

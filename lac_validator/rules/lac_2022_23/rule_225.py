@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,36 +16,38 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
-        epi["LAGINDEX"] = epi["level0"].shift(1)
-        mepi = epi.merge(
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
+        epi["LAG_INDEX"] = epi["level_0"].shift(1)
+        m_epi = epi.merge(
             epi,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "NEXT"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_NEXT"],
         )
-        mepi = mepi[mepi["CHILD"] == mepi["CHILDNEXT"]]
+        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_NEXT"]]
 
-        maskisX1 = mepi["REC"] == "X1"
-        masknullplacechg = mepi["REASONPLACECHANGE"].isna()
-        maskplacenotT = ~mepi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])
-        masknextisPBTU = mepi["RNENEXT"].isin(["P", "B", "T", "U"])
-        masknextplacenotT = ~mepi["PLACENEXT"].isin(["T0", "T1", "T2", "T3", "T4"])
-
-        errormask = (
-            maskisX1
-            & masknullplacechg
-            & maskplacenotT
-            & masknextisPBTU
-            & masknextplacenotT
+        mask_is_X1 = m_epi["REC"] == "X1"
+        mask_null_place_chg = m_epi["REASON_PLACE_CHANGE"].isna()
+        mask_place_not_T = ~m_epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])
+        mask_next_is_PBTU = m_epi["RNE_NEXT"].isin(["P", "B", "T", "U"])
+        mask_next_place_not_T = ~m_epi["PLACE_NEXT"].isin(
+            ["T0", "T1", "T2", "T3", "T4"]
         )
 
-        errorlist = mepi["index"][errormask].tolist()
-        return {"Episodes": errorlist}
+        error_mask = (
+            mask_is_X1
+            & mask_null_place_chg
+            & mask_place_not_T
+            & mask_next_is_PBTU
+            & mask_next_place_not_T
+        )
+
+        error_list = m_epi["index"][error_mask].to_list()
+        return {"Episodes": error_list}
 
 
 def test_validate():

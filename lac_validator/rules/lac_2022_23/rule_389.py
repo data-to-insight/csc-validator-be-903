@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -17,32 +20,34 @@ def validate(dfs):
         header = dfs["Header"]
         episodes = dfs["Episodes"]
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        episodes["DEC"] = pd.todatetime(
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
         header["DOB16"] = header["DOB"] + pd.DateOffset(years=16)
 
-        episodesmerged = (
-            episodes.resetindex()
+        episodes_merged = (
+            episodes.reset_index()
             .merge(
                 header,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "header"),
+                suffixes=("", "_header"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        ceasedasc = episodesmerged["REC"].str.upper().astype(str).isin(["E7"])
-        ceasedover16 = episodesmerged["DOB16"] <= episodesmerged["DEC"]
+        ceased_asc = episodes_merged["REC"].str.upper().astype(str).isin(["E7"])
+        ceased_over_16 = episodes_merged["DOB16"] <= episodes_merged["DEC"]
 
-        errormask = ceasedasc & ~ceasedover16
+        error_mask = ceased_asc & ~ceased_over_16
 
-        errorlocations = episodesmerged.index[errormask].unique()
+        error_locations = episodes_merged.index[error_mask].unique()
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

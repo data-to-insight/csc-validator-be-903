@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -18,33 +21,33 @@ def validate(dfs):
         return {}
     else:
         ad1 = dfs["AD1"]
-        nadateint = ad1["DATEINT"].isna()
-        nadatematch = ad1["DATEMATCH"].isna()
-        nafostercare = ad1["FOSTERCARE"].isna()
-        nanbadoptr = ad1["NBADOPTR"].isna()
-        nasexadoptr = ad1["SEXADOPTR"].isna()
-        nalsadoptr = ad1["LSADOPTR"].isna()
+        na_date_int = ad1["DATE_INT"].isna()
+        na_date_match = ad1["DATE_MATCH"].isna()
+        na_foster_care = ad1["FOSTER_CARE"].isna()
+        na_nb_adoptr = ad1["NB_ADOPTR"].isna()
+        na_sex_adoptr = ad1["SEX_ADOPTR"].isna()
+        na_lsadoptr = ad1["LS_ADOPTR"].isna()
 
-        ad1notnull = (
-            ~nadateint
-            & ~nadatematch
-            & ~nafostercare
-            & ~nanbadoptr
-            & ~nasexadoptr
-            & ~nalsadoptr
+        ad1_not_null = (
+            ~na_date_int
+            & ~na_date_match
+            & ~na_foster_care
+            & ~na_nb_adoptr
+            & ~na_sex_adoptr
+            & ~na_lsadoptr
         )
 
-        validationerror = (
-            ~nadateint
-            | ~nadatematch
-            | ~nafostercare
-            | ~nanbadoptr
-            | ~nasexadoptr
-            | ~nalsadoptr
-        ) & ~ad1notnull
-        validationerrorlocations = ad1.index[validationerror]
+        validation_error = (
+            ~na_date_int
+            | ~na_date_match
+            | ~na_foster_care
+            | ~na_nb_adoptr
+            | ~na_sex_adoptr
+            | ~na_lsadoptr
+        ) & ~ad1_not_null
+        validation_error_locations = ad1.index[validation_error]
 
-        return {"AD1": validationerrorlocations.tolist()}
+        return {"AD1": validation_error_locations.tolist()}
 
 
 def test_validate():

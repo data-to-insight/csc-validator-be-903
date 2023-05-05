@@ -1,7 +1,10 @@
 import pandas as pd
 
 from validator903.types import MissingMetadataError
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,19 +17,19 @@ def validate(dfs):
         return {}
     else:
         try:
-            fileformat = dfs["metadata"]["fileformat"]
+            file_format = dfs["metadata"]["file_format"]
         except KeyError as e:
             raise MissingMetadataError(*e.args)
-        if fileformat == "csv":
+        if file_format == "csv":
             return {}
 
         header = dfs["Header"]
-        codelist = [0, 1]
+        code_list = [0, 1]
 
-        mask = ~pd.tonumeric(header["UASC"], errors="coerce").isin(codelist)
-        errorlocs = header.index[mask]
+        mask = ~pd.to_numeric(header["UASC"], errors="coerce").isin(code_list)
+        error_locs = header.index[mask]
 
-        return {"Header": errorlocs.tolist()}
+        return {"Header": error_locs.tolist()}
 
 
 def test_validate():

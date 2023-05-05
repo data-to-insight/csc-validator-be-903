@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,37 +15,37 @@ def validate(dfs):
     if ("AD1" not in dfs) or ("PlacedAdoption" not in dfs):
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         ad1 = dfs["AD1"]
         # keep initial index values to be reused for locating errors later on.
-        placedadoption.resetindex(inplace=True)
-        ad1.resetindex(inplace=True)
+        placed_adoption.reset_index(inplace=True)
+        ad1.reset_index(inplace=True)
 
         # convert to datetime to enable comparison
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        ad1["DATEINT"] = pd.todatetime(
-            ad1["DATEINT"], format="%d/%m/%Y", errors="coerce"
+        ad1["DATE_INT"] = pd.to_datetime(
+            ad1["DATE_INT"], format="%d/%m/%Y", errors="coerce"
         )
 
         # drop rows where either of the required values have not been filled.
-        placedadoption = placedadoption[placedadoption["DATEPLACED"].notna()]
-        ad1 = ad1[ad1["DATEINT"].notna()]
+        placed_adoption = placed_adoption[placed_adoption["DATE_PLACED"].notna()]
+        ad1 = ad1[ad1["DATE_INT"].notna()]
 
         # bring corresponding values together from both dataframes
-        mergeddf = placedadoption.merge(
-            ad1, on=["CHILD"], how="inner", suffixes=["AD", "PA"]
+        merged_df = placed_adoption.merge(
+            ad1, on=["CHILD"], how="inner", suffixes=["_AD", "_PA"]
         )
         # find error values
-        differentdates = mergeddf["DATEINT"] != mergeddf["DATEPLACED"]
+        different_dates = merged_df["DATE_INT"] != merged_df["DATE_PLACED"]
         # map error locations to corresponding indices
-        paerrorlocations = mergeddf.loc[differentdates, "indexPA"]
-        ad1errorlocations = mergeddf.loc[differentdates, "indexAD"]
+        pa_error_locations = merged_df.loc[different_dates, "index_PA"]
+        ad1_error_locations = merged_df.loc[different_dates, "index_AD"]
 
         return {
-            "PlacedAdoption": paerrorlocations.tolist(),
-            "AD1": ad1errorlocations.tolist(),
+            "PlacedAdoption": pa_error_locations.to_list(),
+            "AD1": ad1_error_locations.to_list(),
         }
 
 

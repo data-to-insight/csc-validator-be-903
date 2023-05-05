@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,38 +17,38 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         ad1 = dfs["AD1"]
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(
-            dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+        collection_end = pd.to_datetime(
+            dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
         )
 
-        mask1 = (epi["DEC"] <= collectionend) & (epi["DEC"] >= collectionstart)
+        mask1 = (epi["DEC"] <= collection_end) & (epi["DEC"] >= collection_start)
         mask2 = epi["REC"].isin(["E11", "E12"])
-        adoptioneps = epi[mask1 & mask2]
+        adoption_eps = epi[mask1 & mask2]
 
-        adoptionfields = [
-            "DATEINT",
-            "DATEMATCH",
-            "FOSTERCARE",
-            "NBADOPTR",
-            "SEXADOPTR",
-            "LSADOPTR",
+        adoption_fields = [
+            "DATE_INT",
+            "DATE_MATCH",
+            "FOSTER_CARE",
+            "NB_ADOPTR",
+            "SEX_ADOPTR",
+            "LS_ADOPTR",
         ]
 
-        errlist = (
-            ad1.resetindex()
-            .merge(adoptioneps, how="left", on="CHILD", indicator=True)
-            .query("merge == 'leftonly'")
-            .dropna(subset=adoptionfields, how="all")
-            .setindex("index")
+        err_list = (
+            ad1.reset_index()
+            .merge(adoption_eps, how="left", on="CHILD", indicator=True)
+            .query("_merge == 'left_only'")
+            .dropna(subset=adoption_fields, how="all")
+            .set_index("index")
             .index.unique()
-            .tolist()
+            .to_list()
         )
 
-        return {"AD1": errlist}
+        return {"AD1": err_list}
 
 
 def test_validate():

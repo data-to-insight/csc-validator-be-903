@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,22 +17,22 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.resetindex(inplace=True)
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi.reset_index(inplace=True)
 
-        potentcohort = epi[epi["PLACE"] == "T3"]
+        potent_cohort = epi[epi["PLACE"] == "T3"]
 
         # Here I'm after the CHILD ids where there are more than 2 T3 placements.
-        countthem = potentcohort.groupby("CHILD")["CHILD"].count().toframe(name="cc")
-        countthem.resetindex(inplace=True)
-        countthem = countthem[countthem["cc"] > 2]
+        count_them = potent_cohort.groupby("CHILD")["CHILD"].count().to_frame(name="cc")
+        count_them.reset_index(inplace=True)
+        count_them = count_them[count_them["cc"] > 2]
 
-        errcoh = epi[epi["CHILD"].isin(countthem["CHILD"])]
-        errcoh = errcoh[errcoh["PLACE"] == "T3"]
+        err_coh = epi[epi["CHILD"].isin(count_them["CHILD"])]
+        err_coh = err_coh[err_coh["PLACE"] == "T3"]
 
-        errlist = errcoh["index"].unique().tolist()
-        errlist.sort()
-        return {"Episodes": errlist}
+        err_list = err_coh["index"].unique().tolist()
+        err_list.sort()
+        return {"Episodes": err_list}
 
 
 def test_validate():

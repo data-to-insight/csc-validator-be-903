@@ -1,5 +1,8 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.datastore import merge_postcodes
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,17 +16,17 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
 
-        homeprovided = episodes["HOMEPOST"].notna()
-        homedetails = mergepostcodes(episodes, "HOMEPOST")
-        homevalid = homedetails["pcd"].notna()
+        home_provided = episodes["HOME_POST"].notna()
+        home_details = merge_postcodes(episodes, "HOME_POST")
+        home_valid = home_details["pcd"].notna()
 
-        plprovided = episodes["PLPOST"].notna()
-        pldetails = mergepostcodes(episodes, "PLPOST")
-        plvalid = pldetails["pcd"].notna()
+        pl_provided = episodes["PL_POST"].notna()
+        pl_details = merge_postcodes(episodes, "PL_POST")
+        pl_valid = pl_details["pcd"].notna()
 
-        errormask = (homeprovided & ~homevalid) | (plprovided & ~plvalid)
+        error_mask = (home_provided & ~home_valid) | (pl_provided & ~pl_valid)
 
-        return {"Episodes": episodes.index[errormask].tolist()}
+        return {"Episodes": episodes.index[error_mask].tolist()}
 
 
 def test_validate():

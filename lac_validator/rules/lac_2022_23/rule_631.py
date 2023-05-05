@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,18 +13,18 @@ def validate(dfs):
     if "PrevPerm" not in dfs:
         return {}
 
-    previouspermanence = dfs["PrevPerm"]
-    codelist = ["P1", "P2", "P3", "P4", "Z1"]
+    previous_permanence = dfs["PrevPerm"]
+    code_list = ["P1", "P2", "P3", "P4", "Z1"]
 
     mask = (
-        previouspermanence["PREVPERM"].isin(codelist)
-        | previouspermanence["PREVPERM"].isna()
+        previous_permanence["PREV_PERM"].isin(code_list)
+        | previous_permanence["PREV_PERM"].isna()
     )
 
-    validationerrormask = ~mask
-    validationerrorlocations = previouspermanence.index[validationerrormask]
+    validation_error_mask = ~mask
+    validation_error_locations = previous_permanence.index[validation_error_mask]
 
-    return {"PrevPerm": validationerrorlocations.tolist()}
+    return {"PrevPerm": validation_error_locations.tolist()}
 
 
 def test_validate():

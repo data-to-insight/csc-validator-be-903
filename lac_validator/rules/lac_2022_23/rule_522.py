@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,21 +15,21 @@ def validate(dfs):
     if "PlacedAdoption" not in dfs:
         return {}
     else:
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         # Convert to datetimes
-        placedadoption["DATEPLACEDCEASED"] = pd.todatetime(
-            placedadoption["DATEPLACEDCEASED"],
+        placed_adoption["DATE_PLACED_CEASED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED_CEASED"],
             format="%d/%m/%Y",
             errors="coerce",
         )
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
         # Boolean mask
-        mask = placedadoption["DATEPLACEDCEASED"] < placedadoption["DATEPLACED"]
+        mask = placed_adoption["DATE_PLACED_CEASED"] < placed_adoption["DATE_PLACED"]
 
-        errorlocations = placedadoption.index[mask]
-        return {"PlacedAdoption": errorlocations.tolist()}
+        error_locations = placed_adoption.index[mask]
+        return {"PlacedAdoption": error_locations.to_list()}
 
 
 def test_validate():

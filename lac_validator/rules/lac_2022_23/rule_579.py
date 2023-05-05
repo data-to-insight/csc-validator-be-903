@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,44 +15,47 @@ def validate(dfs):
     if "PlacedAdoption" not in dfs:
         return {}
     else:
-        adoptplaced = dfs["PlacedAdoption"]
-        adoptplaced["DATEPLACED"] = pd.todatetime(
-            adoptplaced["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        adopt_placed = dfs["PlacedAdoption"]
+        adopt_placed["DATE_PLACED"] = pd.to_datetime(
+            adopt_placed["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        adoptplaced["DATEPLACEDCEASED"] = pd.todatetime(
-            adoptplaced["DATEPLACEDCEASED"], format="%d/%m/%Y", errors="coerce"
+        adopt_placed["DATE_PLACED_CEASED"] = pd.to_datetime(
+            adopt_placed["DATE_PLACED_CEASED"], format="%d/%m/%Y", errors="coerce"
         )
 
-        adoptplaced.sortvalues(["CHILD", "DATEPLACED"], inplace=True)
+        adopt_placed.sort_values(["CHILD", "DATE_PLACED"], inplace=True)
 
-        adoptplaced.resetindex(inplace=True)
-        adoptplaced.resetindex(inplace=True)  # Twice on purpose
+        adopt_placed.reset_index(inplace=True)
+        adopt_placed.reset_index(inplace=True)  # Twice on purpose
 
-        adoptplaced["LAGINDEX"] = adoptplaced["level0"].shift(-1)
+        adopt_placed["LAG_INDEX"] = adopt_placed["level_0"].shift(-1)
 
-        lagadoptplaced = adoptplaced.merge(
-            adoptplaced,
+        lag_adopt_placed = adopt_placed.merge(
+            adopt_placed,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "PREV"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_PREV"],
         )
 
         # We're only interested in cases where there is more than one row for a child.
-        lagadoptplaced = lagadoptplaced[
-            lagadoptplaced["CHILD"] == lagadoptplaced["CHILDPREV"]
+        lag_adopt_placed = lag_adopt_placed[
+            lag_adopt_placed["CHILD"] == lag_adopt_placed["CHILD_PREV"]
         ]
 
-        # A previous ADOPTPLACEDCEASED date is null
-        mask1 = lagadoptplaced["DATEPLACEDCEASEDPREV"].isna()
-        # ADOPTPLACED is before previous ADOPTPLACED (overlapping dates)
-        mask2 = lagadoptplaced["DATEPLACED"] < lagadoptplaced["DATEPLACEDCEASEDPREV"]
+        # A previous ADOPT_PLACED_CEASED date is null
+        mask1 = lag_adopt_placed["DATE_PLACED_CEASED_PREV"].isna()
+        # ADOPT_PLACED is before previous ADOPT_PLACED (overlapping dates)
+        mask2 = (
+            lag_adopt_placed["DATE_PLACED"]
+            < lag_adopt_placed["DATE_PLACED_CEASED_PREV"]
+        )
 
         mask = mask1 | mask2
 
-        errorlist = lagadoptplaced["index"][mask].tolist()
-        errorlist.sort()
-        return {"PlacedAdoption": errorlist}
+        error_list = lag_adopt_placed["index"][mask].to_list()
+        error_list.sort()
+        return {"PlacedAdoption": error_list}
 
 
 def test_validate():

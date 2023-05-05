@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,40 +16,42 @@ def validate(dfs):
         return {}
     else:
         mis = dfs["Missing"]
-        mis["MISSTART"] = pd.todatetime(
-            mis["MISSTART"], format="%d/%m/%Y", errors="coerce"
+        mis["MIS_START"] = pd.to_datetime(
+            mis["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
-        mis["MISEND"] = pd.todatetime(mis["MISEND"], format="%d/%m/%Y", errors="coerce")
+        mis["MIS_END"] = pd.to_datetime(
+            mis["MIS_END"], format="%d/%m/%Y", errors="coerce"
+        )
 
-        mis["MISENDFILL"] = mis["MISEND"].fillna(mis["MISSTART"])
-        mis.sortvalues(["CHILD", "MISENDFILL", "MISSTART"], inplace=True)
+        mis["MIS_END_FILL"] = mis["MIS_END"].fillna(mis["MIS_START"])
+        mis.sort_values(["CHILD", "MIS_END_FILL", "MIS_START"], inplace=True)
 
-        mis.resetindex(inplace=True)
-        mis.resetindex(inplace=True)  # Twice on purpose
+        mis.reset_index(inplace=True)
+        mis.reset_index(inplace=True)  # Twice on purpose
 
-        mis["LAGINDEX"] = mis["level0"].shift(-1)
+        mis["LAG_INDEX"] = mis["level_0"].shift(-1)
 
-        lagmis = mis.merge(
+        lag_mis = mis.merge(
             mis,
             how="inner",
-            lefton="level0",
-            righton="LAGINDEX",
-            suffixes=["", "PREV"],
+            left_on="level_0",
+            right_on="LAG_INDEX",
+            suffixes=["", "_PREV"],
         )
 
         # We're only interested in cases where there is more than one row for a child.
-        lagmis = lagmis[lagmis["CHILD"] == lagmis["CHILDPREV"]]
+        lag_mis = lag_mis[lag_mis["CHILD"] == lag_mis["CHILD_PREV"]]
 
-        # A previous MISEND date is null
-        mask1 = lagmis["MISENDPREV"].isna()
-        # MISSTART is before previous MISEND (overlapping dates)
-        mask2 = lagmis["MISSTART"] < lagmis["MISENDPREV"]
+        # A previous MIS_END date is null
+        mask1 = lag_mis["MIS_END_PREV"].isna()
+        # MIS_START is before previous MIS_END (overlapping dates)
+        mask2 = lag_mis["MIS_START"] < lag_mis["MIS_END_PREV"]
 
         mask = mask1 | mask2
 
-        errorlist = lagmis["index"][mask].tolist()
-        errorlist.sort()
-        return {"Missing": errorlist}
+        error_list = lag_mis["index"][mask].to_list()
+        error_list.sort()
+        return {"Missing": error_list}
 
 
 def test_validate():

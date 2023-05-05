@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,19 +19,21 @@ def validate(dfs):
 
     oc2 = dfs["OC2"]
 
-    collectionendstr = dfs["metadata"]["collectionend"]
+    collection_end_str = dfs["metadata"]["collection_end"]
 
-    collectionend = pd.todatetime(collectionendstr, format="%d/%m/%Y", errors="coerce")
-    oc2["DOBdt"] = pd.todatetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+    collection_end = pd.to_datetime(
+        collection_end_str, format="%d/%m/%Y", errors="coerce"
+    )
+    oc2["DOB_dt"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
 
-    oc2["4thbday"] = oc2["DOBdt"] + pd.DateOffset(years=4)
-    errormask = (oc2["4thbday"] > collectionend) & oc2[
-        ["SDQSCORE", "SDQREASON"]
+    oc2["4th_bday"] = oc2["DOB_dt"] + pd.DateOffset(years=4)
+    error_mask = (oc2["4th_bday"] > collection_end) & oc2[
+        ["SDQ_SCORE", "SDQ_REASON"]
     ].notna().any(axis=1)
 
-    oc2errors = oc2.loc[errormask].index.tolist()
+    oc2_errors = oc2.loc[error_mask].index.to_list()
 
-    return {"OC2": oc2errors}
+    return {"OC2": oc2_errors}
 
 
 def test_validate():

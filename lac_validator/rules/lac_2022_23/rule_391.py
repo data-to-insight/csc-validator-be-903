@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,25 @@ def validate(dfs):
         return {}
     else:
         oc3 = dfs["OC3"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_end = dfs["metadata"]["collection_end"]
 
         # convert dates to datetime format
-        oc3["DOB"] = pd.todatetime(oc3["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-
-        # If <DOB> < 17 years prior to <COLLECTIONENDDATE> then <INTOUCH>, <ACTIV> and <ACCOM> should not be provided
-        checkage = oc3["DOB"] + pd.offsets.DateOffset(years=17) > collectionend
-        mask = checkage & (
-            oc3["INTOUCH"].notna() | oc3["ACTIV"].notna() | oc3["ACCOM"].notna()
+        oc3["DOB"] = pd.to_datetime(oc3["DOB"], format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
         )
-        # Then raise an error if either INTOUCH, ACTIV, or ACCOM have been provided too
+
+        # If <DOB> < 17 years prior to <COLLECTION_END_DATE> then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
+        check_age = oc3["DOB"] + pd.offsets.DateOffset(years=17) > collection_end
+        mask = check_age & (
+            oc3["IN_TOUCH"].notna() | oc3["ACTIV"].notna() | oc3["ACCOM"].notna()
+        )
+        # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
 
         # error locations
-        oc3errorlocs = oc3.index[mask]
+        oc3_error_locs = oc3.index[mask]
 
-        return {"OC3": oc3errorlocs.tolist()}
+        return {"OC3": oc3_error_locs.tolist()}
 
 
 def test_validate():

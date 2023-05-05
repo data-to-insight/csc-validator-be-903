@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,18 +15,18 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epiv3 = epi[epi["LS"] == "V3"]
-        epiv4 = epi[epi["LS"] == "V4"]
+        epi_v3 = epi[epi["LS"] == "V3"]
+        epi_v4 = epi[epi["LS"] == "V4"]
 
-        mcoh = epiv3.merge(epiv4, on="CHILD", how="inner")
-        errchild = mcoh["CHILD"].unique().tolist()
+        m_coh = epi_v3.merge(epi_v4, on="CHILD", how="inner")
+        err_child = m_coh["CHILD"].unique().tolist()
 
-        errl1 = epiv3[epiv3["CHILD"].isin(errchild)].index.tolist()
-        errl2 = epiv4[epiv4["CHILD"].isin(errchild)].index.tolist()
+        err_l1 = epi_v3[epi_v3["CHILD"].isin(err_child)].index.tolist()
+        err_l2 = epi_v4[epi_v4["CHILD"].isin(err_child)].index.tolist()
 
-        errlist = errl1 + errl2
-        errlist.sort()
-        return {"Episodes": errlist}
+        err_list = err_l1 + err_l2
+        err_list.sort()
+        return {"Episodes": err_list}
 
 
 def test_validate():

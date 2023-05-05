@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,41 +12,43 @@ from validator903.types import ErrorDefinition
     affected_fields=["DECOM"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "Episodeslast" not in dfs:
+    if "Episodes" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
         epi = dfs["Episodes"]
-        epilast = dfs["Episodeslast"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epilast["DECOM"] = pd.todatetime(
-            epilast["DECOM"], format="%d/%m/%Y", errors="coerce"
+        epi_last = dfs["Episodes_last"]
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi_last["DECOM"] = pd.to_datetime(
+            epi_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
 
-        epi.resetindex(inplace=True)
-        epi = epi[epi["DECOM"] < collectionstart]
+        epi.reset_index(inplace=True)
+        epi = epi[epi["DECOM"] < collection_start]
 
-        grpdecombychild = epi.groupby(["CHILD"])["DECOM"].idxmin(skipna=True)
-        mindecom = epi.loc[epi.index.isin(grpdecombychild), :]
+        grp_decom_by_child = epi.groupby(["CHILD"])["DECOM"].idxmin(skipna=True)
+        min_decom = epi.loc[epi.index.isin(grp_decom_by_child), :]
 
-        grplastdecombychild = epilast.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
-        maxlastdecom = epilast.loc[epilast.index.isin(grplastdecombychild), :]
+        grp_last_decom_by_child = epi_last.groupby(["CHILD"])["DECOM"].idxmax(
+            skipna=True
+        )
+        max_last_decom = epi_last.loc[epi_last.index.isin(grp_last_decom_by_child), :]
 
-        mergedco = mindecom.merge(
-            maxlastdecom,
+        merged_co = min_decom.merge(
+            max_last_decom,
             how="left",
             on=["CHILD", "DECOM"],
-            suffixes=["", "PRE"],
+            suffixes=["", "_PRE"],
             indicator=True,
         )
-        errorcohort = mergedco[mergedco["merge"] == "leftonly"]
+        error_cohort = merged_co[merged_co["_merge"] == "left_only"]
 
-        errorlist = errorcohort["index"].tolist()
-        errorlist = list(set(errorlist))
-        errorlist.sort()
-        return {"Episodes": errorlist}
+        error_list = error_cohort["index"].to_list()
+        error_list = list(set(error_list))
+        error_list.sort()
+        return {"Episodes": error_list}
 
 
 def test_validate():

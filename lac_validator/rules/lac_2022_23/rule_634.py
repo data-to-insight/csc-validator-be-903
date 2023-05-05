@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,36 +17,36 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         prevperm = dfs["PrevPerm"]
-        collectionstart = dfs["metadata"]["collectionstart"]
+        collection_start = dfs["metadata"]["collection_start"]
         # convert date field to appropriate format
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
         # the maximum date has the highest possibility of satisfying the condition
-        episodes["LASTDECOM"] = episodes.groupby("CHILD")["DECOM"].transform("max")
+        episodes["LAST_DECOM"] = episodes.groupby("CHILD")["DECOM"].transform("max")
 
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        prevperm.resetindex(inplace=True)
+        episodes.reset_index(inplace=True)
+        prevperm.reset_index(inplace=True)
         merged = prevperm.merge(
-            episodes, on="CHILD", how="left", suffixes=["prev", "eps"]
+            episodes, on="CHILD", how="left", suffixes=["_prev", "_eps"]
         )
-        # If <PREVPERM> or <LAPERM> or <DATEPERM> provided, then at least 1 episode must have a <DECOM> later than 01/04/2016
+        # If <PREV_PERM> or <LA_PERM> or <DATE_PERM> provided, then at least 1 episode must have a <DECOM> later than 01/04/2016
         mask = (
-            merged["PREVPERM"].notna()
-            | merged["DATEPERM"].notna()
-            | merged["LAPERM"].notna()
-        ) & (merged["LASTDECOM"] < collectionstart)
-        epserrorlocs = merged.loc[mask, "indexeps"]
-        prevpermerrorlocs = merged.loc[mask, "indexprev"]
+            merged["PREV_PERM"].notna()
+            | merged["DATE_PERM"].notna()
+            | merged["LA_PERM"].notna()
+        ) & (merged["LAST_DECOM"] < collection_start)
+        eps_error_locs = merged.loc[mask, "index_eps"]
+        prevperm_error_locs = merged.loc[mask, "index_prev"]
 
-        # return {'PrevPerm':prevpermerrorlocs}
+        # return {'PrevPerm':prevperm_error_locs}
         return {
-            "Episodes": epserrorlocs.unique().tolist(),
-            "PrevPerm": prevpermerrorlocs.unique().tolist(),
+            "Episodes": eps_error_locs.unique().tolist(),
+            "PrevPerm": prevperm_error_locs.unique().tolist(),
         }
 
 

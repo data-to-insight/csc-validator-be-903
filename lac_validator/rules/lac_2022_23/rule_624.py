@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -8,20 +11,20 @@ from validator903.types import ErrorDefinition
     affected_fields=["MC_DOB"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs:
         return {}
     else:
         hea = dfs["Header"]
-        heapre = dfs["Headerlast"]
-        hea["origidx"] = hea.index
+        hea_pre = dfs["Header_last"]
+        hea["orig_idx"] = hea.index
 
-        errco = hea.merge(heapre, how="inner", on="CHILD", suffixes=["", "PRE"]).query(
-            "MCDOBPRE.notna() & (MCDOB != MCDOBPRE)"
-        )
+        err_co = hea.merge(
+            hea_pre, how="inner", on="CHILD", suffixes=["", "_PRE"]
+        ).query("MC_DOB_PRE.notna() & (MC_DOB != MC_DOB_PRE)")
 
-        errlist = errco["origidx"].unique().tolist()
-        errlist.sort()
-        return {"Header": errlist}
+        err_list = err_co["orig_idx"].unique().tolist()
+        err_list.sort()
+        return {"Header": err_list}
 
 
 def test_validate():

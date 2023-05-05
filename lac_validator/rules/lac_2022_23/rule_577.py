@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,86 +18,90 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         missing = dfs["Missing"]
 
-        episodes["originalindex"] = episodes.index
+        episodes["original_index"] = episodes.index
 
         # put dates in appropriate format.
-        missing["MISEND"] = pd.todatetime(
-            missing["MISEND"], format="%d/%m/%Y", errors="coerce"
+        missing["MIS_END"] = pd.to_datetime(
+            missing["MIS_END"], format="%d/%m/%Y", errors="coerce"
         )
-        missing["MISSTART"] = pd.todatetime(
-            missing["MISSTART"], format="%d/%m/%Y", errors="coerce"
+        missing["MIS_START"] = pd.to_datetime(
+            missing["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DEC"] = pd.todatetime(
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
         # filter data based on provided conditions.
-        missing = missing[missing["MISSTART"].notna()].copy()
+        missing = missing[missing["MIS_START"].notna()].copy()
         episodes = episodes.dropna(subset=["DECOM"])
 
         # create period of care blocks
-        episodes = episodes.sortvalues(["CHILD", "DECOM"])
+        episodes = episodes.sort_values(["CHILD", "DECOM"])
 
         episodes["index"] = pd.RangeIndex(0, len(episodes))
         episodes["index+1"] = episodes["index"] + 1
         episodes = episodes.merge(
             episodes,
-            lefton="index",
-            righton="index+1",
+            left_on="index",
+            right_on="index+1",
             how="left",
-            suffixes=[None, "prev"],
+            suffixes=[None, "_prev"],
         )
         episodes = episodes[
             [
-                "originalindex",
+                "original_index",
                 "DECOM",
                 "DEC",
-                "DECprev",
+                "DEC_prev",
                 "CHILD",
-                "CHILDprev",
+                "CHILD_prev",
                 "LS",
             ]
         ]
 
-        episodes["newperiod"] = (episodes["DECOM"] > episodes["DECprev"]) | (
-            episodes["CHILD"] != episodes["CHILDprev"]
+        episodes["new_period"] = (episodes["DECOM"] > episodes["DEC_prev"]) | (
+            episodes["CHILD"] != episodes["CHILD_prev"]
         )
-        episodes["periodid"] = episodes["newperiod"].astype(int).cumsum()
+        episodes["period_id"] = episodes["new_period"].astype(int).cumsum()
 
         # allocate the same DECOM (min) and DEC (max) to all episodes in a period of care.
         pocs = pd.DataFrame()
-        pocs[["CHILD", "pocDECOM"]] = episodes.groupby("periodid")[
+        pocs[["CHILD", "poc_DECOM"]] = episodes.groupby("period_id")[
             ["CHILD", "DECOM"]
         ].first()
-        pocs["pocDEC"] = episodes.groupby("periodid")["DEC"].nth(-1)
+        pocs["poc_DEC"] = episodes.groupby("period_id")["DEC"].nth(-1)
 
         # prepare to merge
-        missing["indexing"] = missing.index
+        missing["index_ing"] = missing.index
 
-        pocs = pocs.merge(missing, on="CHILD", how="right", suffixes=["eps", "ing"])
+        pocs = pocs.merge(missing, on="CHILD", how="right", suffixes=["_eps", "_ing"])
         # poc : period of care
-        pocs["outofpoc"] = (
+        pocs["out_of_poc"] = (
             # (a) POC is over, but Missing ep is ongoing:
-            (pocs["MISSTART"].notna() & pocs["MISEND"].isna() & pocs["pocDEC"].notna())
+            (
+                pocs["MIS_START"].notna()
+                & pocs["MIS_END"].isna()
+                & pocs["poc_DEC"].notna()
+            )
             # (b) Ongoing Missing ep, but started before POC:
-            | (pocs["MISEND"].isna() & (pocs["MISSTART"] < pocs["pocDECOM"]))
+            | (pocs["MIS_END"].isna() & (pocs["MIS_START"] < pocs["poc_DECOM"]))
             # (c) Missing ep ends after POC:
-            | (pocs["MISEND"] > pocs["pocDEC"])
+            | (pocs["MIS_END"] > pocs["poc_DEC"])
             # (d) Missing ep ends before POC:
-            | (pocs["MISEND"] < pocs["pocDECOM"])
-            # (e?) Starts during a previous poc??? (row 12 of Missing table in testvalidate577)
+            | (pocs["MIS_END"] < pocs["poc_DECOM"])
+            # (e?) Starts during a previous poc??? (row 12 of Missing table in testvalidate_577)
         )
 
         # Drop rows where child was not present in 'Missing' table.
-        pocs = pocs[pocs["indexing"].notna()]
+        pocs = pocs[pocs["index_ing"].notna()]
 
-        mask = pocs.groupby("indexing")["outofpoc"].transform("min")
-        misserrorlocs = pocs.loc[mask, "indexing"].astype(int).unique().tolist()
+        mask = pocs.groupby("index_ing")["out_of_poc"].transform("min")
+        miss_error_locs = pocs.loc[mask, "index_ing"].astype(int).unique().tolist()
 
-        return {"Missing": misserrorlocs}
+        return {"Missing": miss_error_locs}
 
 
 def test_validate():

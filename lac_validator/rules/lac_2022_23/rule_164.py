@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,20 +14,20 @@ from validator903.types import ErrorDefinition
 
 # If not (<UASC> = '1' or <COLLECTION_YEAR> -1 <UASC> = '1' or <COLLECTION_YEAR> -2 <UASC> = '1') and if <LS> not = 'V3' or 'V4' then <PL_DISTANCE> must be between '0.0' and '999.9' Note: <PL_DISTANCE> is a calculated value based on Postcode.
 def validate(dfs):
-    # Headerlast also used if present
+    # Header_last also used if present
     if "Episodes" not in dfs:
         return {}
     else:
         epi = dfs["Episodes"]
 
         # Note the initial positions. Freeze a copy of the index values into a column
-        epi["origidx"] = epi.index
+        epi["orig_idx"] = epi.index
 
         # Work out who is UASC or formerly UASC
         header = pd.DataFrame()
         if "Header" in dfs:
-            headercurrent = dfs["Header"]
-            header = pd.concat((header, headercurrent), axis=0)
+            header_current = dfs["Header"]
+            header = pd.concat((header, header_current), axis=0)
         elif "UASC" in dfs:
             uasc = dfs["UASC"]
             uasc = uasc.loc[
@@ -33,10 +36,10 @@ def validate(dfs):
             uasc.loc[:, "UASC"] = "1"
             header = pd.concat((header, uasc), axis=0)
 
-        if "Headerlast" in dfs:
-            header = pd.concat((header, dfs["Headerlast"]), axis=0)
-        elif "UASClast" in dfs:
-            uasc = dfs["UASClast"]
+        if "Header_last" in dfs:
+            header = pd.concat((header, dfs["Header_last"]), axis=0)
+        elif "UASC_last" in dfs:
+            uasc = dfs["UASC_last"]
             uasc = uasc.loc[
                 uasc.drop("CHILD", axis="columns").notna().any(axis=1), ["CHILD"]
             ].copy()
@@ -44,23 +47,23 @@ def validate(dfs):
             header = pd.concat((header, uasc), axis=0)
 
         if "UASC" in header.columns:
-            header = header[header.UASC == "1"].dropduplicates("CHILD")
+            header = header[header.UASC == "1"].drop_duplicates("CHILD")
             # drop all CHILD IDs that ever have UASC == 1
             epi = epi.merge(
                 header[["CHILD"]], how="left", on="CHILD", indicator=True
-            ).query('merge == "leftonly"')
+            ).query('_merge == "left_only"')
         else:
             # if theres no UASC column in header, either from XML data, inferred for CSV in ingress, or added above
             # then we can't identify anyone as UASC/formerly UASC
             return {}
-        # PLDISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
-        epi = epi[epi["PLDISTANCE"].notna()]
-        checkinrange = (epi["PLDISTANCE"].astype("float") < 0.0) | (
-            epi["PLDISTANCE"].astype("float") > 999.9
+        # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
+        epi = epi[epi["PL_DISTANCE"].notna()]
+        check_in_range = (epi["PL_DISTANCE"].astype("float") < 0.0) | (
+            epi["PL_DISTANCE"].astype("float") > 999.9
         )
-        errlist = epi.loc[(checkinrange), "origidx"].sortvalues().unique().tolist()
+        err_list = epi.loc[(check_in_range), "orig_idx"].sort_values().unique().tolist()
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

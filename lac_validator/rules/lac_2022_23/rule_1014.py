@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,51 +18,54 @@ def validate(dfs):
         uasc = dfs["UASC"]
         episodes = dfs["Episodes"]
         oc3 = dfs["OC3"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_start = dfs["metadata"]["collection_start"]
+        collection_end = dfs["metadata"]["collection_end"]
 
         # prepare to merge
-        oc3.resetindex(inplace=True)
-        uasc.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        oc3.reset_index(inplace=True)
+        uasc.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
 
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        episodes["DECOM"] = pd.todatetime(
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DEC"] = pd.todatetime(
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
-        datecheck = (
-            (episodes["DEC"] >= collectionstart) & (episodes["DECOM"] <= collectionend)
-        ) | ((episodes["DECOM"] <= collectionend) & episodes["DEC"].isna())
-        episodes["EPS"] = datecheck
-        episodes["EPSCOUNT"] = episodes.groupby("CHILD")["EPS"].transform("sum")
+        date_check = (
+            (episodes["DEC"] >= collection_start)
+            & (episodes["DECOM"] <= collection_end)
+        ) | ((episodes["DECOM"] <= collection_end) & episodes["DEC"].isna())
+        episodes["EPS"] = date_check
+        episodes["EPS_COUNT"] = episodes.groupby("CHILD")["EPS"].transform("sum")
 
         # inner merge to take only episodes of children which are also found on the uasc table
         merged = episodes.merge(
-            uasc, on="CHILD", how="inner", suffixes=["eps", "sc"]
+            uasc, on="CHILD", how="inner", suffixes=["_eps", "_sc"]
         ).merge(oc3, on="CHILD", how="left")
         # adding suffixes with the secondary merge here does not go so well yet.
 
-        someprovided = (
+        some_provided = (
             merged["ACTIV"].notna()
             | merged["ACCOM"].notna()
-            | merged["INTOUCH"].notna()
+            | merged["IN_TOUCH"].notna()
         )
 
-        mask = (merged["EPSCOUNT"] == 0) & someprovided
+        mask = (merged["EPS_COUNT"] == 0) & some_provided
 
-        errorlocsuasc = merged.loc[mask, "indexsc"]
-        errorlocsoc3 = merged.loc[mask, "index"]
+        error_locs_uasc = merged.loc[mask, "index_sc"]
+        error_locs_oc3 = merged.loc[mask, "index"]
 
         return {
-            "UASC": errorlocsuasc.unique().tolist(),
-            "OC3": errorlocsoc3.unique().tolist(),
+            "UASC": error_locs_uasc.unique().tolist(),
+            "OC3": error_locs_oc3.unique().tolist(),
         }
 
 

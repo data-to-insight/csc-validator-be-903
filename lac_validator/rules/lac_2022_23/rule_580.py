@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,18 +17,20 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         mis = dfs["Missing"]
-        mis["MISEND"] = pd.todatetime(mis["MISEND"], format="%d/%m/%Y", errors="coerce")
-        mis["DOB"] = pd.todatetime(mis["DOB"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        mis["MIS_END"] = pd.to_datetime(
+            mis["MIS_END"], format="%d/%m/%Y", errors="coerce"
+        )
+        mis["DOB"] = pd.to_datetime(mis["DOB"], format="%d/%m/%Y", errors="coerce")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
 
-        epi.resetindex(inplace=True)
+        epi.reset_index(inplace=True)
         mis["BD18"] = mis["DOB"] + pd.DateOffset(years=18)
 
-        mcoh = mis.merge(epi, how="inner", on="CHILD")
-        mcoh = mcoh.query("(BD18 == MISEND) & (MISEND == DEC) & DEC.notnull()")
-        errlist = mcoh.query("REC != 'E8'")["index"].unique().tolist()
-        errlist.sort()
-        return {"Episodes": errlist}
+        m_coh = mis.merge(epi, how="inner", on="CHILD")
+        m_coh = m_coh.query("(BD18 == MIS_END) & (MIS_END == DEC) & DEC.notnull()")
+        err_list = m_coh.query("REC != 'E8'")["index"].unique().tolist()
+        err_list.sort()
+        return {"Episodes": err_list}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,32 +17,34 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         header = dfs["Header"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_end = dfs["metadata"]["collection_end"]
 
         # datetime conversion
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        header["MCDOB"] = pd.todatetime(
-            header["MCDOB"], format="%d/%m/%Y", errors="coerce"
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DEC"] = pd.todatetime(
+        header["MC_DOB"] = pd.to_datetime(
+            header["MC_DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
         # prepare to merge
-        header.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        header.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
         # latest episodes
-        epslastindices = episodes.groupby("CHILD")["DEC"].idxmax()
-        latestepisodes = episodes[episodes.index.isin(epslastindices)]
-        merged = latestepisodes.merge(
-            header, on="CHILD", how="left", suffixes=["eps", "er"]
+        eps_last_indices = episodes.groupby("CHILD")["DEC"].idxmax()
+        latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
+        merged = latest_episodes.merge(
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
         )
-        # If provided <MCDOB> must not be > <COLLECTIONEND> or <DEC> of latest episode
-        mask = (merged["MCDOB"] > collectionend) | (merged["MCDOB"] > merged["DEC"])
-        headererrorlocs = merged.loc[mask, "indexer"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
+        # If provided <MC_DOB> must not be > <COLLECTION_END> or <DEC> of latest episode
+        mask = (merged["MC_DOB"] > collection_end) | (merged["MC_DOB"] > merged["DEC"])
+        header_error_locs = merged.loc[mask, "index_er"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
         return {
-            "Header": headererrorlocs.unique().tolist(),
-            "Episodes": epserrorlocs.tolist(),
+            "Header": header_error_locs.unique().tolist(),
+            "Episodes": eps_error_locs.tolist(),
         }
 
 

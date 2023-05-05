@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,29 +15,29 @@ def validate(dfs):
 
     episodes = dfs["Episodes"]
 
-    codelistplacementprovider = ["PR0", "PR1", "PR2", "PR3", "PR4", "PR5"]
-    codelistplacementwithnoprovider = ["T0", "T1", "T2", "T3", "T4", "Z1"]
+    code_list_placement_provider = ["PR0", "PR1", "PR2", "PR3", "PR4", "PR5"]
+    code_list_placement_with_no_provider = ["T0", "T1", "T2", "T3", "T4", "Z1"]
 
-    placeproviderneededandcorrect = episodes["PLACEPROVIDER"].isin(
-        codelistplacementprovider
-    ) & ~episodes["PLACE"].isin(codelistplacementwithnoprovider)
+    place_provider_needed_and_correct = episodes["PLACE_PROVIDER"].isin(
+        code_list_placement_provider
+    ) & ~episodes["PLACE"].isin(code_list_placement_with_no_provider)
 
-    placeprovidernotprovided = episodes["PLACEPROVIDER"].isna()
+    place_provider_not_provided = episodes["PLACE_PROVIDER"].isna()
 
-    placeprovidernotneeded = episodes["PLACEPROVIDER"].isna() & episodes["PLACE"].isin(
-        codelistplacementwithnoprovider
-    )
+    place_provider_not_needed = episodes["PLACE_PROVIDER"].isna() & episodes[
+        "PLACE"
+    ].isin(code_list_placement_with_no_provider)
 
     mask = (
-        placeproviderneededandcorrect
-        | placeprovidernotprovided
-        | placeprovidernotneeded
+        place_provider_needed_and_correct
+        | place_provider_not_provided
+        | place_provider_not_needed
     )
 
-    validationerrormask = ~mask
-    validationerrorlocations = episodes.index[validationerrormask]
+    validation_error_mask = ~mask
+    validation_error_locations = episodes.index[validation_error_mask]
 
-    return {"Episodes": validationerrorlocations.tolist()}
+    return {"Episodes": validation_error_locations.tolist()}
 
 
 def test_validate():

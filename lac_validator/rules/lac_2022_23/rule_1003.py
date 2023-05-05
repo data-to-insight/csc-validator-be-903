@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,34 +16,34 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
 
         # to datetime
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
         # select the earliest episodes with RNE =  S
-        epsrne = episodes[episodes["RNE"] == "S"]
-        firstepsidxs = epsrne.groupby("CHILD")["DECOM"].idxmin()
-        firsteps = epsrne.loc[firstepsidxs]
+        eps_rne = episodes[episodes["RNE"] == "S"]
+        first_eps_idxs = eps_rne.groupby("CHILD")["DECOM"].idxmin()
+        first_eps = eps_rne.loc[first_eps_idxs]
         # prepare to merge
-        placedadoption.resetindex(inplace=True)
-        firsteps.resetindex(inplace=True)
-        merged = firsteps.merge(
-            placedadoption, how="left", on="CHILD", suffixes=["eps", "pa"]
+        placed_adoption.reset_index(inplace=True)
+        first_eps.reset_index(inplace=True)
+        merged = first_eps.merge(
+            placed_adoption, how="left", on="CHILD", suffixes=["_eps", "_pa"]
         )
 
-        # <DATEPLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
-        mask = merged["DATEPLACED"] < merged["DECOM"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
-        paerrorlocs = merged.loc[mask, "indexpa"]
+        # <DATE_PLACED> cannot be prior to <DECOM> of the first episode with <RNE> = 'S'
+        mask = merged["DATE_PLACED"] < merged["DECOM"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
+        pa_error_locs = merged.loc[mask, "index_pa"]
         return {
-            "Episodes": epserrorlocs.tolist(),
-            "PlacedAdoption": paerrorlocs.tolist(),
+            "Episodes": eps_error_locs.tolist(),
+            "PlacedAdoption": pa_error_locs.tolist(),
         }
 
 

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,16 +16,16 @@ def validate(dfs):
         return {}
     else:
         adopt = dfs["PlacedAdoption"]
-        mask = pd.todatetime(
-            adopt["DATEPLACEDCEASED"], format="%d/%m/%Y", errors="coerce"
+        mask = pd.to_datetime(
+            adopt["DATE_PLACED_CEASED"], format="%d/%m/%Y", errors="coerce"
         ).notna()
 
-        nalocation = adopt["DATEPLACEDCEASED"].isna()
+        na_location = adopt["DATE_PLACED_CEASED"].isna()
 
-        validationerrormask = ~mask & ~nalocation
-        validationerrorlocations = adopt.index[validationerrormask]
+        validation_error_mask = ~mask & ~na_location
+        validation_error_locations = adopt.index[validation_error_mask]
 
-        return {"PlacedAdoption": validationerrorlocations.tolist()}
+        return {"PlacedAdoption": validation_error_locations.tolist()}
 
 
 def test_validate():

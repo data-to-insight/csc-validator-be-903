@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,15 +14,15 @@ def validate(dfs):
         return {}
     else:
         adopt = dfs["PlacedAdoption"]
-        naplacedceased = adopt["DATEPLACEDCEASED"].isna()
-        nareasonceased = adopt["REASONPLACEDCEASED"].isna()
+        na_placed_ceased = adopt["DATE_PLACED_CEASED"].isna()
+        na_reason_ceased = adopt["REASON_PLACED_CEASED"].isna()
 
-        validationerror = (naplacedceased & ~nareasonceased) | (
-            ~naplacedceased & nareasonceased
+        validation_error = (na_placed_ceased & ~na_reason_ceased) | (
+            ~na_placed_ceased & na_reason_ceased
         )
-        validationerrorlocations = adopt.index[validationerror]
+        validation_error_locations = adopt.index[validation_error]
 
-        return {"PlacedAdoption": validationerrorlocations.tolist()}
+        return {"PlacedAdoption": validation_error_locations.tolist()}
 
 
 def test_validate():

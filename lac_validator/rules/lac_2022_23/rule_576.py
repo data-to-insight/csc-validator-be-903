@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,34 +14,36 @@ from validator903.types import ErrorDefinition
     affected_fields=["CHILD"],
 )
 def validate(dfs):
-    if "Missing" not in dfs or "Missinglast" not in dfs:
+    if "Missing" not in dfs or "Missing_last" not in dfs:
         return {}
     else:
         mis = dfs["Missing"]
-        misl = dfs["Missinglast"]
-        mis["MISSTART"] = pd.todatetime(
-            mis["MISSTART"], format="%d/%m/%Y", errors="coerce"
+        mis_l = dfs["Missing_last"]
+        mis["MIS_START"] = pd.to_datetime(
+            mis["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
-        misl["MISSTART"] = pd.todatetime(
-            misl["MISSTART"], format="%d/%m/%Y", errors="coerce"
+        mis_l["MIS_START"] = pd.to_datetime(
+            mis_l["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
 
-        mis.resetindex(inplace=True)
-        mis["MISSTART"].fillna(
-            pd.todatetime("01/01/2099", format="%d/%m/%Y", errors="coerce"),
+        mis.reset_index(inplace=True)
+        mis["MIS_START"].fillna(
+            pd.to_datetime("01/01/2099", format="%d/%m/%Y", errors="coerce"),
             inplace=True,
         )
-        minmis = mis.groupby(["CHILD"])["MISSTART"].idxmin()
-        mis = mis.loc[minmis, :]
+        min_mis = mis.groupby(["CHILD"])["MIS_START"].idxmin()
+        mis = mis.loc[min_mis, :]
 
-        openmisl = misl.query("MISEND.isnull()")
+        open_mis_l = mis_l.query("MIS_END.isnull()")
 
-        errcoh = mis.merge(openmisl, how="left", on="CHILD", suffixes=["", "LAST"])
-        errcoh = errcoh.query("(MISSTART != MISSTARTLAST) & MISSTARTLAST.notnull()")
+        err_coh = mis.merge(open_mis_l, how="left", on="CHILD", suffixes=["", "_LAST"])
+        err_coh = err_coh.query(
+            "(MIS_START != MIS_START_LAST) & MIS_START_LAST.notnull()"
+        )
 
-        errlist = errcoh["index"].unique().tolist()
-        errlist.sort()
-        return {"Missing": errlist}
+        err_list = err_coh["index"].unique().tolist()
+        err_list.sort()
+        return {"Missing": err_list}
 
 
 def test_validate():

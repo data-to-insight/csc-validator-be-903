@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,23 @@ def validate(dfs):
         return {}
     else:
         adt = dfs["AD1"]
-        adt["DATEMATCH"] = pd.todatetime(
-            adt["DATEMATCH"], format="%d/%m/%Y", errors="coerce"
+        adt["DATE_MATCH"] = pd.to_datetime(
+            adt["DATE_MATCH"], format="%d/%m/%Y", errors="coerce"
         )
-        adt["DATEINT"] = pd.todatetime(
-            adt["DATEINT"], format="%d/%m/%Y", errors="coerce"
+        adt["DATE_INT"] = pd.to_datetime(
+            adt["DATE_INT"], format="%d/%m/%Y", errors="coerce"
         )
 
-        # If <DATEMATCH> provided, then <DATEINT> must also be provided and be <= <DATEMATCH>
-        mask1 = adt["DATEMATCH"].notna() & adt["DATEINT"].isna()
+        # If <DATE_MATCH> provided, then <DATE_INT> must also be provided and be <= <DATE_MATCH>
+        mask1 = adt["DATE_MATCH"].notna() & adt["DATE_INT"].isna()
         mask2 = (
-            adt["DATEMATCH"].notna()
-            & adt["DATEINT"].notna()
-            & (adt["DATEINT"] > adt["DATEMATCH"])
+            adt["DATE_MATCH"].notna()
+            & adt["DATE_INT"].notna()
+            & (adt["DATE_INT"] > adt["DATE_MATCH"])
         )
         mask = mask1 | mask2
 
-        return {"AD1": adt.index[mask].tolist()}
+        return {"AD1": adt.index[mask].to_list()}
 
 
 def test_validate():

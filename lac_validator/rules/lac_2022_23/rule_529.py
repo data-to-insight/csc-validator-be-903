@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -11,7 +14,7 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        codelistplacementtype = [
+        code_list_placement_type = [
             "A3",
             "A4",
             "A5",
@@ -26,10 +29,10 @@ def validate(dfs):
             "U5",
             "U6",
         ]
-        errormask = epi["PLACE"].isin(codelistplacementtype) & (
-            epi["PLACEPROVIDER"] == "PR3"
+        error_mask = epi["PLACE"].isin(code_list_placement_type) & (
+            epi["PLACE_PROVIDER"] == "PR3"
         )
-        return {"Episodes": epi.index[errormask].tolist()}
+        return {"Episodes": epi.index[error_mask].to_list()}
 
 
 def test_validate():

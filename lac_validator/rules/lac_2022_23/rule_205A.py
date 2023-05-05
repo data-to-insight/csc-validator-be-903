@@ -1,7 +1,10 @@
 import pandas as pd
 
 from validator903.types import MissingMetadataError
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,107 +15,109 @@ from validator903.types import ErrorDefinition
 )
 def validate(dfs):
     try:
-        fileformat = dfs["metadata"]["fileformat"]
+        file_format = dfs["metadata"]["file_format"]
     except KeyError as e:
         raise MissingMetadataError(*e.args)
 
-    if "UASC" not in dfs or "UASClast" not in dfs:
+    if "UASC" not in dfs or "UASC_last" not in dfs:
         return {}
-    elif fileformat == "xml" and ("Header" not in dfs or "Headerlast" not in dfs):
+    elif file_format == "xml" and ("Header" not in dfs or "Header_last" not in dfs):
         return {}
-    elif all(i in dfs for i in ("Header", "Headerlast", "UASC", "UASClast")):
-        returnheadererrors = True
+    elif all(i in dfs for i in ("Header", "Header_last", "UASC", "UASC_last")):
+        return_header_errors = True
 
         uasc = dfs["UASC"]
-        uasclast = dfs["UASClast"]
+        uasc_last = dfs["UASC_last"]
         header = dfs["Header"]
-        headerlast = dfs["Headerlast"]
-    elif fileformat == "csv":
+        header_last = dfs["Header_last"]
+    elif file_format == "csv":
         # for csv uploads, the Header table gets the UASC column added in ingress if UASC is present,
-        # as does Headerlast if UASClast is present.  Therefore use Header['UASC'] if present, else make our own
+        # as does Header_last if UASC_last is present.  Therefore use Header['UASC'] if present, else make our own
         uasc = dfs["UASC"]
-        uasclast = dfs["UASClast"]
+        uasc_last = dfs["UASC_last"]
         if "Header" in dfs:
-            returnheadererrors = True
+            return_header_errors = True
 
             header = dfs["Header"]
         else:
-            returnheadererrors = False
+            return_header_errors = False
 
             header = uasc[["CHILD"]].copy()
             header["UASC"] = "0"
-            uascinds = uasc.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
-            header.loc[uascinds, "UASC"] = "1"
-        if "Headerlast" in dfs:
-            headerlast = dfs["Headerlast"]
+            uasc_inds = uasc.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
+            header.loc[uasc_inds, "UASC"] = "1"
+        if "Header_last" in dfs:
+            header_last = dfs["Header_last"]
         else:
-            headerlast = uasclast[["CHILD"]].copy()
-            headerlast["UASC"] = "0"
-            uascinds = (
-                uasclast.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
+            header_last = uasc_last[["CHILD"]].copy()
+            header_last["UASC"] = "0"
+            uasc_inds = (
+                uasc_last.drop(["CHILD", "DOB"], axis="columns").notna().any(axis=1)
             )
-            headerlast.loc[uascinds, "UASC"] = "1"
+            header_last.loc[uasc_inds, "UASC"] = "1"
     else:
         raise RuntimeError("Table selection failed (205C). This shouldn't be possible.")
-    if "UASC" not in header.columns or "UASC" not in headerlast.columns:
+    if "UASC" not in header.columns or "UASC" not in header_last.columns:
         return {}
 
-    collectionstart = pd.todatetime(
-        dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+    collection_start = pd.to_datetime(
+        dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
     )
-    collectionend = pd.todatetime(
-        dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+    collection_end = pd.to_datetime(
+        dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
     )
-    collectionstartlast = collectionstart + pd.offsets.DateOffset(years=-1)
-    collectionendlast = collectionend + pd.offsets.DateOffset(years=-1)
+    collection_start_last = collection_start + pd.offsets.DateOffset(years=-1)
+    collection_end_last = collection_end + pd.offsets.DateOffset(years=-1)
 
-    uasclast["DUC"] = pd.todatetime(uasclast["DUC"], format="%d/%m/%Y", errors="coerce")
+    uasc_last["DUC"] = pd.to_datetime(
+        uasc_last["DUC"], format="%d/%m/%Y", errors="coerce"
+    )
 
-    header.resetindex(inplace=True)
-    uasc.resetindex(inplace=True)
+    header.reset_index(inplace=True)
+    uasc.reset_index(inplace=True)
 
-    mergedcurrent = uasc[["CHILD", "DUC", "index"]].merge(
+    merged_current = uasc[["CHILD", "DUC", "index"]].merge(
         header[["CHILD", "UASC", "index"]],
         how="left",
         on="CHILD",
-        suffixes=("uasc", "header"),
+        suffixes=("_uasc", "_header"),
     )
 
-    mergedlast = uasclast[["CHILD", "DUC"]].merge(
-        headerlast[["CHILD", "UASC"]], how="left", on="CHILD"
+    merged_last = uasc_last[["CHILD", "DUC"]].merge(
+        header_last[["CHILD", "UASC"]], how="left", on="CHILD"
     )
 
-    allmerged = mergedcurrent.merge(
-        mergedlast,
+    all_merged = merged_current.merge(
+        merged_last,
         how="left",
         on=["CHILD"],
-        suffixes=("", "last"),
+        suffixes=("", "_last"),
         indicator=True,
     )
 
-    lastyearonly = (allmerged["UASC"].astype(str) != "1") & (
-        allmerged["UASClast"].astype(str) == "1"
+    last_year_only = (all_merged["UASC"].astype(str) != "1") & (
+        all_merged["UASC_last"].astype(str) == "1"
     )
-    duclastinprevyear = (allmerged["DUClast"] >= collectionstartlast) & (
-        allmerged["DUClast"] <= collectionendlast
+    duc_last_in_prev_year = (all_merged["DUC_last"] >= collection_start_last) & (
+        all_merged["DUC_last"] <= collection_end_last
     )
-    uasccurrentduc = allmerged["DUC"].notna()
+    uasc_current_duc = all_merged["DUC"].notna()
 
-    errormask = lastyearonly & (uasccurrentduc | ~duclastinprevyear)
+    error_mask = last_year_only & (uasc_current_duc | ~duc_last_in_prev_year)
 
-    errorlocationsuasc = (
-        allmerged.loc[errormask, "indexuasc"].dropna().astype(int).sortvalues()
+    error_locations_uasc = (
+        all_merged.loc[error_mask, "index_uasc"].dropna().astype(int).sort_values()
     )
-    errorlocationsheader = (
-        allmerged.loc[errormask, "indexheader"].dropna().astype(int).sortvalues()
+    error_locations_header = (
+        all_merged.loc[error_mask, "index_header"].dropna().astype(int).sort_values()
     )
-    if returnheadererrors:
+    if return_header_errors:
         return {
-            "UASC": errorlocationsuasc.tolist(),
-            "Header": errorlocationsheader.tolist(),
+            "UASC": error_locations_uasc.to_list(),
+            "Header": error_locations_header.to_list(),
         }
     else:
-        return {"UASC": errorlocationsuasc.tolist()}
+        return {"UASC": error_locations_uasc.to_list()}
 
 
 def test_validate():

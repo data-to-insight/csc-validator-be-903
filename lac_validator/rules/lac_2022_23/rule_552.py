@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,50 +17,50 @@ def validate(dfs):
         return {}
     else:
         # get the required datasets
-        placedadoption = dfs["PlacedAdoption"]
+        placed_adoption = dfs["PlacedAdoption"]
         episodes = dfs["Episodes"]
         # keep index values so that they stay the same when needed later on for error locations
-        placedadoption.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        placed_adoption.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
 
-        adoptioneps = episodes[episodes["PLACE"].isin(["A3", "A4", "A5", "A6"])].copy()
+        adoption_eps = episodes[episodes["PLACE"].isin(["A3", "A4", "A5", "A6"])].copy()
         # find most recent adoption decision
-        placedadoption["DATEPLACED"] = pd.todatetime(
-            placedadoption["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placed_adoption["DATE_PLACED"] = pd.to_datetime(
+            placed_adoption["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
         # remove rows where either of the required values have not been filled.
-        placedadoption = placedadoption[placedadoption["DATEPLACED"].notna()]
+        placed_adoption = placed_adoption[placed_adoption["DATE_PLACED"].notna()]
 
-        placedadoptioninds = placedadoption.groupby("CHILD")["DATEPLACED"].idxmax(
+        placed_adoption_inds = placed_adoption.groupby("CHILD")["DATE_PLACED"].idxmax(
             skipna=True
         )
-        lastdecision = placedadoption.loc[placedadoptioninds]
+        last_decision = placed_adoption.loc[placed_adoption_inds]
 
         # first time child started adoption
-        adoptioneps["DECOM"] = pd.todatetime(
-            adoptioneps["DECOM"], format="%d/%m/%Y", errors="coerce"
+        adoption_eps["DECOM"] = pd.to_datetime(
+            adoption_eps["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        adoptioneps = adoptioneps[adoptioneps["DECOM"].notna()]
+        adoption_eps = adoption_eps[adoption_eps["DECOM"].notna()]
 
-        adoptionepsinds = adoptioneps.groupby("CHILD")["DECOM"].idxmin(skipna=True)
+        adoption_eps_inds = adoption_eps.groupby("CHILD")["DECOM"].idxmin(skipna=True)
         # full information of first adoption
-        firstadoption = adoptioneps.loc[adoptionepsinds]
+        first_adoption = adoption_eps.loc[adoption_eps_inds]
 
         # date of decision and date of start of adoption (DECOM) have to be put in one table
-        merged = firstadoption.merge(
-            lastdecision, on=["CHILD"], how="left", suffixes=["EP", "PA"]
+        merged = first_adoption.merge(
+            last_decision, on=["CHILD"], how="left", suffixes=["_EP", "_PA"]
         )
 
         # check to see if date of decision to place is less than or equal to date placed.
-        decidedafterplaced = merged["DECOM"] < merged["DATEPLACED"]
+        decided_after_placed = merged["DECOM"] < merged["DATE_PLACED"]
 
         # find the corresponding location of error values per file.
-        episodeerrorlocs = merged.loc[decidedafterplaced, "indexEP"]
-        placedadoptionerrorlocs = merged.loc[decidedafterplaced, "indexPA"]
+        episode_error_locs = merged.loc[decided_after_placed, "index_EP"]
+        placedadoption_error_locs = merged.loc[decided_after_placed, "index_PA"]
 
         return {
-            "PlacedAdoption": placedadoptionerrorlocs.tolist(),
-            "Episodes": episodeerrorlocs.tolist(),
+            "PlacedAdoption": placedadoption_error_locs.to_list(),
+            "Episodes": episode_error_locs.to_list(),
         }
 
 

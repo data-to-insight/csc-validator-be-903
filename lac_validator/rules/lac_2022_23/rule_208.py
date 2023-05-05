@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -7,57 +10,61 @@ from validator903.types import ErrorDefinition
     affected_fields=["UPN"],
 )
 def validate(dfs):
-    if "Header" not in dfs or "Headerlast" not in dfs:
+    if "Header" not in dfs or "Header_last" not in dfs:
         return {}
     else:
         header = dfs["Header"]
-        headerlast = dfs["Headerlast"]
+        header_last = dfs["Header_last"]
 
-        headermerged = (
-            header.resetindex()
+        header_merged = (
+            header.reset_index()
             .merge(
-                headerlast,
+                header_last,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "last"),
+                suffixes=("", "_last"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        nullnow = headermerged["UPN"].isna()
-        nullbefore = headermerged["UPNlast"].isna()
-        inbothyears = headermerged["merge"] == "both"
+        null_now = header_merged["UPN"].isna()
+        null_before = header_merged["UPN_last"].isna()
+        in_both_years = header_merged["_merge"] == "both"
 
-        headermerged["UPN"] = headermerged["UPN"].astype(str).str.upper()
-        headermerged["UPNlast"] = headermerged["UPNlast"].astype(str).str.upper()
-        upnisdifferent = (
-            (headermerged["UPN"] != headermerged["UPNlast"])
-            & ~(nullnow & nullbefore)
+        header_merged["UPN"] = header_merged["UPN"].astype(str).str.upper()
+        header_merged["UPN_last"] = header_merged["UPN_last"].astype(str).str.upper()
+        upn_is_different = (
+            (header_merged["UPN"] != header_merged["UPN_last"])
+            & ~(null_now & null_before)
             # exclude case where unknown both years null; leave to 442 (missing UPN)
         )
 
-        UN2to5 = ["UN2", "UN3", "UN4", "UN5"]
-        UNcodes = [
+        UN2_to_5 = ["UN2", "UN3", "UN4", "UN5"]
+        UN_codes = [
             "UN1",
-        ] + UN2to5
-        validunknownchange = (
-            (headermerged["UPNlast"].eq("UN1") | nullbefore)  # change from UN1/null...
-            & headermerged["UPN"].isin(UN2to5)
+        ] + UN2_to_5
+        valid_unknown_change = (
+            (
+                header_merged["UPN_last"].eq("UN1") | null_before
+            )  # change from UN1/null...
+            & header_merged["UPN"].isin(UN2_to_5)
         ) | (  # ...to UN2-5
-            nullbefore & headermerged["UPNlast"].eq("UN1")
+            null_before & header_merged["UPN_last"].eq("UN1")
         )  # OR, change from null to UN1
-        unknowntoknown = (
-            headermerged["UPNlast"].isin(UNcodes) | nullbefore
+        unknown_to_known = (
+            header_merged["UPN_last"].isin(UN_codes) | null_before
         ) & ~(  # was either null or an UN-code
-            headermerged["UPN"].isin(UNcodes) | nullnow
+            header_merged["UPN"].isin(UN_codes) | null_now
         )  # now neither null nor UN-known
 
-        errormask = inbothyears & upnisdifferent & ~validunknownchange & ~unknowntoknown
+        error_mask = (
+            in_both_years & upn_is_different & ~valid_unknown_change & ~unknown_to_known
+        )
 
-        errorlocations = header.index[errormask]
+        error_locations = header.index[error_mask]
 
-        return {"Header": errorlocations.tolist()}
+        return {"Header": error_locations.to_list()}
 
 
 def test_validate():

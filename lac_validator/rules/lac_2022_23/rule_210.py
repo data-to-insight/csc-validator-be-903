@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,29 +17,33 @@ def validate(dfs):
     else:
         header = dfs["Header"]
         episodes = dfs["Episodes"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_end = dfs["metadata"]["collection_end"]
         # convert to datetime
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        yr = collectionend.year
-        referencedate = refdate = pd.todatetime(
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        yr = collection_end.year
+        reference_date = ref_date = pd.to_datetime(
             "24/03/" + str(yr), format="%d/%m/%Y", errors="coerce"
         )
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        header.resetindex(inplace=True)
+        episodes.reset_index(inplace=True)
+        header.reset_index(inplace=True)
         # the logical way is to merge left on UPN but that will be a one to many merge and may not go as well as a many to one merge that we've been doing.
-        merged = episodes.merge(header, on="CHILD", how="left", suffixes=["eps", "er"])
+        merged = episodes.merge(
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
+        )
         # If <UPN> = 'UN4' then no episode <DECOM> must be >` = 24/03/YYYY Note: YYYY refers to the current collection year.
-        mask = (merged["UPN"] == "UN4") & (merged["DECOM"] >= referencedate)
+        mask = (merged["UPN"] == "UN4") & (merged["DECOM"] >= reference_date)
         # error locations
-        errorlocsheader = merged.loc[mask, "indexer"]
-        errorlocseps = merged.loc[mask, "indexeps"]
+        error_locs_header = merged.loc[mask, "index_er"]
+        error_locs_eps = merged.loc[mask, "index_eps"]
         return {
-            "Episodes": errorlocseps.tolist(),
-            "Header": errorlocsheader.unique().tolist(),
+            "Episodes": error_locs_eps.tolist(),
+            "Header": error_locs_header.unique().tolist(),
         }
 
 

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -22,29 +25,31 @@ def validate(dfs):
     else:
         oc3 = dfs["OC3"]
         ad1 = dfs["AD1"]
-        ad1["ad1index"] = ad1.index
+        ad1["ad1_index"] = ad1.index
 
-        alldata = ad1.merge(oc3, how="left", on="CHILD")
+        all_data = ad1.merge(oc3, how="left", on="CHILD")
 
-        naoc3data = (
-            alldata["INTOUCH"].isna()
-            & alldata["ACTIV"].isna()
-            & alldata["ACCOM"].isna()
+        na_oc3_data = (
+            all_data["IN_TOUCH"].isna()
+            & all_data["ACTIV"].isna()
+            & all_data["ACCOM"].isna()
         )
 
-        naad1data = (
-            alldata["DATEINT"].isna()
-            & alldata["DATEMATCH"].isna()
-            & alldata["FOSTERCARE"].isna()
-            & alldata["NBADOPTR"].isna()
-            & alldata["SEXADOPTR"].isna()
-            & alldata["LSADOPTR"].isna()
+        na_ad1_data = (
+            all_data["DATE_INT"].isna()
+            & all_data["DATE_MATCH"].isna()
+            & all_data["FOSTER_CARE"].isna()
+            & all_data["NB_ADOPTR"].isna()
+            & all_data["SEX_ADOPTR"].isna()
+            & all_data["LS_ADOPTR"].isna()
         )
 
-        validationerror = ~naoc3data & ~naad1data
-        validationerrorlocations = alldata.loc[validationerror, "ad1index"].unique()
+        validation_error = ~na_oc3_data & ~na_ad1_data
+        validation_error_locations = all_data.loc[
+            validation_error, "ad1_index"
+        ].unique()
 
-        return {"AD1": validationerrorlocations.tolist()}
+        return {"AD1": validation_error_locations.tolist()}
 
 
 def test_validate():

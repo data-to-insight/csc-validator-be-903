@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,47 +18,49 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         oc3 = dfs["OC3"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_end = dfs["metadata"]["collection_end"]
         # convert dates to datetime format
-        oc3["DOB"] = pd.todatetime(oc3["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        episodes["DEC"] = pd.todatetime(episodes["DEC"], format="%d/%m/%Y")
-        episodes["DECOM"] = pd.todatetime(episodes["DECOM"], format="%d/%m/%Y")
+        oc3["DOB"] = pd.to_datetime(oc3["DOB"], format="%d/%m/%Y", errors="coerce")
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DEC"] = pd.to_datetime(episodes["DEC"], format="%d/%m/%Y")
+        episodes["DECOM"] = pd.to_datetime(episodes["DECOM"], format="%d/%m/%Y")
 
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        oc3.resetindex(inplace=True)
-        merged = episodes.merge(oc3, on="CHILD", how="left", suffixes=["eps", "oc3"])
-        thisyear = collectionend.year
+        episodes.reset_index(inplace=True)
+        oc3.reset_index(inplace=True)
+        merged = episodes.merge(oc3, on="CHILD", how="left", suffixes=["_eps", "_oc3"])
+        this_year = collection_end.year
 
-        # If <DOB> < 19 and >= to 17 years prior to <COLLECTIONENDDATE> and current episode <DEC> and or <REC>
-        # not provided then <INTOUCH>, <ACTIV> and <ACCOM> should not be provided
-        checkage = (
-            merged["DOB"] + pd.offsets.DateOffset(years=17) <= collectionend
-        ) & (merged["DOB"] + pd.offsets.DateOffset(years=19) > collectionend)
+        # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE> and current episode <DEC> and or <REC>
+        # not provided then <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
+        check_age = (
+            merged["DOB"] + pd.offsets.DateOffset(years=17) <= collection_end
+        ) & (merged["DOB"] + pd.offsets.DateOffset(years=19) > collection_end)
         # That is, check that 17<=age<19
 
-        merged["bday"] = merged["DOB"].apply(lambda x: x.replace(year=thisyear))
+        merged["bday"] = merged["DOB"].apply(lambda x: x.replace(year=this_year))
 
-        merged.loc[merged["bday"] > collectionend, "bday"] -= pd.DateOffset(years=1)
+        merged.loc[merged["bday"] > collection_end, "bday"] -= pd.DateOffset(years=1)
 
-        incareonbday = (merged["DECOM"] <= merged["bday"]) & (
+        in_care_on_bday = (merged["DECOM"] <= merged["bday"]) & (
             merged["DEC"] > merged["bday"]
         )
-        print(incareonbday)
+        print(in_care_on_bday)
         # if either DEC or REC are absent
         mask = (
-            checkage
-            & incareonbday
-            & merged[["INTOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)
+            check_age
+            & in_care_on_bday
+            & merged[["IN_TOUCH", "ACTIV", "ACCOM"]].notna().any(axis=1)
         )
-        # Then raise an error if either INTOUCH, ACTIV, or ACCOM have been provided too
+        # Then raise an error if either IN_TOUCH, ACTIV, or ACCOM have been provided too
 
         # error locations
-        oc3errorlocs = merged.loc[mask, "indexoc3"]
-        episodeerrorlocs = merged.loc[mask, "indexeps"]
+        oc3_error_locs = merged.loc[mask, "index_oc3"]
+        episode_error_locs = merged.loc[mask, "index_eps"]
         # one to many join implies use .unique on the 'one'
-        return {"OC3": oc3errorlocs.unique().tolist()}
+        return {"OC3": oc3_error_locs.unique().tolist()}
 
 
 def test_validate():

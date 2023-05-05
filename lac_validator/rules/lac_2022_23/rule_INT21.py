@@ -1,6 +1,10 @@
 from validator903.types import IntegrityCheckDefinition
 
 
+import pandas as pd
+from lac_validator.rule_engine import rule_definition
+
+
 def validate(dfs):
     if "Header" not in dfs or "UASC" not in dfs:
         return {}
@@ -8,23 +12,23 @@ def validate(dfs):
         header = dfs["Header"]
         file = dfs["UASC"]
 
-        file["indexfile"] = file.index
+        file["index_file"] = file.index
 
         merged = header.merge(
-            file[["CHILD", "SEX", "indexfile"]],
+            file[["CHILD", "SEX", "index_file"]],
             on="CHILD",
             indicator=True,
             how="right",
-            suffixes=["header", "file"],
+            suffixes=["_header", "_file"],
         )
 
         mask = (
-            (merged["SEXheader"] != merged["SEXfile"])
-            & (merged["SEXheader"].notna() & merged["SEXfile"].notna())
-            & (merged["merge"] != "rightonly")
+            (merged["SEX_header"] != merged["SEX_file"])
+            & (merged["SEX_header"].notna() & merged["SEX_file"].notna())
+            & (merged["_merge"] != "right_only")
         )
-        epserrorlocations = merged.loc[mask, "indexfile"]
-        return {"UASC": epserrorlocations.unique().tolist()}
+        eps_error_locations = merged.loc[mask, "index_file"]
+        return {"UASC": eps_error_locations.unique().tolist()}
 
 
 def test_validate():

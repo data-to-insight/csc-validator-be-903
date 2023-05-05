@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,29 +16,30 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.todatetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.todatetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
 
-        epi.sortvalues(["CHILD", "DECOM"], inplace=True)
-        epi.resetindex(inplace=True)
-        epi.resetindex(inplace=True)
-        epi["LAGINDEX"] = epi["level0"].shift(1)
+        epi.sort_values(["CHILD", "DECOM"], inplace=True)
+        epi.reset_index(inplace=True)
+        epi.reset_index(inplace=True)
+        epi["LAG_INDEX"] = epi["level_0"].shift(1)
 
-        mergeepi = epi.merge(
+        merge_epi = epi.merge(
             epi,
             how="inner",
-            lefton="LAGINDEX",
-            righton="level0",
-            suffixes=["", "PRE"],
+            left_on="LAG_INDEX",
+            right_on="level_0",
+            suffixes=["", "_PRE"],
         )
-        mergeepi = mergeepi[mergeepi["CHILD"] == mergeepi["CHILDPRE"]]
-        mergeepi = mergeepi[
-            (mergeepi["RECPRE"] == "X1") & (mergeepi["DECPRE"] == mergeepi["DECOM"])
+        merge_epi = merge_epi[merge_epi["CHILD"] == merge_epi["CHILD_PRE"]]
+        merge_epi = merge_epi[
+            (merge_epi["REC_PRE"] == "X1")
+            & (merge_epi["DEC_PRE"] == merge_epi["DECOM"])
         ]
-        errorcohort = mergeepi[mergeepi["CIN"] != mergeepi["CINPRE"]]
-        errorlist = errorcohort["index"].unique().tolist()
-        errorlist.sort()
-        return {"Episodes": errorlist}
+        error_cohort = merge_epi[merge_epi["CIN"] != merge_epi["CIN_PRE"]]
+        error_list = error_cohort["index"].unique().tolist()
+        error_list.sort()
+        return {"Episodes": error_list}
 
 
 def test_validate():

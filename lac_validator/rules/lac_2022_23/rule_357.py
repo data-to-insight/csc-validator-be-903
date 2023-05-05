@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,18 +19,18 @@ def validate(dfs):
     if "Episodes" not in dfs:
         return {}
     eps = dfs["Episodes"]
-    collectionstart = pd.todatetime(
-        dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+    collection_start = pd.to_datetime(
+        dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
     )
-    eps["DECOM"] = pd.todatetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
+    eps["DECOM"] = pd.to_datetime(eps["DECOM"], format="%d/%m/%Y", errors="coerce")
 
     eps = eps.loc[eps["DECOM"].notnull()]
 
-    firsteps = eps.loc[eps.groupby("CHILD")["DECOM"].idxmin()].loc[
-        eps["DECOM"] >= collectionstart
+    first_eps = eps.loc[eps.groupby("CHILD")["DECOM"].idxmin()].loc[
+        eps["DECOM"] >= collection_start
     ]
 
-    errs = firsteps[firsteps["RNE"] != "S"].index.tolist()
+    errs = first_eps[first_eps["RNE"] != "S"].index.to_list()
 
     return {"Episodes": errs}
 

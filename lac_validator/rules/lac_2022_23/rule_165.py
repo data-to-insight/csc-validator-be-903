@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,47 +18,49 @@ def validate(dfs):
         header = dfs["Header"]
         episodes = dfs["Episodes"]
         oc3 = dfs["OC3"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        collectionend = dfs["metadata"]["collectionend"]
-        validvalues = ["0", "1"]
+        collection_start = dfs["metadata"]["collection_start"]
+        collection_end = dfs["metadata"]["collection_end"]
+        valid_values = ["0", "1"]
 
         # prepare to merge
-        oc3.resetindex(inplace=True)
-        header.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        oc3.reset_index(inplace=True)
+        header.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
 
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        episodes["DECOM"] = pd.todatetime(
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes["DEC"] = pd.todatetime(
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
         # Drop all episodes with V3/V4 legal status
-        v3v4ls = episodes["LS"].str.upper().isin(["V3", "V4"])
-        indexv3v4ls = episodes.loc[v3v4ls].index
-        episodes.drop(indexv3v4ls, inplace=True)
+        v3v4_ls = episodes["LS"].str.upper().isin(["V3", "V4"])
+        index_v3v4_ls = episodes.loc[v3v4_ls].index
+        episodes.drop(index_v3v4_ls, inplace=True)
 
         # fill in missing DECs with the collection year end date
-        missinglastDECs = episodes["DEC"].isna()
-        episodes.loc[missinglastDECs, "DEC"] = collectionend
+        missing_last_DECs = episodes["DEC"].isna()
+        episodes.loc[missing_last_DECs, "DEC"] = collection_end
 
-        episodes["EPS"] = (episodes["DEC"] >= collectionstart) & (
-            episodes["DECOM"] <= collectionend
+        episodes["EPS"] = (episodes["DEC"] >= collection_start) & (
+            episodes["DECOM"] <= collection_end
         )
-        episodes["EPSCOUNT"] = episodes.groupby("CHILD")["EPS"].transform("sum")
+        episodes["EPS_COUNT"] = episodes.groupby("CHILD")["EPS"].transform("sum")
 
         merged = episodes.merge(
-            header, on="CHILD", how="left", suffixes=["eps", "er"]
+            header, on="CHILD", how="left", suffixes=["_eps", "_er"]
         ).merge(oc3, on="CHILD", how="left")
 
         # Raise error if provided <MOTHER> is not a valid value
-        valuevalidity = merged["MOTHER"].notna() & (
-            ~merged["MOTHER"].astype(str).isin(validvalues)
+        value_validity = merged["MOTHER"].notna() & (
+            ~merged["MOTHER"].astype(str).isin(valid_values)
         )
 
         # Raise error if provided <MOTHER> and child is male
@@ -63,30 +68,30 @@ def validate(dfs):
 
         # Raise error if female and not provided
         female = merged["SEX"].astype(str) == "2"
-        hasmother = merged["MOTHER"].notna()
-        epsinyear = merged["EPSCOUNT"] > 0
-        hasoc3 = (
+        has_mother = merged["MOTHER"].notna()
+        eps_in_year = merged["EPS_COUNT"] > 0
+        has_oc3 = (
             merged["ACTIV"].notna()
             | merged["ACCOM"].notna()
-            | merged["INTOUCH"].notna()
+            | merged["IN_TOUCH"].notna()
         )
 
-        # If provided <MOTHER> must be a valid value (and child must be female). If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <INTOUCH>, <ACTIV> or <ACCOM> have been provided
+        # If provided <MOTHER> must be a valid value (and child must be female). If not provided <MOTHER> then either <GENDER> is male or no episode record for current year and any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided
         mask = (
-            valuevalidity
+            value_validity
             | male
-            | (~hasmother & female & epsinyear)
-            | (hasmother & female & ~epsinyear & hasoc3)
+            | (~has_mother & female & eps_in_year)
+            | (has_mother & female & ~eps_in_year & has_oc3)
         )
 
-        # That is, if value not provided and child is a female with eps in current year or no values of INTOUCH, ACTIV and ACCOM, then raise error.
-        errorlocseps = merged.loc[mask, "indexeps"]
-        errorlocsheader = merged.loc[mask, "indexer"]
-        errorlocsoc3 = merged.loc[mask, "index"]
+        # That is, if value not provided and child is a female with eps in current year or no values of IN_TOUCH, ACTIV and ACCOM, then raise error.
+        error_locs_eps = merged.loc[mask, "index_eps"]
+        error_locs_header = merged.loc[mask, "index_er"]
+        error_locs_oc3 = merged.loc[mask, "index"]
 
         return {
-            "Header": errorlocsheader.dropna().unique().tolist(),
-            "OC3": errorlocsoc3.dropna().unique().tolist(),
+            "Header": error_locs_header.dropna().unique().tolist(),
+            "OC3": error_locs_oc3.dropna().unique().tolist(),
         }
 
 

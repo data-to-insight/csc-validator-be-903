@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,27 +15,29 @@ def validate(dfs):
     if "Header" not in dfs or "PlacedAdoption" not in dfs:
         return {}
     else:
-        childrecord = dfs["Header"]
-        placedforadoption = dfs["PlacedAdoption"]
+        child_record = dfs["Header"]
+        placed_for_adoption = dfs["PlacedAdoption"]
 
-        alldata = placedforadoption.resetindex().merge(
-            childrecord, how="left", on="CHILD", suffixes=[None, "P4A"]
+        all_data = placed_for_adoption.reset_index().merge(
+            child_record, how="left", on="CHILD", suffixes=[None, "_P4A"]
         )
 
-        alldata["DATEPLACED"] = pd.todatetime(
-            alldata["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        all_data["DATE_PLACED"] = pd.to_datetime(
+            all_data["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
-        alldata["DOB"] = pd.todatetime(
-            alldata["DOB"], format="%d/%m/%Y", errors="coerce"
+        all_data["DOB"] = pd.to_datetime(
+            all_data["DOB"], format="%d/%m/%Y", errors="coerce"
         )
 
-        mask = (alldata["DATEPLACED"] >= alldata["DOB"]) | alldata["DATEPLACED"].isna()
+        mask = (all_data["DATE_PLACED"] >= all_data["DOB"]) | all_data[
+            "DATE_PLACED"
+        ].isna()
 
-        validationerror = ~mask
+        validation_error = ~mask
 
-        validationerrorlocations = alldata[validationerror]["index"].unique()
+        validation_error_locations = all_data[validation_error]["index"].unique()
 
-        return {"PlacedAdoption": validationerrorlocations.tolist()}
+        return {"PlacedAdoption": validation_error_locations.tolist()}
 
 
 def test_validate():

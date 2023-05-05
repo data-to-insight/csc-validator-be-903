@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,21 +17,21 @@ def validate(dfs):
         return {}
     else:
         oc2 = dfs["OC2"]
-        collectionstart = dfs["metadata"]["collectionstart"]
+        collection_start = dfs["metadata"]["collection_start"]
 
         # datetime format allows appropriate comparison between dates
-        oc2["DOB"] = pd.todatetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        oc2["DOB"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
 
-        # If <DOB> >17 years prior to <COLLECTIONSTARTDATE> then <SDQSCORE> and <SDQREASON> should not be provided
-        mask = ((oc2["DOB"] + pd.offsets.DateOffset(years=17)) <= collectionstart) & (
-            oc2["SDQREASON"].notna() | oc2["SDQSCORE"].notna()
+        # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
+        mask = ((oc2["DOB"] + pd.offsets.DateOffset(years=17)) <= collection_start) & (
+            oc2["SDQ_REASON"].notna() | oc2["SDQ_SCORE"].notna()
         )
-        # That is, raise error if collectionstart > DOB + 17years
-        ocerrorlocs = oc2.index[mask]
-        return {"OC2": ocerrorlocs.tolist()}
+        # That is, raise error if collection_start > DOB + 17years
+        oc_error_locs = oc2.index[mask]
+        return {"OC2": oc_error_locs.tolist()}
 
 
 def test_validate():

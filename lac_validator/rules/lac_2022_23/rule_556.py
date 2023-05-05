@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,34 +18,34 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         placedAdoptions = dfs["PlacedAdoption"]
 
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        placedAdoptions["DATEPLACED"] = pd.todatetime(
-            placedAdoptions["DATEPLACED"], format="%d/%m/%Y", errors="coerce"
+        placedAdoptions["DATE_PLACED"] = pd.to_datetime(
+            placedAdoptions["DATE_PLACED"], format="%d/%m/%Y", errors="coerce"
         )
 
-        episodes = episodes.resetindex()
+        episodes = episodes.reset_index()
 
         D1Episodes = episodes[episodes["LS"] == "D1"]
 
         merged = (
-            D1Episodes.resetindex()
+            D1Episodes.reset_index()
             .merge(
                 placedAdoptions,
                 how="left",
                 on="CHILD",
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        episodeswitherrors = merged[merged["DATEPLACED"] > merged["DECOM"]]
+        episodes_with_errors = merged[merged["DATE_PLACED"] > merged["DECOM"]]
 
-        errormask = episodes.index.isin(episodeswitherrors.index)
+        error_mask = episodes.index.isin(episodes_with_errors.index)
 
-        errorlocations = episodes.index[errormask]
+        error_locations = episodes.index[error_mask]
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

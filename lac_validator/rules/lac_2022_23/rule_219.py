@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,26 +12,26 @@ from validator903.types import ErrorDefinition
     affected_fields=["URN", "PLACE"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
+        provider_info = dfs["metadata"]["provider_info"]
 
         # merge
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
-        episodes = episodes.merge(providerinfo, on="URN", how="left")
+        episodes = episodes.merge(provider_info, on="URN", how="left")
         # If <URN> provided and <URN> not = 'XXXXXXX' then <PL> must = any URN Lookup <PLACEMENT CODE> of matching URN Lookup <URN>
-        placevalid = pd.Series(
+        place_valid = pd.Series(
             [
                 False if (pd.isna(pl) or pd.isna(valid)) else pl in valid.split(",")
-                for pl, valid in zip(episodes["PLACE"], episodes["PLACECODES"])
+                for pl, valid in zip(episodes["PLACE"], episodes["PLACE_CODES"])
             ]
         )
 
-        epserrorlocations = episodes.loc[~placevalid, "indexeps"]
-        return {"Episodes": epserrorlocations.tolist()}
+        eps_error_locations = episodes.loc[~place_valid, "index_eps"]
+        return {"Episodes": eps_error_locations.tolist()}
 
 
 def test_validate():

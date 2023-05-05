@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,20 +17,20 @@ from validator903.types import ErrorDefinition
 # If <UASC> = '1' or <COLLECTION YEAR> - 1 <UASC> = '1' or <COLLECTION YEAR> - 2 <UASC> = '1' Then
 # <PL_DISTANCE> should not be provided Note: <PL_DISTANCE> is a derived field in most instances
 def validate(dfs):
-    # Headerlast also used if present
+    # Header_last also used if present
     if "Episodes" not in dfs:
         return {}
     else:
         epi = dfs["Episodes"]
 
         # Note the initial positions. Freeze a copy of the index values into a column
-        epi["origidx"] = epi.index
+        epi["orig_idx"] = epi.index
 
         # Work out who is formerly
         header = pd.DataFrame()
         if "Header" in dfs:
-            headercurrent = dfs["Header"]
-            header = pd.concat((header, headercurrent), axis=0)
+            header_current = dfs["Header"]
+            header = pd.concat((header, header_current), axis=0)
         elif "UASC" in dfs:
             uasc = dfs["UASC"]
             uasc = uasc.loc[
@@ -36,10 +39,10 @@ def validate(dfs):
             uasc.loc[:, "UASC"] = "1"
             header = pd.concat((header, uasc), axis=0)
 
-        if "Headerlast" in dfs:
-            header = pd.concat((header, dfs["Headerlast"]), axis=0)
-        elif "UASClast" in dfs:
-            uasc = dfs["UASClast"]
+        if "Header_last" in dfs:
+            header = pd.concat((header, dfs["Header_last"]), axis=0)
+        elif "UASC_last" in dfs:
+            uasc = dfs["UASC_last"]
             uasc = uasc.loc[
                 uasc.drop("CHILD", axis="columns").notna().any(axis=1), ["CHILD"]
             ].copy()
@@ -47,19 +50,22 @@ def validate(dfs):
             header = pd.concat((header, uasc), axis=0)
 
         if "UASC" in header.columns:
-            header = header[header.UASC == "1"].dropduplicates("CHILD")
+            header = header[header.UASC == "1"].drop_duplicates("CHILD")
             epi = epi.merge(header[["CHILD"]], how="inner", on="CHILD")
         else:
             # if theres no UASC column in header, either from XML data, inferred for CSV in ingress, or added above
             # then we can't identify anyone as UASC/formerly UASC
             return {}
-        # PLDISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
+        # PL_DISTANCE is added when the uploaded files are read into the tool. The code that does this is found in datastore.py
 
-        errlist = (
-            epi.loc[epi["PLDISTANCE"].notna(), "origidx"].sortvalues().unique().tolist()
+        err_list = (
+            epi.loc[epi["PL_DISTANCE"].notna(), "orig_idx"]
+            .sort_values()
+            .unique()
+            .tolist()
         )
 
-        return {"Episodes": errlist}
+        return {"Episodes": err_list}
 
 
 def test_validate():

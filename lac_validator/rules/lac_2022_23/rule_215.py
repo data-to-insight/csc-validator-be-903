@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -25,29 +28,29 @@ def validate(dfs):
         oc3 = dfs["OC3"]
         oc2 = dfs["OC2"]
         # prepare to merge
-        oc3.resetindex(inplace=True)
-        oc2.resetindex(inplace=True)
-        merged = oc3.merge(oc2, on="CHILD", how="left", suffixes=["3", "2"])
-        # If any of <INTOUCH>, <ACTIV> or <ACCOM> have been provided then <CONVICTED>; <HEALTHCHECK>; <IMMUNISATIONS>; <TEETHCHECK>; <HEALTHASSESSMENT>; <SUBSTANCE MISUSE>; <INTERVENTIONRECEIVED>; <INTERVENTIONOFFERED>; should not be provided
+        oc3.reset_index(inplace=True)
+        oc2.reset_index(inplace=True)
+        merged = oc3.merge(oc2, on="CHILD", how="left", suffixes=["_3", "_2"])
+        # If any of <IN_TOUCH>, <ACTIV> or <ACCOM> have been provided then <CONVICTED>; <HEALTH_CHECK>; <IMMUNISATIONS>; <TEETH_CHECK>; <HEALTH_ASSESSMENT>; <SUBSTANCE MISUSE>; <INTERVENTION_RECEIVED>; <INTERVENTION_OFFERED>; should not be provided
         mask = (
-            merged["INTOUCH"].notna()
+            merged["IN_TOUCH"].notna()
             | merged["ACTIV"].notna()
             | merged["ACCOM"].notna()
         ) & (
             merged["CONVICTED"].notna()
-            | merged["HEALTHCHECK"].notna()
+            | merged["HEALTH_CHECK"].notna()
             | merged["IMMUNISATIONS"].notna()
-            | merged["TEETHCHECK"].notna()
-            | merged["HEALTHASSESSMENT"].notna()
-            | merged["SUBSTANCEMISUSE"].notna()
-            | merged["INTERVENTIONRECEIVED"].notna()
-            | merged["INTERVENTIONOFFERED"].notna()
+            | merged["TEETH_CHECK"].notna()
+            | merged["HEALTH_ASSESSMENT"].notna()
+            | merged["SUBSTANCE_MISUSE"].notna()
+            | merged["INTERVENTION_RECEIVED"].notna()
+            | merged["INTERVENTION_OFFERED"].notna()
         )
 
         # error locations
-        oc3errorlocs = merged.loc[mask, "index3"]
-        oc2errorlocs = merged.loc[mask, "index2"]
-        return {"OC3": oc3errorlocs.tolist(), "OC2": oc2errorlocs.tolist()}
+        oc3_error_locs = merged.loc[mask, "index_3"]
+        oc2_error_locs = merged.loc[mask, "index_2"]
+        return {"OC3": oc3_error_locs.tolist(), "OC2": oc2_error_locs.tolist()}
 
 
 def test_validate():

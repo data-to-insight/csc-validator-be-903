@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,25 +16,25 @@ def validate(dfs):
         return {}
     else:
         missing = dfs["Missing"]
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(
-            dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
-        )
-
-        missing["fMISEND"] = pd.todatetime(
-            missing["MISEND"], format="%d/%m/%Y", errors="coerce"
+        collection_end = pd.to_datetime(
+            dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
         )
 
-        enddatebeforeyear = missing["fMISEND"] < collectionstart
-        enddateafteryear = missing["fMISEND"] > collectionend
+        missing["fMIS_END"] = pd.to_datetime(
+            missing["MIS_END"], format="%d/%m/%Y", errors="coerce"
+        )
 
-        errormask = enddatebeforeyear | enddateafteryear
+        end_date_before_year = missing["fMIS_END"] < collection_start
+        end_date_after_year = missing["fMIS_END"] > collection_end
 
-        errorlocations = missing.index[errormask]
+        error_mask = end_date_before_year | end_date_after_year
 
-        return {"Missing": errorlocations.tolist()}
+        error_locations = missing.index[error_mask]
+
+        return {"Missing": error_locations.to_list()}
 
 
 def test_validate():

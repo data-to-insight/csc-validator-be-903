@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -10,35 +13,37 @@ from validator903.types import ErrorDefinition
     affected_fields=["URN", "DEC"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
-        collectionend = dfs["metadata"]["collectionend"]
+        provider_info = dfs["metadata"]["provider_info"]
+        collection_end = dfs["metadata"]["collection_end"]
 
-        # convert date fields from strings to datetime format. NB. REGEND is in datetime format already.
-        episodes["DEC"] = pd.todatetime(
+        # convert date fields from strings to datetime format. NB. REG_END is in datetime format already.
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-
-        # merge
-        episodes["indexeps"] = episodes.index
-        episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
-        providerinfo = providerinfo[providerinfo["REGEND"].notna()]
-
-        merged = episodes.merge(providerinfo, on="URN", how="inner")
-        # If <URN> provided and not = 'XXXXXXX', and Ofsted URN <REGEND> not NULL then <DEC> if provided
-        # must be <= Ofsted <REGEND>OR if not provided then<COLLECTIONENDDATE>must be<= <REGEND>.
-        # Note: For open episodes (those without an end date) a check should be made to ensure that the Ofsted
-        # URN was still open at the 31 March of the current year.
-        mask = (merged["DEC"].notna() & (merged["DEC"] > merged["REGEND"])) | (
-            merged["DEC"].isna() & (collectionend > merged["REGEND"])
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
         )
 
-        epserrorlocations = merged.loc[mask, "indexeps"].sortvalues().tolist()
-        return {"Episodes": epserrorlocations}
+        # merge
+        episodes["index_eps"] = episodes.index
+        episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
+        provider_info = provider_info[provider_info["REG_END"].notna()]
+
+        merged = episodes.merge(provider_info, on="URN", how="inner")
+        # If <URN> provided and not = 'XXXXXXX', and Ofsted URN <REG_END> not NULL then <DEC> if provided
+        # must be <= Ofsted <REG_END>OR if not provided then<COLLECTION_END_DATE>must be<= <REG_END>.
+        # Note: For open episodes (those without an end date) a check should be made to ensure that the Ofsted
+        # URN was still open at the 31 March of the current year.
+        mask = (merged["DEC"].notna() & (merged["DEC"] > merged["REG_END"])) | (
+            merged["DEC"].isna() & (collection_end > merged["REG_END"])
+        )
+
+        eps_error_locations = merged.loc[mask, "index_eps"].sort_values().to_list()
+        return {"Episodes": eps_error_locations}
 
 
 def test_validate():

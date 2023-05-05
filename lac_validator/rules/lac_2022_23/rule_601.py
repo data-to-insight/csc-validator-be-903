@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -22,51 +25,53 @@ def validate(dfs):
     else:
         ad1 = dfs["AD1"]
         episodes = dfs["Episodes"]
-        collectionstart = dfs["metadata"]["collectionstart"]
-        collectionend = dfs["metadata"]["collectionend"]
+        collection_start = dfs["metadata"]["collection_start"]
+        collection_end = dfs["metadata"]["collection_end"]
 
         # prepare to merge
-        ad1.resetindex(inplace=True)
-        episodes.resetindex(inplace=True)
+        ad1.reset_index(inplace=True)
+        episodes.reset_index(inplace=True)
 
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(collectionend, format="%d/%m/%Y", errors="coerce")
-        episodes["DEC"] = pd.todatetime(
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DEC"] = pd.to_datetime(
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
         # only keep episodes with adoption RECs during year
-        adoptionepsmask = (
-            (episodes["DEC"] >= collectionstart)
-            & (episodes["DEC"] <= collectionend)
+        adoption_eps_mask = (
+            (episodes["DEC"] >= collection_start)
+            & (episodes["DEC"] <= collection_end)
             & episodes["REC"].isin(["E11", "E12"])
         )
-        episodes = episodes[adoptionepsmask]
+        episodes = episodes[adoption_eps_mask]
 
         # inner merge to take only episodes of children which are also found in the ad1 table
-        merged = episodes.merge(ad1, on="CHILD", how="inner", suffixes=["eps", "ad1"])
+        merged = episodes.merge(ad1, on="CHILD", how="inner", suffixes=["_eps", "_ad1"])
 
-        someabsent = (
+        some_absent = (
             merged[
                 [
-                    "DATEINT",
-                    "DATEMATCH",
-                    "FOSTERCARE",
-                    "NBADOPTR",
-                    "SEXADOPTR",
-                    "LSADOPTR",
+                    "DATE_INT",
+                    "DATE_MATCH",
+                    "FOSTER_CARE",
+                    "NB_ADOPTR",
+                    "SEX_ADOPTR",
+                    "LS_ADOPTR",
                 ]
             ]
             .isna()
             .any(axis=1)
         )
 
-        errorlocsad1 = merged.loc[someabsent, "indexad1"].unique().tolist()
-        errorlocseps = merged.loc[someabsent, "indexeps"].unique().tolist()
+        error_locs_ad1 = merged.loc[some_absent, "index_ad1"].unique().tolist()
+        error_locs_eps = merged.loc[some_absent, "index_eps"].unique().tolist()
 
-        return {"AD1": errorlocsad1, "Episodes": errorlocseps}
+        return {"AD1": error_locs_ad1, "Episodes": error_locs_eps}
 
 
 def test_validate():

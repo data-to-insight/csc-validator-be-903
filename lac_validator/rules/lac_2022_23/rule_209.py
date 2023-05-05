@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -13,23 +16,25 @@ def validate(dfs):
         return {}
     else:
         header = dfs["Header"]
-        collectionstart = dfs["metadata"]["collectionstart"]
+        collection_start = dfs["metadata"]["collection_start"]
         # convert to datetime
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        collectionstart = pd.todatetime(
-            collectionstart, format="%d/%m/%Y", errors="coerce"
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
         )
-        yr = collectionstart.year - 1
-        referencedate = pd.todatetime(
+        collection_start = pd.to_datetime(
+            collection_start, format="%d/%m/%Y", errors="coerce"
+        )
+        yr = collection_start.year - 1
+        reference_date = pd.to_datetime(
             "31/08/" + str(yr), format="%d/%m/%Y", errors="coerce"
         )
         # If <DOB> >= 4 years prior to 31/08/YYYY then <UPN> should not be 'UN1' Note: YYYY in this instance refers to the year prior to the collection start (for collection year 2019-2020, it would be looking at the 31/08/2018).
-        mask = (referencedate >= (header["DOB"] + pd.offsets.DateOffset(years=4))) & (
+        mask = (reference_date >= (header["DOB"] + pd.offsets.DateOffset(years=4))) & (
             header["UPN"] == "UN1"
         )
         # error locations
-        errorlocsheader = header.index[mask]
-        return {"Header": errorlocsheader.tolist()}
+        error_locs_header = header.index[mask]
+        return {"Header": error_locs_header.tolist()}
 
 
 def test_validate():

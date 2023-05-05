@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,8 +18,8 @@ def validate(dfs):
         mask = ((episodes["LS"] == "V3") | (episodes["LS"] == "V4")) & (
             (episodes["PLACE"] == "U1") | (episodes["PLACE"] == "U4")
         )
-        errorlocations = episodes.index[mask]
-        return {"Episodes": errorlocations.tolist()}
+        error_locations = episodes.index[mask]
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

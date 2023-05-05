@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,38 +19,40 @@ def validate(dfs):
     else:
         header = dfs["Header"]
         oc3 = dfs["OC3"]
-        collectionstart = pd.todatetime(
-            dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+        collection_start = pd.to_datetime(
+            dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
         )
-        collectionend = pd.todatetime(
-            dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+        collection_end = pd.to_datetime(
+            dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
         )
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
         header["DOB17"] = header["DOB"] + pd.DateOffset(years=17)
 
-        oc3merged = (
-            oc3.resetindex()
+        oc3_merged = (
+            oc3.reset_index()
             .merge(
                 header,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "header"),
+                suffixes=("", "_header"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        accomfoster = oc3merged["ACCOM"].str.upper().astype(str).isin(["Z1", "Z2"])
-        age17inyear = (oc3merged["DOB17"] <= collectionend) & (
-            oc3merged["DOB17"] >= collectionstart
+        accom_foster = oc3_merged["ACCOM"].str.upper().astype(str).isin(["Z1", "Z2"])
+        age_17_in_year = (oc3_merged["DOB17"] <= collection_end) & (
+            oc3_merged["DOB17"] >= collection_start
         )
 
-        errormask = accomfoster & age17inyear
+        error_mask = accom_foster & age_17_in_year
 
-        errorlocations = oc3.index[errormask]
+        error_locations = oc3.index[error_mask]
 
-        return {"OC3": errorlocations.tolist()}
+        return {"OC3": error_locations.to_list()}
 
 
 def test_validate():

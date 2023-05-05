@@ -1,9 +1,12 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -19,29 +22,31 @@ def validate(dfs):
 
     oc2 = dfs["OC2"]
 
-    collectionstartstr = dfs["metadata"]["collectionstart"]
-    collectionendstr = dfs["metadata"]["collectionend"]
+    collection_start_str = dfs["metadata"]["collection_start"]
+    collection_end_str = dfs["metadata"]["collection_end"]
 
-    collectionstart = pd.todatetime(
-        collectionstartstr, format="%d/%m/%Y", errors="coerce"
+    collection_start = pd.to_datetime(
+        collection_start_str, format="%d/%m/%Y", errors="coerce"
     )
-    collectionend = pd.todatetime(collectionendstr, format="%d/%m/%Y", errors="coerce")
-    oc2["DOBdt"] = pd.todatetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+    collection_end = pd.to_datetime(
+        collection_end_str, format="%d/%m/%Y", errors="coerce"
+    )
+    oc2["DOB_dt"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
 
-    oc2 = addCLAcolumn(dfs, "OC2")
+    oc2 = add_CLA_column(dfs, "OC2")
 
-    oc2["4thbday"] = oc2["DOBdt"] + pd.DateOffset(years=4)
-    oc2["17thbday"] = oc2["DOBdt"] + pd.DateOffset(years=17)
-    errormask = (
-        (oc2["4thbday"] <= collectionstart)
-        & (oc2["17thbday"] > collectionend)
-        & oc2["CONTINUOUSLYLOOKEDAFTER"]
-        & oc2[["SDQSCORE", "SDQREASON"]].isna().any(axis=1)
+    oc2["4th_bday"] = oc2["DOB_dt"] + pd.DateOffset(years=4)
+    oc2["17th_bday"] = oc2["DOB_dt"] + pd.DateOffset(years=17)
+    error_mask = (
+        (oc2["4th_bday"] <= collection_start)
+        & (oc2["17th_bday"] > collection_end)
+        & oc2["CONTINUOUSLY_LOOKED_AFTER"]
+        & oc2[["SDQ_SCORE", "SDQ_REASON"]].isna().any(axis=1)
     )
 
-    oc2errors = oc2.loc[errormask].index.tolist()
+    oc2_errors = oc2.loc[error_mask].index.to_list()
 
-    return {"OC2": oc2errors}
+    return {"OC2": oc2_errors}
 
 
 def test_validate():

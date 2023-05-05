@@ -1,9 +1,12 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
 from validator903.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -16,25 +19,25 @@ from validator903.utils import (
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:
         return {}
-    oc2 = addCLAcolumn(dfs, "OC2")
+    oc2 = add_CLA_column(dfs, "OC2")
 
-    start = pd.todatetime(
-        dfs["metadata"]["collectionstart"], format="%d/%m/%Y", errors="coerce"
+    start = pd.to_datetime(
+        dfs["metadata"]["collection_start"], format="%d/%m/%Y", errors="coerce"
     )
-    endo = pd.todatetime(
-        dfs["metadata"]["collectionend"], format="%d/%m/%Y", errors="coerce"
+    endo = pd.to_datetime(
+        dfs["metadata"]["collection_end"], format="%d/%m/%Y", errors="coerce"
     )
-    oc2["DOB"] = pd.todatetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
+    oc2["DOB"] = pd.to_datetime(oc2["DOB"], format="%d/%m/%Y", errors="coerce")
 
     ERRRR = (
-        oc2["CONTINUOUSLYLOOKEDAFTER"]
+        oc2["CONTINUOUSLY_LOOKED_AFTER"]
         & (oc2["DOB"] + pd.DateOffset(years=4) <= start)
         & (oc2["DOB"] + pd.DateOffset(years=16) >= endo)
-        & oc2["SDQSCORE"].isna()
-        & (oc2["SDQREASON"] == "SDQ1")
+        & oc2["SDQ_SCORE"].isna()
+        & (oc2["SDQ_REASON"] == "SDQ1")
     )
 
-    return {"OC2": oc2[ERRRR].index.tolist()}
+    return {"OC2": oc2[ERRRR].index.to_list()}
 
 
 def test_validate():

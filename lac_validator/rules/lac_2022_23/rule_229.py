@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,29 +12,29 @@ from validator903.types import ErrorDefinition
     affected_fields=["URN", "PLACE_PROVIDER"],
 )
 def validate(dfs):
-    if ("Episodes" not in dfs) or ("providerinfo" not in dfs["metadata"]):
+    if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
         return {}
     else:
         episodes = dfs["Episodes"]
-        providerinfo = dfs["metadata"]["providerinfo"]
-        localauthority = dfs["metadata"]["localAuthority"]
+        provider_info = dfs["metadata"]["provider_info"]
+        local_authority = dfs["metadata"]["localAuthority"]
 
         # merge
-        episodes["indexeps"] = episodes.index
+        episodes["index_eps"] = episodes.index
         episodes = episodes[episodes["URN"].notna() & (episodes["URN"] != "XXXXXXX")]
-        merged = episodes.merge(providerinfo, on="URN", how="left")
+        merged = episodes.merge(provider_info, on="URN", how="left")
 
-        # If Ofsted URN is provided and not 'XXXXXXX' then: If <PLACEPROVIDER> = 'PR1' then <LA> must equal Ofsted URN lookup <LA code>. If <PLACEPROVIDER> = 'PR2' then Ofsted URN lookup <LA code> must not equal <LA>.
+        # If Ofsted URN is provided and not 'XXXXXXX' then: If <PLACE_PROVIDER> = 'PR1' then <LA> must equal Ofsted URN lookup <LA code>. If <PLACE_PROVIDER> = 'PR2' then Ofsted URN lookup <LA code> must not equal <LA>.
         mask = (
-            merged["PLACEPROVIDER"].eq("PR1")
-            & merged["LACODEINFERRED"].ne(localauthority)
+            merged["PLACE_PROVIDER"].eq("PR1")
+            & merged["LA_CODE_INFERRED"].ne(local_authority)
         ) | (
-            merged["PLACEPROVIDER"].eq("PR2")
-            & merged["LACODEINFERRED"].eq(localauthority)
+            merged["PLACE_PROVIDER"].eq("PR2")
+            & merged["LA_CODE_INFERRED"].eq(local_authority)
         )
 
-        epserrorlocations = merged.loc[mask, "indexeps"].tolist()
-        return {"Episodes": epserrorlocations}
+        eps_error_locations = merged.loc[mask, "index_eps"].tolist()
+        return {"Episodes": eps_error_locations}
 
 
 def test_validate():

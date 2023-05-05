@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,35 +17,35 @@ def validate(dfs):
         return {}
     else:
         episodes = dfs["Episodes"]
-        episodes["currentyearindex"] = episodes.index
+        episodes["current_year_index"] = episodes.index
 
-        if "Episodeslast" in dfs:
-            episodeslast = dfs["Episodeslast"]
-            episodes = pd.concat([episodes, episodeslast], axis=0)
+        if "Episodes_last" in dfs:
+            episodes_last = dfs["Episodes_last"]
+            episodes = pd.concat([episodes, episodes_last], axis=0)
 
-    episodes["isad"] = episodes["REC"].isin(["E11", "E12"]).astype(int)
-    episodes["DECOM"] = pd.todatetime(
+    episodes["is_ad"] = episodes["REC"].isin(["E11", "E12"]).astype(int)
+    episodes["DECOM"] = pd.to_datetime(
         episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
     )
 
-    episodes = episodes.dropna(subset=["DECOM"]).sortvalues("DECOM")
+    episodes = episodes.dropna(subset=["DECOM"]).sort_values("DECOM")
 
-    episodes["adstod8"] = episodes.groupby("CHILD")["isad"].cumsum()
-    errormask = (
-        episodes["adstod8"] > 0
+    episodes["ads_to_d8"] = episodes.groupby("CHILD")["is_ad"].cumsum()
+    error_mask = (
+        episodes["ads_to_d8"] > 0
     ) & ~(  # error if there have been any adoption episodes to date...
-        (episodes["adstod8"]) == 1 & episodes["REC"].isin(["E11", "E12"])
+        (episodes["ads_to_d8"]) == 1 & episodes["REC"].isin(["E11", "E12"])
     )  # ...unless this is the first
 
-    errorlocations = (
-        episodes.loc[errormask, "currentyearindex"]
+    error_locations = (
+        episodes.loc[error_mask, "current_year_index"]
         .dropna()
-        .sortvalues()
+        .sort_values()
         .astype(int)
-        .tolist()
+        .to_list()
     )
 
-    return {"Episodes": errorlocations}
+    return {"Episodes": error_locations}
 
 
 def test_validate():

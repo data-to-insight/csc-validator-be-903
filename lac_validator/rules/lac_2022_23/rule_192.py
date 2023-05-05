@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,13 +15,13 @@ def validate(dfs):
     else:
         oc2 = dfs["OC2"]
 
-        misuse = oc2["SUBSTANCEMISUSE"].astype(str) == "1"
-        interventionblank = oc2["INTERVENTIONRECEIVED"].isna()
+        misuse = oc2["SUBSTANCE_MISUSE"].astype(str) == "1"
+        intervention_blank = oc2["INTERVENTION_RECEIVED"].isna()
 
-        errormask = misuse & interventionblank
-        validationerrorlocations = oc2.index[errormask]
+        error_mask = misuse & intervention_blank
+        validation_error_locations = oc2.index[error_mask]
 
-        return {"OC2": validationerrorlocations.tolist()}
+        return {"OC2": validation_error_locations.to_list()}
 
 
 def test_validate():

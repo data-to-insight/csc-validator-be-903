@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -17,32 +20,34 @@ def validate(dfs):
         header = dfs["Header"]
         episodes = dfs["Episodes"]
 
-        header["DOB"] = pd.todatetime(header["DOB"], format="%d/%m/%Y", errors="coerce")
-        episodes["DECOM"] = pd.todatetime(
+        header["DOB"] = pd.to_datetime(
+            header["DOB"], format="%d/%m/%Y", errors="coerce"
+        )
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
         header["DOB18"] = header["DOB"] + pd.DateOffset(years=18)
 
-        episodesmerged = (
-            episodes.resetindex()
+        episodes_merged = (
+            episodes.reset_index()
             .merge(
                 header,
                 how="left",
                 on=["CHILD"],
-                suffixes=("", "header"),
+                suffixes=("", "_header"),
                 indicator=True,
             )
-            .setindex("index")
+            .set_index("index")
         )
 
-        carestart = episodesmerged["RNE"].str.upper().astype(str).isin(["S"])
-        startedover18 = episodesmerged["DOB18"] <= episodesmerged["DECOM"]
+        care_start = episodes_merged["RNE"].str.upper().astype(str).isin(["S"])
+        started_over_18 = episodes_merged["DOB18"] <= episodes_merged["DECOM"]
 
-        errormask = carestart & startedover18
+        error_mask = care_start & started_over_18
 
-        errorlocations = episodesmerged.index[errormask].unique()
+        error_locations = episodes_merged.index[error_mask].unique()
 
-        return {"Episodes": errorlocations.tolist()}
+        return {"Episodes": error_locations.to_list()}
 
 
 def test_validate():

@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -9,20 +12,20 @@ from validator903.types import ErrorDefinition
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs or "OC3" not in dfs or "Episodeslast" not in dfs:
+    if "Episodes" not in dfs or "OC3" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
         episodes = dfs["Episodes"]
         oc3 = dfs["OC3"]
 
-        episodeslast = dfs["Episodeslast"]
-        haspreviousepisodes = oc3["CHILD"].isin(episodeslast["CHILD"])
-        hascurrentepisodes = oc3["CHILD"].isin(episodes["CHILD"])
-        errormask = ~hascurrentepisodes & ~haspreviousepisodes
+        episodes_last = dfs["Episodes_last"]
+        has_previous_episodes = oc3["CHILD"].isin(episodes_last["CHILD"])
+        has_current_episodes = oc3["CHILD"].isin(episodes["CHILD"])
+        error_mask = ~has_current_episodes & ~has_previous_episodes
 
-        validationerrorlocations = oc3.index[errormask]
+        validation_error_locations = oc3.index[error_mask]
 
-        return {"OC3": validationerrorlocations.tolist()}
+        return {"OC3": validation_error_locations.tolist()}
 
 
 def test_validate():

@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -12,43 +15,45 @@ def validate(dfs):
     if "Episodes" not in dfs:
         return {}
     episodes = dfs["Episodes"]
-    collectionendstr = dfs["metadata"]["collectionend"]
+    collection_end_str = dfs["metadata"]["collection_end"]
 
-    L2eps = episodes[episodes["LS"] == "L3"].copy()
-    L2eps["originalindex"] = L2eps.index
-    L2eps = L2eps[L2eps["DECOM"].notna()]
+    L2_eps = episodes[episodes["LS"] == "L3"].copy()
+    L2_eps["original_index"] = L2_eps.index
+    L2_eps = L2_eps[L2_eps["DECOM"].notna()]
 
-    L2eps.loc[L2eps["DEC"].isna(), "DEC"] = collectionendstr
-    L2eps["DECOM"] = pd.todatetime(L2eps["DECOM"], format="%d/%m/%Y", errors="coerce")
-    L2eps = L2eps.dropna(subset=["DECOM"])
-    L2eps["DEC"] = pd.todatetime(L2eps["DEC"], format="%d/%m/%Y", errors="coerce")
-
-    L2eps.sortvalues(["CHILD", "DECOM"])
-
-    L2eps["index"] = pd.RangeIndex(0, len(L2eps))
-    L2eps["index+1"] = L2eps["index"] + 1
-    L2eps = L2eps.merge(
-        L2eps,
-        lefton="index",
-        righton="index+1",
-        how="left",
-        suffixes=[None, "prev"],
+    L2_eps.loc[L2_eps["DEC"].isna(), "DEC"] = collection_end_str
+    L2_eps["DECOM"] = pd.to_datetime(
+        L2_eps["DECOM"], format="%d/%m/%Y", errors="coerce"
     )
-    L2eps = L2eps[
-        ["originalindex", "DECOM", "DEC", "DECprev", "CHILD", "CHILDprev", "LS"]
+    L2_eps = L2_eps.dropna(subset=["DECOM"])
+    L2_eps["DEC"] = pd.to_datetime(L2_eps["DEC"], format="%d/%m/%Y", errors="coerce")
+
+    L2_eps.sort_values(["CHILD", "DECOM"])
+
+    L2_eps["index"] = pd.RangeIndex(0, len(L2_eps))
+    L2_eps["index+1"] = L2_eps["index"] + 1
+    L2_eps = L2_eps.merge(
+        L2_eps,
+        left_on="index",
+        right_on="index+1",
+        how="left",
+        suffixes=[None, "_prev"],
+    )
+    L2_eps = L2_eps[
+        ["original_index", "DECOM", "DEC", "DEC_prev", "CHILD", "CHILD_prev", "LS"]
     ]
 
-    L2eps["newperiod"] = (L2eps["DECOM"] > L2eps["DECprev"]) | (
-        L2eps["CHILD"] != L2eps["CHILDprev"]
+    L2_eps["new_period"] = (L2_eps["DECOM"] > L2_eps["DEC_prev"]) | (
+        L2_eps["CHILD"] != L2_eps["CHILD_prev"]
     )
 
-    L2eps["duration"] = (L2eps["DEC"] - L2eps["DECOM"]).dt.days
-    L2eps["periodid"] = L2eps["newperiod"].astype(int).cumsum()
-    L2eps["periodduration"] = L2eps.groupby("periodid")["duration"].transform(sum)
+    L2_eps["duration"] = (L2_eps["DEC"] - L2_eps["DECOM"]).dt.days
+    L2_eps["period_id"] = L2_eps["new_period"].astype(int).cumsum()
+    L2_eps["period_duration"] = L2_eps.groupby("period_id")["duration"].transform(sum)
 
-    errormask = L2eps["periodduration"] > 7
+    error_mask = L2_eps["period_duration"] > 7
 
-    return {"Episodes": L2eps.loc[errormask, "originalindex"].tolist()}
+    return {"Episodes": L2_eps.loc[error_mask, "original_index"].to_list()}
 
 
 def test_validate():

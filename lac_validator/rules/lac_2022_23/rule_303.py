@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -18,22 +21,22 @@ def validate(dfs):
         header = dfs["Header"]
 
         # merge
-        uasc.resetindex(inplace=True)
-        header.resetindex(inplace=True)
+        uasc.reset_index(inplace=True)
+        header.reset_index(inplace=True)
 
-        merged = header.merge(uasc, how="left", on="CHILD", suffixes=["er", "sc"])
+        merged = header.merge(uasc, how="left", on="CHILD", suffixes=["_er", "_sc"])
 
-        merged["UASC"] = pd.tonumeric(merged["UASC"], errors="coerce")
+        merged["UASC"] = pd.to_numeric(merged["UASC"], errors="coerce")
 
         # If <DUC> provided, then <UASC> must be '1'
-        errormask = merged["DUC"].notna() & (merged["UASC"] != 1)
+        error_mask = merged["DUC"].notna() & (merged["UASC"] != 1)
 
-        uascerrorlocs = merged.loc[errormask, "indexsc"]
-        headererrorlocs = merged.loc[errormask, "indexer"]
+        uasc_error_locs = merged.loc[error_mask, "index_sc"]
+        header_error_locs = merged.loc[error_mask, "index_er"]
 
         return {
-            "UASC": uascerrorlocs.tolist(),
-            "Header": headererrorlocs.tolist(),
+            "UASC": uasc_error_locs.tolist(),
+            "Header": header_error_locs.tolist(),
         }
 
 

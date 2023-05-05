@@ -1,4 +1,7 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -15,43 +18,43 @@ def validate(dfs):
         header = dfs["Header"]
         reviews = dfs["Reviews"]
 
-        codelist = ["V3", "V4"]
+        code_list = ["V3", "V4"]
         # Rule adjustment: if child has any other episodes where LS is not V3 or V4, rule should not be triggered. Trigger error 399 only if all child episodes
 
         # Column that will contain True if LS of the episode is either V3 or V4
-        episodes["LSCHECKS"] = episodes["LS"].isin(codelist)
+        episodes["LS_CHECKS"] = episodes["LS"].isin(code_list)
 
         # Column that will contain True only if all LSs, for a child, are either V3 or V4
-        episodes["LSCHECK"] = episodes.groupby("CHILD")["LSCHECKS"].transform("min")
+        episodes["LS_CHECK"] = episodes.groupby("CHILD")["LS_CHECKS"].transform("min")
 
-        eps = episodes.loc[episodes["LSCHECK"] == True].copy()
+        eps = episodes.loc[episodes["LS_CHECK"] == True].copy()
 
         # prepare to merge
-        eps["indexeps"] = eps.index
-        header["indexhdr"] = header.index
-        reviews["indexrevs"] = reviews.index
+        eps["index_eps"] = eps.index
+        header["index_hdr"] = header.index
+        reviews["index_revs"] = reviews.index
 
         # merge
         merged = eps.merge(header, on="CHILD", how="left").merge(
             reviews, on="CHILD", how="left"
         )
 
-        # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEWCODE> should not be provided
-        mask = merged["LSCHECK"] & (
+        # If <LS> = 'V3' or 'V4' then <MOTHER>, <REVIEW> and <REVIEW_CODE> should not be provided
+        mask = merged["LS_CHECK"] & (
             merged["MOTHER"].notna()
             | merged["REVIEW"].notna()
-            | merged["REVIEWCODE"].notna()
+            | merged["REVIEW_CODE"].notna()
         )
 
         # Error locations
-        epserrors = merged.loc[mask, "indexeps"].dropna().unique()
-        headererrors = merged.loc[mask, "indexhdr"].dropna().unique()
-        revserrors = merged.loc[mask, "indexrevs"].dropna().unique()
+        eps_errors = merged.loc[mask, "index_eps"].dropna().unique()
+        header_errors = merged.loc[mask, "index_hdr"].dropna().unique()
+        revs_errors = merged.loc[mask, "index_revs"].dropna().unique()
 
         return {
-            "Episodes": epserrors.tolist(),
-            "Header": headererrors.tolist(),
-            "Reviews": revserrors.tolist(),
+            "Episodes": eps_errors.tolist(),
+            "Header": header_errors.tolist(),
+            "Reviews": revs_errors.tolist(),
         }
 
 

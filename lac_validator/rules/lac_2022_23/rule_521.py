@@ -1,6 +1,9 @@
 import pandas as pd
 
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import rule_definition
+
+
+import pandas as pd
 
 
 @rule_definition(
@@ -14,28 +17,28 @@ def validate(dfs):
     else:
         episodes = dfs["Episodes"]
         ad1 = dfs["AD1"]
-        codelist = ["A3", "A4", "A5", "A6"]
+        code_list = ["A3", "A4", "A5", "A6"]
         # if PLACE is equal to A3, A4, A5 or A6 then placed-for-adoption = Y
 
         # to datetime
-        episodes["DECOM"] = pd.todatetime(
+        episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        ad1["DATEINT"] = pd.todatetime(
-            ad1["DATEINT"], format="%d/%m/%Y", errors="coerce"
+        ad1["DATE_INT"] = pd.to_datetime(
+            ad1["DATE_INT"], format="%d/%m/%Y", errors="coerce"
         )
 
         # prepare to merge
-        episodes.resetindex(inplace=True)
-        ad1.resetindex(inplace=True)
-        merged = episodes.merge(ad1, how="left", on="CHILD", suffixes=["eps", "ad1"])
+        episodes.reset_index(inplace=True)
+        ad1.reset_index(inplace=True)
+        merged = episodes.merge(ad1, how="left", on="CHILD", suffixes=["_eps", "_ad1"])
 
-        # <DATEINT> must be <= <DECOM> where <PLACEDFORADOPTION> = 'Y'
-        mask = merged["PLACE"].isin(codelist) & (merged["DATEINT"] > merged["DECOM"])
+        # <DATE_INT> must be <= <DECOM> where <PLACED_FOR_ADOPTION> = 'Y'
+        mask = merged["PLACE"].isin(code_list) & (merged["DATE_INT"] > merged["DECOM"])
         # error locations
-        ad1errorlocs = merged.loc[mask, "indexad1"]
-        epserrorlocs = merged.loc[mask, "indexeps"]
-        return {"Episodes": epserrorlocs.tolist(), "AD1": ad1errorlocs.tolist()}
+        ad1_error_locs = merged.loc[mask, "index_ad1"]
+        eps_error_locs = merged.loc[mask, "index_eps"]
+        return {"Episodes": eps_error_locs.tolist(), "AD1": ad1_error_locs.tolist()}
 
 
 def test_validate():

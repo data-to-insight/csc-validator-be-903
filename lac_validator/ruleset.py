@@ -9,8 +9,8 @@ ruleset_years = []
 import lac_validator.rules.lac_2022_23
 
 lac22_23 = registry.to_dict()
-ruleset_updates["lac2022_23"] = {"deleted": [], "ruleset": lac22_23}
-ruleset_years.append("lac2022_23")
+ruleset_updates["lac_2022_23"] = {"deleted": [], "ruleset": lac22_23}
+ruleset_years.append("lac_2022_23")
 registry.reset()
 
 # 2023_24
@@ -26,7 +26,7 @@ def create_registry(ruleset=ruleset_years[-1]):
     chosen_ruleset_ind = ruleset_years.index(ruleset)
 
     # the 2022_23 ruleset will always be the starting point.
-    combined_ruleset = ruleset_updates["lac2022_23"]["ruleset"]
+    combined_ruleset = ruleset_updates["lac_2022_23"]["ruleset"]
 
     # loop starts from position 1 because cin2022_23 is in position 0.
     # offset by 1 to ensure that the chosen ruleset is included.

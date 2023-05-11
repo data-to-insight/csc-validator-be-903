@@ -4,6 +4,7 @@ import pytest
 
 from pathlib import Path
 
+import lac_validator.lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
 
 from validator903.validator import Validator
@@ -86,7 +87,8 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # (not that it should matter for this)
 
     # create the validator object
-    v = Validator(metadata=metadata, files=files_list)
+    # v = Validator(metadata=metadata, files=files_list)
+    v = lac_class.LacValidationSession(metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None)
 
     # list of error codes to validate
     # 523 seemed to cause the exception // 115 checks DATE_PLACED is a date // 101 needs Header table
@@ -98,24 +100,20 @@ def run_all(p4a_path, ad1_path, ruleset, select):
 
     # print(results)
 
-    print()
-    print('skipped:', v.skips)
-    print('done:', v.dones)
-    print('errd:', v.fails)
-    print()
-    print('-- AD1 Columns --')
-    print(results['AD1'].columns)
-    print()
-    print(results['AD1'], ['DATE_PLACED', 'ERR_523'])
-    print('-- PlacedAdoption Columns --')
-    print(results['PlacedAdoption'].columns)
-    print()
-    print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])
+    # print()
+    # print('-- AD1 Columns --')
+    # print(results['AD1'].columns)
+    # print()
+    print(results['AD1'][['DATE_MATCH', 'ERR_523']])
+    # print('-- PlacedAdoption Columns --')
+    # print(results['PlacedAdoption'].columns)
+    # print()
+    # print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])    
 
     r = Report(results)
-    print(r.report)
-    print(r.error_report)
-    print(r.error_summary)
+    # print(r.report)
+    # print(r.error_report)
+    # print(r.error_summary)
 
 
 if __name__ == "__main__":

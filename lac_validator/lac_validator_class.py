@@ -76,9 +76,9 @@ class LacValidationSession:
             try:
                 # get the result from when the rule is run on the data.
                 result: Dict[str, List[Any]] = rule.func(ds_copy)
-            except Exception:
+            except Exception as e:
                 # document instances where the rule cannot run on the data
-                logger.exception(f"Error code {rule.code} failed to run!")
+                logger.exception(f"Rule code {rule.code} failed to run!")
                 self.fails.append(rule.code)
                 continue
 

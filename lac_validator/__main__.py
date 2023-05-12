@@ -83,21 +83,9 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {'collectionYear': '2022',
                 'localAuthority': 'E09000027'}
-    # Richmond: E09000027 // Wandsworth: E09000032 (https://www.richmond.gov.uk/wandsworth)
-    # (not that it should matter for this)
 
-    # create the validator object
-    # v = Validator(metadata=metadata, files=files_list)
     v = lac_class.LacValidationSession(metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None)
-
-    # list of error codes to validate
-    # 523 seemed to cause the exception // 115 checks DATE_PLACED is a date // 101 needs Header table
-    errs = ['523', '115', '101']
-    # invalid date as an example
-    #v.dfs['PlacedAdoption'].loc[2, 'DATE_PLACED'] = 'JUS CHECKIN'
-
-    results = v.validate(errs)
-
+    results = v.ds_results
     # print(results)
 
     # print()
@@ -108,12 +96,12 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # print('-- PlacedAdoption Columns --')
     # print(results['PlacedAdoption'].columns)
     # print()
-    # print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])    
+    print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])    
 
     r = Report(results)
-    # print(r.report)
-    # print(r.error_report)
-    # print(r.error_summary)
+    print(r.report)
+    print(r.error_report)
+    print(r.error_summary)
 
 
 if __name__ == "__main__":

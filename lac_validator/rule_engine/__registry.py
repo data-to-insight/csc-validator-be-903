@@ -2,6 +2,7 @@ from functools import wraps
 from typing import Callable, Iterable
 from lac_validator.rule_engine.__api import RuleDefinition
 
+
 class __Registry:
     """Contains information about all validation rules including definition and issue error locations. Allows iterating through validation rules."""
 
@@ -93,6 +94,7 @@ class __Registry:
 
 
 registry = __Registry()
+
 
 def rule_definition(
     code: int,

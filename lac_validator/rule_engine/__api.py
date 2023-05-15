@@ -2,6 +2,7 @@ import importlib
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
+
 @dataclass(frozen=True, eq=True)
 class RuleDefinition:
     """

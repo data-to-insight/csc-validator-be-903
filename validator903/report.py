@@ -27,6 +27,7 @@ class Report:
         dataframes = []
         for table, value in data_store.items():
             if table == "metadata":
+                # report should only contain child-level data.
                 continue
             cols_error = [c for c in value.columns if c[:4] == "ERR_"]
             cols_data = [c for c in value.columns if c[:4] != "ERR_" and c[:2] != "__" and c != "CHILD"]

@@ -92,16 +92,24 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # print('-- AD1 Columns --')
     # print(results['AD1'].columns)
     # print()
-    print(results['AD1'][['DATE_MATCH', 'ERR_523']])
+    # print(f"*****************AD1 with selected cols******************")
+    # print(results['AD1'][['DATE_MATCH', 'ERR_523']])
     # print('-- PlacedAdoption Columns --')
     # print(results['PlacedAdoption'].columns)
     # print()
-    print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])    
+    # print(f"*****************AD1 full in ds_results******************")
+    # print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])    
 
     r = Report(results)
+    print(f"*****************Report******************")
     print(r.report)
+    print(f"*****************Error report******************")
     print(r.error_report)
-    print(r.error_summary)
+    # print(f"****************Error summary******************")
+    # print(r.error_summary)
+
+    full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    print(full_issue_df)
 
 
 if __name__ == "__main__":

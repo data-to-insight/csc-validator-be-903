@@ -102,3 +102,45 @@ class LacValidationSession:
                                        + f"Output: {str(values)}")
                     self.ds_results[table].loc[values, f'ERR_{rule.code}'] = True
 
+def create_issue_df(report, error_report):
+    """
+    creates issue_df similar to that of the CIN backend output. 
+    Columns should be LAchildID, tables_affected, columns_affected, row_id, rule_code and rule_description.
+
+    Uses output of 903validator.report because it is closer to desired structure.
+
+    :param df report: childID, rule_code, tables_affected and row_id will be grabbed from here
+    :param df error_report: rule_description and affected_fields, per rule_code, will be grabbed from here.
+    :return df full_issue_df: data to drive frontend display of issue locations.
+    """
+    # TODO replace this with code that uses registry instead of configured_errors
+    # get rule codes from column names
+    col_error_names = [c for c in report.columns if c[:4] == "ERR_"]
+
+    # loop through rule codes and fetch rule data from error_report each time.
+    issue_dfs_per_rule = []
+    for col_name in col_error_names:
+        rule_code = col_name[4:]
+        
+        # child, table, row where rule fails.
+        rule_table = report[report[col_name]==True][["Table", "RowID", "CHILD",]+[col_name]]
+        rule_table["Code"] = rule_code
+        
+        rule_desc = error_report[error_report["Code"]==rule_code]
+        # assumption. error_description has one entry per rule.
+        rule_issue_df = rule_table.merge(rule_desc, on="Code")
+        #TODO error_report relies on configured errors which is now redundant. update to fetch rule descriptions from registry.
+
+        rule_issue_df.rename(columns={"Table":"tables_affected", "RowID":"row_id", "Code":"rule_code", "Description":"rule_description", "Fields":"columns_affected", "CHILD": "LAchildID"}, inplace=True)
+        # remove ERR_ columns
+        rule_issue_df.drop(columns=[col_name], inplace=True)
+        # explode column lists into one per row.
+        # TODO check that these columns are filtered by table. else redo the mapping.
+        rule_issue_df = rule_issue_df.explode(column=["columns_affected"], ignore_index=True)
+        # reorder
+        rule_issue_df = rule_issue_df[["LAchildID", "tables_affected", "columns_affected", "row_id", "rule_code", "rule_description"]]
+        
+        issue_dfs_per_rule.append(rule_issue_df)
+
+    full_issue_df = pd.concat(issue_dfs_per_rule)
+    return full_issue_df

@@ -61,7 +61,7 @@ def test_cmd(ruleset):
 # RUN
 @cli.command(name="run")
 @click.argument("p4a_path", type=click.File("rt"), required=True)
-@click.argument("ad1_path", type=click.File("rt"), required=True)
+# @click.argument("ad1_path", type=click.File("rt"), required=True)
 @click.option(
     "--ruleset",
     "-r",
@@ -69,7 +69,7 @@ def test_cmd(ruleset):
     help="validation year e.g lac_2022_23",
 )
 @click.option("--select", "-s", default=None)
-def run_all(p4a_path, ad1_path, ruleset, select):
+def run_all(p4a_path, ruleset, select):
     """
     created with code from offlinedebug.py
 
@@ -83,12 +83,12 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     with open(p4a_path.name, "rb") as f:
         p4a_filetext = f.read()
 
-    with open(ad1_path.name, "rb") as f:
-        ad1_filetext = f.read()
+    # with open(ad1_path.name, "rb") as f:
+    #     ad1_filetext = f.read()
 
     files_list = [
         dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
-        dict(name=ad1_path.name, description="This year", fileText=ad1_filetext),
+        # dict(name=ad1_path.name, description="This year", fileText=ad1_filetext),
     ]
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
@@ -121,6 +121,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # print(r.error_summary)
 
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    print(f"*****************full issue df******************")
     print(full_issue_df)
 
 

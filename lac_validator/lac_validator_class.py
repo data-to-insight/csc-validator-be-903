@@ -6,7 +6,6 @@ from pandas import DataFrame
 
 from validator903.types import UploadedFile
 from validator903.ingress import read_from_text
-from validator903.config import configured_errors
 from validator903.datastore import copy_datastore, create_datastore
 
 from lac_validator.ruleset import create_registry
@@ -40,7 +39,6 @@ class LacValidationSession:
     ):
         logger.info("Reading uploaded files...")
         # TODO remove UploadedFile type
-        # TODO change this to read text file format from command line.
         dfs, metadata_extras = read_from_text(raw_files=files)
         self.dfs.update(dfs)
         metadata.update(metadata_extras)
@@ -119,7 +117,7 @@ class LacValidationSession:
 def create_issue_df(report, error_report):
     """
     creates issue_df similar to that of the CIN backend output.
-    Columns should be LAchildID, tables_affected, columns_affected, row_id, rule_code and rule_description.
+    Columns should be child_id, tables_affected, columns_affected, row_id, rule_code and rule_description.
 
     Uses output of 903validator.report because it is closer to desired structure.
 
@@ -127,7 +125,6 @@ def create_issue_df(report, error_report):
     :param df error_report: rule_description and affected_fields, per rule_code, will be grabbed from here.
     :return df full_issue_df: data to drive frontend display of issue locations.
     """
-    # TODO replace this with code that uses registry instead of configured_errors
     # get rule codes from column names
     col_error_names = [c for c in report.columns if c[:4] == "ERR_"]
 
@@ -159,7 +156,7 @@ def create_issue_df(report, error_report):
                 "Code": "rule_code",
                 "Description": "rule_description",
                 "Fields": "columns_affected",
-                "CHILD": "LAchildID",
+                "CHILD": "child_id",
             },
             inplace=True,
         )
@@ -173,7 +170,7 @@ def create_issue_df(report, error_report):
         # reorder
         rule_issue_df = rule_issue_df[
             [
-                "LAchildID",
+                "child_id",
                 "tables_affected",
                 "columns_affected",
                 "row_id",

@@ -32,7 +32,32 @@ def get_rules(ruleset="lac_2022_23"):
     return json_rules_df
 
 @app.call
-def lac_validate(lac_data=None, selected_rules=None, ruleset="lac_2022_23"):
+def generate_tables(lac_data):
+    # TODO if user uploads tabular data, return as-is. if xml, convert to csv.
+    """
+    :param lac_data: file reference to a LAC file(s) uploaded by user.
+    :return json_data_files:  a dictionary of dataframes that has been converted to json.
+    """
+    p4a_filetext = lac_data.read()
+
+    files_list = [
+        dict(name="placed_for_adoption.csv", description='This year', fileText=p4a_filetext),
+    ]
+
+    # the rest of the metadata is added in read_from_text() when instantiating Validator
+    metadata = {'collectionYear': '2022',
+                'localAuthority': 'E09000027'}
+
+    v = lac_class.LacValidationSession(metadata=metadata, files=files_list, ruleset="lac_2022_23", selected_rules=None)
+    
+    # what the frontend will display
+    json_data_files = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
+    
+    return json_data_files
+
+
+@app.call
+def lac_validate(lac_data, selected_rules=None, ruleset="lac_2022_23"):
     """
     :param dict lac_data: keys are table names and values are LAC csv files.
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
@@ -42,21 +67,19 @@ def lac_validate(lac_data=None, selected_rules=None, ruleset="lac_2022_23"):
     :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
     """
     # TODO put in processing so that a list of file references can be recieved and the names of the files are deduced from thier content.
-    p4a_path = "tests\\fake_data\placed_for_adoption_errors.csv"
-    ad1_path = "tests\\fake_data\\ad1.csv"
+    # p4a_path = "tests\\fake_data\\placed_for_adoption_errors.csv"
+    # ad1_path = "tests\\fake_data\\ad1.csv"
 
     # construct 'files' list of dicts (nb filetexts are bytes not str)
-    # with open(p4a_path.name, 'rb') as f:
+    # with open(p4a_path, 'rb') as f:
     #     p4a_filetext = f.read()
 
     # with open(ad1_path.name, 'rb') as f:
     #     ad1_filetext = f.read()
 
-    with open(p4a_path, 'rb') as f:
-        p4a_filetext = f.read()
+    p4a_filetext = lac_data.read()
 
-    with open(ad1_path, 'rb') as f:
-        ad1_filetext = f.read()
+    # ad1_filetext = ad1_path.read().decode("utf-8")
 
 
     # files_list = [
@@ -64,8 +87,7 @@ def lac_validate(lac_data=None, selected_rules=None, ruleset="lac_2022_23"):
     #     dict(name=ad1_path.name, description='This year', fileText=ad1_filetext),
     # ]
     files_list = [
-        dict(name=p4a_path, description='This year', fileText=p4a_filetext),
-        dict(name=ad1_path, description='This year', fileText=ad1_filetext),
+        dict(name="placed_for_adoption.csv", description='This year', fileText=p4a_filetext),
     ]
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
@@ -79,11 +101,13 @@ def lac_validate(lac_data=None, selected_rules=None, ruleset="lac_2022_23"):
 
     # what the frontend will display
     issue_report = full_issue_df.to_json(orient="records")
-
+    json_data_files = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
+    placeholder_var = pd.DataFrame().to_json(orient="records")
+    
     # what the user will download
     user_report = r.report.to_json(orient="records")
 
     # TODO should a dict be returned here so that variables can be accessed by name instead of index position?
-    return issue_report, user_report
+    return issue_report, placeholder_var, json_data_files, user_report
 
     

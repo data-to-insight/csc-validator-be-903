@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "quality-lac-data-validator"
+name = "lac-validator"
 version = "1.0.3"
 description = "Shared module for validating the ruleset on the SSDA903 census using DfE rules."
 authors = [
@@ -13,12 +13,14 @@ license = "MIT"
 readme = "README.md"
 packages = [
     { include = "validator903" },
+    { include = "rpc_main.py" },
+    { include = "lac_validator/**/*.py"  }	
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pandas = "1.0.5" # These are fixed to match versions available for pyodide
-numpy = "1.17.5"
+python = "^3.9"
+pandas = "1.4.2"
+numpy = "1.22.4"
 openpyxl = "^3.0.9"
 quality-lac-data-ref-authorities = ">=2021.4"
 quality-lac-data-ref-postcodes = ">=2021.8.1"

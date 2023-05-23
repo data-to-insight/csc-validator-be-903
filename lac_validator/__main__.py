@@ -7,7 +7,7 @@ from pathlib import Path
 import lac_validator.lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
 
-from validator903.validator import Validator
+from validator903.ingress import read_from_text
 from validator903.report import Report
 
 
@@ -85,7 +85,7 @@ def run_all(p4a_path, ruleset, select):
 
     # with open(ad1_path.name, "rb") as f:
     #     ad1_filetext = f.read()
-
+    
     files_list = [
         dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
         # dict(name=ad1_path.name, description="This year", fileText=ad1_filetext),
@@ -124,6 +124,18 @@ def run_all(p4a_path, ruleset, select):
     print(f"*****************full issue df******************")
     print(full_issue_df)
 
+# XML to tables
+@cli.command(name="xmltocsv")
+@click.argument("p4a_path", type=click.File("rt"), required=True)
+def xmltocsv(p4a_path):
+    with open(p4a_path.name, "rb") as f:
+        p4a_filetext = f.read()
+    files_list = [
+        dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
+    ]
+
+    data_files, _ = read_from_text(files_list)
+    click.echo(data_files)
 
 if __name__ == "__main__":
     cli()

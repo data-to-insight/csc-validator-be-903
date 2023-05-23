@@ -4,6 +4,7 @@ from prpc_python import RpcApp
 from lac_validator import lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
 
+from validator903.ingress import read_from_text
 from validator903.report import Report
 
 app = RpcApp("validate_lac")
@@ -43,14 +44,10 @@ def generate_tables(lac_data):
         dict(name=lac_data.filename, description='This year', fileText=lac_data.read()),
     ]
 
-    # the rest of the metadata is added in read_from_text() when instantiating Validator
-    metadata = {'collectionYear': '2022',
-                'localAuthority': 'E09000027'}
+    data_files, _ = read_from_text(files_list)
 
-    v = lac_class.LacValidationSession(metadata=metadata, files=files_list, ruleset="lac_2022_23", selected_rules=None)
-    
     # what the frontend will display
-    json_data_files = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
+    json_data_files = {table_name:table_df.to_json(orient="records") for table_name, table_df in  data_files.items()}
     
     return json_data_files
 

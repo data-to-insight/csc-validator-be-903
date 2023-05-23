@@ -38,10 +38,9 @@ def generate_tables(lac_data):
     :param lac_data: file reference to a LAC file(s) uploaded by user.
     :return json_data_files:  a dictionary of dataframes that has been converted to json.
     """
-    p4a_filetext = lac_data.read()
 
     files_list = [
-        dict(name="placed_for_adoption.csv", description='This year', fileText=p4a_filetext),
+        dict(name=lac_data.filename, description='This year', fileText=lac_data.read()),
     ]
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
@@ -57,9 +56,10 @@ def generate_tables(lac_data):
 
 
 @app.call
-def lac_validate(lac_data, selected_rules=None, ruleset="lac_2022_23"):
+def lac_validate(lac_data, file_metadata,  selected_rules=None, ruleset="lac_2022_23"):
     """
     :param dict lac_data: keys are table names and values are LAC csv files.
+    :param  dict file_metadata: contains collection year and local authority as strings.
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
     :param ruleset: rule pack that should be run. lac_2022_23 is for the year 2022
 
@@ -70,31 +70,11 @@ def lac_validate(lac_data, selected_rules=None, ruleset="lac_2022_23"):
     # p4a_path = "tests\\fake_data\\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"
 
-    # construct 'files' list of dicts (nb filetexts are bytes not str)
-    # with open(p4a_path, 'rb') as f:
-    #     p4a_filetext = f.read()
-
-    # with open(ad1_path.name, 'rb') as f:
-    #     ad1_filetext = f.read()
-
-    p4a_filetext = lac_data.read()
-
-    # ad1_filetext = ad1_path.read().decode("utf-8")
-
-
-    # files_list = [
-    #     dict(name=p4a_path.name, description='This year', fileText=p4a_filetext),
-    #     dict(name=ad1_path.name, description='This year', fileText=ad1_filetext),
-    # ]
     files_list = [
-        dict(name="placed_for_adoption.csv", description='This year', fileText=p4a_filetext),
+        dict(name=lac_data.filename, description='This year', fileText=lac_data.read()),
     ]
 
-    # the rest of the metadata is added in read_from_text() when instantiating Validator
-    metadata = {'collectionYear': '2022',
-                'localAuthority': 'E09000027'}
-
-    v = lac_class.LacValidationSession(metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=selected_rules)
+    v = lac_class.LacValidationSession(metadata=file_metadata, files=files_list, ruleset=ruleset, selected_rules=selected_rules)
     results = v.ds_results
     r = Report(results)
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)

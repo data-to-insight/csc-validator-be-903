@@ -2,7 +2,7 @@ import click
 import importlib
 import pytest
 import json
-
+import os
 from pathlib import Path
 
 import lac_validator.lac_validator_class as lac_class
@@ -52,11 +52,11 @@ def test_cmd(ruleset):
     """
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
-    # May 2023. There are 288 rule files. 
+    # May 2023. There are 288 rule files.
     test_files = [
         str(p.absolute()) for p in module_folder.glob("*.py") if p.stem != "__init__"
     ]
-    
+
     failed_files = []
     for file_path in test_files:
         result = pytest.main([file_path])
@@ -67,12 +67,37 @@ def test_cmd(ruleset):
 
     # pytest.main(test_files)
 
+
 # TESTtest
 @cli.command(name="testtest")
 def test():
     with open("files_failed.json", "r") as f:
-        failed_paths = json.load( f)
+        failed_paths = json.load(f)
     pytest.main(failed_paths)
+
+
+# TEST one rule
+@cli.command(name="test_one_rule")
+@click.argument("rule_name", type=str, required=True)
+@click.option(
+    "--ruleset",
+    "-r",
+    default="lac_2022_23",
+    help="validation year, e.g lac_2022_23",
+)
+def test_one_rule(rule_name, ruleset):
+    """
+    Runs pytest of rules specified
+    :param str ruleset: validation year whose rules should be run
+    :return: classic pytest output
+    """
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    module_folder = Path(module.__file__).parent
+
+    file_path = os.path.join(module_folder, f"rule_{rule_name}.py")
+
+    pytest.main([file_path])
+
 
 # RUN
 @cli.command(name="run")
@@ -101,7 +126,7 @@ def run_all(p4a_path, ruleset, select):
 
     # with open(ad1_path.name, "rb") as f:
     #     ad1_filetext = f.read()
-    
+
     files_list = [
         dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
         # dict(name=ad1_path.name, description="This year", fileText=ad1_filetext),
@@ -140,6 +165,7 @@ def run_all(p4a_path, ruleset, select):
     print(f"*****************full issue df******************")
     print(full_issue_df)
 
+
 # XML to tables
 @cli.command(name="xmltocsv")
 @click.argument("p4a_path", type=click.File("rt"), required=True)
@@ -152,6 +178,7 @@ def xmltocsv(p4a_path):
 
     data_files, _ = read_from_text(files_list)
     click.echo(data_files)
+
 
 if __name__ == "__main__":
     cli()

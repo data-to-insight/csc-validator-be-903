@@ -199,6 +199,6 @@ def test_validate():
 
     
 
-    test_result = error_func(test_dfs)
+    test_result = validate(test_dfs)
 
     assert test_result == {"OC2": [1, 2, 7, 8]}

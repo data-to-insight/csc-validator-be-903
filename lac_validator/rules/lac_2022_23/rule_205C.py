@@ -230,13 +230,13 @@ def test_validate():
     }
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
-    result = error_func(dfs)
+    result = validate(dfs)
     assert result == {"Header": [1, 9], "UASC": [7, 9]}
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_csv_1.items()}
-    result = error_func(dfs)
+    result = validate(dfs)
     assert result == {"Header": [], "UASC": []}
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_csv_2.items()}
-    result = error_func(dfs)
+    result = validate(dfs)
     assert result == {"UASC": []}

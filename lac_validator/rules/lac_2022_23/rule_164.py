@@ -116,5 +116,5 @@ def test_validate():
     )
 
     dfs = {"Episodes": fake_episodes, "Header": fake_header, "UASC_last": uasc_last}
-    result = error_func(dfs)
+    result = validate(dfs)
     assert result == {"Episodes": [2, 5]}

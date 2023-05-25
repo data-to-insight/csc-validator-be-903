@@ -96,4 +96,4 @@ def test_validate():
         "OC2": [5],
     }
 
-    assert error_func(fake_dfs_partial) == {"AD1": [3], "PrevPerm": [4], "OC2": [5]}
+    assert validate(fake_dfs_partial) == {"AD1": [3], "PrevPerm": [4], "OC2": [5]}

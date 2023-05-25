@@ -1,6 +1,7 @@
 import click
 import importlib
 import pytest
+import json
 
 from pathlib import Path
 
@@ -60,17 +61,17 @@ def test_cmd(ruleset):
     for file_path in test_files:
         result = pytest.main([file_path])
         if result != pytest.ExitCode.OK:
-            failed_files.append(file_path) 
-    print(failed_files)
-    with open("files_failed.py", "w") as f:
-        f.write(f"failed_paths = {failed_files}")
+            failed_files.append(file_path)
+    with open("files_failed.json", "w") as f:
+        json.dump(failed_files, f)
 
     # pytest.main(test_files)
 
 # TESTtest
 @cli.command(name="testtest")
 def test():
-    from files_failed import failed_paths
+    with open("files_failed.json", "r") as f:
+        failed_paths = json.load( f)
     pytest.main(failed_paths)
 
 # RUN

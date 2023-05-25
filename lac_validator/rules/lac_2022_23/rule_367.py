@@ -112,6 +112,6 @@ def test_validate():
 
     
 
-    result = error_func(test_dfs)
+    result = validate(test_dfs)
 
     assert result == {"Episodes": [2, 4, 5, 7, 8]}

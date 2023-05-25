@@ -138,7 +138,7 @@ def test_validate():
     }
 
     
-    result = error_func(fake_dfs_205_xml)
+    result = validate(fake_dfs_205_xml)
     assert result == {"Header": [2]}
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_csv_2.items()}
@@ -159,5 +159,5 @@ def test_validate():
     }
     dfs["UASC_last"].loc["1022"] = {"CHILD": "1022", "DOB": "23/07/2002", "DUC": pd.NA}
 
-    result = error_func(dfs)
+    result = validate(dfs)
     assert result == {"UASC": ["1022"]}

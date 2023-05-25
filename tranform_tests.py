@@ -14,7 +14,8 @@ for rule_file in failed_paths:
 
     # rule_content = rule_content.replace("error_defn, error_func = validate()", "")
     # rule_content = rule_content.replace("error_func(fake_dfs)", "validate(fake_dfs)")
-    rule_content = rule_content.replace("error_func(", "validate(")
+    # rule_content = rule_content.replace("error_func(", "validate(")
+    rule_content = rule_content
 
     # write new content to files.
     with open(f"{rule_file}", "w") as rule_file:

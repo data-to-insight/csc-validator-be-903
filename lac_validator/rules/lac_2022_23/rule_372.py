@@ -2,6 +2,27 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
+@rule_definition(
+    code="372",
+    message="Child in youth custody or prison should be at least 10.",
+    affected_fields=['DECOM', 'PLACE'],
+)
+def validate(dfs):
+    if 'Episodes' not in dfs or 'Header' not in dfs:
+        return {}
+    else:
+        epi = dfs['Episodes']
+        hea = dfs['Header']
+
+        epi.reset_index(inplace=True)
+        epi_p2 = epi[epi['PLACE'] == 'R5']
+        merged_e = epi_p2.merge(hea, how='inner', on='CHILD').dropna(subset=['DECOM', 'DEC', 'DOB'])
+        error_mask = merged_e['DECOM'] < (merged_e['DOB'] +
+                                                pd.offsets.DateOffset(years=10))
+        
+        return {'Episodes': merged_e['index'][error_mask].unique().tolist()}
+
+
 def test_validate():
     import pandas as pd
 
@@ -40,8 +61,11 @@ def test_validate():
             ],
         }
     )
-    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}
 
-    
+    fake_hea['DOB'] = pd.to_datetime(fake_hea['DOB'], format='%d/%m/%Y', errors='coerce')
+    fake_epi['DECOM'] = pd.to_datetime(fake_epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+    fake_epi['DEC'] = pd.to_datetime(fake_epi['DEC'], format='%d/%m/%Y', errors='coerce')
+
+    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}    
 
     assert validate(fake_dfs) == {"Episodes": [3, 4, 5]}

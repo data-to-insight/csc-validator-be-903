@@ -60,7 +60,7 @@ def test_validate():
     metadata = {"collection_start": "31/03/1995"}
     test_dfs = {"Episodes": episodes, "metadata": metadata}
 
-    error_defn, error_func = validate()
+    
 
     test_result = error_func(test_dfs)
 

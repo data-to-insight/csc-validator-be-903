@@ -220,7 +220,7 @@ def test_validate():
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
 
-    error_defn, error_func = validate()
+    
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
     dfs["Header"].loc["1001"] = {"CHILD": "1001", "DOB": "asdsad", "UASC": "0"}
     dfs["UASC"].loc["1001"] = {

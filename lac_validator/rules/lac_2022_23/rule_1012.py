@@ -85,9 +85,9 @@ def test_validate():
         "OC2": fake_oc2,
     }
 
-    error_defn, error_func = validate()
+    
 
-    assert error_func(fake_dfs) == {
+    assert validate(fake_dfs) == {
         "PlacedAdoption": [0],
         "Missing": [1],
         "Reviews": [2],

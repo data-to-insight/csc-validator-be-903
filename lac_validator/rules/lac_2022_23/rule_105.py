@@ -36,12 +36,12 @@ def test_validate():
     import pandas as pd
 
     fake_header = pd.DataFrame({"UASC": [0, 1, pd.NA, "", "0", "1", "2", 2]})
-    error_defn, error_func = validate()
+    
 
     fake_dfs = {"Header": fake_header, "metadata": {"file_format": "csv"}}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {}
 
     fake_dfs = {"Header": fake_header, "metadata": {"file_format": "xml"}}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"Header": [2, 3, 6, 7]}

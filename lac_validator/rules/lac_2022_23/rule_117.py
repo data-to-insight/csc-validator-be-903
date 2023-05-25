@@ -177,6 +177,6 @@ def test_validate():
         "metadata": metadata,
         "PlacedAdoption": fake_placed_adoption,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Episodes": [3, 6, 9], "PlacedAdoption": [1, 3, 4]}

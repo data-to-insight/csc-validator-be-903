@@ -78,6 +78,6 @@ def test_validate():
         }
     )
     fake_dfs = {"OC3": fake_data_oc3, "OC2": fake_data_oc2}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"OC3": [0, 1, 2, 3], "OC2": [0, 1, 2, 3]}

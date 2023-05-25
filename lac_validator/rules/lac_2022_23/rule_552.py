@@ -99,7 +99,7 @@ def test_validate():
 
     fake_dfs = {"PlacedAdoption": fake_placed_adoption, "Episodes": fake_episodes}
     # get the error function
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     # check that result of function on provided data is as expected
     assert result == {"PlacedAdoption": [2], "Episodes": [2]}

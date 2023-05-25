@@ -21,7 +21,7 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2022_23",
+    default="lac_2022_23",
     help="validation year, e.g lac_2022_23",
 )
 def list_cmd(ruleset):
@@ -51,12 +51,27 @@ def test_cmd(ruleset):
     """
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
-
+    # May 2023. There are 288 rule files. 
     test_files = [
         str(p.absolute()) for p in module_folder.glob("*.py") if p.stem != "__init__"
     ]
-    pytest.main(test_files)
+    
+    failed_files = []
+    for file_path in test_files:
+        result = pytest.main([file_path])
+        if result != pytest.ExitCode.OK:
+            failed_files.append(file_path) 
+    print(failed_files)
+    with open("files_failed.py", "w") as f:
+        f.write(f"failed_paths = {failed_files}")
 
+    # pytest.main(test_files)
+
+# TESTtest
+@cli.command(name="testtest")
+def test():
+    from files_failed import failed_paths
+    pytest.main(failed_paths)
 
 # RUN
 @cli.command(name="run")

@@ -157,7 +157,7 @@ def test_validate():
 
     test_dfs = {"Episodes": eps, "OC2": oc2, "metadata": metadata}
 
-    error_defn, error_func = validate()
+    
 
     test_result = error_func(test_dfs)
 

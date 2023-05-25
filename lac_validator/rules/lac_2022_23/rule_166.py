@@ -37,8 +37,8 @@ def test_validate():
 
     fake_dfs = {"Reviews": fake_data}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Reviews": [2, 3, 4]}

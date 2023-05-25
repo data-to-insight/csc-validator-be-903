@@ -43,8 +43,8 @@ def test_validate():
 
     fake_dfs = {"Missing": fake_mis}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Missing": [2, 3]}

@@ -24,5 +24,5 @@ def test_validate():
     erro_defn, error_func = validate_INT36()
 
     fake_dfs = {"UASC": fake_INT_header}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"UASC": [0, 1, 2, 3, 4, 5, 6, 7]}

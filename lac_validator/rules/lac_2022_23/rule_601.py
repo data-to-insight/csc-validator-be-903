@@ -159,8 +159,8 @@ def test_validate():
         "AD1": fake_data_ad1,
         "metadata": metadata,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
 
     assert result == {
         "AD1": [

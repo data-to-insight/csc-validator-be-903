@@ -72,8 +72,8 @@ def test_validate():
         "OC3": fake_data_oc3,
     }
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Header": [0, 6]}

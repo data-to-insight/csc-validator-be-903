@@ -179,7 +179,7 @@ def test_validate():
         ]
     )
     fake_dfs = {"PrevPerm": fake_data_prevperm, "Episodes": fake_data_episodes}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     # desired
     assert result == {"Episodes": [0, 2, 5, 9, 10], "PrevPerm": [0, 1, 4, 8, 9]}

@@ -80,6 +80,6 @@ def test_validate():
         "Episodes": fake_data_episodes,
         "Header": fake_data_header,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Episodes": [0, 3], "Header": [0, 1]}

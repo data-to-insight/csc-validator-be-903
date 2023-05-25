@@ -105,9 +105,10 @@ def rule_definition(
     Creates the rule definition for validation rules using RuleDefinition class as a template.
 
     :param int code: The rule code for each rule.
-    :param str message: The message displayed for each validation rule.
+    :param RuleType-class rule_type: object denoting if the rule is an error or a query.
+    :param CINtable-object module: string denoting the module/table affected by a validation rule.
     :param str affected_fields: The fields/columns affected by a validation rule.
-
+    :param str message: The message displayed for each validation rule.
     :returns: RuleDefinition object containing information about validation rules.
     :rtype: RuleDefiniton class object.
     """

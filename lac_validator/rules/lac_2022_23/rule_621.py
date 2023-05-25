@@ -49,8 +49,8 @@ def test_validate():
 
     fake_dfs = {"Header": fake_data}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Header": [0, 2]}

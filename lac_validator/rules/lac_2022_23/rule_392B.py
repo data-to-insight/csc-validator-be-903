@@ -103,9 +103,9 @@ def test_validate():
         "Header_last": fake_header_last,
     }
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Episodes": [1, 3, 5]}
 
@@ -118,6 +118,6 @@ def test_validate():
 
     fake_dfs = {"Episodes": fake_episodes, "UASC_last": uasc_last}
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Episodes": [3, 5]}

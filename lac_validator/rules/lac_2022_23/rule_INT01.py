@@ -31,5 +31,5 @@ def test_validate():
     erro_defn, error_func = validate_INT01()
 
     fake_dfs = {"Header": fake_INT_header, "AD1": fake_INT_file}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"AD1": [3]}

@@ -137,7 +137,7 @@ def test_validate():
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
 
-    error_defn, error_func = validate()
+    
     result = error_func(fake_dfs_205_xml)
     assert result == {"Header": [2]}
 

@@ -132,9 +132,9 @@ def test_validate():
         "PlacedAdoption": test_placed,
     }
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {
         "PlacedAdoption": [0, 4],

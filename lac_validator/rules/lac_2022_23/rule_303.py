@@ -79,8 +79,8 @@ def test_validate():
 
     fake_dfs = {"UASC": fake_data_uasc, "Header": fake_data_header}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"UASC": [2, 4], "Header": [2, 4]}

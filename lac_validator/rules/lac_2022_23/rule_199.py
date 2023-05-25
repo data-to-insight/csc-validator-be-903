@@ -120,15 +120,15 @@ def test_validate():
             },  # 8: Pass
         ]
     )
-    error_defn, error_func = validate()
+    
 
     fake_dfs = {"Episodes": fake_data_199_episodes.copy()}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"Episodes": [5, 6, 7]}
 
     fake_dfs = {
         "Episodes": fake_data_199_episodes,
         "Episodes_last": fake_data_199_episodes_last,
     }
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"Episodes": [0, 1, 2, 5, 6, 7]}

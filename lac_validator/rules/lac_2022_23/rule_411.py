@@ -33,8 +33,8 @@ def test_validate():
 
     fake_dfs = {"Episodes": fake_data, "metadata": {"localAuthority": "auth"}}
 
-    error_defn, error_func = validate()
+    
 
     # Note 2 and 3 pass as the rule is specific
     # about only checking that 'IN' is set correctly
-    assert error_func(fake_dfs) == {"Episodes": [4]}
+    assert validate(fake_dfs) == {"Episodes": [4]}

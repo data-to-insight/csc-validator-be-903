@@ -113,7 +113,7 @@ def test_validate():
     metadata = {"provider_info": provider_info}
 
     fake_dfs = {"Episodes": fake_data_eps, "metadata": metadata}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
 
     assert result == {"Episodes": [5, 6, 8]}

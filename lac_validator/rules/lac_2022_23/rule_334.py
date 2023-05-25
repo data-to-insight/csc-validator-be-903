@@ -77,6 +77,6 @@ def test_validate():
         ]
     )
     fake_dfs = {"Episodes": fake_data_episodes, "AD1": fake_placed_ad1}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Episodes": [0, 9], "AD1": [0, 4]}

@@ -38,8 +38,8 @@ def test_validate():
 
     fake_dfs = {"PrevPerm": fake_data}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"PrevPerm": [0, 2, 3]}

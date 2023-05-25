@@ -24,5 +24,5 @@ def test_validate():
     erro_defn, error_func = validate_INT34()
 
     fake_dfs = {"OC3": fake_INT_header}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"OC3": [0, 1, 2, 3, 4, 5, 6, 7]}

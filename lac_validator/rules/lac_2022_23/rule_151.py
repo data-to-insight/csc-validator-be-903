@@ -126,7 +126,7 @@ def test_validate():
 
     fake_dfs = {"AD1": fake_data}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"AD1": [2, 3, 4, 5, 6, 7, 8]}

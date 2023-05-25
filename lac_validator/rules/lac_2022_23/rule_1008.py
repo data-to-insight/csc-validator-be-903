@@ -75,7 +75,7 @@ def test_validate():
         "provider_info": pd.DataFrame({"URN": ["1234567", "SC999999", "999999"]})
     }
     fake_dfs = {"Episodes": fake_data_eps, "metadata": metadata}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
 
     assert result == {"Episodes": [5, 7, 8]}

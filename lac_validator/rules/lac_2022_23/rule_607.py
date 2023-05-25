@@ -165,6 +165,6 @@ def test_validate():
         "Episodes": fake_data_eps,
         "metadata": metadata,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Header": [4, 7], "Episodes": [4, 5, 6, 9]}

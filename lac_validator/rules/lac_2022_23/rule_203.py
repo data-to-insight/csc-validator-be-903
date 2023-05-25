@@ -88,8 +88,8 @@ def test_validate():
 
     fake_dfs = {"Header": fake_data, "Header_last": fake_data_prev}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"Header": [1, 2, 6, 7, 8]}

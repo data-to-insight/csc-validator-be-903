@@ -71,6 +71,6 @@ def test_validate():
     )
     fake_dfs = {"Missing_last": fake_mis_l, "Missing": fake_mis}
 
-    error_defn, error_func = validate()
+    
 
-    assert error_func(fake_dfs) == {"Missing": [1, 3]}
+    assert validate(fake_dfs) == {"Missing": [1, 3]}

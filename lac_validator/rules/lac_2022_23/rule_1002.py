@@ -49,5 +49,5 @@ def test_validate():
         "Episodes_last": fake_episodes_prev,
         "OC3": fake_oc3,
     }
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"OC3": [3]}

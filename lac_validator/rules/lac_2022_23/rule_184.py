@@ -58,8 +58,8 @@ def test_validate():
 
     fake_dfs = {"Header": fake_data_header, "PlacedAdoption": fake_data_placed}
 
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"PlacedAdoption": [2]}

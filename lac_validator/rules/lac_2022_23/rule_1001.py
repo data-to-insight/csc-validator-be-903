@@ -363,8 +363,6 @@ def test_validate():
     )
     header["DOB"] = "01/01/2000"
 
-    erro_defn, error_func = validate()
-
     fake_dfs = {
         "Episodes": current_eps,
         "OC3": oc3,
@@ -372,5 +370,5 @@ def test_validate():
         "Episodes_last": prev_eps,
         "metadata": metadata,
     }
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"OC3": [1, 2, 4, 5, 6, 7]}

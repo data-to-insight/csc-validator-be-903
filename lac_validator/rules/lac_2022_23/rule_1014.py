@@ -203,7 +203,7 @@ def test_validate():
         "OC3": fake_data_oc3,
         "metadata": metadata,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     # assert result == {'UASC': [2], 'Episodes': [4,5], 'OC3':[4]}
     assert result == {"UASC": [1, 3, 4], "OC3": [1, 6, 9]}

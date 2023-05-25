@@ -73,8 +73,8 @@ def test_validate():
         "PlacedAdoption_last": fake_last_pa,
         "metadata": metadata,
     }
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {
         "PlacedAdoption": [
             4,

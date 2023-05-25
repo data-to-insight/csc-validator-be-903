@@ -132,6 +132,6 @@ def test_validate():
     fake_eps["PLACE"] = "---"
     fake_eps["PLACE_PROVIDER"] = "---"
     fake_dfs = {"Episodes": fake_eps}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Episodes": [2, 6, 7]}

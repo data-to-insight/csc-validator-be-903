@@ -52,16 +52,15 @@ def test_validate():
 
     fake_oc3 = pd.DataFrame({"CHILD": ["101", "102", "103", "104", "105"]})
 
-    erro_defn, error_func = validate()
 
     fake_dfs = {
         "Episodes": fake_episodes,
         "Episodes_last": fake_episodes_prev,
         "OC3": fake_oc3,
     }
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"OC3": [1, 4]}
 
     fake_dfs = {"Episodes": fake_episodes, "OC3": fake_oc3}
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
     assert result == {"OC3": [4]}

@@ -95,8 +95,8 @@ def test_validate():
         "Episodes": fake_data_episodes,
         "metadata": {"collection_start": "01/04/2016"},
     }
-    error_defn, error_func = validate()
+    
 
-    result = error_func(fake_dfs)
+    result = validate(fake_dfs)
 
     assert result == {"PrevPerm": [0, 2], "Episodes": [0, 3, 4, 5]}

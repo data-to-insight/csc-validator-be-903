@@ -65,6 +65,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020", "collection_end": "31/03/2021"}
 
     fake_dfs = {"Header": fake_data_header, "metadata": metadata}
-    error_defn, error_func = validate()
-    result = error_func(fake_dfs)
+    
+    result = validate(fake_dfs)
     assert result == {"Header": [0, 3]}

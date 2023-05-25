@@ -97,7 +97,7 @@ def test_validate():
         ]
     )
 
-    error_defn, error_func = validate()
+    
 
     dfs = {
         "Episodes": fake_episodes,

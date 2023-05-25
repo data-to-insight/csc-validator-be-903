@@ -203,7 +203,7 @@ def test_validate():
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
 
-    error_defn, error_func = validate()
+    
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
     result = error_func(dfs)

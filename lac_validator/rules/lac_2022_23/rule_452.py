@@ -1,7 +1,7 @@
 import pandas as pd
 
 from lac_validator.rule_engine import rule_definition
-
+from lac_validator.fixtures import current_episodes, previous_episodes
 
 import pandas as pd
 
@@ -60,6 +60,10 @@ def validate(dfs):
 
 
 def test_validate():
-    
-    result = validate(fake_dfs__452_453_503G_503H)
+    dfs = {
+        "Episodes": current_episodes,
+        "Episodes_last": previous_episodes,
+    }
+
+    result = validate(dfs)
     assert result == {"Episodes": [4, 6]}

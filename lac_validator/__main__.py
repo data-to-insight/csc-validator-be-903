@@ -78,14 +78,14 @@ def test():
 
 # TEST one rule
 @cli.command(name="test_one_rule")
-@click.argument("rule_name", type=str, required=True)
+@click.argument("code", type=str, required=True)
 @click.option(
     "--ruleset",
     "-r",
     default="lac_2022_23",
     help="validation year, e.g lac_2022_23",
 )
-def test_one_rule(rule_name, ruleset):
+def test_one_rule(code, ruleset):
     """
     Runs pytest of rules specified
     :param str ruleset: validation year whose rules should be run
@@ -94,7 +94,7 @@ def test_one_rule(rule_name, ruleset):
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
 
-    file_path = os.path.join(module_folder, f"rule_{rule_name}.py")
+    file_path = os.path.join(module_folder, f"rule_{code}.py")
 
     pytest.main([file_path])
 

@@ -42,8 +42,6 @@ def test_validate():
 
     fake_oc3 = pd.DataFrame({"CHILD": ["101", "102", "103", "104"]})
 
-    erro_defn, error_func = validate()
-
     fake_dfs = {
         "Episodes": fake_episodes,
         "Episodes_last": fake_episodes_prev,

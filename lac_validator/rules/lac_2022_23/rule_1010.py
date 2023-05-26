@@ -84,8 +84,6 @@ def test_validate():
         "OC3": fake_oc3,
     }
 
-    erro_defn, error_func = validate()
-
     result = validate(fake_dfs)
 
     assert result == {"OC3": [2]}

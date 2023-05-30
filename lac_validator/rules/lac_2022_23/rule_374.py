@@ -1,5 +1,6 @@
 import pandas as pd
 from lac_validator.rule_engine import rule_definition
+from lac_validator.rules.rule_utils import decom_before_dob
 
 
 @rule_definition(
@@ -11,16 +12,7 @@ def validate(dfs):
     if 'Episodes' not in dfs or 'Header' not in dfs:
         return {}
     else:
-        epi = dfs['Episodes']
-        hea = dfs['Header']
-
-        epi.reset_index(inplace=True)
-        epi_p2 = epi[epi['PLACE'] == 'P3']
-        merged_e = epi_p2.merge(hea, how='inner', on='CHILD').dropna(subset=['DECOM', 'DEC', 'DOB'])
-        error_mask = merged_e['DECOM'] < (merged_e['DOB'] +
-                                                pd.offsets.DateOffset(years=14))
-        
-        return {'Episodes': merged_e['index'][error_mask].unique().tolist()}
+        return decom_before_dob(dfs, p_code='P3', y_gap=14)
 
 
 def test_validate():

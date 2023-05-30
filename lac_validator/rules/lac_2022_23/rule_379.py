@@ -1,5 +1,6 @@
 import pandas as pd
 from lac_validator.rule_engine import rule_definition
+from lac_validator.rules.rule_utils import dec_after_decom
 
 
 @rule_definition(
@@ -11,15 +12,7 @@ def validate(dfs):
     if 'Episodes' not in dfs or 'Header' not in dfs:
         return {}
     else:
-        epi = dfs['Episodes']
-        hea = dfs['Header']
-        
-        epi.reset_index(inplace=True)
-        epi_p2 = epi[epi['PLACE'] == 'T4']
-        merged_e = epi_p2.merge(hea, how='inner', on='CHILD').dropna(subset=['DECOM', 'DEC', 'DOB'])
-        error_mask = merged_e['DEC'] > (merged_e['DECOM'] +
-                                            pd.offsets.DateOffset(days=7))
-        return {'Episodes': merged_e['index'][error_mask].unique().tolist()}
+        return dec_after_decom(dfs, p_code='T4', y_gap=7)
 
 def test_validate():
     import pandas as pd

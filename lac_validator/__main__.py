@@ -56,16 +56,7 @@ def test_cmd(ruleset):
     test_files = [
         str(p.absolute()) for p in module_folder.glob("*.py") if p.stem != "__init__"
     ]
-
-    failed_files = []
-    for file_path in test_files:
-        result = pytest.main([file_path])
-        if result != pytest.ExitCode.OK:
-            failed_files.append(file_path)
-    with open("files_failed.json", "w") as f:
-        json.dump(failed_files, f)
-
-    # pytest.main(test_files)
+    pytest.main(test_files)
 
 
 # TESTtest

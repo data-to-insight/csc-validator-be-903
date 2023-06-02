@@ -2108,8 +2108,11 @@ def validate_632():
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
 
+            # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOM's doesn't affect the rule logic.
+            decom_only_eps = episodes[["CHILD", "DECOM"]].dropna() 
+
             # select first episodes
-            first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
+            first_eps_idxs = decom_only_eps.groupby("CHILD")["DECOM"].idxmin()
             first_eps = episodes[episodes.index.isin(first_eps_idxs)]
 
             # prepare to merge

@@ -19,7 +19,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pandas = "2.0.1"
+pandas = "< 2.0.0"
 openpyxl = "^3.0.9"
 quality-lac-data-ref-authorities = ">=2021.4"
 quality-lac-data-ref-postcodes = ">=2021.8.1"

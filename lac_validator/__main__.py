@@ -7,6 +7,7 @@ from pathlib import Path
 
 import lac_validator.lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
+from lac_validator.utils import process_uploaded_files
 
 from validator903.ingress import read_from_text
 from validator903.report import Report
@@ -93,7 +94,7 @@ def test_one_rule(code, ruleset):
 # RUN
 @cli.command(name="run")
 @click.argument("p4a_path", type=click.File("rt"), required=True)
-# @click.argument("ad1_path", type=click.File("rt"), required=True)
+@click.argument("ad1_path", type=click.File("rt"), required=True)
 @click.option(
     "--ruleset",
     "-r",
@@ -101,7 +102,7 @@ def test_one_rule(code, ruleset):
     help="validation year e.g lac_2022_23",
 )
 @click.option("--select", "-s", default=None)
-def run_all(p4a_path, ruleset, select):
+def run_all(p4a_path, ad1_path, ruleset, select):
     """
     created with code from offlinedebug.py
 
@@ -111,17 +112,8 @@ def run_all(p4a_path, ruleset, select):
     # p4a_path = "tests\\fake_data\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"
 
-    # construct 'files' list of dicts (nb filetexts are bytes not str)
-    with open(p4a_path.name, "rb") as f:
-        p4a_filetext = f.read()
-
-    # with open(ad1_path.name, "rb") as f:
-    #     ad1_filetext = f.read()
-
-    files_list = [
-        dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
-        # dict(name=ad1_path.name, description="This year", fileText=ad1_filetext),
-    ]
+    frontend_files_dict = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
+    files_list = process_uploaded_files(frontend_files_dict)
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
@@ -130,19 +122,6 @@ def run_all(p4a_path, ruleset, select):
         metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None
     )
     results = v.ds_results
-    # print(results)
-
-    # print()
-    # print('-- AD1 Columns --')
-    # print(results['AD1'].columns)
-    # print()
-    # print(f"*****************AD1 with selected cols******************")
-    # print(results['AD1'][['DATE_MATCH', 'ERR_523']])
-    # print('-- PlacedAdoption Columns --')
-    # print(results['PlacedAdoption'].columns)
-    # print()
-    # print(f"*****************AD1 full in ds_results******************")
-    # print(results['PlacedAdoption'], ['DATE_PLACED', 'ERR_523'])
 
     r = Report(results)
     print(f"*****************Report******************")

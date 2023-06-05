@@ -1,5 +1,3 @@
-import json
-
 import pandas as pd
 from prpc_python import RpcApp
 
@@ -56,9 +54,9 @@ def generate_tables(lac_data):
 
 
 @app.call
-def lac_validate(lac_data_json, file_metadata,  selected_rules=None, ruleset="lac_2022_23"):
+def lac_validate(lac_data, file_metadata,  selected_rules=None, ruleset="lac_2022_23"):
     """
-    :param json_dict lac_data_json: keys are table names and values are LAC csv files.
+    :param json_dict lac_data: keys are table names and values are LAC csv files.
     :param  dict file_metadata: contains collection year and local authority as strings.
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
     :param ruleset: rule pack that should be run. lac_2022_23 is for the year 2022
@@ -71,8 +69,6 @@ def lac_validate(lac_data_json, file_metadata,  selected_rules=None, ruleset="la
     # file_metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
     # lac_data = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
 
-    # convert json string of js dict object to python dict object.
-    lac_data = json.loads(lac_data_json)
     files_list = process_uploaded_files(lac_data)
 
     v = lac_class.LacValidationSession(metadata=file_metadata, files=files_list, ruleset=ruleset, selected_rules=selected_rules)

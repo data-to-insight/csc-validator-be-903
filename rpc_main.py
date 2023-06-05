@@ -3,6 +3,7 @@ from prpc_python import RpcApp
 
 from lac_validator import lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
+from lac_validator.utils import process_uploaded_files
 
 from validator903.ingress import read_from_text
 from validator903.report import Report
@@ -63,13 +64,12 @@ def lac_validate(lac_data, file_metadata,  selected_rules=None, ruleset="lac_202
     :return issue_report: issue locations in the data.
     :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
     """
-    # TODO put in processing so that a list of file references can be recieved and the names of the files are deduced from thier content.
     # p4a_path = "tests\\fake_data\\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"
+    # file_metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
+    # lac_data = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
 
-    files_list = [
-        dict(name=lac_data.filename, description='This year', fileText=lac_data.read()),
-    ]
+    files_list = process_uploaded_files(lac_data)
 
     v = lac_class.LacValidationSession(metadata=file_metadata, files=files_list, ruleset=ruleset, selected_rules=selected_rules)
     results = v.ds_results

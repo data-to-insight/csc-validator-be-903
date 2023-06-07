@@ -17,8 +17,8 @@ with open(ad1_path, 'rb') as f:
     ad1_filetext = f.read()
 
 files_list = [
-    dict(name=p4a_path, description='This year', fileText=p4a_filetext),
-    dict(name=ad1_path, description='This year', fileText=ad1_filetext),
+    dict(name=p4a_path, description='This year', file_content=p4a_filetext),
+    dict(name=ad1_path, description='This year', file_content=ad1_filetext),
 ]
 
 # the rest of the metadata is added in read_from_text() when instantiating Validator

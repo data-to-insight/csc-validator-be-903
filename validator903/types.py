@@ -59,7 +59,7 @@ class IntegrityCheckDefinition(ErrorDefinition):
 
 class UploadedFile(TypedDict):
     name: str
-    fileText: bytes
+    file_content: bytes
     description: str
 
 

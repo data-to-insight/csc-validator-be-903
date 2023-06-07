@@ -143,7 +143,7 @@ def xmltocsv(p4a_path):
     with open(p4a_path.name, "rb") as f:
         p4a_filetext = f.read()
     files_list = [
-        dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
+        dict(name=p4a_path.name, description="This year", file_content=p4a_filetext),
     ]
 
     data_files, _ = read_from_text(files_list)

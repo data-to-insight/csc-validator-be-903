@@ -29,5 +29,5 @@ def process_uploaded_files(frontend_files_dict):
                 with open(filename, "rb") as f:
                     file_text = f.read()
 
-            files.append(dict(name=filename, description=field_name, fileText=file_text))
+            files.append(dict(name=filename, description=field_name, file_content=file_text))
     return files

@@ -40,8 +40,8 @@ def dummy_input_data(dummy_input_files, dummy_metadata):
         with open(path, 'rb') as live_file:
             bytez = live_file.read()
 
-        dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'This year'})
-        dummy_uploads.append({'name': filename, 'fileText': bytez, 'description': 'Prev year'})
+        dummy_uploads.append({'name': filename, 'file_content': bytez, 'description': 'This year'})
+        dummy_uploads.append({'name': filename, 'file_content': bytez, 'description': 'Prev year'})
 
     dummy_dfs, extra_metadata = read_from_text(dummy_uploads)
     dummy_metadata.update(extra_metadata)

@@ -11,7 +11,7 @@ from validator903.report import Report
 app = RpcApp("validate_lac")
 
 @app.call
-def get_rules(ruleset="lac_2022_23"):
+def get_rules(ruleset:str="lac_2022_23")->list[dict]:
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
@@ -27,28 +27,25 @@ def get_rules(ruleset="lac_2022_23"):
             }
         )
 
-    # dataframe of rule_definitions
-    rules_df = pd.DataFrame(rules)
-
-    json_rules_df = rules_df.to_json(orient="records")
-    return json_rules_df
+    return rules
 
 @app.call
-def generate_tables(lac_data):
+def generate_tables(lac_data:dict=None)->dict[str, dict]:
     # TODO if user uploads tabular data, return as-is. if xml, convert to csv.
     """
-    :param lac_data: file reference to a LAC file(s) uploaded by user.
+    :param dict lac_data: files uploaded by user mapped to the field where files were uploaded.
     :return json_data_files:  a dictionary of dataframes that has been converted to json.
     """
+    p4a_path = "tests\\fake_data\\placed_for_adoption_errors.csv"
+    ad1_path = "tests\\fake_data\\ad1.csv"
+    lac_data = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
 
-    files_list = [
-        dict(name=lac_data.filename, description='This year', fileText=lac_data.read()),
-    ]
+    files_list = process_uploaded_files(lac_data)
 
     data_files, _ = read_from_text(files_list)
 
     # what the frontend will display
-    json_data_files = {table_name:table_df.to_json(orient="records") for table_name, table_df in  data_files.items()}
+    json_data_files = {table_name:table_df.to_dict(orient="records") for table_name, table_df in  data_files.items()}
     
     return json_data_files
 

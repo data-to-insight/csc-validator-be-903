@@ -49,7 +49,7 @@ def generate_tables(lac_data:dict)->dict[str, dict]:
 
 
 @app.call
-def lac_validate(lac_data:dict=None, file_metadata:dict=None,  selected_rules: Optional[list[str]]=None, ruleset:str="lac_2022_23"):
+def lac_validate(lac_data:Optional[dict]=None, file_metadata:Optional[dict]=None,  selected_rules: Optional[list[str]]=None, ruleset:str="lac_2022_23"):
     """
     :param lac_data: keys are table names and values are LAC csv files.
     :param file_metadata: contains collection year and local authority as strings.

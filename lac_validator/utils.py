@@ -1,5 +1,12 @@
+from validator903.types import UploadedFile, UploadError
+from prpc_python.pyodide import PyodideFile
+from io import TextIOWrapper
+ 
+# TODO Test that this function still works
+# TODO list[UploadedFile | PyodideFile | str]
+# TODO update to python3.10
 
-def process_uploaded_files(frontend_files_dict):
+def process_uploaded_files(input_files:dict[str, list]):
     """
     :param dict frontend_file_dict: dict of lists showing file content and the field into which user uploaded file.
 
@@ -10,24 +17,27 @@ def process_uploaded_files(frontend_files_dict):
     # current year: description="This year"
     # Previous year: description="Prev year"
 
-    files = []
-    for field_name in frontend_files_dict:
-        for file_ref in frontend_files_dict[field_name]:
+    uploaded_files = []
+    for field_name, file_refs in input_files.items():
+        for file_ref in file_refs:
             # name attribute depends on whether on file type. CLI and API send different types.
-            try:                
+            if isinstance(file_ref, PyodideFile):         
                 # PyodideFile from frontend
                 filename = file_ref.filename
                 file_text = file_ref.read()
-            except:
-                try:
+            else:
+                if isinstance(file_ref, TextIOWrapper):
                     # Text IO wrapper object from command line
-                    filename = file_ref.name                    
-                except:
+                    filename = file_ref.name                   
+                elif isinstance(file_ref, str):
                     # string path
                     filename = file_ref
-
+                else:
+                    raise UploadError("file format is not recognised.") 
+                              
                 with open(filename, "rb") as f:
-                    file_text = f.read()
-
-            files.append(dict(name=filename, description=field_name, file_content=file_text))
-    return files
+                    file_text = f.read() 
+                
+            # TODO convert all dict statements to use UploadedFile
+            uploaded_files.append(UploadedFile(name=filename, description=field_name, file_content=file_text))
+    return uploaded_files

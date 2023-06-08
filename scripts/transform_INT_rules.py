@@ -1,3 +1,6 @@
+# The code in this file does the appropriate modifications on the INT files to put them in the new rule format.
+# INT files were exceptions to most of the formats expected by the scripts that updated the rest of the rules.
+
 import os
 
 
@@ -46,7 +49,7 @@ def process_file(source_file, destination_file):
 
 def main():
     source_directory = os.path.join("validator903", "validators")
-    destination_directory = os.path.join("lac_validator", "rules", "lac_2022_23")
+    destination_directory = os.path.join("lac_validator", "rules", "lac2022_23")
 
     # Iterate over files in the source directory
     for filename in os.listdir(source_directory):

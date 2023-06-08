@@ -1,7 +1,7 @@
 import logging
 import datetime
 import pandas as pd
-from typing import Any, List, Dict
+from typing import Any
 from pandas import DataFrame
 
 from validator903.types import UploadedFile
@@ -11,36 +11,29 @@ from validator903.datastore import copy_datastore, create_datastore
 from lac_validator.ruleset import create_registry
 
 logger = logging.getLogger(__name__)
-handler = logging.FileHandler(
-    datetime.datetime.now().strftime("lac validator --%d-%m-%Y %H.%M.%S.log")
-)
 
-f_format = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(f_format)
-logger.addHandler(handler)
-
-
-class LacValidationSession:
+# TODO rename this file
+class LacValidator:
     """
     Central location for running rules on files.
     """
 
-    dfs: Dict[str, DataFrame] = {}
-    dones: List[str] = []
-    skips: List[str] = []
-    fails: List[str] = []
-
     def __init__(
         self,
-        metadata: Dict[str, Any],
-        files: List[UploadedFile],
+        metadata: dict[str, Any],
+        files: list[UploadedFile],
         ruleset,
         selected_rules,
     ):
+        self.dfs: dict[str, DataFrame] = {}
+        self.dones: list[str] = []
+        self.skips: list[str] = []
+        self.fails: list[str] = []
+
         logger.info("Reading uploaded files...")
-        # TODO remove UploadedFile type
         dfs, metadata_extras = read_from_text(raw_files=files)
-        self.dfs.update(dfs)
+        self.dfs = dfs
+
         metadata.update(metadata_extras)
         logger.info(f'Metadata receieved: {",".join(metadata.keys())}')
 
@@ -50,6 +43,7 @@ class LacValidationSession:
         # validate
         self.validate(selected_rules)
 
+    # TODO isolate func
     def get_rules_to_run(self, registry, selected_rules):
         """
         Filters rules to be run based on user's selection in the frontend.
@@ -64,7 +58,7 @@ class LacValidationSession:
         else:
             return registry
 
-    def validate(self, selected_rules: List[str]):
+    def validate(self, selected_rules: list[str]):
         logger.info("Creating Data store...")
         data_store = create_datastore(self.dfs, self.metadata)
 
@@ -82,7 +76,7 @@ class LacValidationSession:
 
             try:
                 # get the result from when the rule is run on the data.
-                result: Dict[str, List[Any]] = rule.func(ds_copy)
+                result: dict[str, list[Any]] = rule.func(ds_copy)
             except Exception as e:
                 # document instances where the rule cannot run on the data
                 logger.exception(f"Rule code {rule.code} failed to run!")
@@ -90,6 +84,8 @@ class LacValidationSession:
                 continue
 
             if result == {}:
+                # TODO replace this with behaviour that models rules skipped because of lack of data.
+                
                 # validation rules return an empty dict if the required tables are not all available.
                 logger.info(f"Error code {rule.code} skipped due to missing tables")
                 self.skips.append(rule.code)
@@ -113,7 +109,7 @@ class LacValidationSession:
                         )
                     self.ds_results[table].loc[values, f"ERR_{rule.code}"] = True
 
-
+# TODO move this to utils of 903 
 def create_issue_df(report, error_report):
     """
     creates issue_df similar to that of the CIN backend output.

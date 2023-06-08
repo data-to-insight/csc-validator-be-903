@@ -55,7 +55,7 @@ class _BufferedUploadedFile(collections.abc.Mapping):
             return self.name
         elif k == "description":
             return self.description
-        elif k == "fileText":
+        elif k == "file_content":
             with open(self.file, "rb") as file:
                 return file.read()
         else:
@@ -75,7 +75,7 @@ def read_from_text(
     Reads from a raw list of files passed from javascript. These files are of
     the form e.g.
     [
-        {name: 'filename.csv', fileText: <file contents>, description: <upload metadata>}
+        {name: 'filename.csv', file_content: <file contents>, description: <upload metadata>}
     ]
 
     This function will try to catch most basic upload errors, and dispatch other errors
@@ -142,7 +142,7 @@ def read_from_text(
             return read_csvs_from_text(raw_files), metadata_extras
         elif extensions == ["xml"]:
             metadata_extras["file_format"] = "xml"
-            return read_xml_from_text(raw_files[0]["fileText"]), metadata_extras
+            return read_xml_from_text(raw_files[0]["file_content"]), metadata_extras
         else:
             raise UploadError(f"Unknown file type {extensions[0]} found.")
 
@@ -176,11 +176,11 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
     """
 
     if not isinstance(CH, str):
-        CH_bytes = CH["fileText"].tobytes()
+        CH_bytes = CH["file_content"].tobytes()
     else:
         CH_bytes = CH
     if not isinstance(SCP, str):
-        SCP_bytes = SCP["fileText"].tobytes()
+        SCP_bytes = SCP["file_content"].tobytes()
     else:
         SCP_bytes = SCP
     provider_info_cols = [
@@ -397,7 +397,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
 
     files = {}
     for file_data in raw_files:
-        csv_file = BytesIO(file_data["fileText"])
+        csv_file = BytesIO(file_data["file_content"])
         # pd.read_csv on utf-16 files will raise a UnicodeDecodeError. This block prints a descriptive error message if that happens.
         try:
             max_cols = max([len(cols) for cols in column_names.values()])
@@ -409,7 +409,7 @@ def read_csvs_from_text(raw_files: List[UploadedFile]) -> Dict[str, DataFrame]:
             )
 
         except UnicodeDecodeError:
-            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, fileText, Description.
+            # raw_files is a list of files of type UploadedFile(TypedDict) whose instance is a dictionary containing the fields name, file_content, Description.
             # TODO: attempt to identify files that couldnt be decoded at this point; continue; then raise the exception outside the for loop, naming the uploaded filenames
             raise UploadError(
                 f"Failed to decode one or more files. Try opening the text "

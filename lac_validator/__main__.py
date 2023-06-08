@@ -23,8 +23,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="lac_2022_23",
-    help="validation year, e.g lac_2022_23",
+    default="lac2022_23",
+    help="validation year, e.g lac2022_23",
 )
 def list_cmd(ruleset):
     """
@@ -42,8 +42,8 @@ def list_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac_2022_23",
-    help="validation year, e.g lac_2022_23",
+    default="lac2022_23",
+    help="validation year, e.g lac2022_23",
 )
 def test_cmd(ruleset):
     """
@@ -74,8 +74,8 @@ def test():
 @click.option(
     "--ruleset",
     "-r",
-    default="lac_2022_23",
-    help="validation year, e.g lac_2022_23",
+    default="lac2022_23",
+    help="validation year, e.g lac2022_23",
 )
 def test_one_rule(code, ruleset):
     """
@@ -98,8 +98,8 @@ def test_one_rule(code, ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac_2022_23",
-    help="validation year e.g lac_2022_23",
+    default="lac2022_23",
+    help="validation year e.g lac2022_23",
 )
 @click.option("--select", "-s", default=None)
 def run_all(p4a_path, ad1_path, ruleset, select):
@@ -118,7 +118,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
 
-    v = lac_class.LacValidationSession(
+    v = lac_class.LacValidator(
         metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None
     )
     results = v.ds_results
@@ -143,7 +143,7 @@ def xmltocsv(p4a_path):
     with open(p4a_path.name, "rb") as f:
         p4a_filetext = f.read()
     files_list = [
-        dict(name=p4a_path.name, description="This year", fileText=p4a_filetext),
+        dict(name=p4a_path.name, description="This year", file_content=p4a_filetext),
     ]
 
     data_files, _ = read_from_text(files_list)

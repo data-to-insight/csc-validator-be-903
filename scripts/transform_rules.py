@@ -1,3 +1,7 @@
+# The code in this file transformed the former rule structure into the new one that uses generators.
+# It was implemented and run immediately after split.py as the second step of the tool rewrite.
+# The other scripts were run to cover exceptions that weren't captured by this one.
+
 from os import listdir
 from os.path import isfile, join
 
@@ -36,7 +40,7 @@ def transform_rule(rule_file_name):
     imprts = rule_content[:validate_start]
     imprts_updated = update_imports(imprts)
     # write new content to files.
-    with open(f".\lac_validator\\rules\lac_2022_23\{rule_file_name}", "w") as rule_file:
+    with open(f".\lac_validator\\rules\lac2022_23\{rule_file_name}", "w") as rule_file:
         rule_file.write(f"{imprts_updated}\n{rule_def}\n{subvalidate}\n{test_validate}")
 
 for rule_file in onlyfiles:

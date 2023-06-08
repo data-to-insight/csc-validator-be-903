@@ -118,7 +118,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
 
-    v = lac_class.LacValidationSession(
+    v = lac_class.LacValidator(
         metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None
     )
     results = v.ds_results

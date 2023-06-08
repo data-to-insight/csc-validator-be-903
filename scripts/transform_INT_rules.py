@@ -1,3 +1,6 @@
+# The code in this file does the appropriate modifications on the INT files to put them in the new rule format.
+# INT files were exceptions to most of the formats expected by the scripts that updated the rest of the rules.
+
 import os
 
 

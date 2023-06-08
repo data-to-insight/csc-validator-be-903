@@ -1,5 +1,8 @@
+# This file was used to check the functioning of the backend before the command line tool was built.
+
 from validator903.validator import Validator
 from validator903.report import Report
+from validator903.types import UploadedFile
 
 #import logging
 #logger = logging.getLogger('validator903.validator')
@@ -17,8 +20,8 @@ with open(ad1_path, 'rb') as f:
     ad1_filetext = f.read()
 
 files_list = [
-    dict(name=p4a_path, description='This year', file_content=p4a_filetext),
-    dict(name=ad1_path, description='This year', file_content=ad1_filetext),
+    UploadedFile(name=p4a_path, description='This year', file_content=p4a_filetext),
+    UploadedFile(name=ad1_path, description='This year', file_content=ad1_filetext),
 ]
 
 # the rest of the metadata is added in read_from_text() when instantiating Validator

@@ -1,3 +1,7 @@
+# The code in this file was used to split the validators.py and test_validators.py in the 903 validator into this new format
+# where there is one file per rule.
+# This is where the tool rewrite started.
+
 import re
 from black import format_str, FileMode
 

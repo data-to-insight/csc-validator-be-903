@@ -1,3 +1,7 @@
+# The code in this file transformed the former rule structure into the new one that uses generators.
+# It was implemented and run immediately after split.py as the second step of the tool rewrite.
+# The other scripts were run to cover exceptions that weren't captured by this one.
+
 from os import listdir
 from os.path import isfile, join
 

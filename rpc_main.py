@@ -1,5 +1,6 @@
 import datetime
 import logging
+import json
 from prpc_python import RpcApp
 
 from lac_validator import lac_validator_class as lac_class
@@ -39,7 +40,7 @@ def get_rules(ruleset:str="lac2022_23")->list[dict]:
             }
         )
 
-    return rules
+    return json.dumps(rules)
 
 @app.call
 def generate_tables(lac_data:dict)->dict[str, dict]:
@@ -53,7 +54,7 @@ def generate_tables(lac_data:dict)->dict[str, dict]:
     data_files, _ = read_from_text(files_list)
 
     # what the frontend will display
-    lac_data_tables = {table_name:table_df.to_dict(orient="records") for table_name, table_df in  data_files.items()}
+    lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  data_files.items()}
     
     return lac_data_tables
 
@@ -82,11 +83,11 @@ def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[li
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
 
     # what the frontend will display
-    issue_report = full_issue_df.to_dict(orient="records")
-    lac_data_tables = {table_name:table_df.to_dict(orient="records") for table_name, table_df in  v.dfs.items()}
+    issue_report = full_issue_df.to_json(orient="records")
+    lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
     
     # what the user will download
-    user_reports = [r.report.to_dict(orient="records"), r.error_report.to_dict(orient="records"), r.error_summary.to_dict(orient="records"),]
+    user_reports = [r.report.to_json(orient="records"), r.error_report.to_json(orient="records"), r.error_summary.to_json(orient="records"),]
 
     # TODO check that user reports are downloaded with the appropriate names.
     validation_results = {"issue_locations": [issue_report], "data_tables":[lac_data_tables], "user_report":user_reports}

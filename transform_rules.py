@@ -36,7 +36,7 @@ def transform_rule(rule_file_name):
     imprts = rule_content[:validate_start]
     imprts_updated = update_imports(imprts)
     # write new content to files.
-    with open(f".\lac_validator\\rules\lac_2022_23\{rule_file_name}", "w") as rule_file:
+    with open(f".\lac_validator\\rules\lac2022_23\{rule_file_name}", "w") as rule_file:
         rule_file.write(f"{imprts_updated}\n{rule_def}\n{subvalidate}\n{test_validate}")
 
 for rule_file in onlyfiles:

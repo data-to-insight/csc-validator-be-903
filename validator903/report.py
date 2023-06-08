@@ -11,7 +11,7 @@ from lac_validator.ruleset import create_registry
 
 logger = logging.getLogger(__name__)
 
-_errors_df = pd.DataFrame([(rule.code, rule.message, rule.affected_fields) for rule in create_registry(ruleset="lac_2022_23")], columns=['Code', 'Description', 'Fields',]).sort_values('Code')
+_errors_df = pd.DataFrame([(rule.code, rule.message, rule.affected_fields) for rule in create_registry(ruleset="lac2022_23")], columns=['Code', 'Description', 'Fields',]).sort_values('Code')
 logger.debug(f"Created error summary df with {_errors_df.shape[0]} configured errors.")
 
 # TODO find out where the excel report is generated and link it to rpc output layer.

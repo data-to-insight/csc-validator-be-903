@@ -7,8 +7,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-from lac_validator.ruleset import create_registry
-
 logger = logging.getLogger(__name__)
 
 

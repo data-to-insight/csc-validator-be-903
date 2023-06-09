@@ -13,7 +13,3 @@ for rule_file in files:
     registry.extend(validator_funcs)
 
 __all__=["registry"]
-
-# TODO now this line has to be commented for tests to run and uncommented for validation to run.
-# else it loads the registry twice and says that the rules are duplicates.
-# from . import * 

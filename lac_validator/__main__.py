@@ -12,7 +12,6 @@ from lac_validator.utils import process_uploaded_files
 from validator903.ingress import read_from_text
 from validator903.report import Report
 
-
 @click.group()
 def cli():
     pass

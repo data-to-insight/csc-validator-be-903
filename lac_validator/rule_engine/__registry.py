@@ -3,6 +3,7 @@ from typing import Callable, Optional
 from lac_validator.rule_engine.__api import RuleDefinition
 
 
+# TODO check how this structure needs to be changed to accomodate the fact that registry is now in array-format and no longer dict
 class __Registry:
     """Contains information about all validation rules including definition and issue error locations. Allows iterating through validation rules."""
 
@@ -15,6 +16,9 @@ class __Registry:
         # self._registry = {}
         self._registry = []
 
+    # TODO Define registry objects (in the init files of the rule packages) with the Registry class type.
+    # such that this (or something like it) can be done registry2023_24 = registry2022_23.add(rule_revisions2023_24) where rule_revisions2023_24 can be addition, deletion or modification of rules in previous year according to str rule codes.
+    # get inspiration from how it was implemented (inefficiently) here: lac_validator\ruleset.py
     def add(self, rd: RuleDefinition):
         """
         Adds rules to the registry for iterating through and validating.
@@ -125,8 +129,6 @@ def rule_definition(
             message=message,
             affected_fields=affected_fields,
         )
-        # registry.add(definition)
-
         # when validator funcs are created, give them a unique attribute that they can be 
         # recognised by when the file is read later.
         wrapper.rule = definition

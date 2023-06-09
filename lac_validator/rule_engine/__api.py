@@ -20,9 +20,9 @@ class RuleDefinition:
 
     code: str
     func: Callable
-    message: Optional[str]= None,
-    affected_fields: Optional[list[str]]= None,
-
+    message: Optional[str]= None
+    affected_fields: Optional[list[str]]= None
     @property
     def code_module(self):
+        # TODO check if this line is still necessary after recent changes to registry.
         return importlib.import_module(self.func.__module__)

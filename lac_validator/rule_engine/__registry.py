@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, Iterable
+from typing import Callable, Optional
 from lac_validator.rule_engine.__api import RuleDefinition
 
 
@@ -12,7 +12,8 @@ class __Registry:
         RuleDefinitions.
         """
 
-        self._registry = {}
+        # self._registry = {}
+        self._registry = []
 
     def add(self, rd: RuleDefinition):
         """
@@ -97,9 +98,9 @@ registry = __Registry()
 
 
 def rule_definition(
-    code: int,
-    message: str = None,
-    affected_fields: Iterable[str] = None,
+    code: str,
+    message: Optional[str] = None,
+    affected_fields: Optional[list[str]] = None,
 ):
     """
     Creates the rule definition for validation rules using RuleDefinition class as a template.
@@ -124,8 +125,11 @@ def rule_definition(
             message=message,
             affected_fields=affected_fields,
         )
-        registry.add(definition)
-        wrapper.__rule_def__ = definition
+        # registry.add(definition)
+
+        # when validator funcs are created, give them a unique attribute that they can be 
+        # recognised by when the file is read later.
+        wrapper.rule = definition
         return wrapper
 
     return decorator

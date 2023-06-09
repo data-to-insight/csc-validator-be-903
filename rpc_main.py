@@ -24,7 +24,7 @@ logger.addHandler(handler)
 
 app = RpcApp("validate_lac")
 @app.call
-def get_rules(ruleset:str="lac2022_23")->list[dict]:
+def get_rules(ruleset:str="lac2022_23")->str:
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import lac_validator.lac_validator_class as lac_class
 from lac_validator.ruleset import create_registry
+import importlib
 from lac_validator.utils import process_uploaded_files
 
 from validator903.ingress import read_from_text
@@ -117,13 +118,13 @@ def run_all(p4a_path, ad1_path, ruleset, select):
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
+    module = importlib.import_module("lac_validator.rules.lac2022_23")
+    ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(
-        metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None
-    )
+    v = lac_class.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
     results = v.ds_results
 
-    r = Report(results)
+    r = Report(results, ruleset=ruleset_registry)
     print(f"*****************Report******************")
     print(r.report)
     print(f"*****************Error report******************")

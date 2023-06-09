@@ -11,17 +11,18 @@ from lac_validator.ruleset import create_registry
 
 logger = logging.getLogger(__name__)
 
-_errors_df = pd.DataFrame([(rule.code, rule.message, rule.affected_fields) for rule in create_registry(ruleset="lac2022_23")], columns=['Code', 'Description', 'Fields',]).sort_values('Code')
-logger.debug(f"Created error summary df with {_errors_df.shape[0]} configured errors.")
 
 # TODO find out where the excel report is generated and link it to rpc output layer.
 class Report:
-    __child_report = None
-    __child_summary = None
-    __error_report = None
-    __error_summary = None
+    def __init__(self, data_store, ruleset):
+        self.__child_report = None
+        self.__child_summary = None
+        self.__error_report = None
+        self.__error_summary = None
 
-    def __init__(self, data_store):
+        self._errors_df = pd.DataFrame([(rule.code, rule.message, rule.affected_fields) for rule in ruleset], columns=['Code', 'Description', 'Fields',]).sort_values('Code')
+        logger.debug(f"Created error summary df with {self._errors_df.shape[0]} configured errors.")
+        
         dataframes = []
         for table, value in data_store.items():
             if table == "metadata":
@@ -53,7 +54,7 @@ class Report:
             df = pd.DataFrame(self.report[self.error_cols].sum(), columns=['Count']).reset_index()
             df['Code'] = df['index'].str[4:]
             df = df[['Code', 'Count']]
-            self.__error_report = df.merge(_errors_df, on='Code', how='left').sort_values('Code')[[
+            self.__error_report = df.merge(self._errors_df, on='Code', how='left').sort_values('Code')[[
                 'Code', 'Description', 'Fields', 'Count',
             ]]
         return self.__error_report

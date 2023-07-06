@@ -124,16 +124,16 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     results = v.ds_results
 
     r = Report(results, ruleset=ruleset_registry)
-    print(f"*****************Report******************")
-    print(r.report)
-    print(f"*****************Error report******************")
-    print(r.error_report)
-    # print(f"****************Error summary******************")
-    # print(r.error_summary)
+    # print(f"*****************Report******************")
+    # print(r.report.columns) # defined frontend display in previous tool configuration.
+    print(f"*****************Child error summary******************")
+    print(r.child_summary.columns)
+    print(f"****************Error counts******************")
+    print(r.error_summary.columns)
 
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
     print(f"*****************full issue df******************")
-    print(full_issue_df)
+    print(full_issue_df.columns)
 
 
 # XML to tables

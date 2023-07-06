@@ -88,8 +88,9 @@ def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[li
     issue_report = full_issue_df.to_json(orient="records")
     lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
     
-    # what the user will download
-    user_reports = [r.report.to_json(orient="records"), r.error_report.to_json(orient="records"), r.error_summary.to_json(orient="records"),]
+    # what the user will download 
+    # r.error_summary generates the ErrorCounts file and r.child_summary generates the ChildErrorSummary file.
+    user_reports = [r.error_summary.to_json(orient="records"), r.child_summary.to_json(orient="records"),]
 
     # TODO check that user reports are downloaded with the appropriate names.
     validation_results = {"issue_locations": [issue_report], "data_tables":[lac_data_tables], "user_report":user_reports}

@@ -1,5 +1,4 @@
 import logging
-import datetime
 import pandas as pd
 from typing import Any
 from pandas import DataFrame
@@ -8,11 +7,9 @@ from validator903.types import UploadedFile
 from validator903.ingress import read_from_text
 from validator903.datastore import copy_datastore, create_datastore
 
-from lac_validator.ruleset import create_registry
-
 logger = logging.getLogger(__name__)
 
-# TODO rename this file
+# TODO rename this file so that it doesn't have class in its name.
 class LacValidator:
     """
     Central location for running rules on files.
@@ -22,7 +19,7 @@ class LacValidator:
         self,
         metadata: dict[str, Any],
         files: list[UploadedFile],
-        ruleset,
+        registry,
         selected_rules,
     ):
         self.dfs: dict[str, DataFrame] = {}
@@ -37,7 +34,7 @@ class LacValidator:
         metadata.update(metadata_extras)
         logger.info(f'Metadata receieved: {",".join(metadata.keys())}')
 
-        self.ruleset = ruleset
+        self.registry = registry
         self.metadata = metadata
 
         # validate
@@ -62,8 +59,7 @@ class LacValidator:
         logger.info("Creating Data store...")
         data_store = create_datastore(self.dfs, self.metadata)
 
-        registry = create_registry(self.ruleset)
-        rules_to_run = self.get_rules_to_run(registry, selected_rules)
+        rules_to_run = self.get_rules_to_run(self.registry, selected_rules)
 
         # this corresponds to raw_data in CINvalidationSession
         self.ds_results = copy_datastore(data_store)

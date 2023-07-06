@@ -1,10 +1,10 @@
 import datetime
+import importlib
 import logging
 import json
 from prpc_python import RpcApp
 
 from lac_validator import lac_validator_class as lac_class
-from lac_validator.ruleset import create_registry
 from lac_validator.utils import process_uploaded_files
 
 from typing import Optional
@@ -24,15 +24,15 @@ logger.addHandler(handler)
 
 app = RpcApp("validate_lac")
 @app.call
-def get_rules(ruleset:str="lac2022_23")->list[dict]:
+def get_rules(ruleset:str="lac2022_23")->str:
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
     """
-
-    registry = create_registry(ruleset)
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
     rules = []
-    for rule in registry:
+    for rule in ruleset_registry:
         rules.append(
             {
                 "code": str(rule.code),
@@ -76,18 +76,21 @@ def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[li
     # lac_data = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
 
     files_list = process_uploaded_files(lac_data)
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(metadata=file_metadata, files=files_list, ruleset=ruleset, selected_rules=selected_rules)
+    v = lac_class.LacValidator(metadata=file_metadata, files=files_list, registry=ruleset_registry, selected_rules=selected_rules)
     results = v.ds_results
-    r = Report(results)
+    r = Report(results, ruleset_registry)
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
 
     # what the frontend will display
     issue_report = full_issue_df.to_json(orient="records")
     lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
     
-    # what the user will download
-    user_reports = [r.report.to_json(orient="records"), r.error_report.to_json(orient="records"), r.error_summary.to_json(orient="records"),]
+    # what the user will download 
+    # r.error_summary generates the ErrorCounts file and r.child_summary generates the ChildErrorSummary file.
+    user_reports = [r.error_summary.to_json(orient="records"), r.child_summary.to_json(orient="records"),]
 
     # TODO check that user reports are downloaded with the appropriate names.
     validation_results = {"issue_locations": [issue_report], "data_tables":[lac_data_tables], "user_report":user_reports}

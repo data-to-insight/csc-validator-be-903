@@ -1,3 +1,5 @@
+# TODO implement update registry as function here https://github.com/data-to-insight/quality-lac-data-beta-validator/pull/648#discussion_r1224480979
+
 from lac_validator.rule_engine import registry
 
 ruleset_updates = {}

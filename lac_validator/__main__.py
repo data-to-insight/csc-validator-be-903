@@ -6,12 +6,11 @@ import os
 from pathlib import Path
 
 import lac_validator.lac_validator_class as lac_class
-from lac_validator.ruleset import create_registry
+import importlib
 from lac_validator.utils import process_uploaded_files
 
 from validator903.ingress import read_from_text
 from validator903.report import Report
-
 
 @click.group()
 def cli():
@@ -32,8 +31,9 @@ def list_cmd(ruleset):
 
     :return cli output: list of rules in validation year.
     """
-    registry = create_registry(ruleset=ruleset)
-    for rule in registry:
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
+    for rule in ruleset_registry:
         click.echo(f"{rule.code}\t{rule.message}")
 
 
@@ -117,23 +117,23 @@ def run_all(p4a_path, ad1_path, ruleset, select):
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
     metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(
-        metadata=metadata, files=files_list, ruleset=ruleset, selected_rules=None
-    )
+    v = lac_class.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
     results = v.ds_results
 
-    r = Report(results)
-    print(f"*****************Report******************")
-    print(r.report)
-    print(f"*****************Error report******************")
-    print(r.error_report)
-    # print(f"****************Error summary******************")
-    # print(r.error_summary)
+    r = Report(results, ruleset=ruleset_registry)
+    # print(f"*****************Report******************")
+    # print(r.report.columns) # defined frontend display in previous tool configuration.
+    print(f"*****************Child error summary******************")
+    print(r.child_summary.columns)
+    print(f"****************Error counts******************")
+    print(r.error_summary.columns)
 
     full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
     print(f"*****************full issue df******************")
-    print(full_issue_df)
+    print(full_issue_df.columns)
 
 
 # XML to tables

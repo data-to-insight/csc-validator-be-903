@@ -1,6 +1,6 @@
 import importlib
 from dataclasses import dataclass
-from typing import Callable, Iterable
+from typing import Callable, Optional
 
 
 @dataclass(frozen=True, eq=True)
@@ -18,11 +18,11 @@ class RuleDefinition:
     :rtype: dataclass object.
     """
 
-    code: int
+    code: str
     func: Callable
-    message: str = None
-    affected_fields: Iterable[str] = None
-
+    message: Optional[str]= None
+    affected_fields: Optional[list[str]]= None
     @property
     def code_module(self):
+        # TODO check if this line is still necessary after recent changes to registry.
         return importlib.import_module(self.func.__module__)

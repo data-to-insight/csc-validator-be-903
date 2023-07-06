@@ -1,10 +1,9 @@
 from validator903.types import UploadedFile, UploadError
 from prpc_python.pyodide import PyodideFile
 from io import TextIOWrapper
- 
-# TODO Test that this function still works
-# TODO list[UploadedFile | PyodideFile | str]
-# TODO update to python3.10
+
+# list[UploadedFile | PyodideFile | str] is syntax that is available only in python 3.10
+# TODO update to python3.10 there is no particular reason why this project needs to be 3.9
 
 def process_uploaded_files(input_files:dict[str, list]):
     """

@@ -1,7 +1,7 @@
 import pytest
 import os
-from validator903.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
-from validator903.types import UploadError, UploadedFile
+from lac_validator.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
+from lac_validator.types import UploadError, UploadedFile
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [

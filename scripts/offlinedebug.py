@@ -1,8 +1,8 @@
 # This file was used to check the functioning of the backend before the command line tool was built.
 
 from validator903.validator import Validator
-from validator903.report import Report
-from validator903.types import UploadedFile
+from lac_validator.report import Report
+from lac_validator.types import UploadedFile
 
 #import logging
 #logger = logging.getLogger('validator903.validator')

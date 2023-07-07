@@ -1,6 +1,6 @@
 import pandas as pd
 
-from validator903.types import MissingMetadataError
+from lac_validator.types import MissingMetadataError
 from lac_validator.rule_engine import rule_definition
 
 

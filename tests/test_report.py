@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from validator903.report import _create_child_summary
+from lac_validator.report import _create_child_summary
 
 
 @pytest.fixture(scope="session")

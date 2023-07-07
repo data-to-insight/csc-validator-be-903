@@ -3,9 +3,9 @@ import pandas as pd
 from typing import Any
 from pandas import DataFrame
 
-from validator903.types import UploadedFile
-from validator903.ingress import read_from_text
-from validator903.datastore import copy_datastore, create_datastore
+from lac_validator.types import UploadedFile
+from lac_validator.ingress import read_from_text
+from lac_validator.datastore import copy_datastore, create_datastore
 
 logger = logging.getLogger(__name__)
 

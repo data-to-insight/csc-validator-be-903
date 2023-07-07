@@ -1,7 +1,7 @@
 import pandas as pd
 
 from lac_validator.rule_engine import rule_definition
-from validator903.utils import (
+from lac_validator.utils import (
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
 )  # Check 'Episodes' present before use!
 

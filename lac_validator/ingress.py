@@ -8,9 +8,9 @@ from typing import List, Union, Dict, Iterator, Tuple
 
 from pandas import DataFrame
 from numpy import nan
-from .types import UploadError, UploadedFile
-from .config import column_names
-from .datastore import la_df, merge_postcodes
+from lac_validator.types import UploadError, UploadedFile
+from lac_validator.config import column_names
+from lac_validator.datastore import la_df, merge_postcodes
 
 import logging
 from time import perf_counter as now

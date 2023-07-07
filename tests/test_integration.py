@@ -1,9 +1,9 @@
 """Tests for all configured errors"""
 import pytest
-from validator903.config import configured_errors, column_names
+from lac_validator.config import configured_errors, column_names
 import pandas as pd
-from validator903.types import ErrorDefinition, MissingMetadataError
-from validator903.datastore import copy_datastore
+from lac_validator.types import ErrorDefinition, MissingMetadataError
+from lac_validator.datastore import copy_datastore
 
 def test_all_configured_error_definitions():
     codes = []

@@ -9,8 +9,8 @@ import lac_validator.lac_validator_class as lac_class
 import importlib
 from lac_validator.utils import process_uploaded_files
 
-from validator903.ingress import read_from_text
-from validator903.report import Report
+from lac_validator.ingress import read_from_text
+from lac_validator.report import Report
 
 @click.group()
 def cli():

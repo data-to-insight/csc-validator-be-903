@@ -3,10 +3,10 @@ import argparse
 import logging
 import qlacref_authorities
 
-from validator903.config import errors as all_configured_errors
+from lac_validator.config import errors as all_configured_errors
 from validator903.validator import Validator
-from validator903.report import Report
-from validator903.ingress import read_files
+from lac_validator.report import Report
+from lac_validator.ingress import read_files
 
 
 def main(files, errors):

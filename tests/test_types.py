@@ -1,4 +1,4 @@
-from validator903.types import ErrorDefinition
+from lac_validator.types import ErrorDefinition
 
 def test_errordefinition():
     error = ErrorDefinition(

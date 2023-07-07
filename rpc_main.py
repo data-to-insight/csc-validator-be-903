@@ -4,7 +4,7 @@ import logging
 import json
 from prpc_python import RpcApp
 
-from lac_validator import lac_validator_class as lac_class
+from lac_validator import lac_validator as lac_class
 from lac_validator.utils import process_uploaded_files
 
 from typing import Optional

@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-import lac_validator.lac_validator_class as lac_class
+import lac_validator.lac_validator as lac_class
 import importlib
 from lac_validator.utils import process_uploaded_files
 

@@ -9,7 +9,6 @@ from lac_validator.datastore import copy_datastore, create_datastore
 
 logger = logging.getLogger(__name__)
 
-# TODO rename this file so that it doesn't have class in its name.
 class LacValidator:
     """
     Central location for running rules on files.

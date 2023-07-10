@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -36,8 +35,6 @@ def validate(dfs):
         return {}
     if "UASC" not in header.columns or "UASC" not in header_last.columns:
         return {}
-    print(header.to_string())
-    print(header_last.to_string())
     all_merged = header.reset_index().merge(
         header_last,
         how="inner",
@@ -47,7 +44,6 @@ def validate(dfs):
     )
 
     error_mask = (all_merged["UASC"] == "1") & (all_merged["UASC_last"] != "1")
-    print(all_merged.to_string())
     errors = all_merged.loc[error_mask, "index"].to_list()
     if return_header_errors:
         return {"Header": errors}
@@ -137,7 +133,6 @@ def test_validate():
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
 
-    
     result = validate(fake_dfs_205_xml)
     assert result == {"Header": [2]}
 

@@ -1,10 +1,7 @@
 import pandas as pd
 
-from lac_validator.types import MissingMetadataError
 from lac_validator.rule_engine import rule_definition
-
-
-import pandas as pd
+from lac_validator.types import MissingMetadataError
 
 
 @rule_definition(
@@ -117,11 +114,6 @@ def validate(dfs):
     error_locations_header = (
         all_merged.loc[error_mask, "index_header"].dropna().astype(int).sort_values()
     )
-    print(
-        pd.concat(
-            (all_merged, pd.DataFrame({"u": never_uasc, "d": has_duc})), axis=1
-        ).to_string()
-    )
     if return_header_errors:
         return {
             "UASC": error_locations_uasc.to_list(),
@@ -220,7 +212,6 @@ def test_validate():
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
 
-    
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
     dfs["Header"].loc["1001"] = {"CHILD": "1001", "DOB": "asdsad", "UASC": "0"}
     dfs["UASC"].loc["1001"] = {

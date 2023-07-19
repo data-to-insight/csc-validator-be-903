@@ -112,7 +112,8 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # p4a_path = "tests\\fake_data\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"
 
-    frontend_files_dict = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
+    # frontend_files_dict = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
+    frontend_files_dict = {"This year":[p4a_path, ad1_path]}
     files_list = process_uploaded_files(frontend_files_dict)
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
@@ -123,17 +124,22 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     v = lac_class.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
     results = v.ds_results
 
-    r = Report(results, ruleset=ruleset_registry)
-    print(f"*****************Report******************")
-    print(r.report)
-    print(f"*****************Error report******************")
-    print(r.error_report)
-    # print(f"****************Error summary******************")
-    # print(r.error_summary)
+    print(v.ds_results)
+    print('skipped', v.skips)
+    print('done:', v.dones)
 
-    full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
-    print(f"*****************full issue df******************")
-    print(full_issue_df)
+
+    # r = Report(results, ruleset=ruleset_registry)
+    # print(f"*****************Report******************")
+    # print(r.report)
+    # print(f"*****************Error report******************")
+    # print(r.error_report)
+    # # print(f"****************Error summary******************")
+    # # print(r.error_summary)
+
+    # full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    # print(f"*****************full issue df******************")
+    # print(full_issue_df)
 
 
 # XML to tables

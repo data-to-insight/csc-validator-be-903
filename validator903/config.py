@@ -54,6 +54,7 @@ These all should have return type (Error, Dict[str, DataFrame])
 """
 
 integrity_checks = sorted([
+    validate_EPI(),
     validate_INT01(),
     validate_INT02(),
     validate_INT03(),

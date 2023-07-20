@@ -18,7 +18,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.8"
 pandas = "< 2.0.0" # These are fixed to match versions available for pyodide
-numpy = "1.22.4"
+numpy = "1.19.5"
 openpyxl = "^3.0.9"
 quality-lac-data-ref-authorities = ">=2021.4"
 quality-lac-data-ref-postcodes = ">=2021.8.1"

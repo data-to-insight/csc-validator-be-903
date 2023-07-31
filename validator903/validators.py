@@ -2108,6 +2108,8 @@ def validate_632():
             episodes['DECOM'] = pd.to_datetime(episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
             prevperm['DATE_PERM_dt'] = prevperm['DATE_PERM'].apply(valid_date)
 
+            episodes = episodes[episodes['DECOM'].notna()]
+
             # select first episodes
             first_eps_idxs = episodes.groupby('CHILD')['DECOM'].idxmin()
             first_eps = episodes[episodes.index.isin(first_eps_idxs)]

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="1007",
     message="Care leaver information is not required for 17- or 18-year olds who are still looked after [on "
@@ -47,7 +44,7 @@ def validate(dfs):
         in_care_on_bday = (merged["DECOM"] <= merged["bday"]) & (
             merged["DEC"] > merged["bday"]
         )
-        print(in_care_on_bday)
+
         # if either DEC or REC are absent
         mask = (
             check_age
@@ -90,7 +87,7 @@ def test_validate():
         "OC3": fake_data_oc3,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {
         "OC3": [

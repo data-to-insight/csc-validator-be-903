@@ -4,6 +4,10 @@ def decom_before_dob(dfs, p_code, y_gap):
     epi = dfs['Episodes']
     hea = dfs['Header']
 
+    hea['DOB'] = pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+    epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+    epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
+
     epi.reset_index(inplace=True)
     epi_p2 = epi[epi['PLACE'] == p_code]
     merged_e = epi_p2.merge(hea, how='inner', on='CHILD')
@@ -15,6 +19,10 @@ def decom_before_dob(dfs, p_code, y_gap):
 def dec_after_decom(dfs, p_code, y_gap):
     epi = dfs['Episodes']
     hea = dfs['Header']
+
+    hea['DOB'] = pd.to_datetime(hea['DOB'], format='%d/%m/%Y', errors='coerce')
+    epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+    epi['DEC'] = pd.to_datetime(epi['DEC'], format='%d/%m/%Y', errors='coerce')
     
     epi.reset_index(inplace=True)
     epi_p2 = epi[epi['PLACE'] == p_code]
@@ -30,6 +38,10 @@ def field_different_from_previous(dfs, field):
     else:
         epi = dfs['Episodes']
         epi_last = dfs['Episodes_last']
+
+        epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+        epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+        epi_last['DEC'] = pd.to_datetime(epi_last['DEC'], format='%d/%m/%Y', errors='coerce')
 
         epi.reset_index(inplace=True)
 
@@ -57,6 +69,10 @@ def compare_placement_coordinates(dfs, field):
     else:
         epi = dfs['Episodes']
         epi_last = dfs['Episodes_last']
+
+        epi['DECOM'] = pd.to_datetime(epi['DECOM'], format='%d/%m/%Y', errors='coerce')
+        epi_last['DECOM'] = pd.to_datetime(epi_last['DECOM'], format='%d/%m/%Y', errors='coerce')
+        epi_last['DEC'] = pd.to_datetime(epi_last['DEC'], format='%d/%m/%Y', errors='coerce')
 
         epi.reset_index(inplace=True)
 

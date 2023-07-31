@@ -1,9 +1,9 @@
 import pytest
 import os
 import pandas as pd
-from validator903.config import column_names 
-from validator903.datastore import create_datastore
-from validator903.ingress import read_from_text
+from lac_validator.config import column_names 
+from lac_validator.datastore import create_datastore
+from lac_validator.ingress import read_from_text
 
 @pytest.fixture(scope="session")
 def dummy_input_files():

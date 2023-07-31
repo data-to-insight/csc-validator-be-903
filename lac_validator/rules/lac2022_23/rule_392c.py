@@ -1,5 +1,5 @@
 from lac_validator.rule_engine import rule_definition
-from validator903.datastore import merge_postcodes
+from lac_validator.datastore import merge_postcodes
 
 
 import pandas as pd

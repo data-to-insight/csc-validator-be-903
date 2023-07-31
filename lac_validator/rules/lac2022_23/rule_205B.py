@@ -1,10 +1,7 @@
 import pandas as pd
 
-from validator903.types import MissingMetadataError
 from lac_validator.rule_engine import rule_definition
-
-
-import pandas as pd
+from lac_validator.types import MissingMetadataError
 
 
 @rule_definition(
@@ -111,23 +108,6 @@ def validate(dfs):
     prev_duc_is_18th = all_merged["DUC_last"] == all_merged["DOB18"]
     current_duc_is_18th = all_merged["DUC"] == all_merged["DUC_last"]
 
-    print(
-        pd.concat(
-            (
-                all_merged,
-                pd.DataFrame(
-                    {
-                        "b": uasc_in_both_years,
-                        "cd": uasc_current_duc,
-                        "c18": current_duc_is_18th,
-                        "p18": prev_duc_is_18th,
-                    }
-                ),
-            ),
-            axis=1,
-        ).to_string()
-    )
-
     error_mask = uasc_in_both_years & (
         (~uasc_current_duc & ~current_duc_is_18th) | ~prev_duc_is_18th
     )
@@ -232,8 +212,6 @@ def test_validate():
         "UASC_last": fake_uasc_prev_205,
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
-
-    
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
     result = validate(dfs)

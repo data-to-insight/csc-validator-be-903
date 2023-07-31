@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from validator903.utils import \
+from lac_validator.utils import \
     add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER, \
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER
 

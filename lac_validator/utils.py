@@ -124,11 +124,10 @@ def process_uploaded_files(input_files:dict[str, list]):
     for field_name, file_refs in input_files.items():
         for file_ref in file_refs:
             # name attribute depends on whether on file type. CLI and API send different types.
-            if isinstance(file_ref, PyodideFile):         
-                # PyodideFile from frontend
-                filename = file_ref.filename
+            try:
                 file_text = file_ref.read()
-            else:
+                filename = file_ref.filename
+            except AttributeError:
                 if isinstance(file_ref, TextIOWrapper):
                     # Text IO wrapper object from command line
                     filename = file_ref.name                   

@@ -12,13 +12,13 @@ class Test_read_from_text:
             read_from_text(files)
 
     def test_csv_reading(self, mocker):
-        read_csv = mocker.patch('validator903.ingress.read_csvs_from_text')
+        read_csv = mocker.patch('lac_validator.ingress.read_csvs_from_text')
         files: list[UploadedFile] = [{'name': 'header.csv', 'file_content': '', 'description': ''}]
         read_from_text(files)
         read_csv.assert_called_once_with(files)
 
     def test_xml_reading(self, mocker):
-        read_xml = mocker.patch('validator903.ingress.read_xml_from_text')
+        read_xml = mocker.patch('lac_validator.ingress.read_xml_from_text')
         files: list[UploadedFile] = [{'name': 'data.xml', 'file_content': 'test_text', 'description': ''}]
         read_from_text(files)
         read_xml.assert_called_once_with('test_text')

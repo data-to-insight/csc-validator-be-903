@@ -1,7 +1,7 @@
 import pytest
 import os
-from validator903.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
-from validator903.types import UploadError, UploadedFile
+from lac_validator.ingress import read_csvs_from_text, read_from_text, read_xml_from_text
+from lac_validator.types import UploadError, UploadedFile
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [
@@ -12,14 +12,14 @@ class Test_read_from_text:
             read_from_text(files)
 
     def test_csv_reading(self, mocker):
-        read_csv = mocker.patch('validator903.ingress.read_csvs_from_text')
-        files: list[UploadedFile] = [{'name': 'header.csv', 'fileText': '', 'description': ''}]
+        read_csv = mocker.patch('lac_validator.ingress.read_csvs_from_text')
+        files: list[UploadedFile] = [{'name': 'header.csv', 'file_content': '', 'description': ''}]
         read_from_text(files)
         read_csv.assert_called_once_with(files)
 
     def test_xml_reading(self, mocker):
-        read_xml = mocker.patch('validator903.ingress.read_xml_from_text')
-        files: list[UploadedFile] = [{'name': 'data.xml', 'fileText': 'test_text', 'description': ''}]
+        read_xml = mocker.patch('lac_validator.ingress.read_xml_from_text')
+        files: list[UploadedFile] = [{'name': 'data.xml', 'file_content': 'test_text', 'description': ''}]
         read_from_text(files)
         read_xml.assert_called_once_with('test_text')
 
@@ -31,11 +31,11 @@ def test_read_csv_from_text(dummy_input_files):
             return f.read().encode()
 
     uploaded_files = [{
-        'fileText': read_file(os.path.join(csv_path_dir, file_name)),
+        'file_content': read_file(os.path.join(csv_path_dir, file_name)),
         'description': 'This year',
     } for file_name in dummy_input_files]
     
-    last_year_files = [{'fileText': d['fileText'], 'description': 'Prev year'} for d in uploaded_files]
+    last_year_files = [{'file_content': d['file_content'], 'description': 'Prev year'} for d in uploaded_files]
     uploaded_files += last_year_files
 
     out = read_csvs_from_text(uploaded_files)

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="1001",
     message="The episodes recorded for this young person suggest they are not a relevant or a former relevant "
@@ -113,9 +110,6 @@ def validate(dfs):
         )
 
         oc3 = oc3.merge(totals, how="left")
-
-        # print(episodes_merged[['CHILD', 'DOB', 'DURATION14', 'TOTAL14', 'DURATION16', 'TOTAL16']])
-        # print(episodes_merged[['CHILD', 'DOB', 'LS', 'REC', 'EVER_ADOPTED', 'DURATION V3/V4']])
 
         has_care_after_14 = oc3["TOTAL14"] >= 91
         has_care_after_16 = oc3["TOTAL16"] >= 1

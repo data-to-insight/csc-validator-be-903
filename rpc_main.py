@@ -4,13 +4,13 @@ import logging
 import json
 from prpc_python import RpcApp
 
-from lac_validator import lac_validator_class as lac_class
+from lac_validator import lac_validator as lac_class
 from lac_validator.utils import process_uploaded_files
 
 from typing import Optional
 
-from validator903.ingress import read_from_text
-from validator903.report import Report
+from lac_validator.ingress import read_from_text
+from lac_validator.report import Report
 
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from validator903.datastore import create_datastore, _add_postcode_derived_fields, merge_postcodes, postcodes
+from lac_validator.datastore import create_datastore, _add_postcode_derived_fields, merge_postcodes, postcodes
 
 
 def test_postcode_key():

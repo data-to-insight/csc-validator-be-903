@@ -8,9 +8,5 @@ repos:
     hooks:
     - id: isort
       args: [ "--profile", "black" ]
-  # - repo: https://github.com/astral-sh/ruff-pre-commit
-  #   rev: v0.0.277
-  #   hooks:
-  #     - id: ruff
 
     

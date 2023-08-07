@@ -1,8 +1,7 @@
-from .__registry import registry, rule_definition
-from .__api import RuleDefinition
+from .__registry import rule_definition,RuleDefinition, Registry
 
 __all__ = [
-    "registry",
     "rule_definition",
-    "RuleDefinition"
+    "RuleDefinition",
+    "Registry",
 ]

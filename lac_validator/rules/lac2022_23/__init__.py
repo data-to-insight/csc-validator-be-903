@@ -12,6 +12,9 @@ for rule_file in files:
     rule_elements = {n:getattr(rule_content, n) for n in dir(rule_content)}
     # all validator functions have a decorator which attaches a "rule" attribute to them.
     validator_func = {element.rule.code: element.rule for _, element in rule_elements.items() if hasattr(element, "rule")}
+    for rule_code in validator_func.keys():
+        if rule_code in this_year_validator_funcs.keys():
+            raise ValueError(f"Rule with code {rule_code} already exists")
     this_year_validator_funcs.update(validator_func)
 
 registry = Registry(this_year_validator_funcs)

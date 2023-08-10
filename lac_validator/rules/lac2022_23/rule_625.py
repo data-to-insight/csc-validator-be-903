@@ -32,8 +32,11 @@ def validate(dfs):
         # prepare to merge
         header.reset_index(inplace=True)
         episodes.reset_index(inplace=True)
+
+        # if nans aren't dropped, idxmax() won't work. we can do this since dropping nan DECs doesn't affect the rule logic.
+        dec_only_eps = episodes[["CHILD", "DEC"]].dropna() 
         # latest episodes
-        eps_last_indices = episodes.groupby("CHILD")["DEC"].idxmax()
+        eps_last_indices = dec_only_eps.groupby("CHILD")["DEC"].idxmax()
         latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
         merged = latest_episodes.merge(
             header, on="CHILD", how="left", suffixes=["_eps", "_er"]

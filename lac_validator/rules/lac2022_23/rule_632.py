@@ -68,7 +68,7 @@ def validate(dfs):
         )
         prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(valid_date)
 
-        # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOM's doesn't affect the rule logic.
+        # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOMs doesn't affect the rule logic.
         decom_only_eps = episodes[["CHILD", "DECOM"]].dropna() 
 
         # select first episodes

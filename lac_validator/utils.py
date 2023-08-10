@@ -1,6 +1,5 @@
 import pandas as pd
 from lac_validator.types import UploadedFile, UploadError
-from prpc_python.pyodide import PyodideFile
 from io import TextIOWrapper
 
 # might be worth adding 'collection_end' as an argument, though not specified in definition

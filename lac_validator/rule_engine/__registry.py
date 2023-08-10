@@ -24,44 +24,6 @@ class RuleDefinition:
     affected_fields: Optional[list[str]]= None
 
 
-class Registry:
-    """Contains information about all validation rules including definition and issue error locations. Allows iterating through validation rules."""
-
-    def __init__(self, validator_funcs: dict[str, RuleDefinition]):
-        """
-        Wraps dict so that iteration is done over dict values instead of its keys.
-        """
-        self._registry = validator_funcs
-
-    def __len__(self):
-        """
-        Provides the number of validation rules.
-
-        :returns: The length number of rules in the registry.
-        :rtype: int.
-        """
-
-        return len(self._registry)
-
-    def __iter__(self):
-        """
-        Allows iterating through validation rules by code.
-
-        :returns: Iterable of validation rules.
-        :rtype: Iterable.
-        """
-
-        return iter(self._registry.values())
-
-    def to_dict(self):
-        """
-        return: registry as a dict to enable full dictionary operations.
-        rtype: dict
-        """
-
-        return self._registry
-
-
 def rule_definition(
     code: str,
     message: Optional[str] = None,

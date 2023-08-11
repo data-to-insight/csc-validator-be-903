@@ -8,7 +8,7 @@ from lac_validator.rules.lac2022_23 import registry
 
 def test_all_configured_error_definitions():
     codes = []
-    for rule in registry:
+    for rule_code, rule in registry.items():
         # Check that all errors are ErrorDefinition
         assert isinstance(rule, RuleDefinition), f'The returned rule is not of RuleDefinition type ({rule})'
         
@@ -28,7 +28,7 @@ def test_all_configured_error_definitions():
 ])
 def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_input_data):
     dummy_data = eval(data_choice)
-    for rule in registry:
+    for rule_code, rule in registry.items():
         dummy_data_copy = copy_datastore(dummy_data)
         try:
             result = rule.func(dummy_data_copy)
@@ -43,7 +43,7 @@ def test_all_configured_error_functions(data_choice, dummy_empty_input, dummy_in
 
 
 def test_has_correct_table_names(dummy_input_data):
-    for rule in registry:
+    for rule_code, rule in registry.items():
         dummy_input_data_copy = copy_datastore(dummy_input_data)
 
         # lazy engineer's no-change workaround - if Header's 'UASC' column or metadata's 'provider_info' is missing,

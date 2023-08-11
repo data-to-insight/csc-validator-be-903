@@ -1,6 +1,6 @@
 import logging
 import pandas as pd
-from typing import Any
+from typing import Any, Callable
 from pandas import DataFrame
 
 from lac_validator.types import UploadedFile
@@ -39,17 +39,16 @@ class LacValidator:
         # validate
         self.validate(selected_rules)
 
-    # TODO isolate func
-    def get_rules_to_run(self, registry, selected_rules):
+    def get_rules_to_run(self, registry:dict[str, Callable], selected_rules:list[str]):
         """
         Filters rules to be run based on user's selection in the frontend.
-        :param Registry-class registry: record of all existing rules in rule pack
+        :param dict registry: record of all existing rules in rule pack
         :param list selected_rules: array of rule codes as strings
         """
         if selected_rules:
-            rules_to_run = [
-                rule for rule in registry if str(rule.code) in selected_rules
-            ]
+            rules_to_run = {
+                rule_code:rule for rule_code, rule in registry.items() if str(rule_code) in selected_rules
+            }
             return rules_to_run
         else:
             return registry
@@ -63,8 +62,8 @@ class LacValidator:
         # this corresponds to raw_data in CINvalidationSession
         self.ds_results = copy_datastore(data_store)
 
-        for rule in rules_to_run:
-            logger.info(f"Validating rule {rule.code}...")
+        for rule_code, rule in rules_to_run.items():
+            logger.info(f"Validating rule {rule_code}...")
 
             # get a clean copy of the files to be validated
             ds_copy = copy_datastore(data_store)
@@ -74,8 +73,8 @@ class LacValidator:
                 result: dict[str, list[Any]] = rule.func(ds_copy)
             except Exception as e:
                 # document instances where the rule cannot run on the data
-                logger.exception(f"Rule code {rule.code} failed to run!")
-                self.fails.append(rule.code)
+                logger.exception(f"Rule code {rule_code} failed to run!")
+                self.fails.append(rule_code)
                 continue
 
             if result == {}:

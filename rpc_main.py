@@ -4,7 +4,7 @@ import logging
 import json
 from prpc_python import RpcApp
 
-from lac_validator import lac_validator as lac_class
+from lac_validator import lac_validator
 from lac_validator.utils import process_uploaded_files
 
 from typing import Optional
@@ -79,10 +79,10 @@ def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[li
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(metadata=file_metadata, files=files_list, registry=ruleset_registry, selected_rules=selected_rules)
+    v = lac_validator.LacValidator(metadata=file_metadata, files=files_list, registry=ruleset_registry, selected_rules=selected_rules)
     results = v.ds_results
     r = Report(results, ruleset_registry)
-    full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
 
     # what the frontend will display
     issue_report = full_issue_df.to_json(orient="records")

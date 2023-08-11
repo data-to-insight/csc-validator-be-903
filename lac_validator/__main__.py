@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-import lac_validator.lac_validator as lac_class
+from lac_validator import lac_validator
 import importlib
 from lac_validator.utils import process_uploaded_files
 
@@ -121,7 +121,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
+    v = lac_validator.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
     results = v.ds_results
 
     print(v.ds_results)
@@ -137,7 +137,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # # print(f"****************Error summary******************")
     # # print(r.error_summary)
 
-    # full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    # full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
     # print(f"*****************full issue df******************")
     # print(full_issue_df)
 

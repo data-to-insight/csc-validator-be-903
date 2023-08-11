@@ -60,3 +60,5 @@ def test_read_xml_from_text():
         assert set(str(dtype) for dtype in val.dtypes) == {'object'}, \
             f'Got non-objects columns in {name}: \n{val.dtypes}!'
 
+def test_construct_provider_info_table():
+    pass

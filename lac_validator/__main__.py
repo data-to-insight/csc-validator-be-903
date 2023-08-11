@@ -12,6 +12,8 @@ from lac_validator.utils import process_uploaded_files
 from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
 
+from tests.test_ingress import Test_read_from_text, test_construct_provider_info_table, test_read_csv_from_text
+
 @click.group()
 def cli():
     pass
@@ -154,6 +156,17 @@ def xmltocsv(p4a_path):
 
     data_files, _ = read_from_text(files_list)
     click.echo(data_files)
+
+@cli.command(name="testingress")
+@click.argument("scp_path", type=click.File("rt"), required=True)
+@click.argument("ch_path", type=click.File("rt"), required=True)
+def cli_test_ingress(ch_path, scp_path):
+    with open(ch_path.name, "rb") as f:
+        ch_df = f.read_excel()
+    with open(scp_path.name, "rb") as f:
+        scp_df = f.excel()
+    
+    click.echo(scp_df)
 
 
 if __name__ == "__main__":

@@ -161,12 +161,9 @@ def xmltocsv(p4a_path):
 @click.argument("scp_path", type=click.File("rt"), required=True)
 @click.argument("ch_path", type=click.File("rt"), required=True)
 def cli_test_ingress(ch_path, scp_path):
-    with open(ch_path.name, "rb") as f:
-        ch_df = f.read_excel()
-    with open(scp_path.name, "rb") as f:
-        scp_df = f.excel()
+    print('working')
     
-    click.echo(scp_df)
+    
 
 
 if __name__ == "__main__":

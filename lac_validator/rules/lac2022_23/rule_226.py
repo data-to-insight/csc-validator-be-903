@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="226",
     message="Reason for placement change is not required.",
@@ -119,6 +116,6 @@ def test_validate():
         ]
     )
     fake_dfs = {"Episodes": fake_data_epi}
-    
+
     result = validate(fake_dfs)
     assert result == {"Episodes": [1, 8]}

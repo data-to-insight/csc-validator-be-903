@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="199",
     message="Episode information shows child has been previously adopted from care. "
@@ -120,7 +117,6 @@ def test_validate():
             },  # 8: Pass
         ]
     )
-    
 
     fake_dfs = {"Episodes": fake_data_199_episodes.copy()}
     result = validate(fake_dfs)

@@ -1,14 +1,16 @@
 import logging
-import pandas as pd
 from typing import Any, Optional
+
+import pandas as pd
 from pandas import DataFrame
 
-from lac_validator.types import UploadedFile
-from lac_validator.ingress import read_from_text
 from lac_validator.datastore import copy_datastore, create_datastore
+from lac_validator.ingress import read_from_text
 from lac_validator.rule_engine import RuleDefinition
+from lac_validator.types import UploadedFile
 
 logger = logging.getLogger(__name__)
+
 
 class LacValidator:
     """
@@ -40,7 +42,11 @@ class LacValidator:
         # validate
         self.validate(selected_rules)
 
-    def get_rules_to_run(self, registry:dict[str, RuleDefinition], selected_rules:Optional[list[str]] = None):
+    def get_rules_to_run(
+        self,
+        registry: dict[str, RuleDefinition],
+        selected_rules: Optional[list[str]] = None,
+    ):
         """
         Filters rules to be run based on user's selection in the frontend.
         :param dict registry: record of all existing rules in rule pack
@@ -48,7 +54,9 @@ class LacValidator:
         """
         if selected_rules:
             rules_to_run = {
-                rule_code:rule for rule_code, rule in registry.items() if str(rule_code) in selected_rules
+                rule_code: rule
+                for rule_code, rule in registry.items()
+                if str(rule_code) in selected_rules
             }
             return rules_to_run
         else:
@@ -80,7 +88,7 @@ class LacValidator:
 
             if result == {}:
                 # TODO replace this with behaviour that models rules skipped because of lack of data.
-                
+
                 # validation rules return an empty dict if the required tables are not all available.
                 logger.info(f"Error code {rule.code} skipped due to missing tables")
                 self.skips.append(rule.code)
@@ -103,6 +111,7 @@ class LacValidator:
                             + f"Output: {str(values)}"
                         )
                     self.ds_results[table].loc[values, f"ERR_{rule.code}"] = True
+
 
 def create_issue_df(report, error_report):
     """

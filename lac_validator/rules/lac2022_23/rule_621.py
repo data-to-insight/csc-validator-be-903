@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="621",
     message="Mother’s field has been completed but date of birth shows that the mother is younger than her child.",
@@ -48,8 +45,6 @@ def test_validate():
     )
 
     fake_dfs = {"Header": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

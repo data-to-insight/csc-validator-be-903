@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="354",
     message="Date episode ceased must be on or before the end of the current collection year.",
@@ -46,8 +43,6 @@ def test_validate():
     metadata = {"collection_end": "01/04/2021"}
 
     fake_dfs = {"Episodes": fake_data, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="406",
     message="Child is Unaccompanied Asylum-Seeking Child (UASC) or was formerly UASC. Distance should be "
@@ -110,8 +107,6 @@ def test_validate():
         "Header": fake_header,
         "Header_last": fake_header_last,
     }
-
-    
 
     result = validate(fake_dfs)
 

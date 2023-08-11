@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="435",
     message="Reason for new episode is that child’s placement has changed but not the legal status, "
@@ -124,8 +121,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="389",
     message="Reason episode ceased is that child transferred to care of adult social care services, but child is aged under 16.",
@@ -69,8 +66,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data, "Header": fake_data_child}
-
-    
 
     result = validate(fake_dfs)
 

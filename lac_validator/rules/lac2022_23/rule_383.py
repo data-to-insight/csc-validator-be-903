@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="383",
     message="A child in a temporary placement must subsequently return to his/her normal placement.",
@@ -92,8 +89,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

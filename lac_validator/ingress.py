@@ -1,19 +1,18 @@
 import collections.abc
-from pathlib import Path
-
-import pandas as pd
+import logging
 import xml.etree.ElementTree as ET
 from io import BytesIO
-from typing import List, Union, Dict, Iterator, Tuple
+from pathlib import Path
+from time import perf_counter as now
+from typing import Dict, Iterator, List, Tuple, Union
 
-from pandas import DataFrame
+import pandas as pd
 from numpy import nan
-from lac_validator.types import UploadError, UploadedFile
+from pandas import DataFrame
+
 from lac_validator.config import column_names
 from lac_validator.datastore import la_df, merge_postcodes
-
-import logging
-from time import perf_counter as now
+from lac_validator.types import UploadedFile, UploadError
 
 logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)  # uncomment if you want to see debug messages
@@ -238,7 +237,6 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
 
     # if not check whether file includes separate setting and address sheets
     elif "Settings and Inspection Info" in CH_sheets and "Address Details" in CH_sheets:
-
         # this sheet contains all columns except the postcode
         CH_setting = pd.read_excel(
             CH_bytes, sheet_name="Settings and Inspection Info", engine="openpyxl"

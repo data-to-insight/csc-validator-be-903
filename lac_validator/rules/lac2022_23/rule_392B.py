@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="392B",
     message="Child is looked after but no postcodes are recorded. [NOTE: This check may result in false "
@@ -102,8 +99,6 @@ def test_validate():
         "Header": fake_header,
         "Header_last": fake_header_last,
     }
-
-    
 
     result = validate(fake_dfs)
 

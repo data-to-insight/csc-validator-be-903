@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="165",
     message="Data entry for mother status is invalid.",
@@ -206,7 +203,7 @@ def test_validate():
         "OC3": fake_data_oc3,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
 
     assert result == {"Header": [4, 5, 6, 7], "OC3": [4, 5, 6, 7]}

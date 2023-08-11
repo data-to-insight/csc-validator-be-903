@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="224",
     message="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement provider recorded.",
@@ -114,7 +111,7 @@ def test_validate():
     metadata = {"provider_info": fake_provider_info}
 
     fake_dfs = {"Episodes": fake_data_eps, "metadata": metadata}
-    
+
     result = validate(fake_dfs)
 
     assert result == {"Episodes": [0, 2, 5, 7]}

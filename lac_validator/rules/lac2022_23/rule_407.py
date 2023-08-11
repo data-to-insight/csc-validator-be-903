@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="407",
     message="Reason episode ceased is Special Guardianship Order, but child has reached age 18.",
@@ -121,6 +118,6 @@ def test_validate():
         ]
     )
     fake_dfs = {"Episodes": fake_data_eps, "Header": fake_data_header}
-    
+
     result = validate(fake_dfs)
     assert result == {"Episodes": [3, 7], "Header": [3, 7]}

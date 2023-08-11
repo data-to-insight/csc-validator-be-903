@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="188",
     message="Child is aged under 4 years at the end of the year, "
@@ -58,8 +55,6 @@ def test_validate():
     oc2["SDQ_REASON"] = pd.NA
 
     fake_dfs = {"OC2": oc2, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

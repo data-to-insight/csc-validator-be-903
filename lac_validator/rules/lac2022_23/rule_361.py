@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="361",
     message="Police protection legal status lasted longer than maximum 72 hours allowed "
@@ -169,8 +166,6 @@ def test_validate():
     metadata = {"collection_end": "31/03/2021"}
 
     fake_dfs = {"Episodes": fake_data, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

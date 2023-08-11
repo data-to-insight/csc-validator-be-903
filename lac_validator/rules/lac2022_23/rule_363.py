@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="363",
     message="Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.",
@@ -124,8 +121,6 @@ def test_validate():
     test_meta = {"collection_end": "01/04/2002"}
 
     test_dfs = {"Episodes": test_eps, "metadata": test_meta}
-
-    
 
     result = validate(test_dfs)
 

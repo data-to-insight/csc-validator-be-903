@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="576",
     message="There is an open missing/away from placement without authorisation period in "
@@ -70,7 +67,5 @@ def test_validate():
         ]
     )
     fake_dfs = {"Missing_last": fake_mis_l, "Missing": fake_mis}
-
-    
 
     assert validate(fake_dfs) == {"Missing": [1, 3]}

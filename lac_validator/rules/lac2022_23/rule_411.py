@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -32,8 +31,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data, "metadata": {"localAuthority": "auth"}}
-
-    
 
     # Note 2 and 3 pass as the rule is specific
     # about only checking that 'IN' is set correctly

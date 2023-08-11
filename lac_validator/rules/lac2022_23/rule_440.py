@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="440",
     message="Participation method indicates child was under 4 years old at the time of the review, but date of birth and review date indicates the child was 4 years old or over.",
@@ -61,8 +58,6 @@ def test_validate():
     )
 
     fake_dfs = {"Reviews": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

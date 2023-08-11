@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -59,6 +58,6 @@ def test_validate():
         }
     )
     fake_dfs = {"Episodes": fake_data_eps, "AD1": fake_data_ad1}
-    
+
     result = validate(fake_dfs)
     assert result == {"Episodes": [0], "AD1": [0]}

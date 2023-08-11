@@ -2,11 +2,8 @@ import pandas as pd
 
 from lac_validator.rule_engine import rule_definition
 from lac_validator.utils import (
-    add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,
-)  # Check 'Episodes' present before use!
-
-
-import pandas as pd
+    add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column,  # Check 'Episodes' present before use!
+)
 
 
 @rule_definition(
@@ -138,8 +135,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/1980", "collection_end": "31/03/1981"}
 
     fake_dfs = {"OC2": fake_data, "metadata": metadata, "Episodes": fake_data_episodes}
-
-    
 
     result = validate(fake_dfs)
 

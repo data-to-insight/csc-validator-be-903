@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="189",
     message="Child is aged 17 years or over at the beginning of the year, but an Strengths and Difficulties "
@@ -49,8 +46,6 @@ def test_validate():
     )
 
     fake_dfs = {"OC2": oc2, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

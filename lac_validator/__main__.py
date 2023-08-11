@@ -1,14 +1,15 @@
-import click
 import importlib
-import pytest
 import os
 from pathlib import Path
 
-from lac_validator import lac_validator
-from lac_validator.utils import process_uploaded_files
+import click
+import pytest
 
+from lac_validator import lac_validator
 from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
+from lac_validator.utils import process_uploaded_files
+
 
 @click.group()
 def cli():
@@ -103,7 +104,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # ad1_path = "tests\\fake_data\\ad1.csv"
     # frontend_files_dict = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
 
-    frontend_files_dict = {"This year":[p4a_path, ad1_path]}
+    frontend_files_dict = {"This year": [p4a_path, ad1_path]}
     files_list = process_uploaded_files(frontend_files_dict)
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
@@ -111,13 +112,17 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
 
-    v = lac_validator.LacValidator(metadata=metadata, files=files_list, registry=ruleset_registry, selected_rules=None)
+    v = lac_validator.LacValidator(
+        metadata=metadata,
+        files=files_list,
+        registry=ruleset_registry,
+        selected_rules=None,
+    )
     results = v.ds_results
 
     print(v.ds_results)
-    print('skipped', v.skips)
-    print('done:', v.dones)
-
+    print("skipped", v.skips)
+    print("done:", v.dones)
 
     # r = Report(results, ruleset=ruleset_registry)
     # print(f"*****************Error report******************")

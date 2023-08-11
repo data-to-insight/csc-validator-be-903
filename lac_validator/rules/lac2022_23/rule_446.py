@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="446",
     message="E1 is not a valid code for episodes starting before December 2005.",
@@ -48,8 +45,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

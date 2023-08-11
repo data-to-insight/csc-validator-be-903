@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="364",
     message="Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits "
@@ -124,8 +121,6 @@ def test_validate():
     test_meta = {"collection_end": "01/04/2002"}
 
     test_dfs = {"Episodes": test_eps, "metadata": test_meta}
-
-    
 
     result = validate(test_dfs)
 

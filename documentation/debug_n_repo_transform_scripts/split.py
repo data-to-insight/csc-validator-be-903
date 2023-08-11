@@ -3,7 +3,8 @@
 # This is where the tool rewrite started.
 
 import re
-from black import format_str, FileMode
+
+from black import FileMode, format_str
 
 fake_uasc_205 = """fake_uasc_205 = pd.DataFrame([
         {'CHILD': '101', 'DOB': '28/10/2004', 'DUC': pd.NA},#Pass C
@@ -86,15 +87,29 @@ fake_dfs_205_csv_2 = """fake_dfs_205_csv_2 = {
 
 def handle_imports(validator_code_block):
     if "add_CLA_column" in validator_code_block:
-        validator_code_block = "from validator903.utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!\n" + validator_code_block
+        validator_code_block = (
+            "from validator903.utils import add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER as add_CLA_column  # Check 'Episodes' present before use!\n"
+            + validator_code_block
+        )
     if "merge_postcodes" in validator_code_block:
-        validator_code_block = "from validator903.datastore import merge_postcodes\n" + validator_code_block
+        validator_code_block = (
+            "from validator903.datastore import merge_postcodes\n"
+            + validator_code_block
+        )
     if "ErrorDefinition" in validator_code_block:
-        validator_code_block = "from validator903.types import ErrorDefinition\n" + validator_code_block
+        validator_code_block = (
+            "from validator903.types import ErrorDefinition\n" + validator_code_block
+        )
     if "IntegrityCheckDefinition" in validator_code_block:
-        validator_code_block = "from validator903.types import IntegrityCheckDefinition\n" + validator_code_block
+        validator_code_block = (
+            "from validator903.types import IntegrityCheckDefinition\n"
+            + validator_code_block
+        )
     if "MissingMetadataError" in validator_code_block:
-        validator_code_block = "from validator903.types import MissingMetadataError\n" + validator_code_block
+        validator_code_block = (
+            "from validator903.types import MissingMetadataError\n"
+            + validator_code_block
+        )
     if "pd." in validator_code_block:
         validator_code_block = "import pandas as pd\n\n" + validator_code_block
 
@@ -152,11 +167,17 @@ def run():
 
         # Get function text: This currently misses potential comments written before the function definitions
         if (idx + 1) < len(function_locations):
-            validator_code_block = "\n\n" + validators_text[function[0]:function_locations[idx+1][0]] + "\n"
+            validator_code_block = (
+                "\n\n"
+                + validators_text[function[0] : function_locations[idx + 1][0]]
+                + "\n"
+            )
         else:
-            validator_code_block = "\n\n" + validators_text[function[0]:] + "\n"
+            validator_code_block = "\n\n" + validators_text[function[0] :] + "\n"
 
-        validator_code_block = handle_imports(validator_code_block).replace("def validate_{}".format(validator_title), "def validate")
+        validator_code_block = handle_imports(validator_code_block).replace(
+            "def validate_{}".format(validator_title), "def validate"
+        )
 
         # Add tests: This currently misses potential comments written before the function definitions
         linked_tests = list(filter(lambda x: x[2] == validator_title, test_locations))
@@ -164,22 +185,30 @@ def run():
             test_code_block = ""
             try:
                 start_index = test[0]
-                end_index = test[1] + tests_text[test[1]:].index("def ")
+                end_index = test[1] + tests_text[test[1] :].index("def ")
                 test_code_block += tests_text[start_index:end_index]
             except ValueError as verr:
                 # We've likely reached the end of the file
-                test_code_block += tests_text[test[0]:]
+                test_code_block += tests_text[test[0] :]
             test_code_block = handle_test_data(test_code_block)
-            test_code_block = test_code_block.replace("def test_validate_{}".format(validator_title), "def test_validate")
+            test_code_block = test_code_block.replace(
+                "def test_validate_{}".format(validator_title), "def test_validate"
+            )
 
         # Make sure test is pointed at more generically-named function now
-        test_code_block = re.sub("\svalidate_[A-Za-z0-9]{0,4}\(", " validate(", test_code_block)
+        test_code_block = re.sub(
+            "\svalidate_[A-Za-z0-9]{0,4}\(", " validate(", test_code_block
+        )
 
         # Format with black before saving it
-        validator_code_block = format_str(validator_code_block, mode=FileMode()) + "\n\n"
+        validator_code_block = (
+            format_str(validator_code_block, mode=FileMode()) + "\n\n"
+        )
         test_code_block = format_str(test_code_block, mode=FileMode())
 
-        with open("./validator903/validators/rule_{}.py".format(validator_title), "w") as validator_file:
+        with open(
+            "./validator903/validators/rule_{}.py".format(validator_title), "w"
+        ) as validator_file:
             validator_file.write(validator_code_block)
             validator_file.write(test_code_block)
 

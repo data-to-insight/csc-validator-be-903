@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="579",
     message="A new decision that the child should be placed for adoption this year cannot start when the previous decision is still open. Decisions to place the child for adoption should also not overlap. The date of any new decision to place the child for adoption must not be before the date placed ceased of previous decisions.",
@@ -113,8 +110,6 @@ def test_validate():
     )
 
     fake_dfs = {"PlacedAdoption": fake_adopt_place}
-
-    
 
     result = validate(fake_dfs)
 

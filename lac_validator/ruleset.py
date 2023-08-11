@@ -18,6 +18,7 @@ registry.reset()
 # 2023_24
 # add code block to get rules for the next year here.
 
+
 # Create customised registry object based on year specified.
 def create_registry(ruleset=ruleset_years[-1]):
     """

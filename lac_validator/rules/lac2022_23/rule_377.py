@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="377",
     message="Only two temporary placements coded as being due to holiday of usual foster carer(s) are "
@@ -59,8 +56,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

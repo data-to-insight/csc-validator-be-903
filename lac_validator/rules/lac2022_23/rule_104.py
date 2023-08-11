@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="104",
     message="Date for Unaccompanied Asylum-Seeking Children (UASC) status ceased is not a valid date.",
@@ -46,8 +43,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2019"}
 
     fake_dfs = {"UASC": fake_uasc, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
     assert result == {"UASC": [0, 3, 5]}

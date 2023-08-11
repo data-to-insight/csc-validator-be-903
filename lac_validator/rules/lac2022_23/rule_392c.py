@@ -1,8 +1,7 @@
-from lac_validator.rule_engine import rule_definition
-from lac_validator.datastore import merge_postcodes
-
-
 import pandas as pd
+
+from lac_validator.datastore import merge_postcodes
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -52,8 +51,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

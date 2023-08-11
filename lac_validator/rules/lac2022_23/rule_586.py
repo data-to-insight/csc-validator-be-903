@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="586",
     message="Dates of missing periods are before child’s date of birth.",
@@ -40,7 +37,5 @@ def test_validate():
     )
 
     fake_dfs = {"Missing": fake_data}
-
-    
 
     assert validate(fake_dfs) == {"Missing": [2, 4]}

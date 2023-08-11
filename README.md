@@ -68,6 +68,8 @@ tests. Please do not submit a pull-request without a comprehensive test.
 
 ### Development
 
+To run in codespaces, you need to run in a virtual environment, this information can be found in a .txt file in the documentation.
+
 To install the code and dependencies, from the main project directory run:
 
 ```

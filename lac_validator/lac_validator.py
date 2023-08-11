@@ -1,11 +1,12 @@
 import logging
 import pandas as pd
-from typing import Any, Callable
+from typing import Any, Optional
 from pandas import DataFrame
 
 from lac_validator.types import UploadedFile
 from lac_validator.ingress import read_from_text
 from lac_validator.datastore import copy_datastore, create_datastore
+from lac_validator.rule_engine import RuleDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +17,10 @@ class LacValidator:
 
     def __init__(
         self,
-        metadata: dict[str, Any],
+        metadata: dict[str, str],
         files: list[UploadedFile],
-        registry,
-        selected_rules,
+        registry: dict[str, RuleDefinition],
+        selected_rules: Optional[list[str]] = None,
     ):
         self.dfs: dict[str, DataFrame] = {}
         self.dones: list[str] = []
@@ -39,7 +40,7 @@ class LacValidator:
         # validate
         self.validate(selected_rules)
 
-    def get_rules_to_run(self, registry:dict[str, Callable], selected_rules:list[str]):
+    def get_rules_to_run(self, registry:dict[str, RuleDefinition], selected_rules:Optional[list[str]] = None):
         """
         Filters rules to be run based on user's selection in the frontend.
         :param dict registry: record of all existing rules in rule pack
@@ -53,7 +54,7 @@ class LacValidator:
         else:
             return registry
 
-    def validate(self, selected_rules: list[str]):
+    def validate(self, selected_rules: Optional[list[str]] = None):
         logger.info("Creating Data store...")
         data_store = create_datastore(self.dfs, self.metadata)
 
@@ -103,7 +104,6 @@ class LacValidator:
                         )
                     self.ds_results[table].loc[values, f"ERR_{rule.code}"] = True
 
-# TODO move this to utils of 903 
 def create_issue_df(report, error_report):
     """
     creates issue_df similar to that of the CIN backend output.

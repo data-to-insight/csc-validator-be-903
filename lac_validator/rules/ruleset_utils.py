@@ -1,5 +1,5 @@
 import importlib
-from lac_validator.rule_engine import RuleDefinition
+from lac_validator.rule_engine import RuleDefinition, YearConfig
 from typing import Iterable
 
 def extract_validator_functions(file_paths:Iterable, marker:str="rule") -> dict[str, RuleDefinition]:
@@ -22,7 +22,7 @@ def extract_validator_functions(file_paths:Iterable, marker:str="rule") -> dict[
         validator_funcs.update(validator_func)
     return validator_funcs
 
-def update_validator_functions(prev_registry, this_year_config:dict) -> dict:
+def update_validator_functions(prev_validator_funcs, this_year_config:YearConfig) -> dict:
     """
     :param dict prev_registry: previous year's registry.
     :param dict this_year_config: codes of rules that have been added or deleted.
@@ -30,10 +30,9 @@ def update_validator_functions(prev_registry, this_year_config:dict) -> dict:
     :return: valid validator functions according to config.
     :rtype: dict
     """
-    prev_validator_funcs = prev_registry
     # Rules present in both will be updated to this year's version. rules present in only this year will be added.
-    updated_validator_funcs = prev_validator_funcs | this_year_config["added_or_modified"]
+    updated_validator_funcs = prev_validator_funcs | this_year_config.added_or_modified
     # delete rules by their rules codes, if specified.
-    for deleted_rule in this_year_config["deleted"]:
+    for deleted_rule in this_year_config.deleted:
         del updated_validator_funcs[deleted_rule]
-    return updated_validator_funcs 
+    return updated_validator_funcs  

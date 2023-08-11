@@ -57,3 +57,8 @@ def rule_definition(
         return wrapper
 
     return decorator
+
+@dataclass(eq=True)
+class YearConfig:
+    deleted: list[str]
+    added_or_modified: dict[str, RuleDefinition]

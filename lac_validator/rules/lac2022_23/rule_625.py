@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="625",
     message="Date of birth of the first child is beyond the end of this reporting year or the date the child ceased to be looked after.",
@@ -34,7 +31,7 @@ def validate(dfs):
         episodes.reset_index(inplace=True)
 
         # if nans aren't dropped, idxmax() won't work. we can do this since dropping nan DECs doesn't affect the rule logic.
-        dec_only_eps = episodes[["CHILD", "DEC"]].dropna() 
+        dec_only_eps = episodes[["CHILD", "DEC"]].dropna()
         # latest episodes
         eps_last_indices = dec_only_eps.groupby("CHILD")["DEC"].idxmax()
         latest_episodes = episodes[episodes.index.isin(eps_last_indices)]
@@ -83,6 +80,6 @@ def test_validate():
         "Episodes": fake_data_episodes,
         "Header": fake_data_header,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {"Episodes": [0, 3], "Header": [0, 1]}

@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -124,6 +123,6 @@ def test_validate():
         "PlacedAdoption": fake_placed_adoption,
         "PlacedAdoption_last": fake_pa_last,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {"PlacedAdoption": [0, 1, 3]}

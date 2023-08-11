@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="626",
     message="Child was reported as a mother but the date of birth of the first child is before the current "
@@ -64,8 +61,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020"}
 
     fake_dfs = {"Header": header, "Header_last": header_last, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="3001",
     message="Where care leavers information is being returned for a young person around their 17th birthday, the accommodation cannot be with their former foster carer(s).",
@@ -75,8 +72,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020", "collection_end": "31/03/2021"}
 
     fake_dfs = {"OC3": fake_data, "Header": fake_data_child, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

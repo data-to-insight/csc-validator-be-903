@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="203",
     message="Date of birth disagrees with the date of birth already recorded for this child.",
@@ -87,8 +84,6 @@ def test_validate():
     )
 
     fake_dfs = {"Header": fake_data, "Header_last": fake_data_prev}
-
-    
 
     result = validate(fake_dfs)
 

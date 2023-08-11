@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="302",
     message="First episode starts before child was born.",
@@ -73,8 +70,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data, "Header": fake_data_child}
-
-    
 
     result = validate(fake_dfs)
 

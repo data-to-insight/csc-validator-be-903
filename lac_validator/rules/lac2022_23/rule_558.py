@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -64,8 +63,6 @@ def test_validate():
         "Episodes": fake_data_episodes,
         "PlacedAdoption": fake_data_placed_adoption,
     }
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="559",
     message="Date of decision that a child should be placed for adoption was not in the current year but the date of the decision that the child should be placed for adoption was not completed in a previous return.",
@@ -73,7 +70,7 @@ def test_validate():
         "PlacedAdoption_last": fake_last_pa,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {
         "PlacedAdoption": [

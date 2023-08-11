@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="228",
     message="Ofsted Unique reference number (URN) is not valid for the episode end date "
@@ -128,7 +125,7 @@ def test_validate():
     }
 
     fake_dfs = {"Episodes": fake_data_eps, "metadata": metadata}
-    
+
     result = validate(fake_dfs)
 
     assert result == {"Episodes": [2, 5, 6]}

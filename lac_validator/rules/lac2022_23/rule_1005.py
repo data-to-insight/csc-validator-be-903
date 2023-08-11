@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="1005",
     message="The end date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.",
@@ -47,8 +44,6 @@ def test_validate():
     )
 
     fake_dfs = {"Missing": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

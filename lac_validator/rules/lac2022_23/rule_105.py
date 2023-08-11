@@ -1,10 +1,7 @@
 import pandas as pd
 
-from lac_validator.types import MissingMetadataError
 from lac_validator.rule_engine import rule_definition
-
-
-import pandas as pd
+from lac_validator.types import MissingMetadataError
 
 
 @rule_definition(
@@ -36,7 +33,6 @@ def test_validate():
     import pandas as pd
 
     fake_header = pd.DataFrame({"UASC": [0, 1, pd.NA, "", "0", "1", "2", 2]})
-    
 
     fake_dfs = {"Header": fake_header, "metadata": {"file_format": "csv"}}
     result = validate(fake_dfs)

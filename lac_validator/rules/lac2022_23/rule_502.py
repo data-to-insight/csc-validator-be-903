@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="502",
     message="Last year's record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.",
@@ -79,8 +76,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_epi, "Episodes_last": fake_epi_last}
-
-    
 
     result = validate(fake_dfs)
 

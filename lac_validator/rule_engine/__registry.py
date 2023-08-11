@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Optional
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True, eq=True)
@@ -20,8 +20,8 @@ class RuleDefinition:
 
     code: str
     func: Callable
-    message: Optional[str]= None
-    affected_fields: Optional[list[str]]= None
+    message: Optional[str] = None
+    affected_fields: Optional[list[str]] = None
 
 
 def rule_definition(
@@ -35,7 +35,7 @@ def rule_definition(
     :param str code: The rule code for each rule.
     :param str message: The message displayed for each validation rule.
     :param str affected_fields: The fields/columns affected by a validation rule.
-    
+
     :returns: RuleDefinition object containing information about validation rules.
     :rtype: RuleDefiniton class object.
     """
@@ -51,12 +51,13 @@ def rule_definition(
             message=message,
             affected_fields=affected_fields,
         )
-        # when validator funcs are created, give them a unique attribute that they can be 
+        # when validator funcs are created, give them a unique attribute that they can be
         # recognised by when the file is read later.
         wrapper.rule = definition
         return wrapper
 
     return decorator
+
 
 @dataclass(eq=True)
 class YearConfig:

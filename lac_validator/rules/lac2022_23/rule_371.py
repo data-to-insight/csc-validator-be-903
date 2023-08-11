@@ -1,21 +1,22 @@
 import pandas as pd
+
 from lac_validator.rule_engine import rule_definition
 from lac_validator.rules.rule_utils import decom_before_dob
+
 
 @rule_definition(
     code="371",
     message="Child in semi-independent living accommodation not subject to children’s homes regulations should be at least 14.",
-    affected_fields=['DECOM', 'PLACE'],
+    affected_fields=["DECOM", "PLACE"],
 )
 def validate(dfs):
-    if 'Episodes' not in dfs or 'Header' not in dfs:
+    if "Episodes" not in dfs or "Header" not in dfs:
         return {}
     else:
-        return decom_before_dob(dfs, p_code='H5', y_gap=14)
+        return decom_before_dob(dfs, p_code="H5", y_gap=14)
 
 
 def test_validate():
-
     fake_epi = pd.DataFrame(
         {
             "CHILD": ["111", "222", "333", "444", "555", "666"],
@@ -52,10 +53,16 @@ def test_validate():
         }
     )
 
-    fake_hea['DOB'] = pd.to_datetime(fake_hea['DOB'], format='%d/%m/%Y', errors='coerce')
-    fake_epi['DECOM'] = pd.to_datetime(fake_epi['DECOM'], format='%d/%m/%Y', errors='coerce')
-    fake_epi['DEC'] = pd.to_datetime(fake_epi['DEC'], format='%d/%m/%Y', errors='coerce')
+    fake_hea["DOB"] = pd.to_datetime(
+        fake_hea["DOB"], format="%d/%m/%Y", errors="coerce"
+    )
+    fake_epi["DECOM"] = pd.to_datetime(
+        fake_epi["DECOM"], format="%d/%m/%Y", errors="coerce"
+    )
+    fake_epi["DEC"] = pd.to_datetime(
+        fake_epi["DEC"], format="%d/%m/%Y", errors="coerce"
+    )
 
-    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}    
+    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}
 
     assert validate(fake_dfs) == {"Episodes": [3, 5]}

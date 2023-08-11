@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="630",
     message="Information on previous permanence option should be returned.",
@@ -88,7 +85,5 @@ def test_validate():
     metadata = {"collection_start": "01/04/2021"}
 
     fake_dfs = {"Episodes": fake_epi, "PrevPerm": fake_pre, "metadata": metadata}
-
-    
 
     assert validate(fake_dfs) == {"Episodes": [1, 5, 7]}

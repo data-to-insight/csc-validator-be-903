@@ -1,17 +1,15 @@
 import datetime
-import logging
 import json
+import logging
+from typing import Optional
+
 from prpc_python import RpcApp
 
 from lac_validator import lac_validator
-from lac_validator.utils import process_uploaded_files
-from lac_validator.rules.ruleset_utils import get_year_ruleset
-
-from typing import Optional
-
 from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
-
+from lac_validator.rules.ruleset_utils import get_year_ruleset
+from lac_validator.utils import process_uploaded_files
 
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler(
@@ -23,14 +21,16 @@ handler.setFormatter(f_format)
 logger.addHandler(handler)
 
 app = RpcApp("validate_lac")
+
+
 @app.call
-def get_rules(collection_year:str="2023")->str:
+def get_rules(collection_year: str = "2023") -> str:
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
     """
     ruleset_registry = get_year_ruleset(collection_year)
-    
+
     rules = []
     for _, rule in ruleset_registry.items():
         rules.append(
@@ -42,9 +42,9 @@ def get_rules(collection_year:str="2023")->str:
 
     return json.dumps(rules)
 
-@app.call
-def generate_tables(lac_data:dict)->dict[str, dict]:
 
+@app.call
+def generate_tables(lac_data: dict) -> dict[str, dict]:
     """
     :param lac_data: files uploaded by user mapped to the field where files were uploaded.
     :return lac_data_tables:  a dictionary of dataframes that has been converted to json.
@@ -54,13 +54,21 @@ def generate_tables(lac_data:dict)->dict[str, dict]:
     data_files, _ = read_from_text(files_list)
 
     # what the frontend will display
-    lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  data_files.items()}
-    
+    lac_data_tables = {
+        table_name: table_df.to_json(orient="records")
+        for table_name, table_df in data_files.items()
+    }
+
     return lac_data_tables
 
 
 @app.call
-def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[list[str]]=None, ruleset:str="lac2022_23"):
+def lac_validate(
+    lac_data: dict,
+    file_metadata: dict,
+    selected_rules: Optional[list[str]] = None,
+    ruleset: str = "lac2022_23",
+):
     """
     :param lac_data: keys are table names and values are LAC csv files.
     :param file_metadata: contains collection year and local authority as strings.
@@ -78,19 +86,34 @@ def lac_validate(lac_data:dict, file_metadata:dict,  selected_rules: Optional[li
     files_list = process_uploaded_files(lac_data)
     ruleset_registry = get_year_ruleset(file_metadata["collectionYear"])
 
-    v = lac_validator.LacValidator(metadata=file_metadata, files=files_list, registry=ruleset_registry, selected_rules=selected_rules)
+    v = lac_validator.LacValidator(
+        metadata=file_metadata,
+        files=files_list,
+        registry=ruleset_registry,
+        selected_rules=selected_rules,
+    )
     results = v.ds_results
     r = Report(results, ruleset_registry)
     full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
 
     # what the frontend will display
     issue_report = full_issue_df.to_json(orient="records")
-    lac_data_tables = {table_name:table_df.to_json(orient="records") for table_name, table_df in  v.dfs.items()}
-    
-    # what the user will download 
+    lac_data_tables = {
+        table_name: table_df.to_json(orient="records")
+        for table_name, table_df in v.dfs.items()
+    }
+
+    # what the user will download
     # r.error_summary generates the ErrorCounts file and r.child_summary generates the ChildErrorSummary file.
-    user_reports = [r.error_summary.to_json(orient="records"), r.child_summary.to_json(orient="records"),]
+    user_reports = [
+        r.error_summary.to_json(orient="records"),
+        r.child_summary.to_json(orient="records"),
+    ]
 
     # TODO check that user reports are downloaded with the appropriate names.
-    validation_results = {"issue_locations": [issue_report], "data_tables":[lac_data_tables], "user_report":user_reports}
+    validation_results = {
+        "issue_locations": [issue_report],
+        "data_tables": [lac_data_tables],
+        "user_report": user_reports,
+    }
     return validation_results

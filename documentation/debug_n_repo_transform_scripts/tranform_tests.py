@@ -25,5 +25,3 @@ for rule_file in failed_paths:
     # write new content to files.
     with open(f"{rule_file}", "w") as rule_file:
         rule_file.write(rule_content)
-    
-

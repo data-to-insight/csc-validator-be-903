@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="574",
     message="A new missing/away from placement without authorisation period cannot start when the previous missing/away from placement without authorisation period is still open. Missing/away from placement without authorisation periods should also not overlap.",
@@ -91,8 +88,6 @@ def test_validate():
     )
 
     fake_dfs = {"Missing": fake_mis}
-
-    
 
     result = validate(fake_dfs)
 

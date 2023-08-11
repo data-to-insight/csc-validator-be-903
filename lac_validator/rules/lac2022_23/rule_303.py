@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="303",
     message="If date Unaccompanied Asylum-Seeking Child (UASC) status ceased is not null, UASC status must be coded 1.",
@@ -78,8 +75,6 @@ def test_validate():
     )
 
     fake_dfs = {"UASC": fake_data_uasc, "Header": fake_data_header}
-
-    
 
     result = validate(fake_dfs)
 

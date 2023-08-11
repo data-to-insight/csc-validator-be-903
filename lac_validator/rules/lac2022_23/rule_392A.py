@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="392A",
     message="Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC]",
@@ -96,8 +93,6 @@ def test_validate():
             {"CHILD": "444", "UASC": "1"},  # 6
         ]
     )
-
-    
 
     dfs = {
         "Episodes": fake_episodes,

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="357",
     message="If this is the first episode ever for this child, reason for new episode must be S.  "
@@ -59,8 +56,6 @@ def test_validate():
     )
     metadata = {"collection_start": "31/03/1995"}
     test_dfs = {"Episodes": episodes, "metadata": metadata}
-
-    
 
     test_result = validate(test_dfs)
 

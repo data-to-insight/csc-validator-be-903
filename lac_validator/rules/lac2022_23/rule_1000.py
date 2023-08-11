@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -51,7 +50,6 @@ def test_validate():
     fake_episodes = pd.DataFrame({"CHILD": ["104", "105"], "REC": ["X1", "E2"]})
 
     fake_oc3 = pd.DataFrame({"CHILD": ["101", "102", "103", "104", "105"]})
-
 
     fake_dfs = {
         "Episodes": fake_episodes,

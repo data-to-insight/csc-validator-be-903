@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="301",
     message="Date of birth falls after the year ended.",
@@ -65,6 +62,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020", "collection_end": "31/03/2021"}
 
     fake_dfs = {"Header": fake_data_header, "metadata": metadata}
-    
+
     result = validate(fake_dfs)
     assert result == {"Header": [0, 3]}

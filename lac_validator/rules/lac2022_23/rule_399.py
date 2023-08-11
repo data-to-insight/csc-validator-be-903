@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -62,11 +61,9 @@ def test_validate():
     import pandas as pd
 
     # change log
-
     # index 6 and 7 are changed to the same child such that though both have the review information, index 6 would no longer trigger the error because the child has another episode (index 7) where LS is not V3/V4.
     # Index 0 and 1 have been same to the same child such that all its episodes have LS V3/V4 and the error is trigged though index zero does not have the review information and would not have triggered the error on its own.
     # index 6 truly reflects the change. It would have failed earlier but it passes now since the child's other LS is not V3
-
     # test data assumes that child IDs cannot repeat in the header and reviews tables.
 
     fake_data_episodes = pd.DataFrame(
@@ -102,7 +99,7 @@ def test_validate():
         "Reviews": fake_data_reviews,
         "Episodes": fake_data_episodes,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {
         "Header": [0, 5],

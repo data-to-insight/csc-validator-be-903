@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="575",
     message="If the placement from which the child goes missing/away from placement without "
@@ -67,8 +64,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_epi, "Missing": fake_mis}
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="362",
     message="Emergency protection order (EPO) lasted longer than 21 days",
@@ -168,8 +165,6 @@ def test_validate():
     metadata = {"collection_end": "31/03/2021"}
 
     fake_dfs = {"Episodes": fake_data, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

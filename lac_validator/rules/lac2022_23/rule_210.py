@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="210",
     message="Children looked after for more than a week at 31 March should not have an unknown Unique Pupil Number (UPN) code of UN4.",
@@ -121,6 +118,6 @@ def test_validate():
         "Header": fake_data_header,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {"Episodes": [2, 9], "Header": [0, 3]}

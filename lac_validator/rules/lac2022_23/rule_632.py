@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="632",
     message="Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year",
@@ -18,20 +15,22 @@ def validate(dfs):
         # function to check that date is of the right format
         def valid_date(dte):
             try:
-                lst = dte.split('/')
+                lst = dte.split("/")
             except AttributeError:
                 return pd.NaT
             # Preceding block checks for the scenario where the value passed in is nan/naT
 
             # date should have three elements
-            if (len(lst) != 3):
+            if len(lst) != 3:
                 return pd.NaT
 
-            z_list = ['ZZ', 'ZZ', 'ZZZZ']
+            z_list = ["ZZ", "ZZ", "ZZZZ"]
             # We set the date to the latest possible value to avoid false positives
-            offset_list = [pd.DateOffset(months=1, days=-1),
-                            pd.DateOffset(years=1, days=-1),
-                            None]
+            offset_list = [
+                pd.DateOffset(months=1, days=-1),
+                pd.DateOffset(years=1, days=-1),
+                None,
+            ]
             # that is, go to the next month/year and take the day before that
             already_found_non_zeds = False
             date_bits = []
@@ -69,7 +68,7 @@ def validate(dfs):
         prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(valid_date)
 
         # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOMs doesn't affect the rule logic.
-        decom_only_eps = episodes[["CHILD", "DECOM"]].dropna() 
+        decom_only_eps = episodes[["CHILD", "DECOM"]].dropna()
 
         # select first episodes
         first_eps_idxs = decom_only_eps.groupby("CHILD")["DECOM"].idxmin()
@@ -100,7 +99,6 @@ def validate(dfs):
 
 
 def test_validate():
-
     fake_data_prevperm = pd.DataFrame(
         {
             "CHILD": [
@@ -178,11 +176,13 @@ def test_validate():
             },  # 10 - fail! wrong month in DATE_PERM
         ]
     )
-    
-    fake_data_episodes['DECOM'] = pd.to_datetime(fake_data_episodes['DECOM'], format='%d/%m/%Y', errors='coerce')
+
+    fake_data_episodes["DECOM"] = pd.to_datetime(
+        fake_data_episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
+    )
 
     fake_dfs = {"PrevPerm": fake_data_prevperm, "Episodes": fake_data_episodes}
-    
+
     result = validate(fake_dfs)
     # desired
     assert result == {"Episodes": [0, 2, 5, 9, 10], "PrevPerm": [0, 1, 4, 8, 9]}

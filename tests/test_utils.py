@@ -4,6 +4,15 @@ from lac_validator.utils import \
     add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER, \
     add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER
 
+from lac_validator.rules.ruleset_utils import get_year_ruleset
+from lac_validator.rule_engine import RuleDefinition
+
+def test_get_year_ruleset():
+    registry = get_year_ruleset('2023')
+    assert len(registry) == 288
+    assert isinstance(registry, dict)
+    assert isinstance(list(registry.values())[1], RuleDefinition)
+
 
 def test_add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER():
     collection_start = '01/04/1980'

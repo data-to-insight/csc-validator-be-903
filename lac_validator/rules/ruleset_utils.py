@@ -36,3 +36,15 @@ def update_validator_functions(prev_validator_funcs, this_year_config:YearConfig
     for deleted_rule in this_year_config.deleted:
         del updated_validator_funcs[deleted_rule]
     return updated_validator_funcs  
+
+def get_year_ruleset(collection_year:str) -> dict[str, RuleDefinition]:
+    """
+    Gets the registry of validation rules for the year specified in the metadata.
+    """
+    # for example, convert "2023" to "lac2022_23"
+    ruleset = f"lac{int(collection_year)-1}_{collection_year[2:4]}"
+
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    registry = getattr(module, "registry")
+
+    return registry

@@ -78,8 +78,7 @@ def test_read_xml_from_text():
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
 
 
-def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
-                                      scp_path='tests/fake_data/scp_fake.xlsx'):
+def test_construct_provider_info_table(dummy_scp, dummy_ch):
     # def read_file(path):
     #     with open(path, encoding='latin-1') as f:
     #         return f.read().encode()
@@ -102,9 +101,22 @@ def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
     #                     'LA_NAME_INFERRED']
     # assert output_columns == expected_columns
 
-    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'scp_fake.xlsx')
-    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'ch_fake.xlsx')
-    output = construct_provider_info_table(ch_path_dir, scp_path_dir)
+    # scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'scp_fake.xlsx')
+    # ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'ch_fake.xlsx')
+    # output = construct_provider_info_table(ch_path_dir, scp_path_dir)
+    # output_columns = output.columns.to_list()
+    # expected_columns = ['URN',
+    #                     'LA_NAME_FROM_FILE',
+    #                     'PLACE_CODES',
+    #                     'PROVIDER_CODES', 
+    #                     'REG_END', 
+    #                     'POSTCODE', 
+    #                     'source', 
+    #                     'LA_CODE_INFERRED', 
+    #                     'LA_NAME_INFERRED']
+    # assert output_columns == expected_columns
+
+    output = construct_provider_info_table(dummy_ch, dummy_scp)
     output_columns = output.columns.to_list()
     expected_columns = ['URN',
                         'LA_NAME_FROM_FILE',

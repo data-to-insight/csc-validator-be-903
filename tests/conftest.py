@@ -59,3 +59,11 @@ def dummy_empty_input(dummy_metadata):
         for table_name, c in column_names.items()
     }
     return create_datastore({**out, **out_last}, dummy_metadata)
+
+@pytest.fixture(scope="session")
+def dummy_ch():
+    fake_ch_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'ch_fake.xlsx')
+
+@pytest.fixture(scope="session")
+def dummy_scp():
+    fake_scp_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'scp_fake.xlsx')

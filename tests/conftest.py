@@ -63,7 +63,9 @@ def dummy_empty_input(dummy_metadata):
 @pytest.fixture(scope="session")
 def dummy_ch():
     fake_ch_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'ch_fake.xlsx')
+    return fake_ch_dir
 
 @pytest.fixture(scope="session")
 def dummy_scp():
     fake_scp_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'scp_fake.xlsx')
+    return fake_scp_dir

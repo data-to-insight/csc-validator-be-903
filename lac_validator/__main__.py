@@ -167,7 +167,7 @@ def xmltocsv(p4a_path):
     click.echo(data_files)
 
 
-@cli.command(name="testingress")
+@cli.command(name="testscpingress")
 @click.argument("ch_path", required=False)
 @click.argument("scp_path", required=False)
 def cli_test_ingress(ch_path, scp_path):

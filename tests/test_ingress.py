@@ -80,7 +80,22 @@ def test_read_xml_from_text():
 
 def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
                                       scp_path='tests/fake_data/scp_fake.xlsx'):
-    output = construct_provider_info_table(ch_path, scp_path)
+    # output = construct_provider_info_table(ch_path, scp_path)
+    # output_columns = output.columns.to_list()
+    # expected_columns = ['URN',
+    #                     'LA_NAME_FROM_FILE',
+    #                     'PLACE_CODES',
+    #                     'PROVIDER_CODES', 
+    #                     'REG_END', 
+    #                     'POSTCODE', 
+    #                     'source', 
+    #                     'LA_CODE_INFERRED', 
+    #                     'LA_NAME_INFERRED']
+    # assert output_columns == expected_columns
+
+    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'scp_fake.xlsx')
+    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'ch_fake.xlsx')
+    output = construct_provider_info_table(ch_path_dir, scp_path_dir)
     output_columns = output.columns.to_list()
     expected_columns = ['URN',
                         'LA_NAME_FROM_FILE',
@@ -91,6 +106,5 @@ def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
                         'source', 
                         'LA_CODE_INFERRED', 
                         'LA_NAME_INFERRED']
-
     assert output_columns == expected_columns
     

@@ -81,6 +81,16 @@ def test_read_xml_from_text():
 
 def test_construct_provider_info_table(ch_path, scp_path):
     output = construct_provider_info_table(ch_path, scp_path)
-    test_df = pd.DataFrame(cloumns=['URN', 'LA_NAME_FROM_FILE', 'PLACE_CODES', 'PROVIDER_CODES', 'REG_END', 'POSTCODE', 'source', 'LA_CODE_INFERRED', 'LA_NAME_INFERRED'])
+    output_columns = output.columns.to_list()
+    expected_columns = ['URN',
+                        'LA_NAME_FROM_FILE',
+                        'PLACE_CODES',
+                        'PROVIDER_CODES', 
+                        'REG_END', 
+                        'POSTCODE', 
+                        'source', 
+                        'LA_CODE_INFERRED', 
+                        'LA_NAME_INFERRED']
 
-    print(output)
+    assert output_columns == expected_columns
+    

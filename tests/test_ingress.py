@@ -7,7 +7,6 @@ from lac_validator.ingress import (
     construct_provider_info_table,
 )
 from lac_validator.types import UploadError, UploadedFile
-import pandas as pd
 
 
 class Test_read_from_text:

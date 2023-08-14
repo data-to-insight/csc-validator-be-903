@@ -168,10 +168,10 @@ def xmltocsv(p4a_path):
 
 
 @cli.command(name="testingress")
-@click.argument("ch_path", required=True)
-@click.argument("scp_path", required=True)
+@click.argument("ch_path", required=False)
+@click.argument("scp_path", required=False)
 def cli_test_ingress(ch_path, scp_path):
-    test_construct_provider_info_table(ch_path, scp_path)
+    test_construct_provider_info_table()
 
 
 if __name__ == "__main__":

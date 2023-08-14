@@ -78,8 +78,8 @@ def test_read_xml_from_text():
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
 
 
-def test_construct_provider_info_table(ch_path:'/workspaces/quality-lac-data-beta-validator/tests/fake_data/ch_fake.xlsx',
-                                        scp_path:'/workspaces/quality-lac-data-beta-validator/tests/fake_data/scp_fake.xlsx'):
+def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
+                                      scp_path='tests/fake_data/scp_fake.xlsx'):
     output = construct_provider_info_table(ch_path, scp_path)
     output_columns = output.columns.to_list()
     expected_columns = ['URN',

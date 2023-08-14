@@ -8,7 +8,7 @@ authors = [
     "Kaj Siebert <kaj.siebert@socialfinance.org.uk>",
     "Tambe Tabitha Achere <tambe.tabitha@socialfinance.org.uk>",
 ]
-repository = "https://github.com/SocialFinanceDigitalLabs/quality-lac-data-beta-validator"
+repository = "https://github.com/data-to-insight/quality-lac-data-beta-validator"
 license = "MIT"
 readme = "README.md"
 packages = [

@@ -238,7 +238,6 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
 
     # if not check whether file includes separate setting and address sheets
     elif "Settings and Inspection Info" in CH_sheets and "Address Details" in CH_sheets:
-
         # this sheet contains all columns except the postcode
         CH_setting = pd.read_excel(
             CH_bytes, sheet_name="Settings and Inspection Info", engine="openpyxl"

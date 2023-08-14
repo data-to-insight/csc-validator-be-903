@@ -80,7 +80,16 @@ def test_read_xml_from_text():
 
 def test_construct_provider_info_table(ch_path='tests/fake_data/ch_fake.xlsx',
                                       scp_path='tests/fake_data/scp_fake.xlsx'):
-    # output = construct_provider_info_table(ch_path, scp_path)
+    # def read_file(path):
+    #     with open(path, encoding='latin-1') as f:
+    #         return f.read().encode()
+    
+    # ch= {}
+    # scp = {}
+    # ch['file_content'] = read_file(ch_path_dir)    
+    # scp['file_content'] = read_file(scp_path_dir)
+
+    # output = construct_provider_info_table(ch, scp)
     # output_columns = output.columns.to_list()
     # expected_columns = ['URN',
     #                     'LA_NAME_FROM_FILE',

@@ -13,9 +13,7 @@ from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
 
 from tests.test_ingress import (
-    Test_read_from_text,
     test_construct_provider_info_table,
-    test_read_csv_from_text,
 )
 
 

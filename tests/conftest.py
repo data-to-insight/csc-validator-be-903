@@ -61,11 +61,8 @@ def dummy_empty_input(dummy_metadata):
     return create_datastore({**out, **out_last}, dummy_metadata)
 
 @pytest.fixture(scope="session")
-def dummy_ch():
+def dummy_chscp():
     fake_ch_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'ch_fake.xlsx')
-    return fake_ch_dir
+    fake_scp_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'scp_fake.xlsx')    
+    return dummy_ch, dummy_scp
 
-@pytest.fixture(scope="session")
-def dummy_scp():
-    fake_scp_dir = os.path.join(os.path.dirname(__file__), 'fake_data', 'scp_fake.xlsx')
-    return fake_scp_dir

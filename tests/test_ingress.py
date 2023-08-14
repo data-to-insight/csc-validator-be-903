@@ -78,7 +78,7 @@ def test_read_xml_from_text():
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
 
 
-def test_construct_provider_info_table(dummy_scp, dummy_ch):
+def test_construct_provider_info_table(dummy_chscp):
     # def read_file(path):
     #     with open(path, encoding='latin-1') as f:
     #         return f.read().encode()
@@ -115,6 +115,8 @@ def test_construct_provider_info_table(dummy_scp, dummy_ch):
     #                     'LA_CODE_INFERRED', 
     #                     'LA_NAME_INFERRED']
     # assert output_columns == expected_columns
+
+    dummy_ch, dummy_scp = dummy_chscp
 
     output = construct_provider_info_table(dummy_ch, dummy_scp)
     output_columns = output.columns.to_list()

@@ -78,9 +78,8 @@ If this does not work, it might be because you're running the wrong version of P
 
 ### Adding validators
 
-Validators are simple functions, usually called `validate_XXX()` which take no arguments and
-return a tuple of an `ErrorDefinition` and a test function. The test function itself takes
-a single argument, the *datastore*, which is a [Mapping][py-mapping] (a dict-like) following the structure below.
+Validators are contained in `rule_XXX()` files in the rules folder, where `xxx` is the code of the validation rule. Each file contains a `validate` which defines the rule logic and a `test_validate` function which runs the validate function on some test data to check that the rule works as expected.
+The validator takes a single argument, the *datastore*, which is a [Mapping][py-mapping] (a dict-like) following the structure below.
 
 The following is the expected structure for the input data that is given to each validator (the `dfs` object).
 You should assume that not all of these keys are present and handle that appropriately.

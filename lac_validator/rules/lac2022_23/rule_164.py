@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="164",
     message="Distance is not valid. Please check a valid postcode has been entered. [NOTE: This check will result in false positives for children formerly UASC not identified as such in loaded data]",
@@ -101,8 +98,6 @@ def test_validate():
         "Header": fake_header,
         "Header_last": fake_header_last,
     }
-
-    
 
     result = validate(fake_dfs)
 

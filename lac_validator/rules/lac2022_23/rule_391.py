@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="391",
     message="Young person was not 17, 18, 19, 20 or 21 during the current collection year. ",
@@ -58,6 +55,6 @@ def test_validate():
     metadata = {"collection_end": "31/03/2018"}
 
     fake_dfs = {"OC3": fake_data_oc3, "metadata": metadata}
-    
+
     result = validate(fake_dfs)
     assert result == {"OC3": [1, 3]}

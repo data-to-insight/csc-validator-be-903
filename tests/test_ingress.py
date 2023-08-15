@@ -1,5 +1,7 @@
-import pytest
 import os
+
+import pytest
+
 from lac_validator.ingress import (
     read_csvs_from_text,
     read_from_text,
@@ -7,7 +9,6 @@ from lac_validator.ingress import (
     construct_provider_info_table,
 )
 from lac_validator.types import UploadError, UploadedFile
-
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [pytest.param([])])
@@ -77,7 +78,6 @@ def test_read_xml_from_text():
             "object"
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
 
-
 def test_construct_provider_info_table(dummy_chscp):
     '''Tests childrens home and social care providers form ingress as both forms
     and as filepaths to the location of the files.'''
@@ -106,3 +106,4 @@ def test_construct_provider_info_table(dummy_chscp):
     file_output_columns = output_from_file.columns.to_list()
     assert file_output_columns == expected_columns
     
+

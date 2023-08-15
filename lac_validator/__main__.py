@@ -1,16 +1,15 @@
-import click
 import importlib
-import pytest
-import json
 import os
 from pathlib import Path
 
-import lac_validator.lac_validator as lac_class
-import importlib
-from lac_validator.utils import process_uploaded_files
+import click
+import pytest
 
+from lac_validator import lac_validator
 from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
+from lac_validator.utils import process_uploaded_files
+
 
 from tests.test_ingress import (
     test_construct_provider_info_table,
@@ -65,14 +64,6 @@ def test_cmd(ruleset):
     pytest.main(test_files)
 
 
-# TESTtest
-@cli.command(name="testtest")
-def test():
-    with open("files_failed.json", "r") as f:
-        failed_paths = json.load(f)
-    pytest.main(failed_paths)
-
-
 # TEST one rule
 @cli.command(name="test_one_rule")
 @click.argument("code", type=str, required=True)
@@ -116,8 +107,8 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     """
     # p4a_path = "tests\\fake_data\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"
-
     # frontend_files_dict = {"This year":[p4a_path, ad1_path], "Prev year": [p4a_path]}
+
     frontend_files_dict = {"This year": [p4a_path, ad1_path]}
     files_list = process_uploaded_files(frontend_files_dict)
 
@@ -126,7 +117,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
 
-    v = lac_class.LacValidator(
+    v = lac_validator.LacValidator(
         metadata=metadata,
         files=files_list,
         registry=ruleset_registry,
@@ -139,14 +130,11 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     print("done:", v.dones)
 
     # r = Report(results, ruleset=ruleset_registry)
-    # print(f"*****************Report******************")
-    # print(r.report)
     # print(f"*****************Error report******************")
     # print(r.error_report)
-    # # print(f"****************Error summary******************")
-    # # print(r.error_summary)
-
-    # full_issue_df = lac_class.create_issue_df(r.report, r.error_report)
+    # print(f"****************Error summary******************")
+    # print(r.error_summary)
+    # full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
     # print(f"*****************full issue df******************")
     # print(full_issue_df)
 

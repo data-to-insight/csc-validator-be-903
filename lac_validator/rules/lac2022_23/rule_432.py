@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="432",
     message="The child ceased to be looked after at the end of the previous episode but the reason for "
@@ -76,8 +73,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

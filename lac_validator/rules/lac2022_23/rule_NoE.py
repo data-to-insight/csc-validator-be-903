@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="NoE",
     message="This child has no episodes loaded for previous year even though child started to be looked after before this current year.",
@@ -65,8 +62,6 @@ def test_validate():
         "Episodes_last": fake_data_prev,
         "metadata": metadata,
     }
-
-    
 
     result = validate(fake_dfs)
 

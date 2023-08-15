@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="166",
     message="Date of review is invalid or blank.",
@@ -36,8 +33,6 @@ def test_validate():
     )
 
     fake_dfs = {"Reviews": fake_data}
-
-    
 
     result = validate(fake_dfs)
 

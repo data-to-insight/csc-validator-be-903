@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="387",
     message="Reason episode ceased is child moved into independent living arrangement, but the child is aged under 14.",
@@ -91,8 +88,6 @@ def test_validate():
         "Header": fake_data_child,
         "metadata": fake_metadata,
     }
-
-    
 
     result = validate(fake_dfs)
 

@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="634",
     message="There are entries for previous permanence options, but child has not started to be looked after from 1 April 2016 onwards.",
@@ -95,7 +92,6 @@ def test_validate():
         "Episodes": fake_data_episodes,
         "metadata": {"collection_start": "01/04/2016"},
     }
-    
 
     result = validate(fake_dfs)
 

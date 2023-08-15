@@ -1,7 +1,6 @@
-from lac_validator.rule_engine import rule_definition
-
-
 import pandas as pd
+
+from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
@@ -84,8 +83,6 @@ def test_validate():
         "PrevPerm": fake_pre,
         "OC2": fake_oc2,
     }
-
-    
 
     assert validate(fake_dfs) == {
         "PlacedAdoption": [0],

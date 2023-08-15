@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="562",
     message="Episode commenced before the start of the current collection year but there is a missing continuous episode in the previous year.",
@@ -78,8 +75,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2021"}
 
     fake_dfs = {"Episodes": fake_epi, "Episodes_last": fake_last, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

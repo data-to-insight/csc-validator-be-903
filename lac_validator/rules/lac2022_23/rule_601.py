@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="601",
     message="The additional fields relating to adoption have not been completed although the episode data shows that the child was adopted during the year.",
@@ -159,7 +156,7 @@ def test_validate():
         "AD1": fake_data_ad1,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
 
     assert result == {

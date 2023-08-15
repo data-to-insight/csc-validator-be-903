@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="522",
     message="Date of decision that the child should be placed for adoption must be on or before the date that a child should no longer be placed for adoption.",
@@ -65,6 +62,6 @@ def test_validate():
         ]
     )
     fake_dfs = {"PlacedAdoption": fake_placed_data}
-    
+
     result = validate(fake_dfs)
     assert result == {"PlacedAdoption": [3]}

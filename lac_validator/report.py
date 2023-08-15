@@ -18,29 +18,42 @@ class Report:
         self.__error_report = None
         self.__error_summary = None
 
-        self._errors_df = pd.DataFrame([(rule.code, rule.message, rule.affected_fields) for rule in ruleset], columns=['Code', 'Description', 'Fields',]).sort_values('Code')
-        logger.debug(f"Created error summary df with {self._errors_df.shape[0]} configured errors.")
-        
+        self._errors_df = pd.DataFrame(
+            [(rule.code, rule.message, rule.affected_fields) for rule in ruleset],
+            columns=[
+                "Code",
+                "Description",
+                "Fields",
+            ],
+        ).sort_values("Code")
+        logger.debug(
+            f"Created error summary df with {self._errors_df.shape[0]} configured errors."
+        )
+
         dataframes = []
         for table, value in data_store.items():
             if table == "metadata":
                 # report should only contain child-level data.
                 continue
             cols_error = [c for c in value.columns if c[:4] == "ERR_"]
-            cols_data = [c for c in value.columns if c[:4] != "ERR_" and c[:2] != "__" and c != "CHILD"]
+            cols_data = [
+                c
+                for c in value.columns
+                if c[:4] != "ERR_" and c[:2] != "__" and c != "CHILD"
+            ]
 
-            df_error = value[['CHILD'] + cols_error].copy()
-            df_error['Table'] = table
-            df_error['RowID'] = df_error.index
-            df_error['Context'] = value[cols_data].apply(lambda row: {**row}, axis=1)
+            df_error = value[["CHILD"] + cols_error].copy()
+            df_error["Table"] = table
+            df_error["RowID"] = df_error.index
+            df_error["Context"] = value[cols_data].apply(lambda row: {**row}, axis=1)
 
             dataframes.append(df_error)
 
         report = pd.concat(dataframes, ignore_index=True)
-        self.child_cols = ['Table', 'RowID', 'CHILD', 'Context']
+        self.child_cols = ["Table", "RowID", "CHILD", "Context"]
         self.error_cols = [c for c in report.columns if c not in self.child_cols]
-        report['Total Errors'] = report[self.error_cols].sum(axis=1)
-        self.report = report[self.child_cols + self.error_cols + ['Total Errors']]
+        report["Total Errors"] = report[self.error_cols].sum(axis=1)
+        self.report = report[self.child_cols + self.error_cols + ["Total Errors"]]
 
     @property
     def error_report(self):
@@ -49,23 +62,34 @@ class Report:
         as well as the error description and the affected fields.
         """
         if self.__error_report is None:
-            df = pd.DataFrame(self.report[self.error_cols].sum(), columns=['Count']).reset_index()
-            df['Code'] = df['index'].str[4:]
-            df = df[['Code', 'Count']]
-            self.__error_report = df.merge(self._errors_df, on='Code', how='left').sort_values('Code')[[
-                'Code', 'Description', 'Fields', 'Count',
-            ]]
+            df = pd.DataFrame(
+                self.report[self.error_cols].sum(), columns=["Count"]
+            ).reset_index()
+            df["Code"] = df["index"].str[4:]
+            df = df[["Code", "Count"]]
+            self.__error_report = df.merge(
+                self._errors_df, on="Code", how="left"
+            ).sort_values("Code")[
+                [
+                    "Code",
+                    "Description",
+                    "Fields",
+                    "Count",
+                ]
+            ]
         return self.__error_report
 
     @property
     def error_summary(self):
         if self.__error_summary is None:
             headers = ["Code", "Error Count", "Error Description", "Affected Fields"]
-            df = self.error_report.rename(columns={
-                'Description': 'Error Description',
-                'Count': 'Error Count',
-            })
-            df['Affected Fields'] = df['Fields'].apply(lambda x: ", ".join(x))
+            df = self.error_report.rename(
+                columns={
+                    "Description": "Error Description",
+                    "Count": "Error Count",
+                }
+            )
+            df["Affected Fields"] = df["Fields"].apply(lambda x: ", ".join(x))
             self.__error_summary = df[headers]
 
         return self.__error_summary
@@ -77,21 +101,41 @@ class Report:
         from the affected row.
         """
         if self.__child_report is None:
-            child_report = self.report.melt(id_vars=self.child_cols, value_vars=self.error_cols,
-                                            var_name='ErrorColumn', value_name='IsError')
+            child_report = self.report.melt(
+                id_vars=self.child_cols,
+                value_vars=self.error_cols,
+                var_name="ErrorColumn",
+                value_name="IsError",
+            )
             child_report = child_report[child_report.IsError == True].reset_index()
-            child_report['Code'] = child_report.ErrorColumn.str[4:]
+            child_report["Code"] = child_report.ErrorColumn.str[4:]
 
-            child_error_count = child_report[['CHILD', 'Code']].groupby('CHILD').agg(
-                **{'Child Error Count': ('Code', 'count')}
-            ).reset_index()
+            child_error_count = (
+                child_report[["CHILD", "Code"]]
+                .groupby("CHILD")
+                .agg(**{"Child Error Count": ("Code", "count")})
+                .reset_index()
+            )
 
-            child_report = child_report.merge(child_error_count, on='CHILD', how='left')
+            child_report = child_report.merge(child_error_count, on="CHILD", how="left")
 
-            error_report = self.error_report.rename(columns=dict(Count='Error Type Count'))
-            child_report = child_report.merge(error_report, on=['Code'], how='left')
-            child_report = child_report[['CHILD', 'Table', 'RowID', 'Context', 'Code',
-                                         'Description', 'Fields', 'Child Error Count', 'Error Type Count']]
+            error_report = self.error_report.rename(
+                columns=dict(Count="Error Type Count")
+            )
+            child_report = child_report.merge(error_report, on=["Code"], how="left")
+            child_report = child_report[
+                [
+                    "CHILD",
+                    "Table",
+                    "RowID",
+                    "Context",
+                    "Code",
+                    "Description",
+                    "Fields",
+                    "Child Error Count",
+                    "Error Type Count",
+                ]
+            ]
             self.__child_report = child_report
         return self.__child_report
 
@@ -154,7 +198,7 @@ def _populate_error_sheet(error_sheet, df):
 
     error_table = Table(
         displayName="Errors",
-        ref=f"A1:{get_column_letter(len(headers))}{df.shape[0] + 1}"
+        ref=f"A1:{get_column_letter(len(headers))}{df.shape[0] + 1}",
     )
     error_table._initialise_columns()
     for column, value in zip(error_table.tableColumns, headers):
@@ -191,7 +235,7 @@ def _populate_child_sheet(child_sheet, df):
     logger.debug("Child Summary - Adding table")
     child_table = Table(
         displayName="ChildSummary",
-        ref=f"A1:{get_column_letter(len(headers))}{df.shape[0] + 1}"
+        ref=f"A1:{get_column_letter(len(headers))}{df.shape[0] + 1}",
     )
     child_table._initialise_columns()
     for column, value in zip(child_table.tableColumns, headers):
@@ -216,28 +260,32 @@ def _create_child_summary(child_report: pd.DataFrame) -> pd.DataFrame:
         "Errors for Child",
         "Errors of Type",
     ]
-    df = child_report.rename(columns={
-        'CHILD': 'Child',
-        'Table': 'Affected Table',
-        'RowID': 'Error Row',
-        'Code': 'Error Code',
-        'Description': 'Error Description',
-        'Child Error Count': "Errors for Child",
-        'Error Type Count': "Errors of Type",
-    })
+    df = child_report.rename(
+        columns={
+            "CHILD": "Child",
+            "Table": "Affected Table",
+            "RowID": "Error Row",
+            "Code": "Error Code",
+            "Description": "Error Description",
+            "Child Error Count": "Errors for Child",
+            "Error Type Count": "Errors of Type",
+        }
+    )
     logger.debug("Child Summary - Setting Error Fields")
-    df['Error Fields'] = df['Fields'].apply(lambda x: ", ".join(x))
+    df["Error Fields"] = df["Fields"].apply(lambda x: ", ".join(x))
     logger.debug("Child Summary - Setting Affected Values")
-    df['Affected Values'] = df[['Fields', 'Context']].apply(
-        lambda row: ", ".join([f"{f}: {row.Context[f]}" for f in row.Fields if f in row.Context]),
-        axis=1
+    df["Affected Values"] = df[["Fields", "Context"]].apply(
+        lambda row: ", ".join(
+            [f"{f}: {row.Context[f]}" for f in row.Fields if f in row.Context]
+        ),
+        axis=1,
     )
     logger.debug("Child Summary - Setting Locator Hints")
-    df['Locator Hints'] = df.Context.apply(
+    df["Locator Hints"] = df.Context.apply(
         lambda row: ", ".join(
             [f"{f}: {row[f]}" for f in ["DECOM", "MIS_START", "REVIEW"] if f in row]
         )
     )
     logger.debug("Child Summary - Sorting")
-    df.sort_values(['Child', 'Affected Table', 'Error Code'], inplace=True)
+    df.sort_values(["Child", "Affected Table", "Error Code"], inplace=True)
     return df[headers]

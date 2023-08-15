@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="359",
     message="Child being looked after following 18th birthday must be accommodated under section 20(5) of the Children Act 1989 in a community home.",
@@ -83,8 +80,6 @@ def test_validate():
     metadata = {"collection_end": "31/03/2021"}
 
     fake_dfs = {"Header": fake_hea, "Episodes": fake_epi, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

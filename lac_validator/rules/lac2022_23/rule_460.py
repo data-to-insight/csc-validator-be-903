@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="460",
     message="Reason episode ceased is that child stayed with current carers at age 18 (or above), but child is aged under 18.",
@@ -77,8 +74,6 @@ def test_validate():
     )
 
     fake_dfs = {"Episodes": fake_data, "Header": fake_data_child}
-
-    
 
     result = validate(fake_dfs)
 

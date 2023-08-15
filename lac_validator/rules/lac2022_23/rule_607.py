@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="607",
     message="Child ceased to be looked after in the year, but mother field has not been completed.",
@@ -165,6 +162,6 @@ def test_validate():
         "Episodes": fake_data_eps,
         "metadata": metadata,
     }
-    
+
     result = validate(fake_dfs)
     assert result == {"Header": [4, 7], "Episodes": [4, 5, 6, 9]}

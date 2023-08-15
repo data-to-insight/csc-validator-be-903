@@ -1,10 +1,7 @@
 import pandas as pd
 
-from lac_validator.types import MissingMetadataError
 from lac_validator.rule_engine import rule_definition
-
-
-import pandas as pd
+from lac_validator.types import MissingMetadataError
 
 
 @rule_definition(
@@ -202,8 +199,6 @@ def test_validate():
         "Header": fake_header_205,
         "metadata": {**metadata_205, **{"file_format": "csv"}},
     }
-
-    
 
     dfs = {k: v.copy() for k, v in fake_dfs_205_xml.items()}
     result = validate(dfs)

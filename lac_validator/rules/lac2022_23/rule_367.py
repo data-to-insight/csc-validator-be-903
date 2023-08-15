@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="367",
     message="The maximum amount of respite care allowable is 75 days in any 12-month period.",
@@ -109,8 +106,6 @@ def test_validate():
     test_meta = {"collection_start": "01/04/2000", "collection_end": "01/04/2001"}
 
     test_dfs = {"Episodes": test_eps, "metadata": test_meta}
-
-    
 
     result = validate(test_dfs)
 

@@ -1,4 +1,5 @@
 import pandas as pd
+
 from lac_validator.rule_engine import rule_definition
 from lac_validator.rules.rule_utils import dec_after_decom
 
@@ -6,13 +7,14 @@ from lac_validator.rules.rule_utils import dec_after_decom
 @rule_definition(
     code="379",
     message="Temporary placements for unspecified reason (placement code T4) cannot exceed seven days.",
-    affected_fields=['DECOM', 'PLACE'],
+    affected_fields=["DECOM", "PLACE"],
 )
 def validate(dfs):
-    if 'Episodes' not in dfs or 'Header' not in dfs:
+    if "Episodes" not in dfs or "Header" not in dfs:
         return {}
     else:
-        return dec_after_decom(dfs, p_code='T4', y_gap=7)
+        return dec_after_decom(dfs, p_code="T4", y_gap=7)
+
 
 def test_validate():
     import pandas as pd
@@ -53,10 +55,16 @@ def test_validate():
         }
     )
 
-    fake_hea['DOB'] = pd.to_datetime(fake_hea['DOB'], format='%d/%m/%Y', errors='coerce')
-    fake_epi['DECOM'] = pd.to_datetime(fake_epi['DECOM'], format='%d/%m/%Y', errors='coerce')
-    fake_epi['DEC'] = pd.to_datetime(fake_epi['DEC'], format='%d/%m/%Y', errors='coerce')
+    fake_hea["DOB"] = pd.to_datetime(
+        fake_hea["DOB"], format="%d/%m/%Y", errors="coerce"
+    )
+    fake_epi["DECOM"] = pd.to_datetime(
+        fake_epi["DECOM"], format="%d/%m/%Y", errors="coerce"
+    )
+    fake_epi["DEC"] = pd.to_datetime(
+        fake_epi["DEC"], format="%d/%m/%Y", errors="coerce"
+    )
 
-    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}   
+    fake_dfs = {"Episodes": fake_epi, "Header": fake_hea}
 
     assert validate(fake_dfs) == {"Episodes": [1, 3]}

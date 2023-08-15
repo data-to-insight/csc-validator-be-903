@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="620",
     message="Child has been recorded as a mother, but date of birth shows that the mother is under 11 years of age.",
@@ -46,8 +43,6 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020"}
 
     fake_dfs = {"Header": fake_hea, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

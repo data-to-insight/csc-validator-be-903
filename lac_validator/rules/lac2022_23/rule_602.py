@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="602",
     message="The episode data submitted for this child does not show that he/she was adopted during the year.",
@@ -90,7 +87,5 @@ def test_validate():
     metadata = {"collection_start": "01/04/2020", "collection_end": "31/03/2021"}
 
     fake_dfs = {"Episodes": fake_epi, "AD1": fake_ad1, "metadata": metadata}
-
-    
 
     assert validate(fake_dfs) == {"AD1": [1, 4, 7, 8]}

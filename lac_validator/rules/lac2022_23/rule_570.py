@@ -3,9 +3,6 @@ import pandas as pd
 from lac_validator.rule_engine import rule_definition
 
 
-import pandas as pd
-
-
 @rule_definition(
     code="570",
     message="The date that the child started to be missing or away from placement without authorisation is after the end of the collection year.",
@@ -46,8 +43,6 @@ def test_validate():
     metadata = {"collection_end": "31/03/2020"}
 
     fake_dfs = {"Missing": fake_data, "metadata": metadata}
-
-    
 
     result = validate(fake_dfs)
 

@@ -110,7 +110,6 @@ def lac_validate(
         r.child_summary.to_json(orient="records"),
     ]
 
-    # TODO check that user reports are downloaded with the appropriate names.
     validation_results = {
         "issue_locations": [issue_report],
         "data_tables": [lac_data_tables],

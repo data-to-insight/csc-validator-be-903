@@ -10,7 +10,6 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 logger = logging.getLogger(__name__)
 
 
-# TODO find out where the excel report is generated and link it to rpc output layer.
 class Report:
     def __init__(self, data_store, ruleset):
         self.__child_report = None

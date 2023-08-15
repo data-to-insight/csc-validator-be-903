@@ -124,7 +124,7 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     print("skipped", v.skips)
     print("done:", v.dones)
 
-    # r = Report(results, ruleset=ruleset_registry)
+    r = Report(results, ruleset=ruleset_registry)
     # print(f"*****************Error report******************")
     # print(r.error_report)
     # print(f"****************Error summary******************")

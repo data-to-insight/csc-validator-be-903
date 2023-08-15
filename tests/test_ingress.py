@@ -118,6 +118,7 @@ def test_construct_provider_info_table(dummy_chscp):
     #                     'LA_NAME_INFERRED']
     # assert output_columns == expected_columns
 
+
     ch= {}
     scp = {}
     ch['file_content'], scp['file_content'] = dummy_chscp

@@ -177,14 +177,14 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
         if not isinstance(CH["file_content"], bytes):
             CH_bytes = CH["file_content"].tobytes()
         else:
-             CH_bytes = CH["file_content"]
+            CH_bytes = CH["file_content"]
     else:
         CH_bytes = CH
     if not isinstance(SCP, str):
-        if not isinstance(SCP['file_content'], bytes):
+        if not isinstance(SCP["file_content"], bytes):
             SCP_bytes = SCP["file_content"].tobytes()
         else:
-            SCP_bytes = SCP['file_content']
+            SCP_bytes = SCP["file_content"]
     else:
         SCP_bytes = SCP
     provider_info_cols = [

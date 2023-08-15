@@ -10,6 +10,7 @@ from lac_validator.ingress import (
 )
 from lac_validator.types import UploadError, UploadedFile
 
+
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [pytest.param([])])
     def test_read_from_text_errors(self, files):
@@ -78,32 +79,32 @@ def test_read_xml_from_text():
             "object"
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
 
-def test_construct_provider_info_table(dummy_chscp):
-    '''Tests childrens home and social care providers form ingress as both forms
-    and as filepaths to the location of the files.'''
-    expected_columns = ['URN',
-                        'LA_NAME_FROM_FILE',
-                        'PLACE_CODES',
-                        'PROVIDER_CODES', 
-                        'REG_END', 
-                        'POSTCODE', 
-                        'source', 
-                        'LA_CODE_INFERRED', 
-                        'LA_NAME_INFERRED']
 
-    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'scp_fake.xlsx')
-    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'ch_fake.xlsx')
+def test_construct_provider_info_table(dummy_chscp):
+    """Tests childrens home and social care providers form ingress as both forms
+    and as filepaths to the location of the files."""
+    expected_columns = [
+        "URN",
+        "LA_NAME_FROM_FILE",
+        "PLACE_CODES",
+        "PROVIDER_CODES",
+        "REG_END",
+        "POSTCODE",
+        "source",
+        "LA_CODE_INFERRED",
+        "LA_NAME_INFERRED",
+    ]
+
+    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", "scp_fake.xlsx")
+    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", "ch_fake.xlsx")
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
     string_output_columns = output_from_string.columns.to_list()
 
     assert string_output_columns == expected_columns
 
-
-    ch= {}
+    ch = {}
     scp = {}
-    ch['file_content'], scp['file_content'] = dummy_chscp
+    ch["file_content"], scp["file_content"] = dummy_chscp
     output_from_file = construct_provider_info_table(ch, scp)
     file_output_columns = output_from_file.columns.to_list()
     assert file_output_columns == expected_columns
-    
-

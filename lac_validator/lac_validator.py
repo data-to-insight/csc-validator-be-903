@@ -113,7 +113,7 @@ class LacValidator:
                     self.ds_results[table].loc[values, f"ERR_{rule.code}"] = True
 
 
-def create_issue_df(report, error_report):
+def create_issue_df(report: DataFrame, error_report: DataFrame):
     """
     creates issue_df similar to that of the CIN backend output.
     Columns should be child_id, tables_affected, columns_affected, row_id, rule_code and rule_description.
@@ -146,7 +146,6 @@ def create_issue_df(report, error_report):
         rule_desc = error_report[error_report["Code"] == rule_code]
         # assumption. error_description has one entry per rule.
         rule_issue_df = rule_table.merge(rule_desc, on="Code")
-        # TODO error_report relies on configured errors which is now redundant. update to fetch rule descriptions from registry.
 
         rule_issue_df.rename(
             columns={
@@ -162,7 +161,6 @@ def create_issue_df(report, error_report):
         # remove ERR_ columns
         rule_issue_df.drop(columns=[col_name], inplace=True)
         # explode column lists into one per row.
-        # TODO check that these columns are filtered by table. else redo the mapping.
         rule_issue_df = rule_issue_df.explode(
             column=["columns_affected"], ignore_index=True
         )

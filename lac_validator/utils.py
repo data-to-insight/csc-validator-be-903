@@ -164,7 +164,6 @@ def process_uploaded_files(input_files: dict[str, list]):
                 with open(filename, "rb") as f:
                     file_text = f.read()
 
-            # TODO convert all dict statements to use UploadedFile
             uploaded_files.append(
                 UploadedFile(
                     name=filename, description=field_name, file_content=file_text

@@ -11,7 +11,6 @@ from lac_validator.types import MissingMetadataError
 def test_all_configured_error_definitions():
     codes = []
     for rule_code, rule in registry.items():
-        # Check that all errors are ErrorDefinition
         assert isinstance(
             rule, RuleDefinition
         ), f"The returned rule is not of RuleDefinition type ({rule})"

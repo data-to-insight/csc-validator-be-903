@@ -174,15 +174,6 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
         - LA_NAME_FROM_FILE
             LA name from uploaded files.
     """
-    # if not isinstance(CH, str):
-    #     CH_bytes = CH["file_content"].tobytes()
-    # else:
-    #     CH_bytes = CH
-    # if not isinstance(SCP, str):
-    #     SCP_bytes = SCP["file_content"].tobytes()
-    # else:
-    #     SCP_bytes = SCP
-
     if not isinstance(CH, str):
         if not isinstance(CH["file_content"], bytes):
             CH_bytes = CH["file_content"].tobytes()

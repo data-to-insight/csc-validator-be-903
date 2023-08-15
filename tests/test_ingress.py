@@ -79,13 +79,8 @@ def test_read_xml_from_text():
 
 
 def test_construct_provider_info_table(dummy_chscp):
-
-    ch= {}
-    scp = {}
-    ch['file_content'], scp['file_content'] = dummy_chscp
-
-    output = construct_provider_info_table(ch, scp)
-    output_columns = output.columns.to_list()
+    '''Tests childrens home and social care providers form ingress as both forms
+    and as filepaths to the location of the files.'''
     expected_columns = ['URN',
                         'LA_NAME_FROM_FILE',
                         'PLACE_CODES',
@@ -95,5 +90,19 @@ def test_construct_provider_info_table(dummy_chscp):
                         'source', 
                         'LA_CODE_INFERRED', 
                         'LA_NAME_INFERRED']
-    assert output_columns == expected_columns
+
+    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'scp_fake.xlsx')
+    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", 'ch_fake.xlsx')
+    output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
+    string_output_columns = output_from_string.columns.to_list()
+
+    assert string_output_columns == expected_columns
+
+
+    ch= {}
+    scp = {}
+    ch['file_content'], scp['file_content'] = dummy_chscp
+    output_from_file = construct_provider_info_table(ch, scp)
+    file_output_columns = output_from_file.columns.to_list()
+    assert file_output_columns == expected_columns
     

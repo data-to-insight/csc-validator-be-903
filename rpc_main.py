@@ -24,9 +24,9 @@ app = RpcApp("validate_lac")
 
 
 @app.call
-def get_rules(collection_year: str = "2023") -> str:
+def get_rules(collection_year: str) -> str:
     """
-    :param str ruleset: validation ruleset according to year published.
+    :param str ruleset: validation year e.g "2023" for 2022/2023 validation rules.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
     """
     ruleset_registry = get_year_ruleset(collection_year)
@@ -67,7 +67,6 @@ def lac_validate(
     lac_data: dict,
     file_metadata: dict,
     selected_rules: Optional[list[str]] = None,
-    ruleset: str = "lac2022_23",
 ):
     """
     :param lac_data: keys are table names and values are LAC csv files.

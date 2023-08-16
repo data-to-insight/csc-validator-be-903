@@ -32,7 +32,7 @@ def list_cmd(ruleset):
     """
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
-    for rule in ruleset_registry:
+    for _, rule in ruleset_registry.items():
         click.echo(f"{rule.code}\t{rule.message}")
 
 

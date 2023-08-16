@@ -11,14 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class Report:
-    def __init__(self, data_store, ruleset):
+    def __init__(self, data_store, ruleset_registry):
         self.__child_report = None
         self.__child_summary = None
         self.__error_report = None
         self.__error_summary = None
 
         self._errors_df = pd.DataFrame(
-            [(rule.code, rule.message, rule.affected_fields) for rule in ruleset],
+            [
+                (rule.code, rule.message, rule.affected_fields)
+                for _, rule in ruleset_registry.items()
+            ],
             columns=[
                 "Code",
                 "Description",

@@ -12,6 +12,9 @@ from qlacref_postcodes import Postcodes
 
 logger = logging.getLogger(__name__)
 
+# TODO security point. remove this line.
+os.environ["QLACREF_PC_INSECURE"] = "True"
+
 la_df = pd.DataFrame.from_records(qlacref_authorities.records)
 logger.info("Loaded authorities")
 

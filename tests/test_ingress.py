@@ -10,6 +10,11 @@ from lac_validator.ingress import (
 )
 from lac_validator.types import UploadError, UploadedFile
 
+"""
+Tests can be run in the CLI, once inside poetry shell, using:
+poetry run coverage run --data-file='.coverage.framework' -m pytest
+"""
+
 
 class Test_read_from_text:
     @pytest.mark.parametrize("files", [pytest.param([])])
@@ -95,16 +100,15 @@ def test_construct_provider_info_table(dummy_chscp):
         "LA_NAME_INFERRED",
     ]
 
-    scp_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", "scp_fake.xlsx")
-    ch_path_dir = os.path.join(os.path.dirname(__file__), "fake_data", "ch_fake.xlsx")
+    ch = {}
+    scp = {}
+    ch["file_content"], scp["file_content"], ch_path_dir, scp_path_dir = dummy_chscp
+
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
     string_output_columns = output_from_string.columns.to_list()
 
     assert string_output_columns == expected_columns
 
-    ch = {}
-    scp = {}
-    ch["file_content"], scp["file_content"] = dummy_chscp
     output_from_file = construct_provider_info_table(ch, scp)
     file_output_columns = output_from_file.columns.to_list()
     assert file_output_columns == expected_columns

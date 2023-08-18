@@ -11,11 +11,6 @@ from lac_validator.report import Report
 from lac_validator.utils import process_uploaded_files
 
 
-from tests.test_ingress import (
-    test_construct_provider_info_table,
-)
-
-
 @click.group()
 def cli():
     pass

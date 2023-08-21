@@ -1,0 +1,8 @@
+Running 903 on codespaces
+
+Load up a codespace on 903
+Ensure docker is installed,
+ctrl+shift+p rebuild container
+in the terminal poetry install
+then poetry shell (starts poetry virtual environment)
+You should now have access to the CLI

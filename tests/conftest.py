@@ -65,3 +65,16 @@ def dummy_empty_input(dummy_metadata):
         for table_name, c in column_names.items()
     }
     return create_datastore({**out, **out_last}, dummy_metadata)
+
+
+@pytest.fixture(scope="session")
+def dummy_chscp():
+    def read_file(path):
+        with open(path, mode="rb") as f:
+            return f.read()
+
+    fake_ch_dir = os.path.join(os.path.dirname(__file__), "fake_data", "ch_fake.xlsx")
+    fake_scp_dir = os.path.join(os.path.dirname(__file__), "fake_data", "scp_fake.xlsx")
+    dummy_ch = read_file(fake_ch_dir)
+    dummy_scp = read_file(fake_scp_dir)
+    return dummy_ch, dummy_scp, fake_ch_dir, fake_scp_dir

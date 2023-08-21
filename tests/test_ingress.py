@@ -6,8 +6,14 @@ from lac_validator.ingress import (
     read_csvs_from_text,
     read_from_text,
     read_xml_from_text,
+    construct_provider_info_table,
 )
-from lac_validator.types import UploadedFile, UploadError
+from lac_validator.types import UploadError, UploadedFile
+
+"""
+Tests can be run in the CLI, once inside poetry shell, using:
+poetry run coverage run --data-file='.coverage.framework' -m pytest
+"""
 
 
 class Test_read_from_text:
@@ -77,3 +83,32 @@ def test_read_xml_from_text():
         assert set(str(dtype) for dtype in val.dtypes) == {
             "object"
         }, f"Got non-objects columns in {name}: \n{val.dtypes}!"
+
+
+def test_construct_provider_info_table(dummy_chscp):
+    """Tests childrens home and social care providers form ingress as both forms
+    and as filepaths to the location of the files."""
+    expected_columns = [
+        "URN",
+        "LA_NAME_FROM_FILE",
+        "PLACE_CODES",
+        "PROVIDER_CODES",
+        "REG_END",
+        "POSTCODE",
+        "source",
+        "LA_CODE_INFERRED",
+        "LA_NAME_INFERRED",
+    ]
+
+    ch = {}
+    scp = {}
+    ch["file_content"], scp["file_content"], ch_path_dir, scp_path_dir = dummy_chscp
+
+    output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
+    string_output_columns = output_from_string.columns.to_list()
+
+    assert string_output_columns == expected_columns
+
+    output_from_file = construct_provider_info_table(ch, scp)
+    file_output_columns = output_from_file.columns.to_list()
+    assert file_output_columns == expected_columns

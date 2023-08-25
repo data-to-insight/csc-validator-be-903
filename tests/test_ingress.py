@@ -103,7 +103,14 @@ def test_construct_provider_info_table(dummy_chscp):
     ch = {}
     scp = {}
     combined = {}
-    ch["file_content"], scp["file_content"], ch_path_dir, scp_path_dir, combined_path_dir, combined['file_content'] = dummy_chscp
+    (
+        ch["file_content"],
+        scp["file_content"],
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp
 
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
     string_output_columns = output_from_string.columns.to_list()

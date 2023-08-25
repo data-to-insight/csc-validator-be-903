@@ -80,7 +80,7 @@ def dummy_chscp():
     )
     dummy_ch = read_file(fake_ch_dir)
     dummy_scp = read_file(fake_scp_dir)
-    dummy_combined = read_file(combined_fake)
+    dummy_combined = read_file(combined_fake_dir)
     return (
         dummy_ch,
         dummy_scp,

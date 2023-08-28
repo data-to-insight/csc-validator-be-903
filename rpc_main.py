@@ -72,10 +72,9 @@ def lac_validate(
     :param lac_data: keys are table names and values are LAC csv files.
     :param file_metadata: contains collection year and local authority as strings.
     :param selected_rules: array of rules the user has chosen. consists of rule codes as strings.
-    :param ruleset: rule pack that should be run. lac2022_23 will run the 2022/2023 validation rules.
 
     :return issue_report: issue locations in the data.
-    :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
+    :return rule_defs: codes and descriptions of the rules that triggers issues in the data.
     """
     # p4a_path = "tests\\fake_data\\placed_for_adoption_errors.csv"
     # ad1_path = "tests\\fake_data\\ad1.csv"

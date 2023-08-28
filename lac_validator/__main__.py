@@ -97,6 +97,9 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     """
     created with code from offlinedebug.py
 
+    CLI command:
+    python -m lac_validator run <filepath_>
+
     :param str ruleset: validation year.
     :param str select: code of specific rule that should be run.
     """
@@ -120,18 +123,18 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     )
     results = v.ds_results
 
-    print(v.ds_results)
-    print("skipped", v.skips)
-    print("done:", v.dones)
+    click.echo(v.ds_results)
+    click.echo(f"skipped {v.skips}")
+    click.echo(f"done: {v.dones}")
 
-    r = Report(results, ruleset=ruleset_registry)
-    # print(f"*****************Error report******************")
-    # print(r.error_report)
-    # print(f"****************Error summary******************")
-    # print(r.error_summary)
+    r = Report(results, ruleset_registry)
+    # click.echo(f"*****************Error report******************")
+    # click.echo(r.error_report)
+    # click.echo(f"****************Error summary******************")
+    # click.echo(r.error_summary)
     # full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
-    # print(f"*****************full issue df******************")
-    # print(full_issue_df)
+    # click.echo(f"*****************full issue df******************")
+    # click.echo(full_issue_df)
 
 
 # XML to tables

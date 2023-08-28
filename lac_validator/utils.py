@@ -133,7 +133,7 @@ def add_col_to_tables_CONTINUOUSLY_LOOKED_AFTER(dfs, required_tables=None):
 # TODO update to python3.10 there is no particular reason why this project needs to be 3.9
 
 
-def process_uploaded_files(input_files: dict[str, list]):
+def process_uploaded_files(input_files: dict[str, list]) -> list[UploadedFile]:
     """
     :param dict frontend_file_dict: dict of lists showing file content and the field into which user uploaded file.
 

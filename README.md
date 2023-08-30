@@ -122,6 +122,8 @@ Any XML uploads are converted into CSV form to give the same inputs.
     }
 }
 ```
+## Yearly rule updates
+Each year, the DfE might release specifications of any rules which have been added, modified or deleted. Expanded guidance on how to incorporate these changes can be found in the [landing page (readme.md file) of the CIN validator repo](https://github.com/data-to-insight/CIN-validator/). The CIN and LAC validators have been refactored to resemble each other as much as possible so their overall documentation applies to both tool backends.
 
 ## Releases
 

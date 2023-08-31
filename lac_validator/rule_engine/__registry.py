@@ -46,7 +46,7 @@ def rule_definition(
             return func(*args, **kwargs)
 
         definition = RuleDefinition(
-            code=code,
+            code=str(code),
             func=func,
             message=message,
             affected_fields=affected_fields,

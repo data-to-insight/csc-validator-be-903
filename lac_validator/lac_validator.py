@@ -179,4 +179,5 @@ def create_issue_df(report: DataFrame, error_report: DataFrame):
         issue_dfs_per_rule.append(rule_issue_df)
 
     full_issue_df = pd.concat(issue_dfs_per_rule)
+    full_issue_df.reset_index(drop=True, inplace=True)
     return full_issue_df

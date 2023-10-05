@@ -68,17 +68,20 @@ tests. Please do not submit a pull-request without a comprehensive test.
 
 ### Development
 
-To install the code and dependencies. Then from the main project directory run
+To run in codespaces, you need to run in a virtual environment, this information can be found in a .txt file in the documentation.
+
+To install the code and dependencies, from the main project directory run:
 
 ```
 poetry install
 ```
 
+If this does not work, it might be because you're running the wrong version of Python, the version of Numpy used by the 903 validator is locked at 3.9. The devcontainer and dockerfile should ensure you are running 3.9 and you may simply require a rebuild. If not, ensure you are working in an environment or venv with Python 3.9 as your interpreter.
+
 ### Adding validators
 
-Validators are simple functions, usually called `validate_XXX()` which take no arguments and
-return a tuple of an `ErrorDefinition` and a test function. The test function itself takes
-a single argument, the *datastore*, which is a [Mapping][py-mapping] (a dict-like) following the structure below.
+Validators are contained in `rule_XXX()` files in the rules folder, where `xxx` is the code of the validation rule. Each file contains a `validate` which defines the rule logic and a `test_validate` function which runs the validate function on some test data to check that the rule works as expected.
+The validator takes a single argument, the *datastore*, which is a [Mapping][py-mapping] (a dict-like) following the structure below.
 
 The following is the expected structure for the input data that is given to each validator (the `dfs` object).
 You should assume that not all of these keys are present and handle that appropriately.
@@ -119,6 +122,8 @@ Any XML uploads are converted into CSV form to give the same inputs.
     }
 }
 ```
+## Yearly rule updates
+Each year, the DfE might release specifications of any rules which have been added, modified or deleted. Expanded guidance on how to incorporate these changes can be found in the [landing page (readme.md file) of the CIN validator repo](https://github.com/data-to-insight/CIN-validator/). The CIN and LAC validators have been refactored to resemble each other as much as possible so their overall documentation applies to both tool backends.
 
 ## Releases
 

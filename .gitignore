@@ -134,3 +134,4 @@ scripts/*.csv
 scripts/*.zip
 
 *.xlsx
+.idea

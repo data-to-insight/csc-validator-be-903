@@ -1,12 +1,14 @@
-from validator903.types import ErrorDefinition
+from lac_validator.rule_engine import RuleDefinition
 
-def test_errordefinition():
-    error = ErrorDefinition(
-        code='203',
-        description='Test error',
-        affected_fields=['SOME_FIELD'],
+
+def test_ruledefinition():
+    rule = RuleDefinition(
+        code="203",
+        message="Test error",
+        affected_fields=["SOME_FIELD"],
+        func=lambda x: x == 1,
     )
 
-    assert error.code == '203'
-    assert error.description == 'Test error'
-    assert error.affected_fields == ['SOME_FIELD']
+    assert rule.code == "203"
+    assert rule.message == "Test error"
+    assert rule.affected_fields == ["SOME_FIELD"]

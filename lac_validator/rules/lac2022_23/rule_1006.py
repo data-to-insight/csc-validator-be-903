@@ -31,7 +31,7 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "MISSING": ["M", "A", "AWAY", "NA", "", pd.NA],
+            "MISSING": ["M", "A", "AWAY", "NA", "", pd.NA, "m"],
         }
     )
 
@@ -39,4 +39,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Missing": [2, 3, 4]}
+    assert result == {"Missing": [2, 3, 4, 6]}

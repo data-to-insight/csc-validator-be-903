@@ -38,7 +38,7 @@ def validate(dfs):
         (oc2["4th_bday"] <= collection_start)
         & (oc2["17th_bday"] > collection_end)
         & oc2["CONTINUOUSLY_LOOKED_AFTER"]
-        & oc2[["SDQ_SCORE", "SDQ_REASON"]].isna().any(axis=1)
+        & oc2[["SDQ_SCORE", "SDQ_REASON"]].isna().all(axis=1)
     )
 
     oc2_errors = oc2.loc[error_mask].index.to_list()
@@ -55,110 +55,105 @@ def test_validate():
         [
             {
                 "CHILD": "1",
-                "DECOM": "01/03/1980",
-                "DEC": "31/03/1981",
-                "LS": "o",
+                "DECOM": "31/03/1980",
+                "DEC": "31/12/1980",
+                "LS": "C2",
                 "REC": "X1",
                 "RNE": "o",
-            },
+            },  # Pass
+            {
+                "CHILD": "1",
+                "DECOM": "31/12/1980",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "REC": pd.NA,
+                "RNE": "o",
+            },  #Pass
             {
                 "CHILD": "2",
-                "DECOM": "01/03/1980",
-                "DEC": "30/03/1981",
-                "LS": "o",
-                "REC": "X1",
+                "DECOM": "31/03/1980",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "REC": pd.NA,
                 "RNE": "o",
-            },
+            },  #Pass
             {
                 "CHILD": "3",
-                "DECOM": "01/03/1980",
-                "DEC": "01/01/1981",
-                "LS": "V3",
-                "REC": "X1",
+                "DECOM": "31/03/1980",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "REC": pd.NA,
                 "RNE": "o",
-            },  # False
+            },  #Pass
             {
                 "CHILD": "4",
-                "DECOM": "01/02/1970",
+                "DECOM": "31/03/1980",
                 "DEC": pd.NA,
-                "LS": "o",
-                "REC": "!!",
-                "RNE": "o",
-            },
-            {
-                "CHILD": "5555",
-                "DECOM": "01/03/1979",
-                "DEC": "01/01/1981",
-                "LS": "o",
-                "REC": "X1",
-                "RNE": "o",
-            },
-            {
-                "CHILD": "5555",
-                "DECOM": "01/01/1981",
-                "DEC": pd.NA,
-                "LS": "o",
+                "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },
+            },  #Fail
             {
-                "CHILD": "6",
-                "DECOM": "01/03/1979",
-                "DEC": "01/01/1981",
-                "LS": "o",
-                "REC": "!!",
-                "RNE": "o",
-            },  # !! - False
-            {
-                "CHILD": "6",
-                "DECOM": "01/01/1981",
+                "CHILD": "5",
+                "DECOM": "31/03/1980",
                 "DEC": pd.NA,
-                "LS": "o",
+                "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  # False
+            },  #Ignore
             {
-                "CHILD": "7777",
-                "DECOM": "01/03/1979",
-                "DEC": "01/01/1981",
-                "LS": "o",
-                "REC": "X1",
+                "CHILD": "6",
+                "DECOM": "31/03/1980",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "REC": pd.NA,
                 "RNE": "o",
-            },  # False
+            },  #Ignore
             {
-                "CHILD": "7777",
-                "DECOM": "01/01/1981",
-                "DEC": "01/07/1981",
-                "LS": "o",
-                "REC": "o",
+                "CHILD": "7",
+                "DECOM": "31/05/1980",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "REC": pd.NA,
                 "RNE": "S",
-            },  # !! - False
+            },  #Ignore
             {
                 "CHILD": "8",
-                "DECOM": "01/01/1981",
-                "DEC": "31/03/1999",
-                "LS": "o",
-                "REC": "o",
-                "RNE": "S",
-            },  # False
+                "DECOM": "31/03/1980",
+                "DEC": "30/03/1981",
+                "LS": "C2",
+                "REC": "E4a",
+                "RNE": "o",
+            },  #Ignore
+            {
+                "CHILD": "9",
+                "DECOM": "31/03/1980",
+                "DEC": pd.NA,
+                "LS": "V4",
+                "REC": pd.NA,
+                "RNE": "o",
+            },  #Ignore
         ]
     )
 
     oc2 = pd.DataFrame(
-        {
-            "CHILD": ["999999", "1", "2", "3", "9999", "8", "5555", "789"],
+        {   # 0 Pass, 1 Pass, 2 Pass, 3 Fail (no value), 4 Ignore (age), 5 Ignore (age), 
+            # 6 Ignore (duration), 7 Ignore (duration), 8 Ignore (LS), 9 Ignore (unmatched)
+            "CHILD": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
             "DOB": [
-                "01/01/1974",
-                "01/04/1976",
-                "01/01/1978",
-                "01/01/1974",
-                "01/01/1974",
-                "01/01/1974",
-                "01/01/1955",
-                "01/04/1976",
+                "01/04/1970",
+                "01/04/1970",
+                "01/04/1970",
+                "01/04/1970",
+                "01/04/1960", #20yrs
+                "01/04/1978", #2yrs
+                "01/04/1970",
+                "01/04/1970",
+                "01/04/1970",
+                "01/04/1970",
             ],
-            "SDQ_SCORE": ["OO", pd.NA, "OO", "OO", pd.NA, pd.NA, pd.NA, pd.NA],
-            "SDQ_REASON": [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, "SDQ1"],
+            "SDQ_SCORE": ["10", "1O", pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
+            "SDQ_REASON": ["SDQ1", pd.NA, "SDQ2", pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
         }
     )
 
@@ -168,6 +163,6 @@ def test_validate():
 
     assert result == {
         "OC2": [
-            1,
+            3,
         ]
     }

@@ -68,7 +68,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Pass
+            },  # Pass
             {
                 "CHILD": "2",
                 "DECOM": "31/03/1980",
@@ -76,7 +76,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Pass
+            },  # Pass
             {
                 "CHILD": "3",
                 "DECOM": "31/03/1980",
@@ -84,7 +84,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Pass
+            },  # Pass
             {
                 "CHILD": "4",
                 "DECOM": "31/03/1980",
@@ -92,7 +92,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Fail
+            },  # Fail
             {
                 "CHILD": "5",
                 "DECOM": "31/03/1980",
@@ -100,7 +100,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Ignore
+            },  # Ignore
             {
                 "CHILD": "6",
                 "DECOM": "31/03/1980",
@@ -108,7 +108,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Ignore
+            },  # Ignore
             {
                 "CHILD": "7",
                 "DECOM": "31/05/1980",
@@ -116,7 +116,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": pd.NA,
                 "RNE": "S",
-            },  #Ignore
+            },  # Ignore
             {
                 "CHILD": "8",
                 "DECOM": "31/03/1980",
@@ -124,7 +124,7 @@ def test_validate():
                 "LS": "C2",
                 "REC": "E4a",
                 "RNE": "o",
-            },  #Ignore
+            },  # Ignore
             {
                 "CHILD": "9",
                 "DECOM": "31/03/1980",
@@ -132,12 +132,12 @@ def test_validate():
                 "LS": "V4",
                 "REC": pd.NA,
                 "RNE": "o",
-            },  #Ignore
+            },  # Ignore
         ]
     )
 
     oc2 = pd.DataFrame(
-        {   # 0 Pass, 1 Pass, 2 Pass, 3 Fail (no value), 4 Ignore (age), 5 Ignore (age), 
+        {  # 0 Pass, 1 Pass, 2 Pass, 3 Fail (no value), 4 Ignore (age), 5 Ignore (age),
             # 6 Ignore (duration), 7 Ignore (duration), 8 Ignore (LS), 9 Ignore (unmatched)
             "CHILD": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
             "DOB": [
@@ -145,15 +145,37 @@ def test_validate():
                 "01/04/1970",
                 "01/04/1970",
                 "01/04/1970",
-                "01/04/1960", #20yrs
-                "01/04/1978", #2yrs
+                "01/04/1960",  # 20yrs
+                "01/04/1978",  # 2yrs
                 "01/04/1970",
                 "01/04/1970",
                 "01/04/1970",
                 "01/04/1970",
             ],
-            "SDQ_SCORE": ["10", "1O", pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
-            "SDQ_REASON": ["SDQ1", pd.NA, "SDQ2", pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA, pd.NA],
+            "SDQ_SCORE": [
+                "10",
+                "1O",
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+            ],
+            "SDQ_REASON": [
+                "SDQ1",
+                pd.NA,
+                "SDQ2",
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+            ],
         }
     )
 

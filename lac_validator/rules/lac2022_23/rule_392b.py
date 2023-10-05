@@ -4,7 +4,7 @@ from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
-    code="392B",
+    code="392b",
     message="Child is looked after but no postcodes are recorded. [NOTE: This check may result in false "
     "positives for children formerly UASC, particularly if current & prior year UASC data not loaded]",
     affected_fields=["HOME_POST", "PL_POST"],

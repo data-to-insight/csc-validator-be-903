@@ -17,7 +17,9 @@ def validate(dfs):
 
         not_p1 = episodes[(episodes["PLACE"] != "P1")]
 
-        error_mask = not_p1[not_p1["HOME_POST"] == not_p1["PL_POST"]]
+        same_postcode = not_p1[not_p1["HOME_POST"] == not_p1["PL_POST"]]
+
+        error_mask = episodes.index.isin(same_postcode.index)
 
         return {"Episodes": episodes.index[error_mask].tolist()}
 
@@ -27,7 +29,11 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "PLACE": ["P2", "P1", "P2",],
+            "PLACE": [
+                "P2",
+                "P1",
+                "P2",
+            ],
             "PL_POST": [
                 "BN20",
                 "BN20",

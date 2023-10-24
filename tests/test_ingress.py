@@ -51,7 +51,7 @@ class Test_read_from_text:
 
         read_from_text(files)
         read_csv.assert_called_once_with([head])
-        construct_info.assert_called_once_with(ch, scp)
+        construct_info.assert_called_once_with(CH=ch, SCP=scp)
 
     def test_xml_reading(self, mocker):
         read_xml = mocker.patch("lac_validator.ingress.read_xml_from_text")

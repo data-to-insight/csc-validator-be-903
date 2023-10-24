@@ -24,7 +24,9 @@ class Test_read_from_text:
 
     def test_csv_reading(self, mocker, dummy_chscp):
         read_csv = mocker.patch("lac_validator.ingress.read_csvs_from_text")
-        construct_info = mocker.patch("lac_validator.ingress.construct_provider_info_table")
+        construct_info = mocker.patch(
+            "lac_validator.ingress.construct_provider_info_table"
+        )
 
         # ch = {}
         # scp = {}

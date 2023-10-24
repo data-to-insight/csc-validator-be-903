@@ -22,13 +22,36 @@ class Test_read_from_text:
         with pytest.raises(UploadError):
             read_from_text(files)
 
-    def test_csv_reading(self, mocker):
+    def test_csv_reading(self, mocker, dummy_chscp):
         read_csv = mocker.patch("lac_validator.ingress.read_csvs_from_text")
+        construct_info = mocker.patch("lac_validator.ingress.construct_provider_info_table")
+
+        # ch = {}
+        # scp = {}
+        # combined = {}
+
+        # (
+        #     ch["file_content"],
+        #     scp["file_content"],
+        #     ch_path_dir,
+        #     scp_path_dir,
+        #     combined_path_dir,
+        #     combined["file_content"],
+        # ) = dummy_chscp
+
         files: list[UploadedFile] = [
-            {"name": "header.csv", "file_content": "", "description": ""}
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {"name": "ch_lookup.csv", "file_content": "", "description": "CH lookup"},
+            {"name": "scp_lookup.csv", "file_content": "", "description": "SCP lookup"},
         ]
+
+        head = files[0]
+        ch = files[1]
+        scp = files[2]
+
         read_from_text(files)
-        read_csv.assert_called_once_with(files)
+        read_csv.assert_called_once_with([head])
+        construct_info.assert_called_once_with(ch, scp)
 
     def test_xml_reading(self, mocker):
         read_xml = mocker.patch("lac_validator.ingress.read_xml_from_text")

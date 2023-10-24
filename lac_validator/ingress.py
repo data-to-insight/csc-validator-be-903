@@ -72,7 +72,7 @@ def read_from_text(
 ) -> Tuple[Dict[str, DataFrame], Dict[str, Union[str, DataFrame]]]:
     """
     Reads from a raw list of files passed from javascript. These files are of
-    the form e.g.
+    the form e.g. 
     [
         {name: 'filename.csv', file_content: <file contents>, description: <upload metadata>}
     ]
@@ -82,10 +82,11 @@ def read_from_text(
     """
     logger.info(f"Reading from text. {sc.t0}")
     metadata_extras = {}
-
+    #print(raw_files)
     CH_uploaded = [f for f in raw_files if f["description"] == "CH lookup"]
     SCP_uploaded = [f for f in raw_files if f["description"] == "SCP lookup"]
     num_of_CH_and_SCP = (len(CH_uploaded), len(SCP_uploaded))
+    
 
     logger.info(f"#CH: {num_of_CH_and_SCP[0]}, #SCP:{num_of_CH_and_SCP[1]}")
 
@@ -110,11 +111,11 @@ def read_from_text(
         )
         metadata_extras["provider_info"] = provider_info_df
 
-        logger.info(
-            "created providers table. shape:{1} rows, {0}".format(
-                *provider_info_df.shape
-            )
-        )
+        # logger.info(
+        #     "created providers table. shape:{1} rows, {0}".format(
+        #         *provider_info_df.shape
+        #     )
+        # )
         logger.debug(f'{", ".join(provider_info_df.columns)}')
         logger.debug(f"providers dtypes: {provider_info_df.dtypes}")
 
@@ -562,3 +563,7 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     names_and_lengths = ", ".join(f"{t}: {len(data[t])} rows" for t in data)
     logger.info(f"Tables created from XML -- {names_and_lengths}")
     return data
+
+def combined_ch_scp_check(excel_to_check):
+    df = pd.read_excel(excel_to_check)
+    pass

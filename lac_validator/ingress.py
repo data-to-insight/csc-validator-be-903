@@ -82,7 +82,7 @@ def read_from_text(
     """
     logger.info(f"Reading from text. {sc.t0}")
     metadata_extras = {}
-    # print(raw_files)
+
     CH_uploaded = [f for f in raw_files if f["description"] == "CH lookup"]
     SCP_uploaded = [f for f in raw_files if f["description"] == "SCP lookup"]
     num_of_CH_and_SCP = (len(CH_uploaded), len(SCP_uploaded))
@@ -578,5 +578,28 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
 
 
 def combined_ch_scp_check(excel_to_check):
-    print(excel_to_check["file_content"])
-    return False
+    if not isinstance(excel_to_check, bytes):
+        CH_bytes = excel_to_check.tobytes()
+    else:
+        CH_bytes = excel_to_check
+    df = pd.ExcelFile(CH_bytes, engine="openpyxl")
+    if (len(df["Provider Type"]) > 1) & (
+        "Children's Home" in df["Provider Type"].values
+    ):
+        logger.info(
+            f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+        )
+        return True
+    if (len(df["Provider Type"]) == 1) & (
+        "Children's Home" in df["Provider Type"].values
+    ):
+        logger.info(
+            f"'Childrens home' list as only CH/SCP file in upload detected. {sc.t}"
+        )
+        return False
+    else:
+        logger.info(
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                    \n and that the column names are correct. {sc.t}"
+        )
+        return False

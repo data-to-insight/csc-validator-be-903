@@ -97,16 +97,20 @@ def read_from_text(
     elif set(num_of_CH_and_SCP) == {0, 1}:
         if CH_uploaded:
             combined_scpch = combined_ch_scp_check(CH_uploaded[0])
-            if combined_scpch == False:
-                raise UploadError(
-                    "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
-                    "from Ofsted into their respective boxes above."
-                )
+            # if combined_scpch == False:
+            #     raise UploadError(
+            #         "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+            #         "from Ofsted into their respective boxes above."
+            #     )
             if combined_scpch:
                 logger.info(
                     f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
                 )
-                pass
+            else:
+                raise UploadError(
+                    "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+                    "from Ofsted into their respective boxes above."
+                )
         else:
             raise UploadError(
                 "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
@@ -582,7 +586,18 @@ def combined_ch_scp_check(excel_to_check):
         CH_bytes = excel_to_check.tobytes()
     else:
         CH_bytes = excel_to_check
-    df = pd.ExcelFile(CH_bytes, engine="openpyxl")
+    df = pd.read_excel(CH_bytes, engine="openpyxl")
+    print(df.columns)
+    if "Provider Type" not in df.columns:
+        logger.info(
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                    \n and that the column names are correct. {sc.t}"
+        )
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )    
     if (len(df["Provider Type"]) > 1) & (
         "Children's Home" in df["Provider Type"].values
     ):
@@ -594,12 +609,20 @@ def combined_ch_scp_check(excel_to_check):
         "Children's Home" in df["Provider Type"].values
     ):
         logger.info(
-            f"'Childrens home' list as only CH/SCP file in upload detected. {sc.t}"
+            f"'Children's home' list as only CH data file in upload detected. {sc.t}"
         )
-        return False
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )
     else:
         logger.info(
             f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
                     \n and that the column names are correct. {sc.t}"
         )
-        return False
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )

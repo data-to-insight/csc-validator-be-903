@@ -7,6 +7,7 @@ from lac_validator.ingress import (
     read_from_text,
     read_xml_from_text,
     construct_provider_info_table,
+    combined_ch_scp_check,
 )
 from lac_validator.types import UploadError, UploadedFile
 
@@ -22,24 +23,14 @@ class Test_read_from_text:
         with pytest.raises(UploadError):
             read_from_text(files)
 
-    def test_csv_reading(self, mocker, dummy_chscp):
+    def test_csv_reading(self, mocker):
         read_csv = mocker.patch("lac_validator.ingress.read_csvs_from_text")
         construct_info = mocker.patch(
             "lac_validator.ingress.construct_provider_info_table"
         )
-
-        # ch = {}
-        # scp = {}
-        # combined = {}
-
-        # (
-        #     ch["file_content"],
-        #     scp["file_content"],
-        #     ch_path_dir,
-        #     scp_path_dir,
-        #     combined_path_dir,
-        #     combined["file_content"],
-        # ) = dummy_chscp
+        combined_scpch_check = mocker.patch(
+            "lac_validator.ingress.combined_ch_scp_check"
+        )
 
         files: list[UploadedFile] = [
             {"name": "header.csv", "file_content": "", "description": ""},
@@ -54,6 +45,31 @@ class Test_read_from_text:
         read_from_text(files)
         read_csv.assert_called_once_with([head])
         construct_info.assert_called_once_with(CH=ch, SCP=scp)
+
+        # Test ingress for one CH upload to check if it's the combined form
+        files: list[UploadedFile] = [
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {
+                "name": "ch_lookup.csv",
+                "file_content": "test",
+                "description": "CH lookup",
+            },
+        ]
+
+        head = files[0]
+        ch = files[1]
+
+        read_from_text(files)
+        combined_scpch_check.assert_called_once_with(ch)
+
+        # Test ingress for one SCP upload to check if it's the combined form
+        files: list[UploadedFile] = [
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {"name": "scp_lookup.csv", "file_content": "", "description": "SCP lookup"},
+        ]
+
+        with pytest.raises(UploadError):
+            read_from_text(files)
 
     def test_xml_reading(self, mocker):
         read_xml = mocker.patch("lac_validator.ingress.read_xml_from_text")
@@ -145,3 +161,17 @@ def test_construct_provider_info_table(dummy_chscp):
     output_from_file = construct_provider_info_table(ch, scp)
     file_output_columns = output_from_file.columns.to_list()
     assert file_output_columns == expected_columns
+
+
+def test_combined_ch_scp_check(dummy_chscp):
+    ch = {}
+    scp = {}
+    combined = {}
+    (
+        ch["file_content"],
+        scp["file_content"],
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp

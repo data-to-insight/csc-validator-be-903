@@ -95,10 +95,23 @@ def read_from_text(
             f"URN lookup tables were loaded - Please only load a single file in each box."
         )
     elif set(num_of_CH_and_SCP) == {0, 1}:
-        raise UploadError(
-            "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
-            "from Ofsted into their respective boxes above."
-        )
+        if CH_uploaded:
+            combined_scpch = combined_ch_scp_check(CH_uploaded[0])
+            if combined_scpch == False:
+                raise UploadError(
+                    "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+                    "from Ofsted into their respective boxes above."
+                )
+            if combined_scpch:
+                logger.info(
+                    f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+                )
+                pass
+        else:
+            raise UploadError(
+                "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+                "from Ofsted into their respective boxes above."
+            )
     elif set(num_of_CH_and_SCP) == {1}:
         logger.info(
             f"Ofsted CH & SCP spreadsheets received - constructing provider info table. {sc.t}"
@@ -565,5 +578,5 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
 
 
 def combined_ch_scp_check(excel_to_check):
-    df = pd.read_excel(excel_to_check)
-    pass
+    print(excel_to_check["file_content"])
+    return False

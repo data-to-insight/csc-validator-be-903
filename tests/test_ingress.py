@@ -8,6 +8,7 @@ from lac_validator.ingress import (
     read_xml_from_text,
     construct_provider_info_table,
     combined_ch_scp_check,
+    scpch_provider_info_table,
 )
 from lac_validator.types import UploadError, UploadedFile
 
@@ -30,6 +31,9 @@ class Test_read_from_text:
         )
         combined_scpch_check = mocker.patch(
             "lac_validator.ingress.combined_ch_scp_check"
+        )
+        scpch_provider_info_table = mocker.patch(
+            "lac_validator.ingress.scpch_provider_info_table"
         )
 
         files: list[UploadedFile] = [
@@ -61,6 +65,7 @@ class Test_read_from_text:
 
         read_from_text(files)
         combined_scpch_check.assert_called_once_with(ch)
+        scpch_provider_info_table.assert_called_once_with(scpch=ch)
 
         # Test ingress for one SCP upload to check if it's the combined form
         files: list[UploadedFile] = [

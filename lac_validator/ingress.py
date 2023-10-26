@@ -422,7 +422,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
         "POSTCODE",
     ]
 
-    SCP_cols = [
+    scpch_cols = [
         "urn",
         "local authority",
         "placement code",
@@ -434,7 +434,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
 
     # check whether file includes consolidated provider information sheet
     scpch_providers = pd.read_excel(scpch_bytes, engine="openpyxl")
-    scpch_providers.columns = scpch.columns.str.lower()
+    scpch_providers.columns = scpch_providers.columns.str.lower()
     logger.debug(
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"
     )
@@ -464,8 +464,8 @@ def scpch_provider_info_table(scpch: UploadedFile):
 
     # if not check whether file includes separate setting and address sheets
     scpch_df["source"] = "Combined SCPCH List"
-    scpch_df["Provider Placement Code"] = scpch_df[
-        "Provider Placement Code"
+    scpch_df["placement provider code"] = scpch_df[
+        "placement provider code"
     ].str.replace("/", ",")
     provider_info_df = scpch_df.rename(
         columns=dict(zip(scpch_cols, provider_info_cols))

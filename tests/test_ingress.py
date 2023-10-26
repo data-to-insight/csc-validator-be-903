@@ -169,6 +169,7 @@ def test_construct_provider_info_table(dummy_chscp):
 
 
 def test_combined_ch_scp_check(dummy_chscp):
+
     ch = {}
     scp = {}
     combined = {}
@@ -189,3 +190,30 @@ def test_combined_ch_scp_check(dummy_chscp):
 
     combined_outcome = combined_ch_scp_check(combined["file_content"])
     assert combined_outcome == True
+
+def test_scpch_provider_info_table(dummy_chscp):
+    expected_columns = [
+        "URN",
+        "LA_NAME_FROM_FILE",
+        "PLACE_CODES",
+        "PROVIDER_CODES",
+        "REG_END",
+        "POSTCODE",
+        "source",
+        "LA_CODE_INFERRED",
+        "LA_NAME_INFERRED",
+    ]
+
+    combined = {}
+    (
+        ch,
+        scp,
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp
+
+    output = scpch_provider_info_table(combined)
+    output_columns = output.columns.to_list()
+    assert output_columns == expected_columns

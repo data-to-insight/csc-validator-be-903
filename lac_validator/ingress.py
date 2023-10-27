@@ -690,6 +690,10 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
 
 
 def combined_ch_scp_check(excel_to_check):
+    """
+    Checks whether the file uploaded to the front end in the Children's home box is a CH list or a combined SPC/CH list.
+    Only runs in instances where the number fo files uploaded in the SCP/CH boxes is one.
+    """
     if not isinstance(excel_to_check, bytes):
         CH_bytes = excel_to_check.tobytes()
     else:

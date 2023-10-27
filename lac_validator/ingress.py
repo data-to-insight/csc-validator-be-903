@@ -381,8 +381,7 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
 def scpch_provider_info_table(scpch: UploadedFile):
     """
     inputs:
-    Combined CH (childrens homes) and SCP (social care providers) lists as either strings containing a path to
-    the excel files, or the files' contents as passed in by the frontend
+    Combined CH (childrens homes) and SCP (social care providers) lists as the files' contents as passed in by the frontend
 
     returns:
     provider_info_df is a dataframe
@@ -391,7 +390,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
     (*) the columns will be ['URN', 'PLACE_CODES', 'PROVIDER_CODES', 'REG_END', 'POSTCODE', 'LA_CODE']:
     (*) all cols will be strings (object dtype) except REG_END which will be datetime
         - URN:
-            merge on this.
+            URN of providers/homes, used for merging if there is more htan one list.
         - PLACE_CODES and PROVIDER_CODES:
             strings of codes separated by commas: ['PR4', 'PR1,PR2', etc..]
         - REG_END:

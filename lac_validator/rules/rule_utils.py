@@ -109,8 +109,14 @@ def compare_placement_coordinates(dfs, field):
 
         # if subval == 'G':
         err_mask = (
-            abs(merged_co[this_one].astype(float) - merged_co[pre_one].astype(float))
+            abs(
+                merged_co[this_one].astype(float, errors="ignore")
+                - merged_co[pre_one].astype(float, errors="ignore")
+            )
             >= 0.2
+        ) | (
+            merged_co[pre_one].isna() & merged_co[this_one].notna()
+            | (merged_co[pre_one].isna() & merged_co[this_one].notna())
         )
 
         err_mask = err_mask & merged_co["DEC_PRE"].isna()

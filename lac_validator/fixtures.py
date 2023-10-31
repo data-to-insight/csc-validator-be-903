@@ -144,7 +144,7 @@ previous_episodes = pd.DataFrame(
             "RNE": "S",
             "DECOM": "04/11/2020",
             "DEC": pd.NA,
-            "PL_DISTANCE": "10",
+            "PL_DISTANCE": pd.NA,
             "PL_LA": pd.NA,
         },
         # Fail 452 and 503G only

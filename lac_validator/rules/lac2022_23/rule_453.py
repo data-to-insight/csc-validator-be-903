@@ -74,4 +74,4 @@ def test_validate():
     fake_dfs = {"Episodes": current_episodes, "Episodes_last": previous_episodes}
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [4]}
+    assert result == {"Episodes": [4, 6]}

@@ -105,6 +105,8 @@ def compare_placement_coordinates(dfs, field):
         this_one = field
         pre_one = this_one + "_PRE"
 
+        print(merged_co[[this_one, pre_one]])
+
         # if subval == 'G':
         err_mask = (
             abs(merged_co[this_one].astype(float) - merged_co[pre_one].astype(float))

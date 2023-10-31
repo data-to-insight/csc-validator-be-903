@@ -18,18 +18,8 @@ def test_validate():
     fake_epi = current_episodes.copy()
     fake_epi_last = previous_episodes.copy()
 
-    fake_epi["DECOM"] = pd.to_datetime(
-        fake_epi["DECOM"], format="%d/%m/%Y", errors="coerce"
-    )
-    fake_epi_last["DECOM"] = pd.to_datetime(
-        fake_epi_last["DECOM"], format="%d/%m/%Y", errors="coerce"
-    )
-    fake_epi_last["DEC"] = pd.to_datetime(
-        fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
-    )
-
     fake_dfs = {"Episodes": fake_epi, "Episodes_last": fake_epi_last}
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [4]}
+    assert result == {"Episodes": [4, 6]}

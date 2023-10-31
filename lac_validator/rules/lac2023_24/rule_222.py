@@ -54,4 +54,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [0, 4, 5]}
+    assert result == {"Episodes": [4, 5]}

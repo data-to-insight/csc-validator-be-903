@@ -12,7 +12,7 @@ from lac_validator.rules.rule_utils import compare_placement_coordinates
 )
 def validate(dfs):
     return compare_placement_coordinates(dfs, field="PL_DISTANCE")
- 
+
 
 def test_validate():
     fake_epi = current_episodes.copy()

@@ -23,7 +23,7 @@ def validate(dfs):
         )
 
         # If <DOB> >17 years prior to <COLLECTION_START_DATE> then <SDQ_SCORE> and <SDQ_REASON> should not be provided
-        mask = ((oc2["DOB"] + pd.offsets.DateOffset(years=17)) <= collection_start) & (
+        mask = ((oc2["DOB"] + pd.offsets.DateOffset(years=17)) < collection_start) & (
             oc2["SDQ_REASON"].notna() | oc2["SDQ_SCORE"].notna()
         )
         # That is, raise error if collection_start > DOB + 17years
@@ -39,7 +39,7 @@ def test_validate():
     oc2 = pd.DataFrame(
         {
             "CHILD": ["0", "1", "2", "3"],
-            "DOB": ["01/04/1963", "02/04/1963", "01/01/1970", "31/03/1960"],
+            "DOB": ["01/04/1962", "02/04/1963", "01/01/1970", "31/03/1960"],
             "SDQ_SCORE": ["!!!", "OK", pd.NA, pd.NA],
             "SDQ_REASON": [pd.NA, pd.NA, pd.NA, pd.NA],
         }

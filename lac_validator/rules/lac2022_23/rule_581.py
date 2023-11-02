@@ -23,9 +23,8 @@ def validate(dfs):
             mis["MIS_START"], format="%d/%m/%Y", errors="coerce"
         )
 
-        merged_epi = epi.merge(mis, how="left", on="CHILD")  # .query(
-        #   "(MIS_START >= DECOM & ((MIS_START <= DEC) | (DEC))"
-        # )
+        merged_epi = epi.merge(mis, how="left", on="CHILD")
+
         merged_epi["IN_EP"] = (merged_epi["MIS_START"] >= merged_epi["DECOM"]) & (
             (merged_epi["MIS_START"] <= merged_epi["DEC"]) | merged_epi["DEC"].isna()
         )

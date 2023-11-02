@@ -427,7 +427,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
         "placement code",
         "placement provider code",
         "deregistration date",
-        "setting postcode",
+        "setting address postcode",
     ]
     logger.info(f"URN lookup bytes recieved. Reading excel files... {sc.t}")
 
@@ -438,19 +438,8 @@ def scpch_provider_info_table(scpch: UploadedFile):
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"
     )
 
-    try:
-        scpch_address = scpch_providers[["urn", "setting postcode"]]
-    except KeyError:
-        try:
-            scpch_address = scpch_providers[["urn"]]
-            scpch_providers = scpch_providers.rename(
-                columns={"setting address postcode": "setting postcode"}
-            )
-        except KeyError:
-            raise print(
-                "Failed to find postcode column in Childrens Homes list "
-                '"Provider information" sheet. Expected "Setting Postcode"'
-            )
+    scpch_address = scpch_providers[["urn", "setting address postcode"]]
+
     try:
         scpch_providers = scpch_providers[scpch_cols[:]]
     except KeyError:

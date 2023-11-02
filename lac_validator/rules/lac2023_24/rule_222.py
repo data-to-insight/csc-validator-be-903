@@ -27,7 +27,7 @@ def validate(dfs):
             "T4",
             "Z1",
         ]
-        # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘H5’; ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
+        # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> = ‘P1’ ‘P2’ ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then <URN> should not be provided
         mask = (
             (df["PLACE"].isin(place_code_list))
             & (df["URN"].notna())

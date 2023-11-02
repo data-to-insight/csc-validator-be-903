@@ -438,8 +438,6 @@ def scpch_provider_info_table(scpch: UploadedFile):
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"
     )
 
-    scpch_address = scpch_providers[["urn", "setting address postcode"]]
-
     try:
         scpch_providers = scpch_providers[scpch_cols[:]]
     except KeyError:
@@ -448,9 +446,8 @@ def scpch_provider_info_table(scpch: UploadedFile):
             f' sheet. Expected: {", ".join(scpch_cols[:])}'
         )
     scpch_df = scpch_providers
-    del scpch_providers, scpch_address
+    del scpch_providers
 
-    # if not check whether file includes separate setting and address sheets
     scpch_df["source"] = "Combined SCPCH List"
     scpch_df["placement provider code"] = scpch_df[
         "placement provider code"

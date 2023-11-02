@@ -20,11 +20,8 @@ def validate(dfs):
             "28/10/2023", format="%d/%m/%Y", errors="coerce"
         )
 
-        mask = (
-            episodes["PLACE"].isin(["P2"])
-            & (
-                (episodes["DEC"] > max_dec_allowed) | episodes["DEC"].isna()
-            )
+        mask = episodes["PLACE"].isin(["P2"]) & (
+            (episodes["DEC"] > max_dec_allowed) | episodes["DEC"].isna()
         )
 
         validation_error_mask = mask
@@ -40,10 +37,10 @@ def test_validate():
         {
             "PLACE": ["P2", "P2", "P2", "P1"],
             "DEC": [
-                "01/11/2023", # Fail (After code end date)
-                "28/10/2023", # Pass (On code end date)
-                pd.NA, # Fail (Nil end after code end date)
-                "01/11/2023", # Ignore (Not P2)
+                "01/11/2023",  # Fail (After code end date)
+                "28/10/2023",  # Pass (On code end date)
+                pd.NA,  # Fail (Nil end after code end date)
+                "01/11/2023",  # Ignore (Not P2)
             ],
         }
     )

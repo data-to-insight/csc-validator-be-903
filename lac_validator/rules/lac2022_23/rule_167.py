@@ -32,7 +32,7 @@ def test_validate():
     fake_data = pd.DataFrame(
         {
             "REVIEW": ["01/02/2020", "31/03/2020", "12/12/2019", "05/07/2020", pd.NA],
-            "REVIEW_CODE": ["p0", "child too young", "PN3", "", pd.NA],
+            "REVIEW_CODE": ["pr0", "child too young", "PN3", "", pd.NA],
         }
     )
 

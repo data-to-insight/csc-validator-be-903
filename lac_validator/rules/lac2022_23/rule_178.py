@@ -44,8 +44,8 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "PLACE_PROVIDER": ["PR0", "PR1", "", pd.NA, "", pd.NA],
-            "PLACE": ["U1", "T0", "U2", "Z1", "T1", pd.NA],
+            "PLACE_PROVIDER": ["PR0", "PR1", "", pd.NA, "", pd.NA, "pr4"],
+            "PLACE": ["U1", "T0", "U2", "Z1", "T1", pd.NA, "U1"],
         }
     )
 
@@ -53,4 +53,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [1, 2, 4]}
+    assert result == {"Episodes": [1, 2, 4, 6]}

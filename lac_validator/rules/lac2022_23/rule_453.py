@@ -2,6 +2,7 @@ import pandas as pd
 
 from lac_validator.rule_engine import rule_definition
 from lac_validator.fixtures import current_episodes, previous_episodes
+from lac_validator.rules.rule_utils import compare_placement_coordinates
 
 import pandas as pd
 
@@ -12,66 +13,59 @@ import pandas as pd
     affected_fields=["PL_DISTANCE"],
 )
 def validate(dfs):
-    if "Episodes" not in dfs:
-        return {}
-    if "Episodes_last" not in dfs:
+    if "Episodes" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
-        episodes = dfs["Episodes"]
-        episodes_last = dfs["Episodes_last"]
+        epi = dfs["Episodes"]
+        epi_last = dfs["Episodes_last"]
+        field = "PL_DISTANCE"
 
-        episodes["DECOM"] = pd.to_datetime(
-            episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+        epi_last["DECOM"] = pd.to_datetime(
+            epi_last["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        episodes_last["DECOM"] = pd.to_datetime(
-            episodes_last["DECOM"], format="%d/%m/%Y", errors="coerce"
-        )
-        episodes["PL_DISTANCE"] = pd.to_numeric(
-            episodes["PL_DISTANCE"], errors="coerce"
-        )
-        episodes_last["PL_DISTANCE"] = pd.to_numeric(
-            episodes_last["PL_DISTANCE"], errors="coerce"
+        epi_last["DEC"] = pd.to_datetime(
+            epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
         )
 
-        # drop rows with missing DECOM before finding idxmin/max, as invalid/missing values can lead to errors
-        episodes = episodes.dropna(subset=["DECOM"])
-        episodes_last = episodes_last.dropna(subset=["DECOM"])
+        epi.reset_index(inplace=True)
 
-        episodes_min = episodes.groupby("CHILD")["DECOM"].idxmin()
-        episodes_last_max = episodes_last.groupby("CHILD")["DECOM"].idxmax()
+        first_ep_inds = epi.groupby(["CHILD"])["DECOM"].idxmin(skipna=True)
+        min_decom = epi.loc[first_ep_inds, :]
 
-        episodes = episodes[episodes.index.isin(episodes_min)]
-        episodes_last = episodes_last[episodes_last.index.isin(episodes_last_max)]
+        last_ep_inds = epi_last.groupby(["CHILD"])["DECOM"].idxmax(skipna=True)
+        max_last_decom = epi_last.loc[last_ep_inds, :]
 
-        episodes_merged = (
-            episodes.reset_index()
-            .merge(
-                episodes_last,
-                how="left",
-                on=["CHILD"],
-                suffixes=("", "_last"),
-                indicator=True,
+        merged_co = min_decom.merge(
+            max_last_decom, how="inner", on=["CHILD"], suffixes=["", "_PRE"]
+        )
+
+        this_one = field
+        pre_one = this_one + "_PRE"
+
+        # if subval == 'G':
+        err_mask = (
+            abs(
+                merged_co[this_one].astype(float, errors="ignore")
+                - merged_co[pre_one].astype(float, errors="ignore")
             )
-            .set_index("index")
-        )
-
-        in_both_years = episodes_merged["_merge"] == "both"
-        same_rne = episodes_merged["RNE"] == episodes_merged["RNE_last"]
-        last_year_open = episodes_merged["DEC_last"].isna()
-        different_pl_dist = (
-            abs(episodes_merged["PL_DISTANCE"] - episodes_merged["PL_DISTANCE_last"])
             >= 0.2
+        ) | (
+            merged_co[pre_one].isna() & merged_co[this_one].notna()
+            | (merged_co[pre_one].isna() & merged_co[this_one].notna())
         )
 
-        error_mask = in_both_years & same_rne & last_year_open & different_pl_dist
+        same_rne = merged_co["RNE"] == merged_co["RNE_PRE"]
 
-        validation_error_locations = episodes.index[error_mask]
+        err_mask = err_mask & merged_co["DEC_PRE"].isna() & same_rne
 
-        return {"Episodes": validation_error_locations.tolist()}
+        err_list = merged_co["index"][err_mask].unique().tolist()
+        err_list.sort()
+        return {"Episodes": err_list}
 
 
 def test_validate():
     fake_dfs = {"Episodes": current_episodes, "Episodes_last": previous_episodes}
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [4]}
+    assert result == {"Episodes": [4, 6]}

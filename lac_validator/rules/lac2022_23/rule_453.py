@@ -17,7 +17,6 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         epi_last = dfs["Episodes_last"]
-        field = "PL_DISTANCE"
 
         epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
         epi_last["DECOM"] = pd.to_datetime(
@@ -39,19 +38,15 @@ def validate(dfs):
             max_last_decom, how="inner", on=["CHILD"], suffixes=["", "_PRE"]
         )
 
-        this_one = field
-        pre_one = this_one + "_PRE"
-
-        # if subval == 'G':
         err_mask = (
             abs(
-                merged_co[this_one].astype(float, errors="ignore")
-                - merged_co[pre_one].astype(float, errors="ignore")
+                merged_co["PL_DISTANCE"].astype(float, errors="ignore")
+                - merged_co["PL_DISTANCE_PRE"].astype(float, errors="ignore")
             )
             >= 0.2
         ) | (
-            merged_co[pre_one].isna() & merged_co[this_one].notna()
-            | (merged_co[pre_one].isna() & merged_co[this_one].notna())
+            merged_co["PL_DISTANCE_PRE"].isna() & merged_co["PL_DISTANCE"].notna()
+            | (merged_co["PL_DISTANCE_PRE"].isna() & merged_co["PL_DISTANCE"].notna())
         )
 
         same_rne = merged_co["RNE"] == merged_co["RNE_PRE"]

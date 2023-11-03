@@ -2,7 +2,6 @@ import pandas as pd
 
 from lac_validator.fixtures import current_episodes, previous_episodes
 from lac_validator.rule_engine import rule_definition
-from lac_validator.rules.rule_utils import compare_placement_coordinates
 
 
 @rule_definition(

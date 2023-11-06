@@ -9,6 +9,8 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=["DATE_PLACED_CEASED", "REC"],
 )
 def validate(dfs):
+    # If latest episode <REC> = ‘E11’ or ‘E12’ then if number of <DATE_PLACED_CEASED> in the year is > 1 then latest
+    # <DATE_PLACED_CEASED> must be   NULL
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:
         return {}
     else:
@@ -25,11 +27,6 @@ def validate(dfs):
             "index"
         )
 
-        # Add's a year column for grouping by year later.
-        merged["YEAR"] = pd.DatetimeIndex(
-            merged["DATE_PLACED_CEASED"], dayfirst=True
-        ).year
-
         # List of children who have null dates to be excluded (assumes the null is their most recent)
         children_with_null = merged[(merged["DATE_PLACED_CEASED"].isna())][
             "CHILD"
@@ -38,7 +35,7 @@ def validate(dfs):
         episodes_not_null = merged[~(merged["CHILD"].isin(children_with_null))]
 
         episodes_not_null["COUNT"] = episodes_not_null.groupby(
-            ["CHILD", "YEAR"], group_keys=False
+            ["CHILD"], group_keys=False
         )["DATE_PLACED_CEASED"].transform("count")
 
         episodes_with_errors = episodes_not_null[episodes_not_null["COUNT"] > 1]
@@ -83,18 +80,33 @@ def test_validate():
     )
     fake_data_placed_adoption = pd.DataFrame(
         {
-            "CHILD": ["A", "B", "C", "D", "E", "F", "G", "H", "D", "E", "I", "I", "I"],
+            "CHILD": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "D",
+                "E",
+                "I",
+                "I",
+                "I",
+                "I",
+            ],
             "DATE_PLACED_CEASED": [
                 pd.NA,
                 pd.NA,
                 pd.NA,
-                pd.NA,
+                "01/01/2020",
                 "01/01/2020",
                 "01/01/2020",
                 "15/04/2020",
                 pd.NA,
                 "28th Jan 1930",
-                "02/01/2020",
+                "02/01/1930",
                 "01/01/1930",
                 "01/01/1930",
                 "02/01/1930",
@@ -110,4 +122,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [4]}
+    assert result == {"Episodes": [4, 5]}

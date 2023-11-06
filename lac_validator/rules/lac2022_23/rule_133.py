@@ -60,7 +60,7 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "ACCOM": ["B1", "B2", pd.NA, "S2", "K1", "X", "1"],
+            "ACCOM": ["B1", "B2", pd.NA, "s2", "K1", "X", "1"],
         }
     )
 
@@ -68,4 +68,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"OC3": [2, 5, 6]}
+    assert result == {"OC3": [2, 3, 5, 6]}

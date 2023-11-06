@@ -73,7 +73,7 @@ def validate(dfs):
     uasc_last["DUC"] = pd.to_datetime(
         uasc_last["DUC"], format="%d/%m/%Y", errors="coerce"
     )
-    uasc["DOB18"] = uasc_last["DOB"] + pd.offsets.DateOffset(years=18)
+    uasc_last["DOB18"] = uasc_last["DOB"] + pd.offsets.DateOffset(years=18)
 
     header["HDR_INDEX"] = header.index
     header_last.reset_index(inplace=True)
@@ -81,14 +81,14 @@ def validate(dfs):
     header.reset_index(inplace=True)
     uasc.reset_index(inplace=True)
 
-    merged_current = uasc[["CHILD", "DUC", "DOB18", "index"]].merge(
+    merged_current = uasc[["CHILD", "DUC", "index"]].merge(
         header[["CHILD", "UASC", "index"]],
         how="left",
         on="CHILD",
         suffixes=("_uasc", "_header"),
     )
 
-    merged_last = uasc_last[["CHILD", "DUC"]].merge(
+    merged_last = uasc_last[["CHILD", "DUC", "DOB18"]].merge(
         header_last[["CHILD", "UASC"]], how="left", on="CHILD"
     )
 

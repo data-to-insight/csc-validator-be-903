@@ -20,6 +20,7 @@ def validate(dfs):
         # in instances where there is no _reason_placed_ceased, and where there is a date_placed_last
 
         df = dfs["PlacedAdoption"]
+        df["index"] = df.index
         pa_last = dfs["PlacedAdoption_last"]
 
         df = df[
@@ -29,8 +30,20 @@ def validate(dfs):
             pa_last, how="left", on="CHILD", suffixes=("_current", "_last")
         )
         df_merged = df_merged[df_merged["DATE_PLACED_last"].notna()]
+        dp_earlier_list = list(
+            df_merged[
+                df_merged["DATE_PLACED_current"] < df_merged["DATE_PLACED_last"]
+            ].index
+        )
 
-        error_mask = df_merged["DATE_PLACED_current"] < df_merged["DATE_PLACED_last"]
+        na_current_list = list(
+            df_merged[df_merged["DATE_PLACED_current"].isna()]["index"]
+        )
+
+        error_mask = df["index"].isin(dp_earlier_list) | df["index"].isin(
+            na_current_list
+        )
+
         return {"PlacedAdoption": df.index[error_mask].to_list()}
 
 
@@ -70,11 +83,17 @@ def test_validate():
                 "REASON_PLACED_CEASED": pd.NA,
             },  # 4 pass
             {
-                "CHILD": "child5",
+                "CHILD": "child6",
                 "DATE_PLACED": "01/02/2020",
                 "DATE_PLACED_CEASED": "01/02/2021",
                 "REASON_PLACED_CEASED": "XX",
             },  # 5 pass, test DP_last null
+            {
+                "CHILD": "child7",
+                "DATE_PLACED": pd.NA,
+                "DATE_PLACED_CEASED": "01/02/2021",
+                "REASON_PLACED_CEASED": "XX",
+            },  # 6 fail, DP null
         ]
     )
 
@@ -116,6 +135,12 @@ def test_validate():
                 "DATE_PLACED_CEASED": "01/02/2020",
                 "REASON_PLACED_CEASED": "xx",
             },  # 5
+            {
+                "CHILD": "child7",
+                "DATE_PLACED": "01/01/2020",
+                "DATE_PLACED_CEASED": "01/02/2020",
+                "REASON_PLACED_CEASED": "xx",
+            },  # 6
         ]
     )
 
@@ -135,4 +160,4 @@ def test_validate():
 
     fake_dfs = {"PlacedAdoption": fake_data, "PlacedAdoption_last": fake_last}
 
-    assert validate(fake_dfs) == {"PlacedAdoption": [0, 1, 2]}
+    assert validate(fake_dfs) == {"PlacedAdoption": [0, 1, 2, 6]}

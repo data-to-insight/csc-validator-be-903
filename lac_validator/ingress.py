@@ -431,7 +431,6 @@ def scpch_provider_info_table(scpch: UploadedFile):
     ]
     logger.info(f"URN lookup bytes recieved. Reading excel files... {sc.t}")
 
-    # check whether file includes consolidated provider information sheet
     scpch_providers = pd.read_excel(scpch_bytes, engine="openpyxl")
     scpch_providers.columns = scpch_providers.columns.str.lower()
     logger.debug(

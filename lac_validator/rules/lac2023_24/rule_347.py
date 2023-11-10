@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="347",
-    message="Only care leavers aged 18 years or over can be accommodated in a Foyer or similar accommodation. Check if the accommodation should be reported instead as ‘D’ (registered supported accommodation) or ‘Y’ (other accommodation).",
+    message="Care leavers aged under 18 years, can not be accommodated in a Foyer.",
     affected_fields=["PLACE", "DEC", "URN"],
 )
 def validate(dfs):
@@ -15,9 +15,13 @@ def validate(dfs):
         return {}
     else:
         df = dfs["OC3"]
-        collection_end = dfs["metadata"]["collection_start"]
+        collection_start = dfs["metadata"]["collection_start"]
+        collection_start = pd.to_datetime(collection_start, format="%d/%m/%Y")
+
         df = df.reset_index()
-        df["AGE_AT_CE"] = collection_end - df["DOB"]
+
+        df["DOB"] = pd.to_datetime(df["DOB"], format="%d/%m/%Y")
+        df["AGE_AT_CE"] = collection_start - df["DOB"]
         df_T = df[df["ACCOM"] == "T"]
 
         df_errors = df_T[~(df_T["AGE_AT_CE"] >= np.timedelta64(18, "Y"))]

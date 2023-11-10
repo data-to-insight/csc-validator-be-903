@@ -29,7 +29,7 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "SEX": ["F", "F", "2", "2", 1, 1],
+            "SEX": ["1", "1", "F", "F", 1, 1],
             "MC_DOB": [pd.NA, "19/02/2010", pd.NA, "19/02/2010", pd.NA, "19/02/2010"],
         }
     )
@@ -38,4 +38,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Header": [1]}
+    assert result == {"Header": [3]}

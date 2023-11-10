@@ -19,6 +19,12 @@ def validate(dfs):
     else:
         df = dfs["OC3"]
         collection_end = dfs["metadata"]["collection_end"]
+
+        df["DOB"] = pd.to_datetime(df["DOB"], format="%d/%m/%Y")
+        collection_end = pd.to_datetime(
+            collection_end, format="%d/%m/%Y", errors="coerce"
+        )
+
         df = df.reset_index()
 
         df["AGE_AT_CE"] = collection_end - df["DOB"]
@@ -72,7 +78,6 @@ def test_validate():
         ]
     )
 
-    fake_data["DOB"] = pd.to_datetime(fake_data["DOB"], format="%d/%m/%Y")
     metadata = {"collection_end": pd.to_datetime("01/01/2020", format="%d/%m/%Y")}
 
     fake_dfs = {

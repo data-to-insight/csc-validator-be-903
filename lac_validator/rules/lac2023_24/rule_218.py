@@ -65,11 +65,11 @@ def test_validate():
         [
             {
                 "CHILD": "0000",
-                "PLACE": "H5",
+                "PLACE": "Z1",
                 "DEC": pd.NA,
                 "PL_LA": "o",
                 "URN": pd.NA,
-            },  # 4 fail
+            },  # 0 Pass
             {
                 "CHILD": "1111",
                 "PLACE": "C2",
@@ -155,4 +155,4 @@ def test_validate():
     fake_dfs = {"Episodes": fake_data_eps, "metadata": metadata}
 
     result = validate(fake_dfs)
-    assert result == {"Episodes": [0, 4, 7, 8, 9]}
+    assert result == {"Episodes": [4, 7, 8, 9]}

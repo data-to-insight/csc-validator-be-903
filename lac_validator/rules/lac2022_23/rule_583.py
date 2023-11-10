@@ -15,15 +15,9 @@ def validate(dfs):
     if "PlacedAdoption" not in dfs:
         return {}
     else:
-        # If a child has more than one Na in date_placed_cease, they fail, sending all Na rows as errors
+        # # If a child has more than one Na in date_placed_cease, they fail, sending all Na rows as errors
         df = dfs["PlacedAdoption"]
-        ceased_nans = df[df["DATE_PLACED_CEASED"].isna()]
-        nans_count = ceased_nans["CHILD"].value_counts()
-        too_many_nans_list = list(nans_count[nans_count > 1].index)
-        too_many_nans = ceased_nans[ceased_nans["CHILD"].isin(too_many_nans_list)]
-        too_many_nans_index = list(too_many_nans.index)
 
-        # If a child has an earlier date_placed_ceased Na, they fail even if their total NAs is 1
         df_ordered = df.sort_values("DATE_PLACED", ascending=False)
         df_ordered.drop_duplicates("CHILD", keep="first", inplace=True)
         df_ordered_index = list(df_ordered.index)
@@ -31,8 +25,8 @@ def validate(dfs):
             (~df.index.isin(df_ordered_index)) & df["DATE_PLACED_CEASED"].isna()
         ]
         non_recent_nans = list(df_dropped_recent.index)
+        error_mask = df.index.isin(non_recent_nans)
 
-        error_mask = df.index.isin(too_many_nans_index) | df.index.isin(non_recent_nans)
         return {"PlacedAdoption": df.index[error_mask].to_list()}
 
 
@@ -60,7 +54,7 @@ def test_validate():
                 "CHILD": "child2",
                 "DATE_PLACED": "02/02/2020",
                 "DATE_PLACED_CEASED": pd.NA,
-            },  # 3 fail
+            },  # 3 Pass
             {
                 "CHILD": "child3",
                 "DATE_PLACED": "01/02/2020",
@@ -93,4 +87,4 @@ def test_validate():
 
     fake_dfs = {"PlacedAdoption": fake_data}
 
-    assert validate(fake_dfs) == {"PlacedAdoption": [2, 3, 7]}
+    assert validate(fake_dfs) == {"PlacedAdoption": [2, 7]}

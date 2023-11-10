@@ -95,10 +95,25 @@ def read_from_text(
             f"URN lookup tables were loaded - Please only load a single file in each box."
         )
     elif set(num_of_CH_and_SCP) == {0, 1}:
-        raise UploadError(
-            "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
-            "from Ofsted into their respective boxes above."
-        )
+        if CH_uploaded:
+            # Checks if a single CH list has wrongly been uploaded, or if a single combined SCPCH list has been uploaded
+            combined_scpch = combined_ch_scp_check(CH_uploaded[0])
+            if combined_scpch:
+                logger.info(
+                    f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+                )
+                provider_info_df = scpch_provider_info_table(scpch=CH_uploaded[0])
+                metadata_extras["provider_info"] = provider_info_df
+            else:
+                raise UploadError(
+                    "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+                    "from Ofsted into their respective boxes above."
+                )
+        else:
+            raise UploadError(
+                "Please load both the latest 'Children's Homes' and 'Social Care Providers' lists "
+                "from Ofsted into their respective boxes above."
+            )
     elif set(num_of_CH_and_SCP) == {1}:
         logger.info(
             f"Ofsted CH & SCP spreadsheets received - constructing provider info table. {sc.t}"
@@ -110,11 +125,11 @@ def read_from_text(
         )
         metadata_extras["provider_info"] = provider_info_df
 
-        logger.info(
-            "created providers table. shape:{1} rows, {0}".format(
-                *provider_info_df.shape
-            )
-        )
+        # logger.info(
+        #     "created providers table. shape:{1} rows, {0}".format(
+        #         *provider_info_df.shape
+        #     )
+        # )
         logger.debug(f'{", ".join(provider_info_df.columns)}')
         logger.debug(f"providers dtypes: {provider_info_df.dtypes}")
 
@@ -363,6 +378,101 @@ def construct_provider_info_table(CH: UploadedFile, SCP: UploadedFile):
     return provider_info_df
 
 
+def scpch_provider_info_table(scpch: UploadedFile):
+    """
+    inputs:
+    Combined CH (childrens homes) and SCP (social care providers) lists as the files' contents as passed in by the frontend
+
+    returns:
+    provider_info_df is a dataframe
+    (*) it will be stored in dfs['metadata']['provider_info'] if it has been uploaded
+    (*) if it's not there, then  return {} for rules requiring it
+    (*) the columns will be ['URN', 'PLACE_CODES', 'PROVIDER_CODES', 'REG_END', 'POSTCODE', 'LA_CODE']:
+    (*) all cols will be strings (object dtype) except REG_END which will be datetime
+        - URN:
+            URN of providers/homes, used for merging if there is more htan one list.
+        - PLACE_CODES and PROVIDER_CODES:
+            strings of codes separated by commas: ['PR4', 'PR1,PR2', etc..]
+        - REG_END:
+            date provider should have closed (usually blank) - note its type will already be datetime64
+        - POSTCODE:
+            postcode - upper-cased, spaces removed
+        - LA_CODE_INFERRED and LA_NAME_INFERRED:
+            utla code and utla name - obtained from la_df by matching on provider postcode
+            (!) These may differ from the LA named in the files, either due to formatting, or if they serve
+            different LA to where they are located. Rule descriptions should mention this caveat.
+        - LA_NAME_FROM_FILE
+            LA name from uploaded files.
+    """
+    if not isinstance(scpch, str):
+        if not isinstance(scpch["file_content"], bytes):
+            scpch_bytes = scpch["file_content"].tobytes()
+        else:
+            scpch_bytes = scpch["file_content"]
+    else:
+        scpch_bytes = scpch
+
+    provider_info_cols = [
+        "URN",
+        "LA_NAME_FROM_FILE",
+        "PLACE_CODES",
+        "PROVIDER_CODES",
+        "REG_END",
+        "POSTCODE",
+    ]
+
+    scpch_cols = [
+        "urn",
+        "local authority",
+        "placement code",
+        "placement provider code",
+        "deregistration date",
+        "setting address postcode",
+    ]
+    logger.info(f"URN lookup bytes recieved. Reading excel files... {sc.t}")
+
+    scpch_providers = pd.read_excel(scpch_bytes, engine="openpyxl")
+    scpch_providers.columns = scpch_providers.columns.str.lower()
+    logger.debug(
+        f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"
+    )
+
+    try:
+        scpch_providers = scpch_providers[scpch_cols[:]]
+    except KeyError:
+        raise UploadError(
+            f'Failed to find required columns in Childrens Homes list "Provider information"'
+            f' sheet. Expected: {", ".join(scpch_cols[:])}'
+        )
+    scpch_df = scpch_providers
+    del scpch_providers
+
+    scpch_df["source"] = "Combined SCPCH List"
+    scpch_df["placement provider code"] = scpch_df[
+        "placement provider code"
+    ].str.replace("/", ",")
+    provider_info_df = scpch_df.rename(
+        columns=dict(zip(scpch_cols, provider_info_cols))
+    )
+    del scpch_df
+    logger.info(f"CH dataframe complete. Creating SCP dataframe {sc.t}")
+
+    # standardise postcodes
+    provider_info_df["POSTCODE"] = (
+        provider_info_df["POSTCODE"].str.replace(" ", "").str.upper()
+    )
+
+    # infer LA based on provider's postcode. this does not necessarily match what's in the file!
+    provider_info_df[["LA_CODE_INFERRED", "LA_NAME_INFERRED"]] = (
+        merge_postcodes(provider_info_df, "POSTCODE")
+        .merge(la_df, how="left", left_on="laua", right_on="LTLA21CD")
+        .loc[:, ["UTLA21CD", "UTLA21NM"]]
+    )
+
+    logger.info(f"Provider info dataframe successfully created {sc.t}")
+    return provider_info_df
+
+
 def read_files(files: Union[str, Path]) -> List[UploadedFile]:
     uploaded_files: List[_BufferedUploadedFile] = []
     for filename in files:
@@ -562,3 +672,54 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     names_and_lengths = ", ".join(f"{t}: {len(data[t])} rows" for t in data)
     logger.info(f"Tables created from XML -- {names_and_lengths}")
     return data
+
+
+def combined_ch_scp_check(excel_to_check):
+    """
+    Checks whether the file uploaded to the front end in the Children's home box is a CH list or a combined SPC/CH list.
+    Only runs in instances where the number fo files uploaded in the SCP/CH boxes is one.
+    """
+    if not isinstance(excel_to_check, bytes):
+        CH_bytes = excel_to_check.tobytes()
+    else:
+        CH_bytes = excel_to_check
+    df = pd.read_excel(CH_bytes, engine="openpyxl")
+    df.columns = df.columns.str.lower()
+    if "provider type" not in df.columns:
+        logger.info(
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                    \n and that the column names are correct. {sc.t}"
+        )
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )
+    if (len(df["provider type"]) > 1) & (
+        "Children's Home" in df["provider type"].values
+    ):
+        logger.info(
+            f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+        )
+        return True
+    if (len(df["provider type"]) == 1) & (
+        "Children's Home" in df["provider type"].values
+    ):
+        logger.info(
+            f"'Children's home' list as only CH data file in upload detected. {sc.t}"
+        )
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )
+    else:
+        logger.info(
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                    \n and that the column names are correct. {sc.t}"
+        )
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )

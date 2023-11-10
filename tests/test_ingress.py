@@ -7,6 +7,8 @@ from lac_validator.ingress import (
     read_from_text,
     read_xml_from_text,
     construct_provider_info_table,
+    combined_ch_scp_check,
+    scpch_provider_info_table,
 )
 from lac_validator.types import UploadError, UploadedFile
 
@@ -24,11 +26,55 @@ class Test_read_from_text:
 
     def test_csv_reading(self, mocker):
         read_csv = mocker.patch("lac_validator.ingress.read_csvs_from_text")
+        construct_info = mocker.patch(
+            "lac_validator.ingress.construct_provider_info_table"
+        )
+        combined_scpch_check = mocker.patch(
+            "lac_validator.ingress.combined_ch_scp_check"
+        )
+        scpch_provider_info_table = mocker.patch(
+            "lac_validator.ingress.scpch_provider_info_table"
+        )
+
         files: list[UploadedFile] = [
-            {"name": "header.csv", "file_content": "", "description": ""}
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {"name": "ch_lookup.csv", "file_content": "", "description": "CH lookup"},
+            {"name": "scp_lookup.csv", "file_content": "", "description": "SCP lookup"},
         ]
+
+        head = files[0]
+        ch = files[1]
+        scp = files[2]
+
         read_from_text(files)
-        read_csv.assert_called_once_with(files)
+        read_csv.assert_called_once_with([head])
+        construct_info.assert_called_once_with(CH=ch, SCP=scp)
+
+        # Test ingress for one CH upload to check if it's the combined form
+        files: list[UploadedFile] = [
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {
+                "name": "ch_lookup.csv",
+                "file_content": "test",
+                "description": "CH lookup",
+            },
+        ]
+
+        head = files[0]
+        ch = files[1]
+
+        read_from_text(files)
+        combined_scpch_check.assert_called_once_with(ch)
+        scpch_provider_info_table.assert_called_once_with(scpch=ch)
+
+        # Test ingress for one SCP upload to check if it's the combined form
+        files: list[UploadedFile] = [
+            {"name": "header.csv", "file_content": "", "description": ""},
+            {"name": "scp_lookup.csv", "file_content": "", "description": "SCP lookup"},
+        ]
+
+        with pytest.raises(UploadError):
+            read_from_text(files)
 
     def test_xml_reading(self, mocker):
         read_xml = mocker.patch("lac_validator.ingress.read_xml_from_text")
@@ -102,7 +148,15 @@ def test_construct_provider_info_table(dummy_chscp):
 
     ch = {}
     scp = {}
-    ch["file_content"], scp["file_content"], ch_path_dir, scp_path_dir = dummy_chscp
+    combined = {}
+    (
+        ch["file_content"],
+        scp["file_content"],
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp
 
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
     string_output_columns = output_from_string.columns.to_list()
@@ -112,3 +166,54 @@ def test_construct_provider_info_table(dummy_chscp):
     output_from_file = construct_provider_info_table(ch, scp)
     file_output_columns = output_from_file.columns.to_list()
     assert file_output_columns == expected_columns
+
+
+def test_combined_ch_scp_check(dummy_chscp):
+    ch = {}
+    scp = {}
+    combined = {}
+    (
+        ch["file_content"],
+        scp["file_content"],
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp
+
+    with pytest.raises(UploadError):
+        combined_ch_scp_check(scp["file_content"])
+
+    with pytest.raises(UploadError):
+        combined_ch_scp_check(ch["file_content"])
+
+    combined_outcome = combined_ch_scp_check(combined["file_content"])
+    assert combined_outcome == True
+
+
+def test_scpch_provider_info_table(dummy_chscp):
+    expected_columns = [
+        "URN",
+        "LA_NAME_FROM_FILE",
+        "PLACE_CODES",
+        "PROVIDER_CODES",
+        "REG_END",
+        "POSTCODE",
+        "source",
+        "LA_CODE_INFERRED",
+        "LA_NAME_INFERRED",
+    ]
+
+    combined = {}
+    (
+        ch,
+        scp,
+        ch_path_dir,
+        scp_path_dir,
+        combined_path_dir,
+        combined["file_content"],
+    ) = dummy_chscp
+
+    output = scpch_provider_info_table(combined)
+    output_columns = output.columns.to_list()
+    assert output_columns == expected_columns

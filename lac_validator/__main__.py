@@ -197,13 +197,14 @@ def run_all(filename: str, ruleset, select):
         registry=ruleset_registry,
         selected_rules=None,
     )
+
+    click.echo(v.dfs)
+
     results = v.ds_results
 
-    click.echo(v.ds_results)
-    click.echo(f"skipped {v.skips}")
-    click.echo(f"done: {v.dones}")
-
     r = Report(results, ruleset_registry)
+    full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
+    click.echo(full_issue_df)
 
 
 # XML to tables

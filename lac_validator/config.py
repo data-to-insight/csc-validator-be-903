@@ -59,4 +59,5 @@ column_names = {
     # Note: for PrevPerm, LA_PERM will usually be blank and shouldn't be used directly
     "PrevPerm": ["CHILD", "DOB", "PREV_PERM", "LA_PERM", "DATE_PERM"],
     "Missing": ["CHILD", "DOB", "MISSING", "MIS_START", "MIS_END"],
+    "SW_Episodes": ["CHILD", "DOB", "SW_ID", "SW_DECOM", "SW_DEC", "SW_REASON"],
 }

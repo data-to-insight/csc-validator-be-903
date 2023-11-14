@@ -143,8 +143,8 @@ def run_all(p4a_path, ad1_path, ruleset, select):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2022_23",
-    help="validation year e.g lac2022_23",
+    default="lac2023_24",
+    help="validation year e.g lac2023_24",
 )
 @click.option("--select", "-s", default=None)
 def run_all(filename: str, ruleset, select):
@@ -187,7 +187,7 @@ def run_all(filename: str, ruleset, select):
     files_list = process_uploaded_files(frontend_files_dict)
 
     # the rest of the metadata is added in read_from_text() when instantiating Validator
-    metadata = {"collectionYear": "2022", "localAuthority": "E09000027"}
+    metadata = {"collectionYear": "2023", "localAuthority": "E09000027"}
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
 
@@ -204,7 +204,7 @@ def run_all(filename: str, ruleset, select):
 
     r = Report(results, ruleset_registry)
     full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
-    click.echo(full_issue_df)
+    click.echo(full_issue_df[full_issue_df["tables_affected"] == "SW_Episodes"])
 
 
 # XML to tables

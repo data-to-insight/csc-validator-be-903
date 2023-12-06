@@ -20,9 +20,9 @@ focuses, in particular, on data on looked after children (LAC) and the
 
 The project consists of a number of related pieces of work:
 
-* [Hosted Tool][qlac]
-* [React & Pyodie Front-End][qlac-front-end]
-* [Python Validator Engine & Rules][qlac-engine] [this repo]
+* [Hosted Tool](https://903.datatoinsight.org/)
+* [React & Pyodie Front-End](https://github.com/data-to-insight/csc-validator-fe)
+* [Python Validator Engine & Rules](https://github.com/data-to-insight/csc-validator-be-903) [this repo]
 * [Local Authority Reference Data][qlac-ref-la]
 * [Postcode Reference Data][qlac-ref-pc]
 
@@ -124,6 +124,11 @@ Any XML uploads are converted into CSV form to give the same inputs.
 ```
 ## Yearly rule updates
 Each year, the DfE might release specifications of any rules which have been added, modified or deleted. Expanded guidance on how to incorporate these changes can be found in the [landing page (readme.md file) of the CIN validator repo](https://github.com/data-to-insight/CIN-validator/). The CIN and LAC validators have been refactored to resemble each other as much as possible so their overall documentation applies to both tool backends.
+
+## Publishing backend changes to the frontend live tool
+When bugs are fixed or rules modified, it is necessary to update the tool so that users can have access to the improvements that have been made in the backend. 
+Detailed steps on how to do this are spelt out in the README of the children in need data validator.
+Read about [making changes available to users](https://github.com/data-to-insight/csc-validator-be-cin)
 
 ## Releases
 

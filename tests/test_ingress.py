@@ -178,7 +178,7 @@ def test_combined_ch_scp_check(dummy_chscp):
         ch_path_dir,
         scp_path_dir,
         combined_path_dir,
-        combined,
+        combined["file_content"],
     ) = dummy_chscp
 
     with pytest.raises(UploadError):
@@ -187,7 +187,7 @@ def test_combined_ch_scp_check(dummy_chscp):
     with pytest.raises(UploadError):
         combined_ch_scp_check(ch["file_content"])
 
-    combined_outcome = combined_ch_scp_check(combined)
+    combined_outcome = combined_ch_scp_check(combined["file_content"])
     assert combined_outcome == True
 
 

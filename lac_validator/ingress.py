@@ -680,7 +680,7 @@ def combined_ch_scp_check(excel_to_check):
     Only runs in instances where the number fo files uploaded in the SCP/CH boxes is one.
     """
     if not isinstance(excel_to_check, bytes):
-        CH_bytes = excel_to_check['file_content'].tobytes()
+        CH_bytes = excel_to_check["file_content"].tobytes()
     else:
         CH_bytes = excel_to_check
     df = pd.read_excel(CH_bytes, engine="openpyxl")

@@ -5,7 +5,7 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="174",
-    message="Mother's child date of birth is recorded but gender shows that the child is a male.",
+    message="Mother's child date of birth is recorded but sex shows that the child is a male.",
     affected_fields=["SEX", "MC_DOB"],
 )
 def validate(dfs):
@@ -14,7 +14,7 @@ def validate(dfs):
     else:
         header = dfs["Header"]
 
-        child_is_male = header["SEX"] == "F"
+        child_is_male = header["SEX"] == "M"
         mc_dob_recorded = header["MC_DOB"].notna()
 
         error_mask = child_is_male & mc_dob_recorded
@@ -29,7 +29,7 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "SEX": ["1", "1", "F", "F", 1, 1],
+            "SEX": ["M", "M", "F", "F", "M", "M"],
             "MC_DOB": [pd.NA, "19/02/2010", pd.NA, "19/02/2010", pd.NA, "19/02/2010"],
         }
     )
@@ -38,4 +38,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Header": [3]}
+    assert result == {"Header": [1, 5]}

@@ -23,16 +23,16 @@ def validate(dfs):
         df["index"] = df.index
         pa_last = dfs["PlacedAdoption_last"]
 
-        df = df[
-            (df["DATE_PLACED_CEASED"].notna()) | (df["REASON_PLACED_CEASED"].notna())
+        pa_last = pa_last[
+            (pa_last["DATE_PLACED_CEASED"].notna())
+            | (pa_last["REASON_PLACED_CEASED"].notna())
         ]
         df_merged = df.merge(
-            pa_last, how="left", on="CHILD", suffixes=("_current", "_last")
+            pa_last, how="inner", on="CHILD", suffixes=("_current", "_last")
         )
-        df_merged = df_merged[df_merged["DATE_PLACED_last"].notna()]
         dp_earlier_list = list(
             df_merged[
-                df_merged["DATE_PLACED_current"] < df_merged["DATE_PLACED_last"]
+                df_merged["DATE_PLACED_current"] <= df_merged["DATE_PLACED_last"]
             ].index
         )
 
@@ -78,7 +78,7 @@ def test_validate():
             },  # 3 Pass
             {
                 "CHILD": "child5",
-                "DATE_PLACED": "01/02/2020",
+                "DATE_PLACED": "01/02/2021",
                 "DATE_PLACED_CEASED": "01/02/2021",
                 "REASON_PLACED_CEASED": pd.NA,
             },  # 4 pass
@@ -126,7 +126,7 @@ def test_validate():
             {
                 "CHILD": "child5",
                 "DATE_PLACED": "01/02/2020",
-                "DATE_PLACED_CEASED": "01/02/2020",
+                "DATE_PLACED_CEASED": "02/02/2020",
                 "REASON_PLACED_CEASED": "xx",
             },  # 4
             {
@@ -160,4 +160,4 @@ def test_validate():
 
     fake_dfs = {"PlacedAdoption": fake_data, "PlacedAdoption_last": fake_last}
 
-    assert validate(fake_dfs) == {"PlacedAdoption": [0, 1, 2, 6]}
+    assert validate(fake_dfs) == {"PlacedAdoption": [0, 1, 2, 3, 6]}

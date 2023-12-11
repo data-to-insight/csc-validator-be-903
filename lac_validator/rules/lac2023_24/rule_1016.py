@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="1016",
-    message="If the child ceases to be looked after in the year, but is still looked after on or after their 17th or on their 18th birthday, then information on their activity and accommodation is not required.Please delete the OC3 information.",
+    message="Care leaver information is not required for 17- or 18-year olds who cease to be looked after, after their birthday.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
 )
 def validate(dfs):
@@ -14,23 +14,32 @@ def validate(dfs):
     # and
     # current episode <DEC> is present and after the birthdate then
     # <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
-    if "OC3" not in dfs:
+    if ("OC3" not in dfs) & ("Episodes" not in dfs):
         return {}
     else:
-        df = dfs["OC3"]
+        OC3 = dfs["OC3"]
+        episodes = dfs["Episodes"]
         collection_end = dfs["metadata"]["collection_end"]
 
-        df["DOB"] = pd.to_datetime(df["DOB"], format="%d/%m/%Y")
+        OC3["DOB"] = pd.to_datetime(OC3["DOB"], format="%d/%m/%Y")
         collection_end = pd.to_datetime(
             collection_end, format="%d/%m/%Y", errors="coerce"
         )
 
-        df = df.reset_index()
+        episodes["DEC"] = pd.to_datetime(
+            episodes["DEC"], format="%d/%m/%Y", errors="coerce"
+        )
 
-        df["AGE_AT_CE"] = collection_end - df["DOB"]
-        df_errors = df[
-            (df["AGE_AT_CE"] < np.timedelta64(19, "Y"))
-            & (df["AGE_AT_CE"] >= np.timedelta64(17, "Y"))
+        OC3 = OC3.reset_index()
+
+        OC3["AGE_AT_CE"] = collection_end - OC3["DOB"]
+
+        df_merged = OC3.merge(episodes, on="CHILD", how="left")
+
+        df_errors = df_merged[
+            (df_merged["AGE_AT_CE"] < np.timedelta64(19, "Y"))
+            & (df_merged["AGE_AT_CE"] >= np.timedelta64(17, "Y"))
+            & (df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(17, "Y")))
         ]
 
         df_errors = df_errors[
@@ -75,12 +84,45 @@ def test_validate():
                 "ACTIV": "Y",
                 "ACCOM": "Y",
             },
+            {
+                "CHILD": "child5",
+                "DOB": "01/01/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child6",
+                "DOB": "01/01/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child7",
+                "DOB": "01/01/2002",
+                "IN_TOUCH": pd.NA,
+                "ACTIV": pd.NA,
+                "ACCOM": pd.NA,
+            },
+        ]
+    )
+
+    fake_epi = pd.DataFrame(
+        [
+            {"CHILD": "child1", "DEC": "01/01/2020"},
+            {"CHILD": "child2", "DEC": pd.NA},
+            {"CHILD": "child3", "DEC": pd.NA},
+            {"CHILD": "child4", "DEC": "01/01/2020"},
+            {"CHILD": "child6", "DEC": pd.NA},
+            {"CHILD": "child4", "DEC": pd.NA},
         ]
     )
 
     metadata = {"collection_end": pd.to_datetime("01/01/2020", format="%d/%m/%Y")}
 
     fake_dfs = {
+        "Episodes": fake_epi,
         "OC3": fake_data,
         "metadata": metadata,
     }

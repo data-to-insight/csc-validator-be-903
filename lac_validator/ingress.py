@@ -679,10 +679,23 @@ def combined_ch_scp_check(excel_to_check):
     Checks whether the file uploaded to the front end in the Children's home box is a CH list or a combined SPC/CH list.
     Only runs in instances where the number fo files uploaded in the SCP/CH boxes is one.
     """
-    if not isinstance(excel_to_check, bytes):
-        CH_bytes = excel_to_check["file_content"].tobytes()
-    else:
+    if isinstance(excel_to_check, bytes):
         CH_bytes = excel_to_check
+    elif isinstance(excel_to_check, dict):
+        if isinstance(excel_to_check["file_content"], bytes):
+            CH_bytes = excel_to_check
+        elif not isinstance(excel_to_check["file_content"], bytes):
+            CH_bytes = excel_to_check["file_content"].tobytes()
+    else:
+        logger.info(
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                    \n and that the column names are correct. {sc.t}"
+        )
+        raise UploadError(
+            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+            "but it doesn't appear to be a combined list."
+            "Please upload lists from Ofsted into their respective boxes above."
+        )
     df = pd.read_excel(CH_bytes, engine="openpyxl")
     df.columns = df.columns.str.lower()
     if "provider type" not in df.columns:

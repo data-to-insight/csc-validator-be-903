@@ -5,7 +5,7 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="584",
-    message="If the date of the decision that the child should be placed for adoption in the current year is different to the date of the decision recorded in a previous year, then the decision to place the child for adoption must have changed, either in the current year or the previous year and the date should not be before the date of the earlier decision to place the child for adoption.",
+    message="Date of decision that the child should be placed for adoption this year is different from that recorded last year, but the decision to placed the child for adoption changed and the child should no longer be placed for adoption.",
     affected_fields=["DATE_PLACED"],
 )
 def validate(dfs):

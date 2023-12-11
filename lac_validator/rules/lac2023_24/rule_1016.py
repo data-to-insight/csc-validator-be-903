@@ -36,6 +36,8 @@ def validate(dfs):
 
         df_merged = OC3.merge(episodes, on="CHILD", how="left")
 
+        # Fails rows where the child is between 19 and 17 at the end of a return,
+        # and their DEC is after their 17th birthday
         df_errors = df_merged[
             (df_merged["AGE_AT_CE"] < np.timedelta64(19, "Y"))
             & (df_merged["AGE_AT_CE"] >= np.timedelta64(17, "Y"))

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "csc-validator-be-903"
-version = "0.1.0"
+version = "0.1.3"
 description = "Shared module for validating SSDA903 census data using DfE rules."
 authors = ["Michael Ogunkolade <michael.ogunkolade@socialfinance.org.uk>", "Kaj Siebert <kaj.siebert@socialfinance.org.uk>", "Tambe Tabitha Achere <tambe.tabitha@socialfinance.org.uk>", "Mark Waddoups <mark.waddoups@socialfinance.org.uk>", "DatatoInsight's children's social care analyst community <datatoinsight.enquiries@gmail.com>"]
 repository = "https://github.com/data-to-insight/csc-validator-be-903"

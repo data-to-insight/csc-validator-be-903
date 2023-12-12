@@ -204,7 +204,7 @@ def run_all(filename: str, ruleset, select):
 
     r = Report(results, ruleset_registry)
     full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
-    click.echo(full_issue_df[full_issue_df["tables_affected"] == "SW_Episodes"])
+    click.echo(full_issue_df)
 
 
 # XML to tables

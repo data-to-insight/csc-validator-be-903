@@ -75,7 +75,7 @@ def test_validate():
                 "DATE_PLACED": "01/02/2020",
                 "DATE_PLACED_CEASED": pd.NA,
                 "REASON_PLACED_CEASED": pd.NA,
-            }, 
+            },
             {
                 "CHILD": "child5",
                 "DATE_PLACED": "01/02/2021",

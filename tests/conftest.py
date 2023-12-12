@@ -21,7 +21,7 @@ def dummy_input_files():
         "placed_for_adoption.csv": "PlacedAdoption",
         "previous_permanence.csv": "PrevPerm",
         "missing.csv": "Missing",
-        "sw_episodes.csv": "SW_Episodes",
+        "sw_episodes.csv": "SWEpisodes",
     }
 
 

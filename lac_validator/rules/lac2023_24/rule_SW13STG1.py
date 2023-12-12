@@ -9,10 +9,10 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=["SW_REASON"],
 )
 def validate(dfs):
-    if "SW_Episodes" not in dfs:
+    if "SWEpisodes" not in dfs:
         return {}
     else:
-        df = dfs["SW_Episodes"]
+        df = dfs["SWEpisodes"]
 
         valid_reasons = [
             "MANAGE",
@@ -29,7 +29,7 @@ def validate(dfs):
 
         error_rows = df[~df["SW_REASON"].isin(valid_reasons)].index
 
-        return {"SW_Episodes": error_rows.tolist()}
+        return {"SWEpisodes": error_rows.tolist()}
 
 
 def test_validate():
@@ -41,8 +41,8 @@ def test_validate():
         }
     )
 
-    fake_dfs = {"SW_Episodes": fake_data}
+    fake_dfs = {"SWEpisodes": fake_data}
 
     result = validate(fake_dfs)
 
-    assert result == {"SW_Episodes": [0, 2]}
+    assert result == {"SWEpisodes": [0, 2]}

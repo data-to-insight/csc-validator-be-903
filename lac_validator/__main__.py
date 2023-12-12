@@ -137,6 +137,76 @@ def run_all(p4a_path, ad1_path, ruleset, select):
     # click.echo(full_issue_df)
 
 
+# RUN
+@cli.command(name="run-offline")
+@click.argument("filename", required=True)
+@click.option(
+    "--ruleset",
+    "-r",
+    default="lac2023_24",
+    help="validation year e.g lac2023_24",
+)
+@click.option("--select", "-s", default=None)
+def run_all(filename: str, ruleset, select):
+    """
+    CLI command to run the validator offline, primarily to test ingress
+
+    CLI command:
+    python -m lac_validator run-offline <filepath_>
+
+    :param str ruleset: validation year.
+    :param str select: code of specific rule that should be run.
+    """
+    ad1 = f"{filename}/ad1.csv"
+    episodes = f"{filename}/episodes.csv"
+    header = f"{filename}/header.csv"
+    missing = f"{filename}/missing.csv"
+    oc2 = f"{filename}/oc2.csv"
+    oc3 = f"{filename}/oc3.csv"
+    p4a = f"{filename}/placed_for_adoption_errors.csv"
+    previous_permanence = f"{filename}/previous_permanence.csv"
+    reviews = f"{filename}/reviews.csv"
+    uasc = f"{filename}/uasc.csv"
+    sw_episodes = f"{filename}/sw_episodes.csv"
+
+    frontend_files_dict = {
+        "This year": [
+            ad1,
+            episodes,
+            header,
+            missing,
+            oc2,
+            oc3,
+            p4a,
+            previous_permanence,
+            reviews,
+            uasc,
+            sw_episodes,
+        ]
+    }
+    files_list = process_uploaded_files(frontend_files_dict)
+
+    # the rest of the metadata is added in read_from_text() when instantiating Validator
+    metadata = {"collectionYear": "2023", "localAuthority": "E09000027"}
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
+
+    v = lac_validator.LacValidator(
+        metadata=metadata,
+        files=files_list,
+        registry=ruleset_registry,
+        selected_rules=None,
+    )
+
+    click.echo(v.dfs)
+
+    results = v.ds_results
+
+    r = Report(results, ruleset_registry)
+    full_issue_df = lac_validator.create_issue_df(r.report, r.error_report)
+    click.echo(full_issue_df)
+
+
 # XML to tables
 @cli.command(name="xmltocsv")
 @click.argument("p4a_path", type=click.File("rt"), required=True)

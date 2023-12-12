@@ -21,10 +21,10 @@ def validate(dfs):
         df = df.reset_index()
 
         df["DOB"] = pd.to_datetime(df["DOB"], format="%d/%m/%Y")
-        df["AGE_AT_CE"] = collection_start - df["DOB"]
+        df["AGE_AT_CS"] = collection_start - df["DOB"]
         df_T = df[df["ACCOM"] == "T"]
 
-        df_errors = df_T[~(df_T["AGE_AT_CE"] >= np.timedelta64(18, "Y"))]
+        df_errors = df_T[(df_T["AGE_AT_CS"] < np.timedelta64(18, "Y"))]
 
         return {"OC3": df_errors["index"].tolist()}
 
@@ -57,16 +57,23 @@ def test_validate():
             },  # 2 Pass over 18
             {
                 "CHILD": "child4",
-                "DOB": "01/01/2002",
+                "DOB": "02/04/2002",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "T",
-            },  # Fail, under 18, accom = T
+            },  # Fail, under 18 before collection start, accom = T
+            {
+                "CHILD": "child5",
+                "DOB": "01/04/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "T",
+            },  # Pass, 18 day of collection start
         ]
     )
 
     fake_data["DOB"] = pd.to_datetime(fake_data["DOB"], format="%d/%m/%Y")
-    metadata = {"collection_start": pd.to_datetime("01/01/2020", format="%d/%m/%Y")}
+    metadata = {"collection_start": pd.to_datetime("01/04/2020", format="%d/%m/%Y")}
 
     fake_dfs = {
         "OC3": fake_data,

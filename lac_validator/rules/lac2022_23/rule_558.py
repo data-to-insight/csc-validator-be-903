@@ -34,11 +34,13 @@ def validate(dfs):
 
         episodes_not_null = merged[~(merged["CHILD"].isin(children_with_null))]
 
-        episodes_not_null["COUNT"] = episodes_not_null.groupby(
+        not_null = episodes_not_null.copy()
+        
+        not_null["COUNT"] = episodes_not_null.groupby(
             ["CHILD"], group_keys=False
         )["DATE_PLACED_CEASED"].transform("count")
 
-        episodes_with_errors = episodes_not_null[episodes_not_null["COUNT"] > 1]
+        episodes_with_errors = not_null[not_null["COUNT"] > 1]
 
         error_mask = episodes.index.isin(episodes_with_errors.index)
 

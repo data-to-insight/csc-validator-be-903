@@ -61,21 +61,21 @@ def test_validate():
             {
                 "CHILD": "child2",
                 "DATE_PLACED": "01/02/2020",
-                "DATE_PLACED_CEASED": pd.NA,
+                "DATE_PLACED_CEASED": "01/02/2021",
                 "REASON_PLACED_CEASED": "xx",
             },  # 1 Fail, test DPC null
             {
                 "CHILD": "child3",
                 "DATE_PLACED": "01/02/2020",
                 "DATE_PLACED_CEASED": "01/02/2020",
-                "REASON_PLACED_CEASED": pd.NA,
+                "REASON_PLACED_CEASED": "xx",
             },  # 2 Fail, test RPC null
             {
                 "CHILD": "child4",
                 "DATE_PLACED": "01/02/2020",
                 "DATE_PLACED_CEASED": pd.NA,
                 "REASON_PLACED_CEASED": pd.NA,
-            },  # 3 Pass
+            }, 
             {
                 "CHILD": "child5",
                 "DATE_PLACED": "01/02/2021",
@@ -108,14 +108,14 @@ def test_validate():
             {
                 "CHILD": "child2",
                 "DATE_PLACED": "01/02/2021",
-                "DATE_PLACED_CEASED": "01/02/2021",
+                "DATE_PLACED_CEASED": pd.NA,
                 "REASON_PLACED_CEASED": "xx",
             },  # 1
             {
                 "CHILD": "child3",
                 "DATE_PLACED": "01/02/2021",
                 "DATE_PLACED_CEASED": "01/02/2021",
-                "REASON_PLACED_CEASED": "xx",
+                "REASON_PLACED_CEASED": pd.NA,
             },  # 2
             {
                 "CHILD": "child4",

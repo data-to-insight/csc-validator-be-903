@@ -71,8 +71,8 @@ def create_datastore(data: Dict[str, Any], metadata: Dict[str, Any]):
 
 def _process_metadata(metadata):
     collection_year = int(metadata["collectionYear"][:4])
-    metadata["collection_start"] = f"01/04/{collection_year}"
-    metadata["collection_end"] = f"31/03/{collection_year + 1}"
+    metadata["collection_start"] = f"01/04/{collection_year - 1}"
+    metadata["collection_end"] = f"31/03/{collection_year}"
     return metadata
 
 

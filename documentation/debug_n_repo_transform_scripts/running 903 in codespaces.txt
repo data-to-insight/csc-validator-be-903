@@ -6,3 +6,7 @@ ctrl+shift+p rebuild container
 in the terminal poetry install
 then poetry shell (starts poetry virtual environment)
 You should now have access to the CLI
+
+to run tests (not on rules): poetry run coverage run --data-file='.coverage.framework' -m pytest
+
+NOTE gitignore includes xlsx so any excel files you use in codespaces will NOT be pushed to github

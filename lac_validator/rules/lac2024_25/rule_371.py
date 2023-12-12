@@ -28,7 +28,7 @@ def test_validate():
                 "15/03/2016",
                 "14/03/2016",
             ],
-            "PLACE": ["K3", "P2", "P2", "K3", "K3", "K3"],  # 14bd    #day before 14bd
+            "PLACE": ["K3", "P2", "P2", "K3", "K3", "K3"],  # 16bd    #day before 16bd
             "DEC": [
                 "13/02/2022",
                 "14/03/2022",

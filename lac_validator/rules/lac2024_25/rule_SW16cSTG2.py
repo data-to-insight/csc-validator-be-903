@@ -36,7 +36,7 @@ def validate(dfs):
         merged_df = no_prev_dec.merge(
             current_ordered, on="CHILD", how="left", suffixes=("_current", "_prev")
         )
-        print(merged_df[["CHILD", "SW_REASON_current", "SW_REASON_prev"]])
+        
         error_merged = merged_df[
             merged_df["SW_REASON_current"] != merged_df["SW_REASON_prev"]
         ]

@@ -9,7 +9,7 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=["SW_DECOM"],
 )
 def validate(dfs):
-    if ("SWEpisodes" not in dfs) & ("SWEpisodes_last" not in dfs):
+    if ("SWEpisodes" not in dfs) | ("SWEpisodes_last" not in dfs):
         return {}
     else:
         SWE = dfs["SWEpisodes"]

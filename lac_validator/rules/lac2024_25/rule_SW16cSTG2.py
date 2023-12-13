@@ -49,19 +49,6 @@ def validate(dfs):
 def test_validate():
     import pandas as pd
 
-    # valid_reasons = [
-    #         "MANAGE",
-    #         "FCONTA",
-    #         "LEFTRL",
-    #         "ORGRST",
-    #         "TSPROC",
-    #         "ABSENC",
-    #         "CHCHAN",
-    #         "PCCHAN",
-    #         "SWDIED",
-    #         "OTHERS",
-    #     ]
-
     fake_SWE_last = pd.DataFrame(
         [
             {

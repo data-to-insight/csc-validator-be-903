@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="SW16cSTG2",
     message="The social worker reason episode changed does not match the open episode at the end of last year.",
-    affected_fields=["SW_REASON", "SW_DEC"],
+    affected_fields=["SW_REASON"],
 )
 def validate(dfs):
     if ("SWEpisodes" not in dfs) & ("SWEpisodes_last" not in dfs):

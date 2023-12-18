@@ -26,7 +26,9 @@ def test_validate():
         [
             {"CHILD": "1", "SW_DEC": "01/01/2000", "SW_DECOM": "01/01/2000"},  # fail
             {"CHILD": "1", "SW_DEC": "01/01/2000", "SW_DECOM": "02/01/2000"},
-            {"CHILD": "2", "SW_DEC": "01/01/1901", "SW_DECOM": "01/01/1901"},
+            {"CHILD": "2", "SW_DEC": "01/01/1901", "SW_DECOM": "01/01/1901"},  # fail
+            {"CHILD": "2", "SW_DEC": "01/01/1901", "SW_DECOM": pd.NA},
+            {"CHILD": "3", "SW_DEC": pd.NA, "SW_DECOM": pd.NA},
         ]
     )
 

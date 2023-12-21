@@ -683,7 +683,7 @@ def combined_ch_scp_check(excel_to_check):
         CH_bytes = excel_to_check
     elif isinstance(excel_to_check, dict):
         if isinstance(excel_to_check["file_content"], bytes):
-            CH_bytes = excel_to_check
+            CH_bytes = excel_to_check["file_content"]
         elif not isinstance(excel_to_check["file_content"], bytes):
             CH_bytes = excel_to_check["file_content"].tobytes()
     else:

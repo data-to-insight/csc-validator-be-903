@@ -5,10 +5,12 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="558",
-    message="If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank. if the REC code is either E11 or E12 then the DATE PLACED CEASED date should not be provided",
+    message="If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank.",
     affected_fields=["DATE_PLACED_CEASED", "REC"],
 )
 def validate(dfs):
+    # If latest episode <REC> = ‘E11’ or ‘E12’ then if number of <DATE_PLACED_CEASED> in the year is > 1 then latest
+    # <DATE_PLACED_CEASED> must be   NULL
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:
         return {}
     else:
@@ -25,7 +27,20 @@ def validate(dfs):
             "index"
         )
 
-        episodes_with_errors = merged[merged["DATE_PLACED_CEASED"].notna()]
+        # List of children who have null dates to be excluded (assumes the null is their most recent)
+        children_with_null = merged[(merged["DATE_PLACED_CEASED"].isna())][
+            "CHILD"
+        ].tolist()
+
+        episodes_not_null = merged[~(merged["CHILD"].isin(children_with_null))]
+
+        not_null = episodes_not_null.copy()
+
+        not_null["COUNT"] = episodes_not_null.groupby(["CHILD"], group_keys=False)[
+            "DATE_PLACED_CEASED"
+        ].transform("count")
+
+        episodes_with_errors = not_null[not_null["COUNT"] > 1]
 
         error_mask = episodes.index.isin(episodes_with_errors.index)
 
@@ -39,22 +54,65 @@ def test_validate():
 
     fake_data_episodes = pd.DataFrame(
         {
-            "CHILD": ["0", "A", "B", "C", "D", "E", "F", "G", "H", "I"],
-            "REC": ["x", "E11", "E12", "E11", "E12", "E11", "E12", "E11", "E11", "A3"],
+            "CHILD": [
+                "0",
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+            ],
+            "REC": [
+                "x",
+                "E11",
+                "E12",
+                "E11",
+                "E12",
+                "E11",
+                "E12",
+                "E11",
+                "E11",
+                "E12",
+            ],
         }
     )
     fake_data_placed_adoption = pd.DataFrame(
         {
-            "CHILD": ["A", "B", "C", "D", "E", "F", "G", "H"],
+            "CHILD": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "D",
+                "E",
+                "I",
+                "I",
+                "I",
+                "I",
+            ],
             "DATE_PLACED_CEASED": [
                 pd.NA,
                 pd.NA,
                 pd.NA,
-                pd.NA,
+                "01/01/2020",
+                "01/01/2020",
                 "01/01/2020",
                 "15/04/2020",
                 pd.NA,
                 "28th Jan 1930",
+                "02/01/1930",
+                "01/01/1930",
+                "01/01/1930",
+                "02/01/1930",
+                pd.NA,
             ],
         }
     )
@@ -66,4 +124,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [5, 6, 8]}
+    assert result == {"Episodes": [4, 5]}

@@ -21,6 +21,7 @@ def dummy_input_files():
         "placed_for_adoption.csv": "PlacedAdoption",
         "previous_permanence.csv": "PrevPerm",
         "missing.csv": "Missing",
+        "sw_episodes.csv": "SWEpisodes",
     }
 
 
@@ -75,6 +76,17 @@ def dummy_chscp():
 
     fake_ch_dir = os.path.join(os.path.dirname(__file__), "fake_data", "ch_fake.xlsx")
     fake_scp_dir = os.path.join(os.path.dirname(__file__), "fake_data", "scp_fake.xlsx")
+    combined_fake_dir = os.path.join(
+        os.path.dirname(__file__), "fake_data", "combined_scp_ch_fake.xlsx"
+    )
     dummy_ch = read_file(fake_ch_dir)
     dummy_scp = read_file(fake_scp_dir)
-    return dummy_ch, dummy_scp, fake_ch_dir, fake_scp_dir
+    dummy_combined = read_file(combined_fake_dir)
+    return (
+        dummy_ch,
+        dummy_scp,
+        fake_ch_dir,
+        fake_scp_dir,
+        combined_fake_dir,
+        dummy_combined,
+    )

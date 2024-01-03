@@ -23,7 +23,7 @@ def validate(dfs):
         # DfE states children are <CLA_AT_31_MARCH> when
         # <DEC> of the current episode is null and <LS> not = ‘V3’, ‘V4’
         looked_after_31_mar = episodes[
-            (episodes["DEC"].isna()) & ~(episodes["LA"].isin(["V3", "V4"]))
+            (episodes["DEC"].isna()) & ~(episodes["LS"].isin(["V3", "V4"]))
         ]
 
         merged_df = looked_after_31_mar.merge(SWE, on="CHILD", how="left")
@@ -45,10 +45,12 @@ def test_validate():
 
     fake_epi = pd.DataFrame(
         [
-            {"CHILD": "child1", "DEC": pd.NA, "LA": "xx"},
-            {"CHILD": "child2", "DEC": pd.NA, "LA": "xx"},
-            {"CHILD": "child3", "DEC": pd.NA, "LA": "xx"},
-            {"CHILD": "child4", "DEC": pd.NA, "LA": "xx"},
+            {"CHILD": "child1", "DEC": pd.NA, "LS": "xx"},
+            {"CHILD": "child2", "DEC": pd.NA, "LS": "xx"},
+            {"CHILD": "child3", "DEC": pd.NA, "LS": "xx"},
+            {"CHILD": "child4", "DEC": pd.NA, "LS": "xx"},
+            {"CHILD": "child5", "DEC": "01/01/2000", "LS": "xx"},
+            {"CHILD": "child6", "DEC": pd.NA, "LS": "V4"},
         ]
     )
 
@@ -58,6 +60,9 @@ def test_validate():
             {"CHILD": "child2", "SW_ID": "xx", "SW_DECOM": pd.NA, "SW_REASON": "xx"},
             {"CHILD": "child3", "SW_ID": "xx", "SW_DECOM": "xx", "SW_REASON": pd.NA},
             {"CHILD": "child4", "SW_ID": "xx", "SW_DECOM": "xx", "SW_REASON": "xx"},
+            {"CHILD": "child5", "SW_ID": "xx", "SW_DECOM": "xx", "SW_REASON": pd.NA},
+            {"CHILD": "child6", "SW_ID": "xx", "SW_DECOM": "xx", "SW_REASON": pd.NA},
+            {"CHILD": "child7", "SW_ID": "xx", "SW_DECOM": "xx", "SW_REASON": pd.NA},
         ]
     )
 

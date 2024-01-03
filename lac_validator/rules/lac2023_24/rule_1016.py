@@ -14,7 +14,7 @@ def validate(dfs):
     # and
     # current episode <DEC> is present and after the birthdate then
     # <IN_TOUCH>, <ACTIV> and <ACCOM> should not be provided
-    if ("OC3" not in dfs) & ("Episodes" not in dfs):
+    if ("OC3" not in dfs) | ("Episodes" not in dfs):
         return {}
     else:
         OC3 = dfs["OC3"]
@@ -34,7 +34,7 @@ def validate(dfs):
 
         OC3["AGE_AT_CE"] = collection_end - OC3["DOB"]
 
-        df_merged = OC3.merge(episodes, on="CHILD", how="left")
+        df_merged = OC3.merge(episodes, on="CHILD", how="inner")
 
         # Fails rows where the child is between 19 and 17 at the end of a return,
         # and their DEC is after their 17th birthday

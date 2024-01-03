@@ -2,6 +2,7 @@ import pandas as pd
 
 from lac_validator.rule_engine import rule_definition
 
+
 @rule_definition(
     code="SW04STG1",
     message="Date social worker episode began is not a valid date..",
@@ -12,9 +13,12 @@ def validate(dfs):
         return {}
     else:
         import lac_validator.rules.rule_utils
+
         df = dfs["SWEpisodes"]
 
-        df["SW_DECOM_dt"] = df["SW_DECOM"].apply(lac_validator.rules.rule_utils.valid_date)
+        df["SW_DECOM_dt"] = df["SW_DECOM"].apply(
+            lac_validator.rules.rule_utils.valid_date
+        )
 
         error_rows = df[df["SW_DECOM_dt"].isna()].index
 

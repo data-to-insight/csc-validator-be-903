@@ -13,6 +13,7 @@ def validate(dfs):
         return {}
     else:
         import lac_validator.rules.rule_utils
+
         # function to check that date is of the right format
 
         episodes = dfs["Episodes"]
@@ -22,8 +23,10 @@ def validate(dfs):
         episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(lac_validator.rules.rule_utils.valid_date)
-        
+        prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(
+            lac_validator.rules.rule_utils.valid_date
+        )
+
         # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOMs doesn't affect the rule logic.
         decom_only_eps = episodes[["CHILD", "DECOM"]].dropna()
 
@@ -40,8 +43,7 @@ def validate(dfs):
 
         # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by ZZ if part of the date element is not known.
         mask = (merged["DATE_PERM_dt"] >= merged["DECOM"]) | (
-            merged["DATE_PERM"].notna()
-            & merged["DATE_PERM_dt"].isna()
+            merged["DATE_PERM"].notna() & merged["DATE_PERM_dt"].isna()
         )
 
         # error locations

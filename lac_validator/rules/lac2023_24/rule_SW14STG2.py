@@ -15,7 +15,9 @@ def validate(dfs):
         df = dfs["SWEpisodes"]
 
         df["SW_DEC"] = pd.to_datetime(df["SW_DEC"], format="%d/%m/%Y", errors="coerce")
-        df["SW_DEC"] = pd.to_datetime(df["SW_DEC"], format="%d/%m/%Y", errors="coerce")
+        df["SW_DECOM"] = pd.to_datetime(
+            df["SW_DECOM"], format="%d/%m/%Y", errors="coerce"
+        )
 
         df["index"] = df.index
 

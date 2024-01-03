@@ -9,15 +9,13 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=["SW_ID", "SW_DECOM", "SW_REASON"],
 )
 def validate(dfs):
-    if ("SWEpisodes" not in dfs):
+    if "SWEpisodes" not in dfs:
         return {}
     else:
         SWE = dfs["SWEpisodes"]
 
         error_df = SWE[
-            SWE["SW_ID"].isna()
-            | SWE["SW_DECOM"].isna()
-            | SWE["SW_REASON"].isna()
+            SWE["SW_ID"].isna() | SWE["SW_DECOM"].isna() | SWE["SW_REASON"].isna()
         ]
 
         error_rows = error_df.index

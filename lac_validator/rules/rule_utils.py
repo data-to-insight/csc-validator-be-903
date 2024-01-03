@@ -73,7 +73,8 @@ def field_different_from_previous(dfs, field):
         err_list = merged_co["index"][err_mask].unique().tolist()
         err_list.sort()
         return {"Episodes": err_list}
-    
+
+
 def valid_date(dte):
     try:
         lst = dte.split("/")

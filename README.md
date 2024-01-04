@@ -101,6 +101,7 @@ Any XML uploads are converted into CSV form to give the same inputs.
     'PlacedAdoption':  # Placed for adoption dataframe
     'PrevPerm': # Previous permanence dataframe
     'Missing':  # Missing dataframe
+    'SWEpisodes': # Social Worker Episodes dataframe (new from 2023/24 return) 
     # Last years data
     'Header_last':   # header dataframe
     'Episodes_last': # episodes dataframe
@@ -112,6 +113,7 @@ Any XML uploads are converted into CSV form to give the same inputs.
     'PlacedAdoption_last':  # Placed for adoption dataframe
     'PrevPerm_last': # Previous permanence dataframe
     'Missing_last':  # Missing dataframe
+    'SWEpisodes_last': # Social Worker Episodes dataframe (new from 2023/24 return)
     # Metadata
     'metadata': {
         'collection_start': # A datetime with the collection start date (year/4/1)

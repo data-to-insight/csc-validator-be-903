@@ -38,10 +38,13 @@ def validate(dfs):
 
         # Fails rows where the child is between 19 and 17 at the end of a return,
         # and their DEC is after their 17th birthday
+        condition_17 = df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(17, "Y"))
+        condition_18 = df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(18, "Y"))
+
         df_errors = df_merged[
             (df_merged["AGE_AT_CE"] < np.timedelta64(19, "Y"))
             & (df_merged["AGE_AT_CE"] >= np.timedelta64(17, "Y"))
-            & (df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(17, "Y")))
+            & (condition_17 | condition_18)
         ]
 
         df_errors = df_errors[
@@ -60,7 +63,7 @@ def test_validate():
         [
             {
                 "CHILD": "child1",
-                "DOB": "01/01/2001",
+                "DOB": "31/03/2002",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
@@ -107,21 +110,45 @@ def test_validate():
                 "ACTIV": pd.NA,
                 "ACCOM": pd.NA,
             },
+            {
+                "CHILD": "child8",
+                "DOB": "01/09/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child9",
+                "DOB": "01/09/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child10",
+                "DOB": "01/09/2001",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
         ]
     )
 
     fake_epi = pd.DataFrame(
         [
-            {"CHILD": "child1", "DEC": "01/01/2020"},
+            {"CHILD": "child1", "DEC": "31/03/2020"},
             {"CHILD": "child2", "DEC": pd.NA},
             {"CHILD": "child3", "DEC": pd.NA},
             {"CHILD": "child4", "DEC": "01/01/2020"},
             {"CHILD": "child6", "DEC": pd.NA},
             {"CHILD": "child4", "DEC": pd.NA},
+            {"CHILD": "child8", "DEC": "31/08/20020"},
+            {"CHILD": "child9", "DEC": "02/09/2020"},
+            {"CHILD": "child10", "DEC": "02/09/2020"},
         ]
     )
 
-    metadata = {"collection_end": pd.to_datetime("01/01/2020", format="%d/%m/%Y")}
+    metadata = {"collection_end": pd.to_datetime("31/03/2020", format="%d/%m/%Y")}
 
     fake_dfs = {
         "Episodes": fake_epi,
@@ -131,4 +158,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"OC3": [0, 3]}
+    assert result == {"OC3": [0, 3, 8, 9]}

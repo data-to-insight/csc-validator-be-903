@@ -51,6 +51,7 @@ def test_validate():
             {"CHILD": "child4", "DEC": pd.NA, "LS": "xx"},
             {"CHILD": "child5", "DEC": "01/01/2000", "LS": "xx"},
             {"CHILD": "child6", "DEC": pd.NA, "LS": "V4"},
+            {"CHILD": "child8", "DEC": pd.NA, "LS": "xx"},
         ]
     )
 
@@ -70,4 +71,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"SWEpisodes": [0, 1, 2]}
+    assert result == {"SWEpisodes": [0, 1, 2, 6]}

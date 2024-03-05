@@ -38,13 +38,25 @@ def validate(dfs):
 
         # Fails rows where the child is between 19 and 17 at the end of a return,
         # and their DEC is after their 17th birthday
-        condition_17 = df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(17, "Y"))
-        condition_18 = df_merged["DEC"] >= (df_merged["DOB"] + np.timedelta64(18, "Y"))
+        df_merged['age at dec'] = (df_merged['DEC'] - df_merged['DOB']) / np.timedelta64(1, "Y")
+    
+        condition_17 = df_merged["DEC"] >= (df_merged["DOB"] + pd.offsets.DateOffset(years=17))
+        condition_18 = df_merged["DEC"] >= (df_merged["DOB"] + pd.offsets.DateOffset(years=18))
+        print(df_merged)
+        print(df_merged[condition_18])
 
         df_errors = df_merged[
-            (df_merged["AGE_AT_CE"] < np.timedelta64(19, "Y"))
-            & (df_merged["AGE_AT_CE"] >= np.timedelta64(17, "Y"))
-            & (condition_17 | condition_18)
+            (
+                (df_merged["AGE_AT_CE"] >= np.timedelta64(17, "Y")) & 
+                 (df_merged["AGE_AT_CE"] < np.timedelta64(18, "Y"))  & 
+                 condition_17
+                 )
+            | (
+                (df_merged["AGE_AT_CE"] >= np.timedelta64(18, "Y")) & 
+                 (df_merged["AGE_AT_CE"] < np.timedelta64(19, "Y")) & 
+                 condition_18
+                 )
+            
         ]
 
         df_errors = df_errors[
@@ -69,14 +81,14 @@ def test_validate():
                 "ACCOM": "Y",
             },
             {
-                "CHILD": "child2",
+                "CHILD": "child2", 
                 "DOB": "01/01/2001",
                 "IN_TOUCH": pd.NA,
                 "ACTIV": pd.NA,
                 "ACCOM": pd.NA,
             },
             {
-                "CHILD": "child3",
+                "CHILD": "child3", 
                 "DOB": "01/01/2000",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
@@ -112,21 +124,21 @@ def test_validate():
             },
             {
                 "CHILD": "child8",
-                "DOB": "01/09/2002",
+                "DOB": "31/03/2002",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
             },
             {
                 "CHILD": "child9",
-                "DOB": "01/09/2002",
+                "DOB": "01/04/2002",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
             },
             {
                 "CHILD": "child10",
-                "DOB": "01/09/2001",
+                "DOB": "01/04/2001",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
@@ -136,15 +148,15 @@ def test_validate():
 
     fake_epi = pd.DataFrame(
         [
-            {"CHILD": "child1", "DEC": "31/03/2020"},
-            {"CHILD": "child2", "DEC": pd.NA},
-            {"CHILD": "child3", "DEC": pd.NA},
-            {"CHILD": "child4", "DEC": "01/01/2020"},
-            {"CHILD": "child6", "DEC": pd.NA},
-            {"CHILD": "child4", "DEC": pd.NA},
-            {"CHILD": "child8", "DEC": "31/08/20020"},
-            {"CHILD": "child9", "DEC": "02/09/2020"},
-            {"CHILD": "child10", "DEC": "02/09/2020"},
+            {"CHILD": "child1", "DEC": "31/03/2020"}, # 18 within collection year and BDAY on DEC,  FAIL
+            {"CHILD": "child2", "DEC": pd.NA}, # Pass no DEC
+            {"CHILD": "child3", "DEC": pd.NA}, # Pass no DEC
+            {"CHILD": "child4", "DEC": "01/01/2020"}, # Born 01/01/2002, 18 before DEC, FAIL
+            {"CHILD": "child6", "DEC": pd.NA}, # Pass no DEC
+            {"CHILD": "child4", "DEC": pd.NA}, # Pass no DEC
+            {"CHILD": "child8", "DEC": "30/03/2020"}, # Born 31/03/2002, within collection year 18 & DEC, but  DEC before BDAY, PASS
+            {"CHILD": "child9", "DEC": "02/04/2019"}, # Born 01/04/2002, within collection birthday 17 & DEC before BDAY, FAIL
+            {"CHILD": "child10", "DEC": "02/04/2019"}, # Born 01/04/2001, within collection birthday 18 & DEC before BDAY, FAIL
         ]
     )
 

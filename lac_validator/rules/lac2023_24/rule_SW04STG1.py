@@ -20,7 +20,7 @@ def validate(dfs):
             lac_validator.rules.rule_utils.valid_date
         )
 
-        error_rows = df[df["SW_DECOM_dt"].isna()].index
+        error_rows = df[(df["SW_DECOM_dt"].isna()) & (~df["SW_DECOM"].isna())].index
 
         return {"SWEpisodes": error_rows.tolist()}
 
@@ -38,4 +38,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"SWEpisodes": [2, 4]}
+    assert result == {"SWEpisodes": [2]}

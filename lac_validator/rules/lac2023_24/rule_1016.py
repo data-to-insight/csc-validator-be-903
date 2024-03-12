@@ -85,63 +85,77 @@ def test_validate():
             },
             {
                 "CHILD": "child2",
-                "DOB": "01/01/2001",
-                "IN_TOUCH": pd.NA,
-                "ACTIV": pd.NA,
-                "ACCOM": pd.NA,
-            },
-            {
-                "CHILD": "child3",
-                "DOB": "01/01/2000",
-                "IN_TOUCH": "Y",
-                "ACTIV": "Y",
-                "ACCOM": "Y",
-            },
-            {
-                "CHILD": "child4",
-                "DOB": "01/01/2002",
-                "IN_TOUCH": "Y",
-                "ACTIV": "Y",
-                "ACCOM": "Y",
-            },
-            {
-                "CHILD": "child5",
-                "DOB": "01/01/2002",
-                "IN_TOUCH": "Y",
-                "ACTIV": "Y",
-                "ACCOM": "Y",
-            },
-            {
-                "CHILD": "child6",
-                "DOB": "01/01/2002",
-                "IN_TOUCH": "Y",
-                "ACTIV": "Y",
-                "ACCOM": "Y",
-            },
-            {
-                "CHILD": "child7",
-                "DOB": "01/01/2002",
-                "IN_TOUCH": pd.NA,
-                "ACTIV": pd.NA,
-                "ACCOM": pd.NA,
-            },
-            {
-                "CHILD": "child8",
                 "DOB": "31/03/2002",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
             },
             {
+                "CHILD": "child3",
+                "DOB": "31/03/2002",
+                "IN_TOUCH": pd.NA,
+                "ACTIV": pd.NA,
+                "ACCOM": pd.NA,
+            },
+            {
+                "CHILD": "child4",
+                "DOB": "31/03/2003",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child5",
+                "DOB": "31/03/2003",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child6",
+                "DOB": "31/03/2002",
+                "IN_TOUCH": pd.NA,
+                "ACTIV": pd.NA,
+                "ACCOM": pd.NA,
+            },
+            {
+                "CHILD": "child7",
+                "DOB": "01/01/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },  # Not in EPI file, IGNORE
+            {
+                "CHILD": "child8",
+                "DOB": "31/03/2004",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
                 "CHILD": "child9",
-                "DOB": "01/04/2002",
+                "DOB": "31/03/2004",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
             },
             {
                 "CHILD": "child10",
-                "DOB": "01/04/2001",
+                "DOB": "31/03/2002",
+                "IN_TOUCH": pd.NA,
+                "ACTIV": pd.NA,
+                "ACCOM": pd.NA,
+            },
+            {
+                "CHILD": "child11",
+                "DOB": "31/03/2002",
+                "IN_TOUCH": "Y",
+                "ACTIV": "Y",
+                "ACCOM": "Y",
+            },
+            {
+                "CHILD": "child12",
+                "DOB": "31/03/2003",
                 "IN_TOUCH": "Y",
                 "ACTIV": "Y",
                 "ACCOM": "Y",
@@ -155,26 +169,46 @@ def test_validate():
                 "CHILD": "child1",
                 "DEC": "31/03/2020",
             },  # 18 within collection year and BDAY on DEC,  FAIL
-            {"CHILD": "child2", "DEC": pd.NA},  # Pass no DEC
-            {"CHILD": "child3", "DEC": pd.NA},  # Pass no DEC
+            {
+                "CHILD": "child2",
+                "DEC": "30/03/2020",
+            },  # 18 within collection year and BDAY after DEC, PASS
+            {
+                "CHILD": "child3",
+                "DEC": "31/03/2020",
+            },  # 18 within collection year and BDAY on DEC with no IN TOUCH, PASS
             {
                 "CHILD": "child4",
+                "DEC": "31/03/2020",
+            },  # 17 within collection year and BDAY on DEC, FAIL
+            {
+                "CHILD": "child5",
                 "DEC": "01/01/2020",
-            },  # Born 01/01/2002, 18 before DEC, FAIL
-            {"CHILD": "child6", "DEC": pd.NA},  # Pass no DEC
-            {"CHILD": "child4", "DEC": pd.NA},  # Pass no DEC
+            },  # 17 within collection year and BDAY after DEC, PASS
+            {
+                "CHILD": "child6",
+                "DEC": "31/03/2020",
+            },  # 17 within collection year and BDAY on DEC with no IN TOUCH, PASS
             {
                 "CHILD": "child8",
-                "DEC": "30/03/2020",
-            },  # Born 31/03/2002, within collection year 18 & DEC, but  DEC before BDAY, PASS
+                "DEC": "31/03/2020",
+            },  # 16 within collection year and BDAY on DEC, IGNORE
             {
                 "CHILD": "child9",
-                "DEC": "02/04/2019",
-            },  # Born 01/04/2002, within collection birthday 17 & DEC before BDAY, FAIL
+                "DEC": "30/03/2020",
+            },  # 16 within collection year and BDAY after DEC, IGNORE
             {
                 "CHILD": "child10",
-                "DEC": "02/04/2019",
-            },  # Born 01/04/2001, within collection birthday 18 & DEC before BDAY, FAIL
+                "DEC": "30/03/2020",
+            },  # 18 within collection year and BDAY before DEC but no IN TOUCH, IGNORE
+            {
+                "CHILD": "child11",
+                "DEC": pd.NA,
+            },  # 18 within collection year but no DEC, IGNORE
+            {
+                "CHILD": "child12",
+                "DEC": pd.NA,
+            },  # 17 within collection year but no DEC, IGNORE
         ]
     )
 
@@ -188,4 +222,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"OC3": [0, 3, 8, 9]}
+    assert result == {"OC3": [0, 3]}

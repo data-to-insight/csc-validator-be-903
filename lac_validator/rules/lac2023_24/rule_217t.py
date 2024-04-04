@@ -17,7 +17,7 @@ def validate(dfs):
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
         max_dec_allowed = pd.to_datetime(
-            "28/10/2023", format="%d/%m/%Y", errors="coerce"
+            "27/10/2023", format="%d/%m/%Y", errors="coerce"
         )
 
         mask = episodes["PLACE"].isin(["P2"]) & (
@@ -37,8 +37,8 @@ def test_validate():
         {
             "PLACE": ["P2", "P2", "P2", "P1"],
             "DEC": [
-                "01/11/2023",  # Fail (After code end date)
-                "28/10/2023",  # Pass (On code end date)
+                "28/10/2023",  # Fail (After code end date)
+                "27/10/2023",  # Pass (On code end date)
                 pd.NA,  # Fail (Nil end after code end date)
                 "01/11/2023",  # Ignore (Not P2)
             ],

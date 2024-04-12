@@ -43,7 +43,15 @@ def test_validate():
     fake_data = pd.DataFrame(
         {
             "PLACE": ["H5", "H5", "H5", "H5", "P1", "H5", "H5"],
-            "DEC": ["29/10/2023", "29/10/2023", pd.NA, pd.NA, pd.NA, pd.NA, "28/10/2023"],
+            "DEC": [
+                "29/10/2023",
+                "29/10/2023",
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                "28/10/2023",
+            ],
             "PL_LA": ["A1", "A1", "A1", "S1", "A1", "A1", "A1"],
             "URN": [pd.NA, "X1", pd.NA, pd.NA, pd.NA, "XXXXXXX", pd.NA]
             # 0 Fail (DEC on/after validation date and no URN)

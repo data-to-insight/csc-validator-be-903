@@ -17,7 +17,7 @@ def validate(dfs):
             episodes["DEC"], format="%d/%m/%Y", errors="coerce"
         )
         max_dec_allowed = pd.to_datetime(
-            "28/10/2023", format="%d/%m/%Y", errors="coerce"
+            "29/10/2023", format="%d/%m/%Y", errors="coerce"
         )
 
         out_of_england = (
@@ -27,7 +27,7 @@ def validate(dfs):
         mask = (
             episodes["PLACE"].isin(["H5"])
             & ((episodes["DEC"] >= max_dec_allowed) | episodes["DEC"].isna())
-            & episodes["URN"].isna()
+            & (episodes["URN"].isna() | (episodes["URN"] == "XXXXXXX"))
             & ~out_of_england
         )
 
@@ -42,15 +42,25 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "PLACE": ["H5", "H5", "H5", "H5", "P1"],
-            "DEC": ["28/10/2023", "28/10/2023", pd.NA, pd.NA, pd.NA],
-            "PL_LA": ["A1", "A1", "A1", "S1", "A1"],
-            "URN": [pd.NA, "X1", pd.NA, pd.NA, pd.NA]
+            "PLACE": ["H5", "H5", "H5", "H5", "P1", "H5", "H5"],
+            "DEC": [
+                "29/10/2023",
+                "29/10/2023",
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                pd.NA,
+                "28/10/2023",
+            ],
+            "PL_LA": ["A1", "A1", "A1", "S1", "A1", "A1", "A1"],
+            "URN": [pd.NA, "X1", pd.NA, pd.NA, pd.NA, "XXXXXXX", pd.NA]
             # 0 Fail (DEC on/after validation date and no URN)
             # 1 Pass (DEC on/after validation date with URN)
             # 2 Fail (Nil DEC and no URN)
             # 3 Ignore (Nil DEC and no URN *but* outside England)
             # 4 Ignore (Nil DEC and no URN *but* not H5)
+            # 5 Fail (Nil DEC and URN is XXXXXXX)
+            # 6 Pass (DEC before validation date and no URN)
         }
     )
 
@@ -58,4 +68,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [0, 2]}
+    assert result == {"Episodes": [0, 2, 5]}

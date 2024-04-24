@@ -37,7 +37,7 @@ def dec_after_decom(dfs, p_code, y_gap):
     return {"Episodes": merged_e["index"][error_mask].unique().tolist()}
 
 
-def field_different_from_previous(dfs, field):
+def field_different_from_previous(dfs, field, from_503D=False):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:
         return {}
     else:
@@ -67,12 +67,26 @@ def field_different_from_previous(dfs, field):
         this_one = field
         pre_one = this_one + "_PRE"
 
-        err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
-        err_mask = err_mask & merged_co["DEC_PRE"].isna()
+        if from_503D == False:
+            err_mask = merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
+            err_mask = err_mask & merged_co["DEC_PRE"].isna()
 
-        err_list = merged_co["index"][err_mask].unique().tolist()
-        err_list.sort()
-        return {"Episodes": err_list}
+            err_list = merged_co["index"][err_mask].unique().tolist()
+            err_list.sort()
+            return {"Episodes": err_list}
+
+        if from_503D == True:
+            err_mask = (
+                merged_co[this_one].astype(str) != merged_co[pre_one].astype(str)
+            ) & (
+                (merged_co[this_one].astype(str) != "K3")
+                & (merged_co[pre_one].astype(str) != "H5")
+            )
+            err_mask = err_mask & merged_co["DEC_PRE"].isna()
+
+            err_list = merged_co["index"][err_mask].unique().tolist()
+            err_list.sort()
+            return {"Episodes": err_list}
 
 
 def valid_date(dte):

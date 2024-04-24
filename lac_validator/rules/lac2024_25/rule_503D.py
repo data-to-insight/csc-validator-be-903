@@ -10,9 +10,12 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     affected_fields=["PLACE"],
 )
 def validate(dfs):
-    diff_prev = field_different_from_previous(dfs, field="PLACE")
+    diff_prev = field_different_from_previous(dfs, field="PLACE", from_503D=True)
+
+    print(diff_prev)
 
     return diff_prev
+
 
 def test_validate():
     fake_epi = pd.DataFrame(
@@ -45,7 +48,7 @@ def test_validate():
             },  # 5  Fails
             {"CHILD": "333", "DEC": pd.NA, "DECOM": "07/06/2020", "PLACE": "T7"},  # 6
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "T3"},  # 7
-            {"CHILD": "555", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"}  # 7
+            {"CHILD": "555", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 7
         ]
     )
 
@@ -68,7 +71,7 @@ def test_validate():
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "L"},
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "09/06/2020", "PLACE": "L"},
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "L"},  # Max
-            {"CHILD": "555", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "H5"}
+            {"CHILD": "555", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "H5"},
         ]
     )
 

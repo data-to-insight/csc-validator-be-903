@@ -43,6 +43,7 @@ def test_validate():
             {"CHILD": "333", "DOB": "05/06/2000"},
             {"CHILD": "444", "DOB": "06/06/2000"},
             {"CHILD": "555", "DOB": "06/06/2019"},
+            {"CHILD": "666", "DOB": "06/06/2000"},
         ]
     )
 
@@ -74,6 +75,18 @@ def test_validate():
                 "LS": "R1",
                 "PLACE": "R2",
             },  # 4 DOB 06/06/2019 Passes, Too young
+            {
+                "CHILD": "666",
+                "DEC": "01/12/2017",
+                "LS": "C2",
+                "PLACE": "P1",
+            },  # 5
+            {
+                "CHILD": "666",
+                "DEC": pd.NA,
+                "LS": "C2",
+                "PLACE": "R1",
+            },  # 6
         ]
     )
 
@@ -83,4 +96,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [2, 3]}
+    assert result == {"Episodes": [2, 3, 6]}

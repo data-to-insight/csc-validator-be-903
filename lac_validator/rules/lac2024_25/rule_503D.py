@@ -10,7 +10,7 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     affected_fields=["PLACE"],
 )
 def validate(dfs):
-    diff_prev = field_different_from_previous(dfs, field="PLACE", from_503D=True)
+    diff_prev = field_different_from_previous(dfs, field="PLACE", from_503D_post24=True)
 
     print(diff_prev)
 

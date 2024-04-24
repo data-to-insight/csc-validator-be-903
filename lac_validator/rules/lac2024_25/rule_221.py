@@ -102,7 +102,7 @@ def test_validate():
                 "PL_POST": pd.NA,
                 "URN": 1,
             },  # 8 ignore: PL_POST value
-                        {
+            {
                 "CHILD": "1111",
                 "LS": "V1",
                 "PLACE": "H5",

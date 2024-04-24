@@ -65,7 +65,7 @@ def test_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2022_23",
+    default="lac2023_24",
     help="validation year, e.g lac2022_23",
 )
 def test_one_rule(code, ruleset):

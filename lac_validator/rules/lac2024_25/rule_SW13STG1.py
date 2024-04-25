@@ -15,8 +15,6 @@ def validate(dfs):
         df = dfs["SWEpisodes"]
         df["index"] = df.index
 
-        collection_start = dfs["metadata"]["collection_start"]
-
         valid_reasons = [
             "MANAGE",
             "FCONTA",
@@ -34,29 +32,14 @@ def validate(dfs):
             df["SW_DECOM"], format="%d/%m/%Y", errors="coerce"
         )
         df["SW_DEC"] = pd.to_datetime(df["SW_DEC"], format="%d/%m/%Y", errors="coerce")
-        collection_start = pd.to_datetime(collection_start, format="%d/%m/%Y")
 
-        df = df.sort_values(["CHILD", "SW_DECOM"], ascending=True)
+        df.sort_values(["CHILD", "SW_DECOM", "SW_DEC"], ascending=True, inplace=True)
 
-        last_of_last = df[df["SW_DECOM"] < collection_start].drop_duplicates(
-            "CHILD", keep="last"
-        )
+        index_of_first = df.drop_duplicates("CHILD", keep="first")
 
-        last_of_last_closed = last_of_last[
-            (last_of_last["SW_DEC"].isna())
-            | (last_of_last["SW_DEC"] >= collection_start)
-        ]
-
-        first_of_this = df[df["SW_DECOM"] >= collection_start].drop_duplicates(
-            "CHILD", keep="first"
-        )
-
-        joined_df = pd.concat([last_of_last_closed, first_of_this], axis=0)
-
-        joined_df = joined_df.sort_values(
-            ["CHILD", "SW_DECOM"], ascending=True
-        ).drop_duplicates("CHILD", keep="first")
-        allowed_nans = joined_df[joined_df["SW_REASON"].isna()]["index"].tolist()
+        allowed_nans = index_of_first[index_of_first["SW_REASON"].isna()][
+            "index"
+        ].tolist()
 
         error_rows = df[
             (~df["SW_REASON"].isin(valid_reasons) | df["SW_REASON"].isna())
@@ -106,20 +89,18 @@ def test_validate():
                 "SW_DECOM": "05/04/1998",
                 "SW_DEC": "31/03/2000",
                 "SW_REASON": pd.NA,
-            },  # 5 fail
+            },  # 5 pass - first in report data
             {
                 "CHILD": "4",
                 "SW_DECOM": "05/04/2000",
                 "SW_DEC": "31/04/2000",
                 "SW_REASON": pd.NA,
-            },  # 6 pass
+            },  # 6 fail second in report data
         ]
     )
 
-    metadata = {"collection_start": "01/04/2000"}
-
-    fake_dfs = {"SWEpisodes": fake_data, "metadata": metadata}
+    fake_dfs = {"SWEpisodes": fake_data}
 
     result = validate(fake_dfs)
 
-    assert result == {"SWEpisodes": [2, 4, 5]}
+    assert result == {"SWEpisodes": [2, 4, 6]}

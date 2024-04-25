@@ -15,7 +15,7 @@ def validate(dfs):
         episodes = dfs["Episodes"]
         provider_info = dfs["metadata"]["provider_info"]
         ls_list = ["V3", "V4"]
-        place_list = ["K1", "K2", "R3", "S1"]
+        place_list = ["K1", "K2", "K3", "R3", "S1"]
         xxx = "X" * 7
         # merge
         episodes["index_eps"] = episodes.index
@@ -27,7 +27,7 @@ def validate(dfs):
             & episodes["PL_POST"].notna()
         ]
         merged = episodes.merge(provider_info, on="URN", how="left")
-        # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
+        # If <URN> provided and <URN> not = 'XXXXXX', and <LS> not = 'V3', 'V4' and where <PL> = 'K1', 'K2', 'K3', 'R3' or 'S1' and <PL_POST> provided, <PL_POST> should = URN Lookup <Provider Postcode>
         mask = merged["PL_POST"].str.replace(" ", "") != merged["POSTCODE"]
 
         eps_error_locations = merged.loc[mask, "index_eps"]

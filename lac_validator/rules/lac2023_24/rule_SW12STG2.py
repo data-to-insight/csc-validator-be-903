@@ -33,47 +33,63 @@ def validate(dfs):
         df = pd.merge(epi, SWE, how="left", on="CHILD")
 
         # finding non-respite periods of care
-        decom_before_dec_x1 = (df["SW_DECOM"] <= df["DEC"]) & (df["REC"] != "X1")
-        decom_after_dec_s = (df["SW_DECOM"] >= df["DEC"]) & (df["RNE"] != "S")
+        decom_before_dec_x1 = (
+            (df["SW_DECOM"] <= df["DEC"]) | df["SW_DECOM"].isna()
+        ) & (df["REC"] != "X1")
+        swdecom_after_decom_s = (
+            (df["SW_DECOM"] >= df["DECOM"]) | df["SW_DECOM"].isna()
+        ) & (df["RNE"] == "S")
         not_V3_V4 = ~df["LS"].isin(["V3", "V4"])
 
         # If any of these are true, the child was not continously looked after
-        not_continous = decom_before_dec_x1 | decom_after_dec_s | not_V3_V4
+        not_continous = df[decom_before_dec_x1 | swdecom_after_decom_s | not_V3_V4]
 
-        in_care_at_some_point = df.groupby("CHILD")["DEC_IN_YEAR"].transform("max")
-        not_in_care_at_some_point = df.groupby("CHILD")[
-            "implies_not_continuous"
-        ].transform("max")
+        # in_care_at_some_point = not_continous.groupby("CHILD")["DEC_IN_YEAR"].transform("max")
+        # not_in_care_at_some_point = not_continous.groupby("CHILD")[
+        #     "implies_not_continuous"
+        # ].transform("max")
 
-        # If CONTINOUSLY LOOKED AFTER == FALSE, there are previous episodes of care
-        epi["CONTINUOUSLY_LOOKED_AFTER"] = (in_care_at_some_point == True) & (
-            not_in_care_at_some_point == False
-        )
+        # # If CONTINOUSLY LOOKED AFTER == FALSE, there are previous episodes of care
+        # not_continous["CONTINUOUSLY_LOOKED_AFTER"] = (in_care_at_some_point == True) & (
+        #     not_in_care_at_some_point == False
+        # )
 
         # finding failing rows, overwriting df variable
-        df = pd.merge(epi, SWE, how="left", on="CHILD")
+        # df = pd.merge(epi, SWE, how="left", on="CHILD")
 
-        swdecom_before_dec = df[df["SW_DECOM"] < df["DEC"]]["CHILD"].tolist()
+        # swdecom_before_dec = df[df["SW_DECOM"] < df["DEC"]]["CHILD"].tolist()
 
-        error_rows = df[
-            (df["CONTINUOUSLY_LOOKED_AFTER"] == True)
-            & ~(df["CHILD"].isin(swdecom_before_dec))
-        ]["index"].tolist()
+        # error_rows = df[
+        #     (df["CONTINUOUSLY_LOOKED_AFTER"] == True)
+        #     & ~(df["CHILD"].isin(swdecom_before_dec))
+        # ]["index"].tolist()
+
+        errors = not_continous[
+            not_continous["SW_DECOM"].insa() & (not_continous["DEC_IN_YEAR"] == True)
+        ]["CHILD"].tolist()
+
+        error_rows = df[df["CHILD"].isin(errors)]
 
         return {"SWEpisodes": error_rows.tolist()}
 
 
-# def test_validate():
-#     import pandas as pd
+def test_validate():
+    import pandas as pd
 
-#     fake_data = pd.DataFrame(
-#         {
-#             "SW_REASON": ["LAZINESS", "SWDIED", "SLEEPINESS", "CHCHAN"],
-#         }
-#     )
+    epi = pd.DataFrame(
+        [
+            {
+                "CHILD": 1,
+                "DECOM": 1,
+                "DEC": 1,
+            }
+        ]
+    )
 
-#     fake_dfs = {"SWEpisodes": fake_data}
+    sw_eps = pd.DataFrame({"CHILD": 1, "SW_DECOM": pd.NA})
 
-#     result = validate(fake_dfs)
+    metadata = {"collection_start": "01/04/2023", "collection_end": "31/03/2024"}
 
-#     assert result == {"SWEpisodes": [0, 2]}
+    fake_dfs = {"SWEpisodes": sw_eps, "Episodes": epi, "metadata": metadata}
+
+    result = validate(fake_dfs)

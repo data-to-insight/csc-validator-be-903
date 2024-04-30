@@ -23,17 +23,25 @@ def validate(dfs):
             dfs["metadata"]["collection_end"], format="%d/%m/%Y"
         )
 
-        SWE["DECOM"] = pd.to_datetime(SWE["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
-
-        df["DEC_IN_YEAR"] = (df["DEC"] >= collection_start) & (
-            df["DEC"] <= collection_end
+        SWE["SW_DECOM"] = pd.to_datetime(
+            SWE["SW_DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        df = pd.merge(epi, SWE, how="left", on="CHILD")
+        epi["DEC"] = pd.to_datetime(epi["DEC"], format="%d/%m/%Y", errors="coerce")
+        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
+
+        # This assumes that missing SW Episodes are only ones not added to the end, not middle ones
+        epi.sort_values(["CHILD", "DECOM"], ascending=True, inplace=True)
+        epi["EPI_ID"] = epi.groupby("CHILD").cumcount()
+        SWE.sort_values(["CHILD", "SW_DECOM"], ascending=True, inplace=True)
+        SWE["EPI_ID"] = SWE.groupby("CHILD").cumcount()
+
+        epi = epi[(epi["DEC"] >= collection_start) & (epi["DEC"] <= collection_end)]
+
+        df = pd.merge(epi, SWE, how="left", on=["CHILD", "EPI_ID"])
 
         # finding non-respite periods of care
-        decom_before_dec_x1 = (
+        swdecom_before_dec_x1 = (
             (df["SW_DECOM"] <= df["DEC"]) | df["SW_DECOM"].isna()
         ) & (df["REC"] != "X1")
         swdecom_after_decom_s = (
@@ -42,7 +50,7 @@ def validate(dfs):
         not_V3_V4 = ~df["LS"].isin(["V3", "V4"])
 
         # If any of these are true, the child was not continously looked after
-        not_continous = df[decom_before_dec_x1 | swdecom_after_decom_s | not_V3_V4]
+        not_continous = df[swdecom_before_dec_x1 | swdecom_after_decom_s | not_V3_V4]
 
         # in_care_at_some_point = not_continous.groupby("CHILD")["DEC_IN_YEAR"].transform("max")
         # not_in_care_at_some_point = not_continous.groupby("CHILD")[
@@ -64,13 +72,21 @@ def validate(dfs):
         #     & ~(df["CHILD"].isin(swdecom_before_dec))
         # ]["index"].tolist()
 
-        errors = not_continous[
-            not_continous["SW_DECOM"].insa() & (not_continous["DEC_IN_YEAR"] == True)
-        ]["CHILD"].tolist()
+        # not_continous.sort_values(["CHILD", "DECOM", "SW_DECOM"], ascending=[True, True, True], inplace=True)
+        # print(not_continous)
+        # not_continous.drop_duplicates(["CHILD", "SW_DECOM"], inplace=True, keep="first")
+        # print(not_continous)
 
-        error_rows = df[df["CHILD"].isin(errors)]
+        # Ensuring we only send rows for which there is no SW Episode
+        # decom_after_dec = not_continous[not_continous['SW_DECOM'] > not_continous["DEC"]]
 
-        return {"SWEpisodes": error_rows.tolist()}
+        # print(decom_after_dec)
+
+        error_rows = not_continous[not_continous["SW_DECOM"].isna()].index
+
+        # error_rows = df[df["CHILD"].isin(errors)].index
+
+        return {"Episodes": error_rows.tolist()}
 
 
 def test_validate():
@@ -80,16 +96,60 @@ def test_validate():
         [
             {
                 "CHILD": 1,
-                "DECOM": 1,
-                "DEC": 1,
-            }
+                "DECOM": "01/01/2024",
+                "DEC": "01/02/2024",
+                "REC": "Q",
+                "RNE": "Q",
+                "LS": "Q",
+            },  # Pass, has SW EP
+            {
+                "CHILD": 1,
+                "DECOM": "02/02/2024",
+                "DEC": "01/03/2024",
+                "REC": "Q",
+                "RNE": "Q",
+                "LS": "Q",
+            },  # Pass has SW EP
+            {
+                "CHILD": 1,
+                "DECOM": "02/03/2024",
+                "DEC": "03/03/2024",
+                "REC": "Q",
+                "RNE": "Q",
+                "LS": "Q",
+            },  # FAIL, no SW EP
+            {
+                "CHILD": 1,
+                "DECOM": "04/03/2024",
+                "DEC": pd.NA,
+                "REC": "Q",
+                "RNE": "Q",
+                "LS": "Q",
+            },  # Pass, not closed?
+            {
+                "CHILD": 2,  # passes, no dec inyear
+                "DECOM": "01/01/2024",
+                "DEC": pd.NA,
+                "REC": pd.NA,
+                "RNE": pd.NA,
+                "LS": pd.NA,
+            },
         ]
     )
 
-    sw_eps = pd.DataFrame({"CHILD": 1, "SW_DECOM": pd.NA})
+    sw_eps = pd.DataFrame(
+        [
+            {"CHILD": 1, "SW_DECOM": "01/01/2024"},
+            {"CHILD": 1, "SW_DECOM": "02/02/2024"},
+        ]
+    )
 
     metadata = {"collection_start": "01/04/2023", "collection_end": "31/03/2024"}
 
     fake_dfs = {"SWEpisodes": sw_eps, "Episodes": epi, "metadata": metadata}
 
     result = validate(fake_dfs)
+
+    print(result)
+
+    assert result == {"Episodes": [2]}

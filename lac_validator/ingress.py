@@ -444,6 +444,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
         scpch_2.columns = scpch_2.columns.str.lower()
         scpch_1.columns = scpch_1.columns.str.lower()
 
+        # Supported accomodation has the placement code H5 (I believe)
         scpch_2["placement code"] = "H5"
         # This doesn't appear to be in the data currently?
         scpch_2["deregistration date"] = pd.NA

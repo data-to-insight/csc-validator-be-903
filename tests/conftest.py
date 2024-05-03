@@ -93,5 +93,5 @@ def dummy_chscp():
         fake_scp_dir,
         combined_fake_dir,
         dummy_combined,
-        dummy_combined_assisted
+        dummy_combined_assisted,
     )

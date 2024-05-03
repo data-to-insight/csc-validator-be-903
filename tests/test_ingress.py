@@ -157,7 +157,7 @@ def test_construct_provider_info_table(dummy_chscp):
         scp_path_dir,
         combined_path_dir,
         combined["file_content"],
-        combined_assisted["file_content"]
+        combined_assisted["file_content"],
     ) = dummy_chscp
 
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
@@ -182,8 +182,7 @@ def test_combined_ch_scp_check(dummy_chscp):
         scp_path_dir,
         combined_path_dir,
         combined["file_content"],
-        combined_assisted["file_content"]
-
+        combined_assisted["file_content"],
     ) = dummy_chscp
 
     with pytest.raises(UploadError):
@@ -221,7 +220,7 @@ def test_scpch_provider_info_table(dummy_chscp):
         scp_path_dir,
         combined_path_dir,
         combined["file_content"],
-        combined_assisted["file_content"]
+        combined_assisted["file_content"],
     ) = dummy_chscp
 
     output = scpch_provider_info_table(combined)

@@ -431,7 +431,15 @@ def scpch_provider_info_table(scpch: UploadedFile):
     ]
     logger.info(f"URN lookup bytes recieved. Reading excel files... {sc.t}")
 
-    scpch_providers = pd.read_excel(scpch_bytes, engine="openpyxl")
+    scpch_providers = pd.read_excel(scpch_bytes, sheet_name=None, engine="openpyxl")
+    # Checks to see if it's the one sheet or two sheet version
+    if len(scpch_providers) == 1:
+        # next iter has a lower memory overhead than extracting the first element via a list
+        # when we don't want to hard code the sheet names
+        scpch_providers = next(iter(scpch_providers.values()))
+    if len(scpch_providers) == 2:
+        scpch_iter = iter(scpch_providers.values())
+        scpch_1, scpch_2 = next(scpch_iter), next(scpch_iter)
     scpch_providers.columns = scpch_providers.columns.str.lower()
     logger.debug(
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"

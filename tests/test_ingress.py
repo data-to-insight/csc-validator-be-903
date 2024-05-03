@@ -223,6 +223,10 @@ def test_scpch_provider_info_table(dummy_chscp):
         combined_assisted["file_content"],
     ) = dummy_chscp
 
-    output = scpch_provider_info_table(combined)
-    output_columns = output.columns.to_list()
-    assert output_columns == expected_columns
+    combined_output = scpch_provider_info_table(combined)
+    combined_output_columns = combined_output.columns.to_list()
+    assert combined_output_columns == expected_columns
+
+    combined_assisted_output = scpch_provider_info_table(combined_assisted)
+    combined_assisted_output_columns = combined_assisted_output.columns.to_list()
+    assert combined_assisted_output_columns == expected_columns

@@ -440,6 +440,26 @@ def scpch_provider_info_table(scpch: UploadedFile):
     if len(scpch_providers) == 2:
         scpch_iter = iter(scpch_providers.values())
         scpch_1, scpch_2 = next(scpch_iter), next(scpch_iter)
+
+        scpch_2.columns = scpch_2.columns.str.lower()
+        scpch_1.columns = scpch_1.columns.str.lower()
+
+        scpch_2["placement code"] = "H5"
+        # This doesn't appear to be in the data currently?
+        scpch_2["deregistration date"] = pd.NA
+
+        scpch_2 = scpch_2[
+            [
+                "urn",
+                "provider local authority",
+                "placement code",
+                "placement provider code",
+                "deregistration date",
+                "setting address postcode",
+            ]
+        ]
+        scpch_providers = pd.concat([scpch_1, scpch_2])
+
     scpch_providers.columns = scpch_providers.columns.str.lower()
     logger.debug(
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"

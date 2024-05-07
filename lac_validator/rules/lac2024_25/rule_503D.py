@@ -10,7 +10,7 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     affected_fields=["PLACE"],
 )
 def validate(dfs):
-    diff_prev = field_different_from_previous(dfs, field="PLACE", from_503D_post24=True)
+    diff_prev = field_different_from_previous(dfs, field="PLACE")
 
     print(diff_prev)
 
@@ -75,6 +75,13 @@ def test_validate():
         ]
     )
 
+    # For the test, this doesn't affect anything except how the data is handled
+    # by the field_different function, so it doesn't matter that the years
+    # in the test dfs are not accurate to this collection year
+    # As seen in conftest collection year is read in as XXXX/XX and stored in metadata
+    # as the first four characters using [:4] in _process_metadata in datastore
+    metadata = {"collectionYear": "2024"}
+
     fake_epi["DECOM"] = pd.to_datetime(
         fake_epi["DECOM"], format="%d/%m/%Y", errors="coerce"
     )
@@ -85,7 +92,11 @@ def test_validate():
         fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
     )
 
-    fake_dfs = {"Episodes": fake_epi, "Episodes_last": fake_epi_last}
+    fake_dfs = {
+        "Episodes": fake_epi,
+        "Episodes_last": fake_epi_last,
+        "metadata": metadata,
+    }
 
     result = validate(fake_dfs)
 

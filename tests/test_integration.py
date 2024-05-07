@@ -1,4 +1,5 @@
 """Tests for all configured errors"""
+
 import pandas as pd
 import pytest
 

@@ -437,6 +437,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
         # next iter has a lower memory overhead than extracting the first element via a list
         # when we don't want to hard code the sheet names
         scpch_providers = next(iter(scpch_providers.values()))
+        scpch_providers.columns = scpch_providers.columns.str.lower()
     if len(scpch_providers) == 2:
         scpch_iter = iter(scpch_providers.values())
         scpch_1, scpch_2 = next(scpch_iter), next(scpch_iter)
@@ -445,9 +446,9 @@ def scpch_provider_info_table(scpch: UploadedFile):
         scpch_1.columns = scpch_1.columns.str.lower()
 
         # Supported accomodation has the placement code H5 (I believe)
-        scpch_2["placement code"] = "H5"
-        # This doesn't appear to be in the data currently?
-        scpch_2["deregistration date"] = pd.NA
+        scpch_2["placement code"] = "H5, K3"
+
+        scpch_2["deregistration date"] = scpch_2["closed date"]
 
         scpch_2 = scpch_2[
             [
@@ -461,7 +462,6 @@ def scpch_provider_info_table(scpch: UploadedFile):
         ]
         scpch_providers = pd.concat([scpch_1, scpch_2])
 
-    scpch_providers.columns = scpch_providers.columns.str.lower()
     logger.debug(
         f"Reading SCP/CH provider info from excel done. cols:{scpch_providers.columns} {sc.t}"
     )

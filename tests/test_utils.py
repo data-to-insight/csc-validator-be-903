@@ -10,9 +10,9 @@ from lac_validator.utils import (
 
 
 def test_get_year_ruleset():
-    registry = get_year_ruleset("2023")
+    registry = get_year_ruleset("2024")
 
-    assert len(registry) == 293
+    assert len(registry) == 309
 
     assert isinstance(registry, dict)
     assert isinstance(list(registry.values())[1], RuleDefinition)

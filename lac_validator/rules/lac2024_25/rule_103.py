@@ -36,8 +36,8 @@ def validate(dfs):
             "NOBT",
         ]
 
-    condition = ~(df["ETHNIC"].isin(ethn_code_list))
-    error_rows = df[condition].index
+    condition = ~(dfs["ETHNIC"].isin(ethn_code_list))
+    error_rows = dfs[condition].index
 
     return {"Header": error_rows.tolist()}
 

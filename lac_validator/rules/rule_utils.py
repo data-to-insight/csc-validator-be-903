@@ -73,10 +73,9 @@ def field_different_from_previous(dfs, field):
         err_mask = err_mask & merged_co["DEC_PRE"].isna()
 
         if (field == "PLACE") & (collection_year == "2024"):
-            err_mask = (
-                err_mask
-                & ~((merged_co[this_one].astype(str) == "K3")
-                & (merged_co[pre_one].astype(str) == "H5"))
+            err_mask = err_mask & ~(
+                (merged_co[this_one].astype(str) == "K3")
+                & (merged_co[pre_one].astype(str) == "H5")
             )
 
         err_list = merged_co["index"][err_mask].unique().tolist()

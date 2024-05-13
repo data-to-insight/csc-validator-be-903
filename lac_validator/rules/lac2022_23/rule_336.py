@@ -36,9 +36,9 @@ def validate(dfs):
 
         episodes["PLACE_prev"] = sorted_and_grouped_eps["PLACE"].shift(1)
         episodes["is_first_episode"] = False
-        episodes.loc[
-            sorted_and_grouped_eps["DECOM"].idxmin(), "is_first_episode"
-        ] = True
+        episodes.loc[sorted_and_grouped_eps["DECOM"].idxmin(), "is_first_episode"] = (
+            True
+        )
 
         # Where <PL> = 'A3' or 'A5' previous episode <PL> must be one of:
         # ('A3'; 'A4'; 'A5'; 'A6'; 'U1', 'U2', 'U3', 'U4', 'U5' or 'U6')

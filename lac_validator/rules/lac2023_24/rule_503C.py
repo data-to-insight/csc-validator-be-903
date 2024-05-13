@@ -64,7 +64,7 @@ def test_validate():
         fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
     )
 
-    metadata = {"collectionYear": "2022"}
+    metadata = {"collectionYear": "2023"}
 
     fake_dfs = {
         "Episodes": fake_epi,

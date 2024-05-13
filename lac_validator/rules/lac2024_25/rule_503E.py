@@ -5,12 +5,12 @@ from lac_validator.rules.rule_utils import field_different_from_previous
 
 
 @rule_definition(
-    code="503F",
-    message="The Ofsted URN in the  first episode does not match open episode at end of last year.",
-    affected_fields=["URN"],
+    code="503E",
+    message="The placement provider in the first episode does not match open episode at end of last year.",
+    affected_fields=["PLACE_PROVIDER"],
 )
 def validate(dfs):
-    return field_different_from_previous(dfs, field="URN")
+    return field_different_from_previous(dfs, field="PLACE_PROVIDER")
 
 
 def test_validate():
@@ -20,71 +20,96 @@ def test_validate():
                 "CHILD": "111",
                 "DEC": pd.NA,
                 "DECOM": "01/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR1",
             },  # 0  Fails
             {
                 "CHILD": "111",
                 "DEC": pd.NA,
                 "DECOM": "05/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR2",
             },  # 1
             {
                 "CHILD": "111",
                 "DEC": pd.NA,
                 "DECOM": "06/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR3",
             },  # 2
             {
                 "CHILD": "123",
                 "DEC": pd.NA,
                 "DECOM": "08/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR4",
             },  # 3
             {
                 "CHILD": "222",
                 "DEC": pd.NA,
                 "DECOM": "05/06/2020",
-                "URN": "SC055123",
-            },  # 4
+                "PLACE_PROVIDER": "PR5",
+            },  # 4  Fails
             {
                 "CHILD": "333",
                 "DEC": pd.NA,
                 "DECOM": "06/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR0",
             },  # 5  Fails
             {
                 "CHILD": "333",
                 "DEC": pd.NA,
                 "DECOM": "07/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR1",
             },  # 6
             {
                 "CHILD": "444",
                 "DEC": pd.NA,
-                "DECOM": "07/06/2020",
-                "URN": "SC055123",
+                "DECOM": "05/06/2020",
+                "PLACE_PROVIDER": "PR3",
             },  # 7
         ]
     )
 
     fake_epi_last = pd.DataFrame(
         [
-            {"CHILD": "111", "DEC": pd.NA, "DECOM": "01/06/2020", "URN": pd.NA},  # Max
+            {
+                "CHILD": "111",
+                "DEC": pd.NA,
+                "DECOM": "01/06/2020",
+                "PLACE_PROVIDER": pd.NA,
+            },  # Max
             {
                 "CHILD": "123",
                 "DEC": pd.NA,
                 "DECOM": "08/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR4",
             },  # Max
-            {"CHILD": "222", "DEC": pd.NA, "DECOM": "05/06/2020", "URN": "XXX"},  # Max
-            {"CHILD": "333", "DEC": pd.NA, "DECOM": "06/06/2020", "URN": pd.NA},  # Max
-            {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "URN": "XXX"},
-            {"CHILD": "444", "DEC": pd.NA, "DECOM": "09/06/2020", "URN": "SC055123"},
+            {
+                "CHILD": "222",
+                "DEC": pd.NA,
+                "DECOM": "05/06/2020",
+                "PLACE_PROVIDER": "PR2",
+            },  # Max
+            {
+                "CHILD": "333",
+                "DEC": pd.NA,
+                "DECOM": "06/06/2020",
+                "PLACE_PROVIDER": pd.NA,
+            },  # Max
+            {
+                "CHILD": "444",
+                "DEC": pd.NA,
+                "DECOM": "08/06/2020",
+                "PLACE_PROVIDER": "PR1",
+            },
+            {
+                "CHILD": "444",
+                "DEC": pd.NA,
+                "DECOM": "09/06/2020",
+                "PLACE_PROVIDER": "PR0",
+            },
             {
                 "CHILD": "444",
                 "DEC": pd.NA,
                 "DECOM": "19/06/2020",
-                "URN": "SC055123",
+                "PLACE_PROVIDER": "PR2",
             },  # Max
         ]
     )
@@ -99,7 +124,7 @@ def test_validate():
         fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
     )
 
-    metadata = {"collectionYear": "2022"}
+    metadata = {"collectionYear": "2024"}
 
     fake_dfs = {
         "Episodes": fake_epi,
@@ -109,4 +134,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [0, 4, 5]}
+    assert result == {"Episodes": [0, 4, 5, 7]}

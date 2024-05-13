@@ -59,7 +59,7 @@ def test_validate():
     fake_epi = current_episodes.copy()
     fake_epi_last = previous_episodes.copy()
 
-    metadata = {"collectionYear": "2022"}
+    metadata = {"collectionYear": "2023"}
 
     fake_dfs = {
         "Episodes": fake_epi,

@@ -48,7 +48,9 @@ def test_validate():
             },  # 5  Fails
             {"CHILD": "333", "DEC": pd.NA, "DECOM": "07/06/2020", "PLACE": "T7"},  # 6
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "T3"},  # 7
-            {"CHILD": "555", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 7
+            {"CHILD": "555", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 8
+            {"CHILD": "888", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 9
+            {"CHILD": "999", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H3"},  # 10
         ]
     )
 
@@ -72,6 +74,8 @@ def test_validate():
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "09/06/2020", "PLACE": "L"},
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "L"},  # Max
             {"CHILD": "555", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "H5"},
+            {"CHILD": "888", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H5"},  # 9
+            {"CHILD": "999", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H5"},  # 10
         ]
     )
 
@@ -100,4 +104,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [0, 3, 4, 5, 7]}
+    assert result == {"Episodes": [0, 3, 4, 5, 7, 10]}

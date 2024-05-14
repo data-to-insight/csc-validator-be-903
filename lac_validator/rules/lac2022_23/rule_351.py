@@ -5,7 +5,7 @@ from lac_validator.rule_engine import rule_definition
 
 @rule_definition(
     code="351",
-    message="Child was over 21 at the start of the current collection year.",
+    message="Child was over 25 at the start of the current collection year.",
     affected_fields=[
         "DOB",
     ],
@@ -26,7 +26,7 @@ def validate(dfs):
             collection_start, format="%d/%m/%Y", errors="coerce"
         )
 
-        mask = collection_start > (header["DOB"] + pd.DateOffset(years=21))
+        mask = collection_start > (header["DOB"] + pd.DateOffset(years=25))
         # error locations
         header_error_locs = header.index[mask]
 
@@ -61,4 +61,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Header": [2, 4]}
+    assert result == {"Header": [2]}

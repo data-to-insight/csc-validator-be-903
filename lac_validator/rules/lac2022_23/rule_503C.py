@@ -64,6 +64,11 @@ def test_validate():
         fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
     )
 
+    # For the test, this doesn't affect anything except how the data is handled
+    # by the field_different function, so it doesn't matter that the years
+    # in the test dfs are not accurate to this collection year
+    # As seen in conftest collection year is read in as XXXX/XX and stored in metadata
+    # as the first four characters using [:4] in _process_metadata in datastore```
     metadata = {"collectionYear": "2022"}
 
     fake_dfs = {

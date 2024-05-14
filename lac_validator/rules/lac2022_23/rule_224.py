@@ -24,11 +24,9 @@ def validate(dfs):
         # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
         valid = pd.Series(
             [
-                (
-                    pl_pr in valid.split(",")
-                    if (pd.notna(pl_pr) and pd.notna(valid))
-                    else False
-                )
+                pl_pr in valid.split(",")
+                if (pd.notna(pl_pr) and pd.notna(valid))
+                else False
                 for pl_pr, valid in zip(
                     episodes["PLACE_PROVIDER"], episodes["PROVIDER_CODES"]
                 )

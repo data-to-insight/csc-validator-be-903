@@ -10,7 +10,11 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     affected_fields=["PLACE"],
 )
 def validate(dfs):
-    return field_different_from_previous(dfs, field="PLACE")
+    diff_prev = field_different_from_previous(dfs, field="PLACE")
+
+    print(diff_prev)
+
+    return diff_prev
 
 
 def test_validate():
@@ -44,6 +48,9 @@ def test_validate():
             },  # 5  Fails
             {"CHILD": "333", "DEC": pd.NA, "DECOM": "07/06/2020", "PLACE": "T7"},  # 6
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "T3"},  # 7
+            {"CHILD": "555", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 8
+            {"CHILD": "888", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "K3"},  # 9
+            {"CHILD": "999", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H3"},  # 10
         ]
     )
 
@@ -66,8 +73,18 @@ def test_validate():
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "L"},
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "09/06/2020", "PLACE": "L"},
             {"CHILD": "444", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "L"},  # Max
+            {"CHILD": "555", "DEC": pd.NA, "DECOM": "19/06/2020", "PLACE": "H5"},
+            {"CHILD": "888", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H5"},  # 9
+            {"CHILD": "999", "DEC": pd.NA, "DECOM": "08/06/2020", "PLACE": "H5"},  # 10
         ]
     )
+
+    # For the test, this doesn't affect anything except how the data is handled
+    # by the field_different function, so it doesn't matter that the years
+    # in the test dfs are not accurate to this collection year
+    # As seen in conftest collection year is read in as XXXX/XX and stored in metadata
+    # as the first four characters using [:4] in _process_metadata in datastore
+    metadata = {"collectionYear": "2024"}
 
     fake_epi["DECOM"] = pd.to_datetime(
         fake_epi["DECOM"], format="%d/%m/%Y", errors="coerce"
@@ -79,13 +96,6 @@ def test_validate():
         fake_epi_last["DEC"], format="%d/%m/%Y", errors="coerce"
     )
 
-    # For the test, this doesn't affect anything except how the data is handled
-    # by the field_different function, so it doesn't matter that the years
-    # in the test dfs are not accurate to this collection year
-    # As seen in conftest collection year is read in as XXXX/XX and stored in metadata
-    # as the first four characters using [:4] in _process_metadata in datastore```
-    metadata = {"collectionYear": "2022"}
-
     fake_dfs = {
         "Episodes": fake_epi,
         "Episodes_last": fake_epi_last,
@@ -94,4 +104,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [0, 3, 4, 5, 7]}
+    assert result == {"Episodes": [0, 3, 4, 5, 7, 10]}

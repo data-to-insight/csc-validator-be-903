@@ -12,51 +12,9 @@ def validate(dfs):
     if "Episodes" not in dfs or "PrevPerm" not in dfs:
         return {}
     else:
+        import lac_validator.rules.rule_utils
+
         # function to check that date is of the right format
-        def valid_date(dte):
-            try:
-                lst = dte.split("/")
-            except AttributeError:
-                return pd.NaT
-            # Preceding block checks for the scenario where the value passed in is nan/naT
-
-            # date should have three elements
-            if len(lst) != 3:
-                return pd.NaT
-
-            z_list = ["ZZ", "ZZ", "ZZZZ"]
-            # We set the date to the latest possible value to avoid false positives
-            offset_list = [
-                pd.DateOffset(months=1, days=-1),
-                pd.DateOffset(years=1, days=-1),
-                None,
-            ]
-            # that is, go to the next month/year and take the day before that
-            already_found_non_zeds = False
-            date_bits = []
-
-            for i, zeds, offset in zip(lst, z_list, offset_list):
-                if i == zeds:
-                    # I'm assuming it is invalid to have a date like '01/ZZ/ZZZZ'
-                    if already_found_non_zeds:
-                        return pd.NaT
-                    # Replace day & month zeds with '01' so we can check if the resulting date is valid
-                    # and set the offset so we can compare the latest corresponding date
-                    elif i == "ZZ":
-                        i = "01"
-                        offset_to_use = offset
-                else:
-                    already_found_non_zeds = True
-                date_bits.append(i)
-
-            as_datetime = pd.to_datetime(
-                "/".join(date_bits), format="%d/%m/%Y", errors="coerce"
-            )
-            try:
-                as_datetime += offset_to_use
-            except NameError:  # offset_to_use only defined if needed
-                pass
-            return as_datetime
 
         episodes = dfs["Episodes"]
         prevperm = dfs["PrevPerm"]
@@ -65,7 +23,9 @@ def validate(dfs):
         episodes["DECOM"] = pd.to_datetime(
             episodes["DECOM"], format="%d/%m/%Y", errors="coerce"
         )
-        prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(valid_date)
+        prevperm["DATE_PERM_dt"] = prevperm["DATE_PERM"].apply(
+            lac_validator.rules.rule_utils.valid_date
+        )
 
         # if nans aren't dropped, idxmin() won't work. we can do this since dropping nan DECOMs doesn't affect the rule logic.
         decom_only_eps = episodes[["CHILD", "DECOM"]].dropna()
@@ -83,9 +43,7 @@ def validate(dfs):
 
         # If provided <DATE_PERM> should be prior to <DECOM> and in a valid format and contain a valid date Format should be DD/MM/YYYY or one or more elements of the date can be replaced by ZZ if part of the date element is not known.
         mask = (merged["DATE_PERM_dt"] >= merged["DECOM"]) | (
-            merged["DATE_PERM"].notna()
-            & merged["DATE_PERM_dt"].isna()
-            & (merged["DATE_PERM"] != "ZZ/ZZ/ZZZZ")
+            merged["DATE_PERM"].notna() & merged["DATE_PERM_dt"].isna()
         )
 
         # error locations
@@ -153,7 +111,7 @@ def test_validate():
             {
                 "CHILD": "105",
                 "DECOM": "01/03/2021",
-            },  # 5 - fail! DATE_PERM wrong format
+            },  # 5 - Pass
             {
                 "CHILD": "106",
                 "DECOM": "01/07/2021",
@@ -185,4 +143,4 @@ def test_validate():
 
     result = validate(fake_dfs)
     # desired
-    assert result == {"Episodes": [0, 2, 5, 9, 10], "PrevPerm": [0, 1, 4, 8, 9]}
+    assert result == {"Episodes": [0, 2, 9, 10], "PrevPerm": [0, 1, 8, 9]}

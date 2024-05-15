@@ -99,7 +99,12 @@ def test_validate():
                 "DEC": "01/11/2000",
                 "LS": "V3",
             },  # 7 Fail!
-            {"CHILD": 555, "DECOM": "01/07/2000", "DEC": pd.NA, "LS": "V3"},  # 8 Fail!
+            {
+                "CHILD": 55555,
+                "DECOM": "01/07/2000",
+                "DEC": pd.NA,
+                "LS": "V3",
+            },  # 8 Fail!
         ]
     )
 

@@ -37,7 +37,7 @@ def validate(dfs):
         epi = epi[
             (
                 (epi["DEC"] >= collection_start - np.timedelta64(1, "Y"))
-                & (epi["DEC"] <= collection_end - np.timedelta64(1, "Y"))
+                & (epi["DEC"] <= collection_end)
             )
             | epi["DEC"].isna()
         ]
@@ -151,6 +151,14 @@ def test_validate():
                 "RNE": "S",
                 "LS": "C1",
             },  # FAIL, no SW EP, in previous collection year
+            {
+                "CHILD": 11,
+                "DECOM": "01/01/2023",
+                "DEC": "10/04/2022",
+                "REC": pd.NA,
+                "RNE": "S",
+                "LS": "C1",
+            },  # Pass, before previous collection year, (would fail as no SW EP, in previous collection year)
         ]
     )
 

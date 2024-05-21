@@ -8,6 +8,7 @@ from lac_validator.types import MissingMetadataError
     code="205B",
     message="Child previously identified as UASC is also UASC this year, but date UASC ceased in both years does not support this.",
     affected_fields=["DUC", "UASC"],
+    tables=["UASC", "UASC_last", "Header", "Header_last"],
 )
 def validate(dfs):
     try:

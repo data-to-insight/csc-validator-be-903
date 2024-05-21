@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="143",
     message="The reason for new episode code is not a valid code.",
     affected_fields=["RNE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

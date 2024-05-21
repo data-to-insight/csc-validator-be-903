@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="196",
     message="Strengths and Difficulties (SDQ) reason is not a valid code.",
     affected_fields=["SDQ_REASON"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

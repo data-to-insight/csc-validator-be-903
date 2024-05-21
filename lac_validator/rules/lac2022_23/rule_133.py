@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="133",
     message="Data entry for accommodation after leaving care is invalid. If reporting on a childs accommodation after leaving care the data entry must be valid",
     affected_fields=["ACCOM"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

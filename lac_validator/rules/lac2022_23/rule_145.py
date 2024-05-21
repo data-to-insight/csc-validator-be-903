@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="145",
     message="Category of need code is not a valid code.",
     affected_fields=["CIN"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

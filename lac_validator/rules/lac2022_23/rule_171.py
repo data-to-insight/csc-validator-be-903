@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="171",
     message="Date of birth of mother's child is not a valid date.",
     affected_fields=["MC_DOB"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

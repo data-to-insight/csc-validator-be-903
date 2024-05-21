@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="180",
     message="Data entry for the strengths and difficulties questionnaire (SDQ) score is invalid.",
     affected_fields=["SDQ_SCORE"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

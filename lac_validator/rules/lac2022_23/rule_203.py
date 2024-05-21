@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="203",
     message="Date of birth disagrees with the date of birth already recorded for this child.",
     affected_fields=["DOB"],
+    tables=["Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

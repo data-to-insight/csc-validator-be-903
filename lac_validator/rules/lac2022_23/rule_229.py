@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     "the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may "
     "be inaccurate in some cases.]",
     affected_fields=["URN", "PLACE_PROVIDER"],
+    tables=["Episodes", "Provider Info"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):

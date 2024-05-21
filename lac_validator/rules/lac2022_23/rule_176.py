@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="176",
     message="The gender of adopter(s) at the date of adoption code is not a valid code.",
     affected_fields=["SEX_ADOPTR"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

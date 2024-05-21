@@ -12,6 +12,7 @@ from lac_validator.utils import (
     + "end of the year and who have been looked after for at least 12 months continuously "
     + "should have a Strengths and Difficulties (SDQ) score completed.",
     affected_fields=["SDQ_SCORE"],
+    tables=["Episodes", "OC2"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "OC2" not in dfs:

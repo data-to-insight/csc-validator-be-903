@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="217",
     message="Children who are placed for adoption with current foster carers (placement types A3 or A5) must have a reason for new episode of S, T or U.",
     affected_fields=["PLACE", "DECOM", "RNE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

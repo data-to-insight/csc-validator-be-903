@@ -10,6 +10,7 @@ from lac_validator.utils import (
     code="197B",
     message="SDQ score or reason for no SDQ should be reported for 4- or 17-year-olds.",
     affected_fields=["SDQ_REASON", "DOB"],
+    tables=["OC2", "Episodes"],
 )
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="165",
     message="Data entry for mother status is invalid.",
     affected_fields=["MOTHER", "SEX", "ACTIV", "ACCOM", "IN_TOUCH", "DECOM"],
+    tables=["Header", "Episodes", "OC3"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Episodes" not in dfs or "OC3" not in dfs:

@@ -11,6 +11,7 @@ from lac_validator.rule_engine import rule_definition
         "INTERVENTION_RECEIVED",
         "INTERVENTION_OFFERED",
     ],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="104",
     message="Date for Unaccompanied Asylum-Seeking Children (UASC) status ceased is not a valid date.",
     affected_fields=["DUC"],
+    tables=["UASC"],
 )
 def validate(dfs):
     if "UASC" not in dfs:

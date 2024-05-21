@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="219",
     message="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement type recorded.",
     affected_fields=["URN", "PLACE"],
+    tables=["Episodes", "Provider Info"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):

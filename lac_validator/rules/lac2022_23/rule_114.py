@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="114",
     message="Data entry to record the status of former carer(s) of an adopted child is invalid.",
     affected_fields=["FOSTER_CARE"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

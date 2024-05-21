@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Child is aged 17 years or over at the beginning of the year, but an Strengths and Difficulties "
     + "(SDQ) score or a reason for no Strengths and Difficulties (SDQ) score has been completed.",
     affected_fields=["DOB", "SDQ_SCORE", "SDQ_REASON"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

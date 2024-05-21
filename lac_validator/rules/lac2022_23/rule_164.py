@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="164",
     message="Distance is not valid. Please check a valid postcode has been entered. [NOTE: This check will result in false positives for children formerly UASC not identified as such in loaded data]",
     affected_fields=["PL_DISTANCE"],
+    tables=["Episodes"],
 )
 
 # If not (<UASC> = '1' or <COLLECTION_YEAR> -1 <UASC> = '1' or <COLLECTION_YEAR> -2 <UASC> = '1') and if <LS> not = 'V3' or 'V4' then <PL_DISTANCE> must be between '0.0' and '999.9' Note: <PL_DISTANCE> is a calculated value based on Postcode.

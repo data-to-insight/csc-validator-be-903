@@ -7,7 +7,9 @@ from lac_validator.rule_engine import rule_definition
     code="304",
     message="Date unaccompanied asylum-seeking child (UASC) status ceased must be on or before the 18th birthday of a child.",
     affected_fields=["DUC"],
+    tables=["UASC"],
 )
+
 def validate(dfs):
     if "UASC" not in dfs:
         return {}

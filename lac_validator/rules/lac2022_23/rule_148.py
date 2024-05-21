@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="148",
     message="Date episode ceased and reason episode ceased must both be coded, or both left blank.",
     affected_fields=["DEC", "REC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="168",
     message="Unique Pupil Number (UPN) is not valid. If unknown, default codes should be UN1, UN2, UN3, UN4 or UN5.",
     affected_fields=["UPN"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

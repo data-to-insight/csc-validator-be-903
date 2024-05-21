@@ -53,7 +53,7 @@ def test_validate():
                 "28/10/2023",
             ],
             "PL_LA": ["A1", "A1", "A1", "S1", "A1", "A1", "A1"],
-            "URN": [pd.NA, "X1", pd.NA, pd.NA, pd.NA, "XXXXXXX", pd.NA]
+            "URN": [pd.NA, "X1", pd.NA, pd.NA, pd.NA, "XXXXXXX", pd.NA],
             # 0 Fail (DEC on/after validation date and no URN)
             # 1 Pass (DEC on/after validation date with URN)
             # 2 Fail (Nil DEC and no URN)

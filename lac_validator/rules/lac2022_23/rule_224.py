@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="224",
     message="The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement provider recorded.",
     affected_fields=["PLACE_PROVIDER"],
+    tables=["Episodes", "Provider Info"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):
@@ -24,9 +25,11 @@ def validate(dfs):
         # If <URN> provided and <URN> not = 'XXXXXXX', then <PLACE_PROVIDER> must = URN Lookup <PLACE_PROVIDER>
         valid = pd.Series(
             [
-                pl_pr in valid.split(",")
-                if (pd.notna(pl_pr) and pd.notna(valid))
-                else False
+                (
+                    pl_pr in valid.split(",")
+                    if (pd.notna(pl_pr) and pd.notna(valid))
+                    else False
+                )
                 for pl_pr, valid in zip(
                     episodes["PLACE_PROVIDER"], episodes["PROVIDER_CODES"]
                 )

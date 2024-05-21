@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     "but a Strengths and Difficulties (SDQ) score or a reason "
     "for no SDQ score has been completed. ",
     affected_fields=["SDQ_SCORE", "SDQ_REASON"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

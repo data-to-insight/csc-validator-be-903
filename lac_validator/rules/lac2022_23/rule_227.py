@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="227",
     message="Ofsted Unique reference number (URN) is not valid for the episode start date.",
     affected_fields=["URN", "DECOM"],
+    tables=["Episodes", "Provider Info"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="202",
     message="The gender code conflicts with the gender already recorded for this child.",
     affected_fields=["SEX"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

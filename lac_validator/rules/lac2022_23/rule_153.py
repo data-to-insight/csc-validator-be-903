@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="153",
     message="All data items relating to a child's activity or accommodation after leaving care must be coded or left blank.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

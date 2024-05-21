@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="301",
     message="Date of birth falls after the year ended.",
     affected_fields=["DOB"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

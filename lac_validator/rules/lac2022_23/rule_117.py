@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="117",
     message="Date of decision that a child should/should no longer be placed for adoption is beyond the current collection year or after the child ceased to be looked after.",
     affected_fields=["DATE_PLACED_CEASED", "DATE_PLACED", "DEC", "REC", "DECOM"],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:

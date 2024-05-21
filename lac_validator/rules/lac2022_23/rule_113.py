@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="113",
     message="Date matching child and adopter(s) is not a valid date.",
     affected_fields=["DATE_MATCH"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="175",
     message="The number of adopter(s) code is not a valid code.",
     affected_fields=["NB_ADOPTR"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

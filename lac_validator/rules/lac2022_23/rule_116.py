@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="116",
     message="Date of Local Authority's (LA) decision that a child should no longer be placed for adoption is not a valid date.",
     affected_fields=["DATE_PLACED_CEASED"],
+    tables=["PlacedAdoption"],
 )
 def validate(dfs):
     if "PlacedAdoption" not in dfs:

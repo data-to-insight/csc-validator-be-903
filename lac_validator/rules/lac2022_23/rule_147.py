@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="147",
     message="Date episode ceased is not a valid date.",
     affected_fields=["DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

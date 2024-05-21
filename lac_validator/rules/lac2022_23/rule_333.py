@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="333",
     message="Date should be placed for adoption must be on or prior to the date of matching child with adopter(s).",
     affected_fields=["DATE_INT"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

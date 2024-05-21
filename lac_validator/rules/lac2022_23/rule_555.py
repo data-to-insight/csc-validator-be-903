@@ -13,6 +13,7 @@ from lac_validator.rule_engine import rule_definition
         "DATE_PLACED_CEASED",
         "REASON_PLACED_CEASED",
     ],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:

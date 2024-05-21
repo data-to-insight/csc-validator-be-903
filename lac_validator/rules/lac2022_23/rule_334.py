@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="334",
     message="Date child started to be looked after in latest period of care must be on or prior to the date should be placed for adoption. ",
     affected_fields=["DATE_INT", "DECOM", "RNE"],
+    tables=["Episodes", "AD1"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "AD1" not in dfs:

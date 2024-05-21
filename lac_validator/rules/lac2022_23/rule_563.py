@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="563",
     message="The child should no longer be placed for adoption but the date of the decision that the child should be placed for adoption is blank",
     affected_fields=["DATE_PLACED", "REASON_PLACED_CEASED", "DATE_PLACED_CEASED"],
+    tables=["PlacedAdoption"],
 )
 def validate(dfs):
     if "PlacedAdoption" not in dfs:

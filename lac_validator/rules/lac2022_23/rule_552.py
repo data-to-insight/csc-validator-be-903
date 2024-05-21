@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Date of Decision to place a child for adoption should be on or prior to the date that the child was placed for adoption.",
     # Field that defines date of decision to place a child for adoption is DATE_PLACED and the start of adoption is defined by DECOM with 'A' placement types.
     affected_fields=["DATE_PLACED", "DECOM"],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if ("PlacedAdoption" not in dfs) or ("Episodes" not in dfs):

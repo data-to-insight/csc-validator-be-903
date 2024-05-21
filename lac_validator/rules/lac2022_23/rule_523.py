@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="523",
     message="Date of decision that the child should be placed for adoption should be the same date as the decision that adoption is in the best interest (date should be placed).",
     affected_fields=["DATE_PLACED", "DATE_INT"],
+    tables=["PlacedAdoption", "AD1"],
 )
 def validate(dfs):
     if ("AD1" not in dfs) or ("PlacedAdoption" not in dfs):

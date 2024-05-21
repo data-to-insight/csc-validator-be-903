@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Reason for new episode is that child’s placement has changed but not the legal status, "
     + "but this is not reflected in the episode data recorded.",
     affected_fields=["LS", "PLACE", "PL_POST", "URN", "PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

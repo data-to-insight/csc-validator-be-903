@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="356",
     message="The date the episode ceased is before the date the same episode started.",
     affected_fields=["DECOM"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="562",
     message="Episode commenced before the start of the current collection year but there is a missing continuous episode in the previous year.",
     affected_fields=["DECOM"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:

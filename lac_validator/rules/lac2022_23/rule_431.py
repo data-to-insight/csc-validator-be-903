@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="431",
     message="The reason for new episode is started to be looked after, but the previous episode ended on the same day.",
     affected_fields=["RNE", "DECOM"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

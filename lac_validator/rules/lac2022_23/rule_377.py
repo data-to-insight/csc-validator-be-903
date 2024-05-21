@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Only two temporary placements coded as being due to holiday of usual foster carer(s) are "
     + "allowed in any 12- month period.",
     affected_fields=["PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

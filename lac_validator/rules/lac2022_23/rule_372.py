@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import decom_before_dob
     code="372",
     message="Child in youth custody or prison should be at least 10.",
     affected_fields=["DECOM", "PLACE"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

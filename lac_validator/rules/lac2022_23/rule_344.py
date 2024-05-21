@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="344",
     message="The record shows the young person has died or returned home to live with parent(s) or someone with parental responsibility for a continuous period of 6 months or more, but activity and/or accommodation on leaving care have been completed.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

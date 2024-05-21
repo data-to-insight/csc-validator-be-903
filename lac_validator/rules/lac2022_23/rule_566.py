@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     + chr(39)
     + "s episode of being missing or away from placement without authorisation ended has been completed but whether the child was missing or away without authorisation has not been completed.",
     affected_fields=["MISSING", "MIS_END"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

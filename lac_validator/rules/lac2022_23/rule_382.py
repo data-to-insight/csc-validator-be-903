@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="382",
     message="A child receiving respite care cannot be in a temporary placement.",
     affected_fields=["LS", "PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

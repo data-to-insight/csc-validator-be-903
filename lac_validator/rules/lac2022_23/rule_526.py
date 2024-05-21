@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="526",
     message="Child is missing a placement provider code for at least one episode.",
     affected_fields=["PLACE", "PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

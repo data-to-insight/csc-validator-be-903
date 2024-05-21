@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="378",
     message="A child who is placed with parent(s) cannot be looked after under a single period of accommodation under Section 20 of the Children Act 1989.",
     affected_fields=["PLACE", "LS"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

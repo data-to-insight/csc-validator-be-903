@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="529",
     message="Placement provider code of PR3 cannot be associated with placements P1, A3 to A6, K1, K2 and U1 to U6 as these placements cannot be provided by other public organisations.",
     affected_fields=["PLACE", "PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

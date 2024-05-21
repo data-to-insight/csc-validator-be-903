@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Child is looked after but no postcodes are recorded. [NOTE: This check may result in false "
     "positives for children formerly UASC, particularly if current & prior year UASC data not loaded]",
     affected_fields=["HOME_POST", "PL_POST"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     # Will also use Header/UASC and/or Header_last/UASC_last for former UASC status

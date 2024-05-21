@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="442",
     message="Unique Pupil Number (UPN) field is not completed.",
     affected_fields=["UPN"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("Header" not in dfs):

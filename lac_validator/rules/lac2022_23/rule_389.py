@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="389",
     message="Reason episode ceased is that child transferred to care of adult social care services, but child is aged under 16.",
     affected_fields=["REC"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

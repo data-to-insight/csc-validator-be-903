@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="381",
     message="A period of care cannot end with a temporary placement.",
     affected_fields=["PLACE", "REC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

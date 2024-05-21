@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="352",
     message="Child who started to be looked after was aged 18 or over.",
     affected_fields=["DECOM", "RNE"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs:

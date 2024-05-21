@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Mother field, review field or participation field are completed but "
     + "child is looked after under legal status V3 or V4.",
     affected_fields=["MOTHER", "LS", "REVIEW", "REVIEW_CODE"],
+    tables=["Episodes", "Header", "Reviews"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs or "Reviews" not in dfs:

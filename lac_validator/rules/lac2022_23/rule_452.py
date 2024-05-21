@@ -10,6 +10,7 @@ import pandas as pd
     code="452",
     message="Contradiction between local authority of placement code in the last episode of the previous year and in the first episode of the current year.",
     affected_fields=["PL_LA"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

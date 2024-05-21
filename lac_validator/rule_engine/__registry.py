@@ -22,7 +22,7 @@ class RuleDefinition:
     func: Callable
     message: Optional[str] = None
     affected_fields: Optional[list[str]] = None
-    tables: Optional[list[str]] = None,
+    tables: Optional[list[str]] = (None,)
 
 
 def rule_definition(

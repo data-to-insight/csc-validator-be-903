@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="387",
     message="Reason episode ceased is child moved into independent living arrangement, but the child is aged under 14.",
     affected_fields=["REC"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs:

@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="392d",
     message="Home and placement postcodes should not be same unless the placement type is P1.",
     affected_fields=["HOME_POST", "PL_POST", "PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

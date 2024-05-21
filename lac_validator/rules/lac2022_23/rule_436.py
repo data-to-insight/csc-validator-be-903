@@ -10,6 +10,7 @@ import pandas as pd
     code="436",
     message="Reason for new episode is that both child’s placement and legal status have changed, but this is not reflected in the episode data.",
     affected_fields=["RNE", "LS", "PLACE", "PL_POST", "URN", "PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

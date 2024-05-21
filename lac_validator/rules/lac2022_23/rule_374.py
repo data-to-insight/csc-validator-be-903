@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import decom_before_dob
     code="374",
     message="Child in residential employment should be at least 14 years old.",
     affected_fields=["DECOM", "PLACE"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="367",
     message="The maximum amount of respite care allowable is 75 days in any 12-month period.",
     affected_fields=["LS", "DECOM", "DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:
@@ -31,9 +32,9 @@ def validate(dfs):
     V3_eps["DEC_dt"] = pd.to_datetime(V3_eps["DEC"], format="%d/%m/%Y", errors="coerce")
 
     # truncate episode start/end dates to collection start/end respectively
-    V3_eps.loc[V3_eps["DEC"].isna() | (V3_eps["DEC_dt"] > collection_end), "DEC_dt"] = (
-        collection_end
-    )
+    V3_eps.loc[
+        V3_eps["DEC"].isna() | (V3_eps["DEC_dt"] > collection_end), "DEC_dt"
+    ] = collection_end
     V3_eps.loc[V3_eps["DECOM_dt"] < collection_start, "DECOM_dt"] = collection_start
 
     V3_eps["duration"] = (V3_eps["DEC_dt"] - V3_eps["DECOM_dt"]).dt.days

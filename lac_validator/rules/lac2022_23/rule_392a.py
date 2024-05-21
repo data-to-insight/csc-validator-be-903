@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="392a",
     message="Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC]",
     affected_fields=["PL_DISTANCE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

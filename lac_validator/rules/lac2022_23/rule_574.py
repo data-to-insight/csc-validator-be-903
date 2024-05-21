@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="574",
     message="A new missing/away from placement without authorisation period cannot start when the previous missing/away from placement without authorisation period is still open. Missing/away from placement without authorisation periods should also not overlap.",
     affected_fields=["MIS_START", "MIS_END"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="The child ceased to be looked after at the end of the previous episode but the reason for "
     + "the new episode is not started to be looked after.",
     affected_fields=["RNE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

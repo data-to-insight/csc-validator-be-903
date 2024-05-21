@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="437",
     message="Reason episode ceased is child has died or is aged 18 or over but there are further episodes.",
     affected_fields=["REC"],
+    tables=["Episodes"],
 )
 
 # !# potential false negatives, as this only operates on the current year's data

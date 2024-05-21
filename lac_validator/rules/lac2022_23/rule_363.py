@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="363",
     message="Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.",
     affected_fields=["LS", "DECOM", "DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="391",
     message="Young person was not 17, 18, 19, 20 or 21 during the current collection year. ",
     affected_fields=["DOB", "IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

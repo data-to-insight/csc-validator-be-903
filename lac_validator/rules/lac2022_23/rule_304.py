@@ -9,7 +9,6 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=["DUC"],
     tables=["UASC"],
 )
-
 def validate(dfs):
     if "UASC" not in dfs:
         return {}

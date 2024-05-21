@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="511",
     message="If reporting that the number of person(s) adopting the looked after child is two adopters then the code should only be MM, FF or MF. MM = the adopting couple are both males; FF = the adopting couple are both females; MF = The adopting couple are male and female.",
     affected_fields=["NB_ADOPTR", "SEX_ADOPTR"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

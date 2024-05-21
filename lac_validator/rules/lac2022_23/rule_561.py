@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="561",
     message="Date of the decision that the child should be placed for adoption this year is the same as that recorded last year but records show that the decision changed, and the child should no longer be placed for adoption last year.",
     affected_fields=["DATE_PLACED"],
+    tables=["PlacedAdoption", "PlacedAdoption_last"],
 )
 def validate(dfs):
     if "PlacedAdoption" not in dfs or "PlacedAdoption_last" not in dfs:

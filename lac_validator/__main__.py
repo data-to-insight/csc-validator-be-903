@@ -62,6 +62,7 @@ def rule_info_cmd(ruleset):
                 "Rule code": f"{rule.code}",
                 "Rule message": f"{rule.message}",
                 "Affected fields": f"{rule.affected_fields}",
+                "Tables": f"{rule.tables}",
             }
         )
     rule_info = pd.DataFrame(rules_list)

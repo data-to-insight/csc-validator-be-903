@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import dec_after_decom
     code="379",
     message="Temporary placements for unspecified reason (placement code T4) cannot exceed seven days.",
     affected_fields=["DECOM", "PLACE"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="502",
     message="Last year's record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.",
     affected_fields=["DECOM"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:

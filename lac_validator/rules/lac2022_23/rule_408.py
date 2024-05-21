@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="408",
     message="Child is placed for adoption with a placement order, but no placement order has been recorded.",
     affected_fields=["PLACE", "LS"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

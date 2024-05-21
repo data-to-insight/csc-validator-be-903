@@ -4,7 +4,7 @@ from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
-    code="SW108STG2",
+    code="SW08STG2",
     message="A new social worker episode has started, but the previous episode has not ended.",
     affected_fields=["SW_DEC"],
 )

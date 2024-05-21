@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="NoE",
     message="This child has no episodes loaded for previous year even though child started to be looked after before this current year.",
     affected_fields=["DECOM"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:

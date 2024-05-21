@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Child was reported as a mother but the date of birth of the first child is before the current "
     + "year which contradicts with the mother status recorded last year.",
     affected_fields=["MOTHER", "MC_DOB"],
+    tables=["Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

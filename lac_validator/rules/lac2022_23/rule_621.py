@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="621",
     message="Mother’s field has been completed but date of birth shows that the mother is younger than her child.",
     affected_fields=["DOB", "MC_DOB"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

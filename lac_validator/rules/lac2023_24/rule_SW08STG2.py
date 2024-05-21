@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW108STG2",
     message="A new social worker episode has started, but the previous episode has not ended.",
     affected_fields=["SW_DEC"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

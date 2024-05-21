@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     + "last year’s return and there is no corresponding period recorded at the start of "
     + "this year.",
     affected_fields=["CHILD"],
+    tables=["MIssing", "Missing_last"],
 )
 def validate(dfs):
     if "Missing" not in dfs or "Missing_last" not in dfs:

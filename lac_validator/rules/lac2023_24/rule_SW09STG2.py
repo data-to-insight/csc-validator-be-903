@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW09STG2",
     message="Social worker episode appears to have lasted for less than 24 hours.",
     affected_fields=["SW_DECOM", "SW_DEC"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

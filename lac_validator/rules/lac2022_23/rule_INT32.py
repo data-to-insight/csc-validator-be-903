@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT32",
     message="Internal Check: Child should only exist once in Header.",
     affected_fields=["CHILD"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

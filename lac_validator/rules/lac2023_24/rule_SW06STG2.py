@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW06STG2",
     message="Social worker episode data should be within the social worker data reporting year.",
     affected_fields=["SW_DECOM"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

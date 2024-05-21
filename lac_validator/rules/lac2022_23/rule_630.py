@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="630",
     message="Information on previous permanence option should be returned.",
     affected_fields=["RNE"],
+    tables=["Episodes", "PrevPerm"],
 )
 def validate(dfs):
     if "PrevPerm" not in dfs or "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1000",
     message="This child is recorded as having died in care and therefore should not have the care leaver information completed. [NOTE: This only tests the current and previous year data loaded into the tool]",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "OC3" not in dfs:

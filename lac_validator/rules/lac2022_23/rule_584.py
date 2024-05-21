@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="584",
     message="Date of decision that the child should be placed for adoption this year is different from that recorded last year, but the decision to placed the child for adoption changed and the child should no longer be placed for adoption.",
     affected_fields=["DATE_PLACED"],
+    tables=["PlacedAdoption", "PlacedAdoption_last"],
 )
 def validate(dfs):
     # If <CURRENT_COLLECTION_YEAR> -1 <DATE_PLACED> has been provided and

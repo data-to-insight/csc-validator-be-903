@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW03STG1",
     message="For each social worker episode, information should be complete.",
     affected_fields=["SW_ID", "SW_DECOM", "SW_REASON"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

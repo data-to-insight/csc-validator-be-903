@@ -8,6 +8,7 @@ from lac_validator.utils import add_col_to_episodes_CONTINUOUSLY_LOOKED_AFTER
     code="SW12STG2",
     message="If a child is looked after on 31 March then all social worker episodes for the full previous year should be reported, even those whilst they were not looked after",
     affected_fields=["SW_DECOM"],
+    tables=["SWEpisodes", "Episodes"],
 )
 def validate(dfs):
     if ("SWEpisodes" not in dfs) | ("Episodes" not in dfs):

@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="1016",
     message="Care leaver information is not required for 17- or 18-year olds who cease to be looked after, after their birthday.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3"],
 )
 def validate(dfs):
     # If <DOB> < 19 and >= to 17 years prior to <COLLECTION_END_DATE>

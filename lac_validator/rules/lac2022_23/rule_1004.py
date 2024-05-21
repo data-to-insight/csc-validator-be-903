@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1004",
     message="The start date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.",
     affected_fields=["MIS_START"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

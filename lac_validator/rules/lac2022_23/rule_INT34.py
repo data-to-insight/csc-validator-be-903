@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT34",
     message="Internal Check: Child should only exist once in OC3.",
     affected_fields=["CHILD"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

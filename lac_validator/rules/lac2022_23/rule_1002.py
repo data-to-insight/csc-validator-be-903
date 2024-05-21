@@ -10,6 +10,7 @@ import pandas as pd
     "[NOTE: This tool can only test the current and previous year data loaded into the tool - this "
     "check may generate false positives if a child had episodes prior to last year's collection.]",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "OC3" not in dfs or "Episodes_last" not in dfs:

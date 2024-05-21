@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT07",
     message="Internal Check: Child in PrevPerm does not exist in Header.",
     affected_fields=["CHILD"],
+    tables=["Header", "PrevPerm"],
 )
 def validate(dfs):
     if "Header" not in dfs or "PrevPerm" not in dfs:

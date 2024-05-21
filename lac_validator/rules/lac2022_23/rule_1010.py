@@ -11,6 +11,7 @@ import pandas as pd
     message="This child has no episodes loaded for current year even though there was an open episode of "
     + "care at the end of the previous year, and care leaver data has been entered.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "Episodes_last", "OC3"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs or "OC3" not in dfs:

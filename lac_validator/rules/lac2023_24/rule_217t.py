@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="217t",
     message="Placement type 'P2' is not a valid placement type from 28 October 2023.",
     affected_fields=["PLACE", "DECOM"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

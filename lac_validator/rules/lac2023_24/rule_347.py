@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="347",
     message="Care leavers aged under 18 years, can not be accommodated in a Foyer.",
     affected_fields=["PLACE", "DEC", "URN"],
+    tables=["OC3"],
 )
 def validate(dfs):
     # If <ACCOM> = ‘T’ then <DOB> must be >= 18 years prior to <COLLECTION_START_DATE>

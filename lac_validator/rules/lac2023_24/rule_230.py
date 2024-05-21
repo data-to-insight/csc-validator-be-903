@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="230",
     message="Ofsted Unique reference number (URN) is required for any English H5 placements from 28 October 2023.",
     affected_fields=["PLACE", "DEC", "URN"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

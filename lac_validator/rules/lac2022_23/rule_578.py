@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="578",
     message="The date that the child started to be missing is after the child ceased to be looked after.",
     affected_fields=["MIS_START"],
+    tables=["Episodes", "Missing"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Missing" not in dfs:

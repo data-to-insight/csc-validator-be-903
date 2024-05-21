@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1003",
     message="Date of LA's decision that a child should be placed for adoption is before the child started to be looked after.",
     affected_fields=["DATE_PLACED", "DECOM", "RNE"],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:

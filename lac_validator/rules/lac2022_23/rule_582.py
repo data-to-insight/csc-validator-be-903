@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="582",
     message="Child is showing as ceasing to be looked after due to adoption, but the date of adoption is the same as the date reported for being matched with adopters. In most circumstances we expect the date the child is matched with adopters to be before the date of adoption.",
     affected_fields=["DEC", "DATE_MATCH"],
+    tables=["Episodes", "AD1"],
 )
 def validate(dfs):
     # If <REC> = 'E11' or 'E12' then that episode <DEC> should not = <DATE_MATCH>

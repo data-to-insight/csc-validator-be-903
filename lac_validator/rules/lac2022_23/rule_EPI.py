@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     "[NOTE: This refers to the DfE portal - here, all checks that can be performed with only the "
     "available data will be.]",
     affected_fields=["CHILD"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

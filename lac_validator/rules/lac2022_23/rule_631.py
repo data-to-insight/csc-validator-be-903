@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="631",
     message="Previous permanence option not a valid value.",
     affected_fields=["PREV_PERM"],
+    tables=["PrevPerm"],
 )
 def validate(dfs):
     if "PrevPerm" not in dfs:

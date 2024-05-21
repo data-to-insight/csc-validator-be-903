@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="632",
     message="Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year",
     affected_fields=["DATE_PERM", "DECOM"],
+    tables=["Episodes", "PrevPerm"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PrevPerm" not in dfs:

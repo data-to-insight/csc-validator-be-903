@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="635",
     message="There are entries for date of order and local authority code where previous permanence option was arranged but previous permanence code is Z1",
     affected_fields=["LA_PERM", "DATE_PERM", "PREV_PERM"],
+    tables=["PrevPerm"],
 )
 def validate(dfs):
     if "PrevPerm" not in dfs:

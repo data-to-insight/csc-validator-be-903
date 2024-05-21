@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="633",
     message="Local authority code where previous permanence option was arranged is not a valid value.",
     affected_fields=["LA_PERM"],
+    tables=["PrevPerm"],
 )
 def validate(dfs):
     if "PrevPerm" not in dfs:

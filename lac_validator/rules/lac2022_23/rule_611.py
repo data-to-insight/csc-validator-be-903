@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="611",
     message="Date of birth field is blank, but child is a mother.",
     affected_fields=["MOTHER", "MC_DOB"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

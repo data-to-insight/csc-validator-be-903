@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="531",
     message="A placement provider code of PR5 cannot be associated with placements P1.",
     affected_fields=["PLACE", "PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

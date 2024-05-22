@@ -51,7 +51,8 @@ def rule_info_cmd(ruleset):
     """
     :param str ruleset: validation year whose version of rules should be run.
 
-    :return cli output: list of rules in validation year.
+    :return cli output: tables of rules to be run in a year with message, affected fields,
+                        affected tables, and CSV download of info.
     """
     module = importlib.import_module(f"lac_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
@@ -61,13 +62,17 @@ def rule_info_cmd(ruleset):
             {
                 "Rule code": f"{rule.code}",
                 "Rule message": f"{rule.message}",
-                "Affected fields": f"{rule.affected_fields}",
-                "Tables": f"{rule.tables}",
+                "Affected fields": f"{sorted(rule.affected_fields)}",
+                "Tables": f"{sorted(rule.tables)}",
             }
         )
     rule_info = pd.DataFrame(rules_list)
     click.echo(rule_info)
-    # rule_info.to_csv(f"output_data/{ruleset}_rule_info.csv")
+
+    # uncomment to check if any rules are midding table info
+    # click.echo(rule_info[rule_info["Tables"].isna()])
+
+    rule_info.to_csv(f"output_data/903_{ruleset[3:]}_rule_info.csv")
 
 
 # TEST

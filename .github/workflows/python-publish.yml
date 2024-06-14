@@ -8,7 +8,9 @@ jobs:
   deploy:
 
     runs-on: ubuntu-latest
-    environment: pypi-release
+    permissions:
++     # IMPORTANT: this permission is mandatory for trusted publishing
++     id-token: write
 
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +26,5 @@ jobs:
     - name: Build package
       run: poetry build
       
-    - name: Publish package
-      run: poetry publish
-      env:
-        POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

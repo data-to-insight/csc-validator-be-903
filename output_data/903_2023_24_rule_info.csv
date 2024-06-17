@@ -54,7 +54,7 @@ Rule code,Rule message,Affected fields,Tables
 168,"Unique Pupil Number (UPN) is not valid. If unknown, default codes should be UN1, UN2, UN3, UN4 or UN5.",['UPN'],['Header']
 169,Local Authority (LA) of placement is not valid or is missing. Please check a valid postcode has been entered.,['PL_LA'],['Episodes']
 171,Date of birth of mother's child is not a valid date.,['MC_DOB'],['Header']
-174,Mother's child date of birth is recorded but sex shows that the child is a male.,"['MC_DOB', 'SEX']",['Header']
+174,Mother's child date of birth is recorded but gender shows that the child is a male.,"['MC_DOB', 'SEX']",['Header']
 175,The number of adopter(s) code is not a valid code.,['NB_ADOPTR'],['AD1']
 176,The gender of adopter(s) at the date of adoption code is not a valid code.,['SEX_ADOPTR'],['AD1']
 177,The legal status of adopter(s) code is not a valid code.,['LS_ADOPTR'],['AD1']
@@ -93,6 +93,7 @@ Rule code,Rule message,Affected fields,Tables
 214,Placement location information not required.,"['PL_POST', 'URN']",['Episodes']
 215,Child has care leaver information but one or more data items relating to children looked after for 12 months have been completed.,"['ACCOM', 'ACTIV', 'CONVICTED', 'HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'IN_TOUCH', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']","['OC2', 'OC3']"
 217,"Children who are placed for adoption with current foster carers (placement types A3 or A5) must have a reason for new episode of S, T or U.","['DECOM', 'PLACE', 'RNE']",['Episodes']
+217t,Placement type 'P2' is not a valid placement type from 28 October 2023.,"['DECOM', 'PLACE']",['Episodes']
 218,Ofsted Unique reference number (URN) is required.,['URN'],['Episodes']
 219,The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement type recorded.,"['PLACE', 'URN']","['Episodes', 'Provider Info']"
 221,The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement postcode provided.,['PL_POST'],"['Episodes', 'Provider Info']"
@@ -103,6 +104,7 @@ Rule code,Rule message,Affected fields,Tables
 227,Ofsted Unique reference number (URN) is not valid for the episode start date.,"['DECOM', 'URN']","['Episodes', 'Provider Info']"
 228,Ofsted Unique reference number (URN) is not valid for the episode end date [NOTE: may give false positives on open episodes at providers who close during the year],"['DEC', 'URN']","['Episodes', 'Provider Info']"
 229,"Placement provider does not match between the placing authority and the local authority code of the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may be inaccurate in some cases.]","['PLACE_PROVIDER', 'URN']","['Episodes', 'Provider Info']"
+230,Ofsted Unique reference number (URN) is required for any English H5 placements from 28 October 2023.,"['DEC', 'PLACE', 'URN']",['Episodes']
 3001,"Where care leavers information is being returned for a young person around their 17th birthday, the accommodation cannot be with their former foster carer(s).",['REC'],"['Header', 'OC3']"
 301,Date of birth falls after the year ended.,['DOB'],['Header']
 302,First episode starts before child was born.,"['DECOM', 'DOB']","['Episodes', 'Header']"
@@ -132,7 +134,8 @@ Rule code,Rule message,Affected fields,Tables
 365,Any individual short- term respite placement must not exceed 17 days.,"['DEC', 'DECOM', 'LS']",['Episodes']
 366,A child cannot change placement during the course of an individual short-term respite break.,['RNE'],['Episodes']
 367,The maximum amount of respite care allowable is 75 days in any 12-month period.,"['DEC', 'DECOM', 'LS']",['Episodes']
-371,Child in supported accomodation not subject to children’s homes regulations should be at least 16.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+370,Child in independent living should be at least 16.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+371,Child in semi-independent living accommodation not subject to children’s homes regulations should be at least 16.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
 372,Child in youth custody or prison should be at least 10.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
 373,Child placed in a school should be at least 4 years old.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
 374,Child in residential employment should be at least 14 years old.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
@@ -187,7 +190,7 @@ Rule code,Rule message,Affected fields,Tables
 503A,The reason for new episode in the first episode does not match open episode at end of last year.,['RNE'],"['Episodes', 'Episodes_last']"
 503B,The legal status in the first episode does not match open episode at end of last year.,['LS'],"['Episodes', 'Episodes_last']"
 503C,The category of need in the first episode does not match open episode at end of last year.,['CIN'],"['Episodes', 'Episodes_last']"
-503D,The placement type in the first episode does not match open episode at end of last year,['PLACE'],['Episodes']
+503D,The placement type in the first episode does not match open episode at end of last year,['PLACE'],"['Episodes', 'Episodes_last']"
 503E,The placement provider in the first episode does not match open episode at end of last year.,['PLACE_PROVIDER'],"['Episodes', 'Episodes_last']"
 503F,The Ofsted URN in the  first episode does not match open episode at end of last year.,['URN'],"['Episodes', 'Episodes_last']"
 503G,The distance in first episode does not match open episode at end of last year.,['PL_DISTANCE'],"['Episodes', 'Episodes_last']"
@@ -307,7 +310,3 @@ SW11STG2,Social worker episode has ended before 31 March and no subsequent socia
 SW12STG2,"If a child is looked after on 31 March then all social worker episodes for the full previous year should be reported, even those whilst they were not looked after",['SW_DECOM'],"['Episodes', 'SWEpisodes']"
 SW13STG1,The reason for social worker change is either not valid or has not been entered.,['SW_REASON'],['SWEpisodes']
 SW14STG2,Social worker episode date ceased is blank.,['SW_DEC'],['SWEpisodes']
-SW15STG2,Reason for social worker change is missing.,['SW_REASON'],['SWEpisodes']
-SW16aSTG2,The social worker reason episode changed does not match the open episode at the end of last year.,['SW_ID'],"['SWEpisodes', 'SWEpisodes_last']"
-SW16bSTG2,The social worker episode start date does not match the open episode at the end of last year.,['SW_DECOM'],"['SWEpisodes', 'SWEpisodes_last']"
-SW16cSTG2,The social worker reason episode changed does not match the open episode at the end of last year.,['SW_REASON'],"['SWEpisodes', 'SWEpisodes_last']"

@@ -66,13 +66,14 @@ def rule_info_cmd(ruleset):
                 "Tables": f"{sorted(rule.tables)}",
             }
         )
-    rule_info = pd.DataFrame(rules_list)
+    rule_info = pd.DataFrame(rules_list) 
+    rule_info.sort_values("Rule code", inplace=True)
     click.echo(rule_info)
 
     # uncomment to check if any rules are midding table info
     # click.echo(rule_info[rule_info["Tables"].isna()])
 
-    rule_info.to_csv(f"output_data/903_{ruleset[3:]}_rule_info.csv")
+    rule_info.to_csv(f"output_data/903_{ruleset[3:]}_rule_info.csv", index=False)
 
 
 # TEST

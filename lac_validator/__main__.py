@@ -66,7 +66,7 @@ def rule_info_cmd(ruleset):
                 "Tables": f"{sorted(rule.tables)}",
             }
         )
-    rule_info = pd.DataFrame(rules_list) 
+    rule_info = pd.DataFrame(rules_list)
     rule_info.sort_values("Rule code", inplace=True)
     click.echo(rule_info)
 

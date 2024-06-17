@@ -11,6 +11,7 @@ from lac_validator.utils import (
     message="Child has not been looked after continuously for at least 12 months at 31 March but a reason "
     "for no Strengths and Difficulties (SDQ) score has been completed. ",
     affected_fields=["SDQ_REASON"],
+    tables=["Episodes", "OC2"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "OC2" not in dfs:

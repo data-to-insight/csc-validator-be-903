@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="558",
     message="If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank.",
     affected_fields=["DATE_PLACED_CEASED", "REC"],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     # If latest episode <REC> = ‘E11’ or ‘E12’ then if number of <DATE_PLACED_CEASED> in the year is > 1 then latest

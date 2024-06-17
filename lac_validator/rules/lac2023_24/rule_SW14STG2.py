@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW14STG2",
     message="Social worker episode date ceased is blank.",
     affected_fields=["SW_DEC"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

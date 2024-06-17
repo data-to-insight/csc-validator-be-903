@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="504",
     message="The category of need code differs from that reported at start of current period of being looked after",
     affected_fields=["CIN"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

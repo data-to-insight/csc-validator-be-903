@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="393",
     message="Child is looked after but mother field is not completed.",
     affected_fields=["MOTHER"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Episodes" not in dfs:

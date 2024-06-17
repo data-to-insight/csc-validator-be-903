@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT11",
     message="Internal Check: DOB in AD1 is different to DOB in Header.",
     affected_fields=["DOB"],
+    tables=["Header", "AD1"],
 )
 def validate(dfs):
     if "Header" not in dfs or "AD1" not in dfs:

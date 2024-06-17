@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT36",
     message="Internal Check: Child should only exist once in UASC.",
     affected_fields=["CHILD"],
+    tables=["UASC"],
 )
 def validate(dfs):
     if "UASC" not in dfs:

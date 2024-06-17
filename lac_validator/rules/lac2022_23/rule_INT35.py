@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT35",
     message="Internal Check: Child should only exist once in PrevPerm.",
     affected_fields=["CHILD"],
+    tables=["PrevPerm"],
 )
 def validate(dfs):
     if "PrevPerm" not in dfs:

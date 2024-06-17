@@ -10,6 +10,7 @@ import pandas as pd
     code="453",
     message="Contradiction between placement distance in the last episode of the previous year and in the first episode of the current year.",
     affected_fields=["PL_DISTANCE"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:

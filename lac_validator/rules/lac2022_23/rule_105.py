@@ -8,6 +8,7 @@ from lac_validator.types import MissingMetadataError
     code="105",
     message="Data entry for Unaccompanied Asylum-Seeking Children (UASC) status of child is invalid or has not been completed.",
     affected_fields=["UASC"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

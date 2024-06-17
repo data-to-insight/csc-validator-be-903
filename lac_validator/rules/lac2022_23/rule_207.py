@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="207",
     message="Mother status for the current year disagrees with the mother status already recorded for this child.",
     affected_fields=["MOTHER"],
+    tables=["Episodes", "Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs or "Episodes" not in dfs:

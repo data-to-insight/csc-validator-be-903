@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="451",
     message="Child is still freed for adoption, but freeing orders could not be applied for since 30 December 2005.",
     affected_fields=["DEC", "REC", "LS"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

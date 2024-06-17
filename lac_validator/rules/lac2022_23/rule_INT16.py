@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT16",
     message="Internal Check: DOB in PrevPerm is different to DOB in Header.",
     affected_fields=["DOB"],
+    tables=["Header", "PrevPerm"],
 )
 def validate(dfs):
     if "Header" not in dfs or "PrevPerm" not in dfs:

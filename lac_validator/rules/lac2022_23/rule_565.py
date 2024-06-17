@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="565",
     message="The date that the child started to be missing or away from placement without authorisation has been completed but whether the child was missing or away from placement without authorisation has not been completed.",
     affected_fields=["MISSING", "MIS_START"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

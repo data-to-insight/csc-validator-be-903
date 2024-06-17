@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="101",
     message="Gender code is not valid.",
     affected_fields=["SEX"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

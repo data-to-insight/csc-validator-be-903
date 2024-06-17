@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="197a",
     message="Reason for no Strengths and Difficulties (SDQ) score is not required if Strengths and Difficulties Questionnaire score is filled in.",
     affected_fields=["SDQ_SCORE", "SDQ_REASON"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

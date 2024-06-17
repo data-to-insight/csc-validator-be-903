@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="335",
     message="The current foster value (0) suggests that child is not adopted by current foster carer, but last placement is A2, A3, or A5. Or the current foster value (1) suggests that child is adopted by current foster carer, but last placement is A1, A4 or A6.",
     affected_fields=["PLACE", "FOSTER_CARE"],
+    tables=["Episodes", "AD1"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "AD1" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="586",
     message="Dates of missing periods are before child’s date of birth.",
     affected_fields=["MIS_START"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="388",
     message="Reason episode ceased is coded new episode begins, but there is no continuation episode.",
     affected_fields=["REC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

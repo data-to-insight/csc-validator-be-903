@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="634",
     message="There are entries for previous permanence options, but child has not started to be looked after from 1 April 2016 onwards.",
     affected_fields=["LA_PERM", "PREV_PERM", "DATE_PERM", "DECOM"],
+    tables=["Episodes", "PrevPerm"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PrevPerm" not in dfs:

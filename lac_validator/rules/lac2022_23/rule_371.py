@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import decom_before_dob
     code="371",
     message="Child in semi-independent living accommodation not subject to children’s homes regulations should be at least 14.",
     affected_fields=["DECOM", "PLACE"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

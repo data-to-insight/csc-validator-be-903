@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1014",
     message="UASC information is not required for care leavers",
     affected_fields=["ACTIV", "ACCOM", "IN_TOUCH", "DUC"],
+    tables=["Episodes", "UASC", "OC3"],
 )
 def validate(dfs):
     if "UASC" not in dfs or "Episodes" not in dfs or "OC3" not in dfs:

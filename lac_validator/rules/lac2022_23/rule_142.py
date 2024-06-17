@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="142",
     message="A new episode has started, but the previous episode has not ended.",
     affected_fields=["DEC", "REC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="366",
     message="A child cannot change placement during the course of an individual short-term respite break.",
     affected_fields=["RNE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Care leaver information is not required for 17- or 18-year olds who are still looked after [on "
     "their 17th or 18th birthday.]",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "OC3" not in dfs:

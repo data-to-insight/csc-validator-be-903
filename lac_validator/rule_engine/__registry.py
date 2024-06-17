@@ -22,12 +22,14 @@ class RuleDefinition:
     func: Callable
     message: Optional[str] = None
     affected_fields: Optional[list[str]] = None
+    tables: Optional[list[str]] = (None,)
 
 
 def rule_definition(
     code: str,
     message: Optional[str] = None,
     affected_fields: Optional[list[str]] = None,
+    tables: Optional[list[str]] = None,
 ):
     """
     Creates the rule definition for validation rules using RuleDefinition class as a template.
@@ -50,6 +52,7 @@ def rule_definition(
             func=func,
             message=message,
             affected_fields=affected_fields,
+            tables=tables,
         )
         # when validator funcs are created, give them a unique attribute that they can be
         # recognised by when the file is read later.

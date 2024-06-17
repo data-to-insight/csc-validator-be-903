@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="365",
     message="Any individual short- term respite placement must not exceed 17 days.",
     affected_fields=["LS", "DECOM", "DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits "
     + "the time a child can be detained in custody in Local Authority (LA) accommodation.",
     affected_fields=["LS", "DECOM", "DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

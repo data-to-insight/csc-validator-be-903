@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="392c",
     message="Postcode(s) provided are invalid.",
     affected_fields=["HOME_POST", "PL_POST"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT21",
     message="Internal Check: SEX in UASC is different to SEX in Header.",
     affected_fields=["SEX"],
+    tables=["Header", "UASC"],
 )
 def validate(dfs):
     if "Header" not in dfs or "UASC" not in dfs:

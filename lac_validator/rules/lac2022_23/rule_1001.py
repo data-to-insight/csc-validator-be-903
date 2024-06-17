@@ -10,6 +10,7 @@ from lac_validator.rule_engine import rule_definition
     "[NOTE: This tool can only test the current and previous year data loaded into the tool - this "
     "check may generate false positives if a child had episodes prior to last year's collection.]",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3", "Header", "Episodes_last"],
 )
 def validate(dfs):
     # requiring 'Episodes_last' to reduce false positive rate, though more could be done

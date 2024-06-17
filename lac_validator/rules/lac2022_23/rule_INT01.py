@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT01",
     message="Data Integrity Check: Child in AD1 does not exist in Header.",
     affected_fields=["CHILD"],
+    tables=["Header", "AD1"],
 )
 def validate(dfs):
     if "Header" not in dfs or "AD1" not in dfs:

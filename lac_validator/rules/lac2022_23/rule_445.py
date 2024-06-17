@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="445",
     message="D1 is not a valid code for episodes starting after December 2005.",
     affected_fields=["LS", "DECOM"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

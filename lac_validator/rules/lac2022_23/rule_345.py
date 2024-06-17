@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="345",
     message="The data collection record shows the local authority is in touch with this young person, but activity and/or accommodation data items are zero.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

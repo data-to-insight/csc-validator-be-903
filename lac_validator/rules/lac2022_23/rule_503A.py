@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     code="503A",
     message="The reason for new episode in the first episode does not match open episode at end of last year.",
     affected_fields=["RNE"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     return field_different_from_previous(dfs, field="RNE")

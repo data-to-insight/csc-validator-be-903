@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="214",
     message="Placement location information not required.",
     affected_fields=["PL_POST", "URN"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

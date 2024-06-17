@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="441",
     message="Participation method indicates child was 4 years old or over at the time of the review, but the date of birth and review date indicates the child was under 4 years old.",
     affected_fields=["DOB", "REVIEW", "REVIEW_CODE"],
+    tables=["Reviews"],
 )
 def validate(dfs):
     if "Reviews" not in dfs:

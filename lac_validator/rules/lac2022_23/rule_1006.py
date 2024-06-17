@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1006",
     message="Missing type invalid.",
     affected_fields=["MISSING"],
+    tables=["Missing"],
 )
 def validate(dfs):
     if "Missing" not in dfs:

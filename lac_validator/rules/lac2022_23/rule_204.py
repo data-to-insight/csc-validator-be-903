@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="204",
     message="Ethnic origin code disagrees with the ethnic origin already recorded for this child.",
     affected_fields=["ETHNIC"],
+    tables=["Header", "HEader_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

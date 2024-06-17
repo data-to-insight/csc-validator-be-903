@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="398",
     message="Distance field completed but child looked after under legal status V3 or V4.",
     affected_fields=["LS", "HOME_POST", "PL_POST"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

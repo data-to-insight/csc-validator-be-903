@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW01STG1",
     message="Child looked after on 31 March, but no social worker episode information is reported",
     affected_fields=["DEC"],
+    tables=["SWEpisodes", "Episodes"],
 )
 def validate(dfs):
     if ("SWEpisodes" not in dfs) | ("Episodes" not in dfs):

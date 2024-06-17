@@ -12,6 +12,7 @@ from lac_validator.utils import (
     "year and Strengths and Difficulties Questionnaire (SDQ) 1 has been recorded as the reason for no "
     "Strengths and Difficulties Questionnaire (SDQ) score.",
     affected_fields=["SDQ_REASON", "DOB"],
+    tables=["OC2", "Episodes"],
 )
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:

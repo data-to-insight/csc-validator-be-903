@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="542",
     message="A child aged under 10 at 31 March should not have conviction information completed.",
     affected_fields=["CONVICTED"],
+    tables=["OC2s"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

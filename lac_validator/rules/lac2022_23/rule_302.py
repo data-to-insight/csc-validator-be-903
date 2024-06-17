@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="302",
     message="First episode starts before child was born.",
     affected_fields=["DECOM", "DOB"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs:

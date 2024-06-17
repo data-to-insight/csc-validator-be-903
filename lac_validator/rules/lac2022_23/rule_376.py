@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import dec_after_decom
     code="376",
     message="Temporary placements coded as being due to holiday of usual foster carer(s) cannot exceed three weeks.",
     affected_fields=["DECOM", "PLACE"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

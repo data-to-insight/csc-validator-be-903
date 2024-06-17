@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="167",
     message="Data entry for participation is invalid or blank.",
     affected_fields=["REVIEW_CODE"],
+    tables=["Reviews"],
 )
 def validate(dfs):
     if "Reviews" not in dfs:

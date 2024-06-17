@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Police protection legal status lasted longer than maximum 72 hours allowed "
     + "in the Children Act 1989.",
     affected_fields=["DECOM", "LS", "DEC"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

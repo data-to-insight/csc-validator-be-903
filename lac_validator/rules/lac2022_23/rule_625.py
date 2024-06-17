@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="625",
     message="Date of birth of the first child is beyond the end of this reporting year or the date the child ceased to be looked after.",
     affected_fields=["MC_DOB", "DEC"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     "blank. [NOTE: This check will result in false negatives for children formerly UASC not "
     "identified as such in loaded data]",
     affected_fields=["PL_DISTANCE"],
+    tables=["Episodes"],
 )
 
 # If <UASC> = '1' or <COLLECTION YEAR> - 1 <UASC> = '1' or <COLLECTION YEAR> - 2 <UASC> = '1' Then

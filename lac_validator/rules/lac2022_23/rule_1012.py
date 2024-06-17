@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1012",
     message="No other data should be returned for OC3 children who had no episodes in the current year",
     affected_fields=["CHILD"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

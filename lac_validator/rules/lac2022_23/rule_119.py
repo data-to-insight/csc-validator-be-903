@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="119",
     message="If the decision is made that a child should no longer be placed for adoption, then the date of this decision and the reason why this decision was made must be completed.",
     affected_fields=["REASON_PLACED_CEASED", "DATE_PLACED_CEASED"],
+    tables=["PlacedAdoption"],
 )
 def validate(dfs):
     if "PlacedAdoption" not in dfs:

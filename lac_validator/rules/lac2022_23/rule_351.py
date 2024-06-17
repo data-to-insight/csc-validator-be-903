@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     affected_fields=[
         "DOB",
     ],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

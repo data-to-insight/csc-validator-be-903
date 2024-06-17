@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="628",
     message="Motherhood details are not required for care leavers who have not been looked after during the year.",
     affected_fields=["MOTHER"],
+    tables=["Episodes", "Header", "OC3"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs or "OC3" not in dfs:

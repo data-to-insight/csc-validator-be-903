@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="A child receiving respite care cannot be recorded under a legal status of V3 and V4 in "
     + "the same year.",
     affected_fields=["LS"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="358",
     message="Child with this legal status should not be under 10.",
     affected_fields=["DECOM", "DOB", "LS"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

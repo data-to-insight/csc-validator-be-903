@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="514",
     message="Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.",
     affected_fields=["LS_ADOPTR", "SEX_ADOPTR"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

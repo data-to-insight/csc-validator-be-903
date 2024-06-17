@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Date of birth of the first child contradicts the date of birth of the first child previously "
     + "recorded.",
     affected_fields=["MC_DOB"],
+    tables=["Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

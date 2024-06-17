@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="336",
     message="Child does not have a foster placement immediately prior to being placed for adoption.",
     affected_fields=["PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

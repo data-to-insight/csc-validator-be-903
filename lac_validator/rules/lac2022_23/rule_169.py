@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="169",
     message="Local Authority (LA) of placement is not valid or is missing. Please check a valid postcode has been entered.",
     affected_fields=["PL_LA"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

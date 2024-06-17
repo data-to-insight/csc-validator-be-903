@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="205D",
     message="Child identified as UASC this year but not identified as UASC status provided for the child last year.",
     affected_fields=["UASC", "CHILD"],
+    tables=["UASC", "UASC_last", "Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" in dfs:

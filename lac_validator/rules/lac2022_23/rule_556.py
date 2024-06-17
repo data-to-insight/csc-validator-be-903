@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="556",
     message="Date of decision that the child should be placed for adoption should be on or prior to the date that the freeing order was granted.",
     affected_fields=["DATE_PLACED", "DECOM"],
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "PlacedAdoption" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="3001",
     message="Where care leavers information is being returned for a young person around their 17th birthday, the accommodation cannot be with their former foster carer(s).",
     affected_fields=["REC"],
+    tables=["Header", "OC3"],
 )
 def validate(dfs):
     if "Header" not in dfs:

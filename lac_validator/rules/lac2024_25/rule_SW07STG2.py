@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW07STG2",
     message="Social worker episode end date should be on or after the start of the social worker reporting period, and should be on or before the collection end date.",
     affected_fields=["SW_DEC"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

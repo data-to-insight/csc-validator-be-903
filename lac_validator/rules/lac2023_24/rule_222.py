@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="222",
     message="Ofsted Unique reference number (URN) should not be recorded for this placement type.",
     affected_fields=["URN"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     # If <URN> provided and <URN> not = ‘XXXXXXX’, and where

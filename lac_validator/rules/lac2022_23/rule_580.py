@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="580",
     message="Child is missing when cease being looked after but reason episode ceased not ‘E8’.",
     affected_fields=["REC"],
+    tables=["Episodes", "MIssing"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Missing" not in dfs:

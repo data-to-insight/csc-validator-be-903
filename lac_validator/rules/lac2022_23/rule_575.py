@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     + "authorisation ends, the missing/away from placement without authorisation period in "
     + "the missing module must also have an end date.",
     affected_fields=["MIS_END"],
+    tables=["Episodes", "Missing"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Missing" not in dfs:

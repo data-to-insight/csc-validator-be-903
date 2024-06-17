@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Episode information shows child has been previously adopted from care. "
     "[NOTE: This only tests the current and previous year data loaded into the tool]",
     affected_fields=["CHILD"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

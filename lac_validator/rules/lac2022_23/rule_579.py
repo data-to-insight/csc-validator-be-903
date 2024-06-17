@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="579",
     message="A new decision that the child should be placed for adoption this year cannot start when the previous decision is still open. Decisions to place the child for adoption should also not overlap. The date of any new decision to place the child for adoption must not be before the date placed ceased of previous decisions.",
     affected_fields=["DATE_PLACED", "DATE_PLACED_CEASED"],
+    tables=["PlacedAdoption"],
 )
 def validate(dfs):
     if "PlacedAdoption" not in dfs:

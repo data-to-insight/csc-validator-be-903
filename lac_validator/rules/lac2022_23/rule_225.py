@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="225",
     message="Reason for placement change must be recorded.",
     affected_fields=["REASON_PLACE_CHANGE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

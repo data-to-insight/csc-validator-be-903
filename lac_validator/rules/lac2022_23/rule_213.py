@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="213",
     message="Placement provider information not required.",
     affected_fields=["PLACE_PROVIDER"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

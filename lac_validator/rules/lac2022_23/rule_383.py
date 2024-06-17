@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="383",
     message="A child in a temporary placement must subsequently return to his/her normal placement.",
     affected_fields=["PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

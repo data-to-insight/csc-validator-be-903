@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="192",
     message="Child has been identified as having a substance misuse problem but the additional item on whether an intervention was received has been left blank.",
     affected_fields=["SUBSTANCE_MISUSE", "INTERVENTION_RECEIVED"],
+    tables=["OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs:

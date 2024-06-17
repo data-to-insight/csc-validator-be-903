@@ -15,6 +15,7 @@ from lac_validator.rule_engine import rule_definition
         "LS",
         "REC",
     ],  # Episodes
+    tables=["Episodes", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

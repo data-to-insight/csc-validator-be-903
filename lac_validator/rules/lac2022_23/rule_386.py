@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="386",
     message="Reason episode ceased is adopted but child has reached age 18.",
     affected_fields=["REC"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs:

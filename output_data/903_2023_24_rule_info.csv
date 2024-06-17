@@ -1,0 +1,312 @@
+Rule code,Rule message,Affected fields,Tables
+1000,This child is recorded as having died in care and therefore should not have the care leaver information completed. [NOTE: This only tests the current and previous year data loaded into the tool],"['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'OC3']"
+1001,The episodes recorded for this young person suggest they are not a relevant or a former relevant child and therefore should not have care leaver information completed. [NOTE: This tool can only test the current and previous year data loaded into the tool - this check may generate false positives if a child had episodes prior to last year's collection.],"['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'Episodes_last', 'Header', 'OC3']"
+1002,"This child has no previous episodes of care, therefore should not have care leaver information recorded. [NOTE: This tool can only test the current and previous year data loaded into the tool - this check may generate false positives if a child had episodes prior to last year's collection.]","['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'Episodes_last', 'OC3']"
+1003,Date of LA's decision that a child should be placed for adoption is before the child started to be looked after.,"['DATE_PLACED', 'DECOM', 'RNE']","['Episodes', 'PlacedAdoption']"
+1004,The start date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.,['MIS_START'],['Missing']
+1005,The end date of the missing episode or episode that the child was away from placement without authorisation is not a valid date.,['MIS_END'],['Missing']
+1006,Missing type invalid.,['MISSING'],['Missing']
+1007,Care leaver information is not required for 17- or 18-year olds who are still looked after [on their 17th or 18th birthday.],"['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'OC3']"
+1008,Ofsted Unique Reference Number (URN) is not valid.,['URN'],"['Episodes', 'Provider Info']"
+1009,Reason for placement change is not a valid code.,['REASON_PLACE_CHANGE'],['Episodes']
+101,Gender code is not valid.,['SEX'],['Header']
+1010,"This child has no episodes loaded for current year even though there was an open episode of care at the end of the previous year, and care leaver data has been entered.","['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'Episodes_last', 'OC3']"
+1011,This child is recorded as having his/her care transferred to another local authority for the final episode and therefore should not have the care leaver information completed.,"['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'OC3']"
+1012,No other data should be returned for OC3 children who had no episodes in the current year,['CHILD'],['Episodes']
+1014,UASC information is not required for care leavers,"['ACCOM', 'ACTIV', 'DUC', 'IN_TOUCH']","['Episodes', 'OC3', 'UASC']"
+1015,Placement provider is own provision but child not placed in own LA.,['PL_LA'],['Episodes']
+1016,"Care leaver information is not required for 17- or 18-year olds who cease to be looked after, after their birthday.","['ACCOM', 'ACTIV', 'IN_TOUCH']","['Episodes', 'OC3']"
+102,Date of birth is not a valid date.,['DOB'],['Header']
+103,The ethnicity code is either not valid or has not been entered.,['ETHNIC'],['Header']
+104,Date for Unaccompanied Asylum-Seeking Children (UASC) status ceased is not a valid date.,['DUC'],['UASC']
+105,Data entry for Unaccompanied Asylum-Seeking Children (UASC) status of child is invalid or has not been completed.,['UASC'],['Header']
+112,Date should be placed for adoption is not a valid date.,['DATE_INT'],['AD1']
+113,Date matching child and adopter(s) is not a valid date.,['DATE_MATCH'],['AD1']
+114,Data entry to record the status of former carer(s) of an adopted child is invalid.,['FOSTER_CARE'],['AD1']
+115,Date of Local Authority's (LA) decision that a child should be placed for adoption is not a valid date.,['DATE_PLACED'],['PlacedAdoption']
+116,Date of Local Authority's (LA) decision that a child should no longer be placed for adoption is not a valid date.,['DATE_PLACED_CEASED'],['PlacedAdoption']
+117,Date of decision that a child should/should no longer be placed for adoption is beyond the current collection year or after the child ceased to be looked after.,"['DATE_PLACED', 'DATE_PLACED_CEASED', 'DEC', 'DECOM', 'REC']","['Episodes', 'PlacedAdoption']"
+118,Date of decision that a child should no longer be placed for adoption is before the current collection year or before the date the child started to be looked after.,"['DECOM', 'DECOM', 'LS']","['Episodes', 'PlacedAdoption']"
+119,"If the decision is made that a child should no longer be placed for adoption, then the date of this decision and the reason why this decision was made must be completed.","['DATE_PLACED_CEASED', 'REASON_PLACED_CEASED']",['PlacedAdoption']
+120,The reason for the reversal of the decision that the child should be placed for adoption code is not valid.,['REASON_PLACED_CEASED'],['PlacedAdoption']
+131,Data entry for being in touch after leaving care is invalid.,['IN_TOUCH'],['OC3']
+132,Data entry for activity after leaving care is invalid.,['ACTIV'],['OC3']
+133,Data entry for accommodation after leaving care is invalid. If reporting on a childs accommodation after leaving care the data entry must be valid,['ACCOM'],['OC3']
+134,Data on adoption should not be entered for the OC3 cohort.,"['ACCOM', 'ACTIV', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'IN_TOUCH', 'LS_ADOPTR', 'NB_ADOPTR', 'SEX_ADOPTR']","['AD1', 'OC3']"
+141,Date episode began is not a valid date.,['DECOM'],['Episodes']
+142,"A new episode has started, but the previous episode has not ended.","['DEC', 'REC']",['Episodes']
+143,The reason for new episode code is not a valid code.,['RNE'],['Episodes']
+144,The legal status code is not a valid code.,['LS'],['Episodes']
+145,Category of need code is not a valid code.,['CIN'],['Episodes']
+146,Placement type code is not a valid code.,['PLACE'],['Episodes']
+147,Date episode ceased is not a valid date.,['DEC'],['Episodes']
+148,"Date episode ceased and reason episode ceased must both be coded, or both left blank.","['DEC', 'REC']",['Episodes']
+149,Reason episode ceased code is not valid. ,['REC'],['Episodes']
+151,All data items relating to a childs adoption must be coded or left blank.,"['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'LS_ADOPTR', 'NB_ADOPTER', 'SEX_ADOPTR']",['AD1']
+153,All data items relating to a child's activity or accommodation after leaving care must be coded or left blank.,"['ACCOM', 'ACTIV', 'IN_TOUCH']",['OC3']
+157,Child is aged 4 years or over at the beginning of the year or 16 years or under at the end of the year and Strengths and Difficulties Questionnaire (SDQ) 1 has been recorded as the reason for no Strengths and Difficulties Questionnaire (SDQ) score.,"['DOB', 'SDQ_REASON']","['Episodes', 'OC2']"
+158,"If a child has been recorded as receiving an intervention for their substance misuse problem, then the additional item on whether an intervention was offered should be left blank.","['INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED']",['OC2']
+159,"If a child has been recorded as not receiving an intervention for their substance misuse problem, then the additional item on whether an intervention was offered should be completed as well.","['INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE']",['OC2']
+164,Distance is not valid. Please check a valid postcode has been entered. [NOTE: This check will result in false positives for children formerly UASC not identified as such in loaded data],['PL_DISTANCE'],['Episodes']
+165,Data entry for mother status is invalid.,"['ACCOM', 'ACTIV', 'DECOM', 'IN_TOUCH', 'MOTHER', 'SEX']","['Episodes', 'Header', 'OC3']"
+166,Date of review is invalid or blank.,['REVIEW'],['Reviews']
+167,Data entry for participation is invalid or blank.,['REVIEW_CODE'],['Reviews']
+168,"Unique Pupil Number (UPN) is not valid. If unknown, default codes should be UN1, UN2, UN3, UN4 or UN5.",['UPN'],['Header']
+169,Local Authority (LA) of placement is not valid or is missing. Please check a valid postcode has been entered.,['PL_LA'],['Episodes']
+171,Date of birth of mother's child is not a valid date.,['MC_DOB'],['Header']
+174,Mother's child date of birth is recorded but gender shows that the child is a male.,"['MC_DOB', 'SEX']",['Header']
+175,The number of adopter(s) code is not a valid code.,['NB_ADOPTR'],['AD1']
+176,The gender of adopter(s) at the date of adoption code is not a valid code.,['SEX_ADOPTR'],['AD1']
+177,The legal status of adopter(s) code is not a valid code.,['LS_ADOPTR'],['AD1']
+178,Placement provider code is not a valid code.,['PLACE_PROVIDER'],['Episodes']
+179,Placement location code is not a valid code.,['PL_LOCATION'],['Episodes']
+180,Data entry for the strengths and difficulties questionnaire (SDQ) score is invalid.,['SDQ_SCORE'],['OC2']
+181,Data items relating to children looked after continuously for 12 months should be completed with a 0 or 1.,"['CONVICTED', 'HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']",['OC2']
+182,"Data entries on immunisations, teeth checks, health assessments and substance misuse problem identified should be completed or all OC2 fields should be left blank.","['CONVICTED', 'HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']",['OC2']
+184,Date of decision that a child should be placed for adoption is before the child was born.,"['DATE_PLACED', 'DOB']","['Header', 'PlacedAdoption']"
+185,Child has not been looked after continuously for at least 12 months at 31 March but a Strengths and Difficulties (SDQ) score has been completed.,['SDQ_SCORE'],"['Episodes', 'OC2']"
+186,Children aged 4 or over at the start of the year and children aged under 17 at the end of the year and who have been looked after for at least 12 months continuously should have a Strengths and Difficulties (SDQ) score completed.,['SDQ_SCORE'],"['Episodes', 'OC2']"
+187,Child cannot be looked after continuously for 12 months at 31 March (OC2) and have any of adoption or care leavers returns completed.,"['ACCOM', 'ACTIV', 'DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'IN_TOUCH', 'LS_ADOPTR', 'NB_ADOPTR', 'SEX_ADOPTR']","['AD1', 'Episodes', 'OC3']"
+188,"Child is aged under 4 years at the end of the year, but a Strengths and Difficulties (SDQ) score or a reason for no SDQ score has been completed. ","['SDQ_REASON', 'SDQ_SCORE']",['OC2']
+189,"Child is aged 17 years or over at the beginning of the year, but an Strengths and Difficulties (SDQ) score or a reason for no Strengths and Difficulties (SDQ) score has been completed.","['DOB', 'SDQ_REASON', 'SDQ_SCORE']",['OC2']
+190,Child has not been looked after continuously for at least 12 months at 31 March but one or more data items relating to children looked after for 12 months have been completed.,"['CONVICTED', 'HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']","['Episodes', 'OC2']"
+191,Child has been looked after continuously for at least 12 months at 31 March but one or more data items relating to children looked after for 12 months have been left blank.,"['CHILD', 'HEALTH_ASSESSMENT', 'IMMUNISATIONS', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']","['Episodes', 'OC2']"
+192,Child has been identified as having a substance misuse problem but the additional item on whether an intervention was received has been left blank.,"['INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE']",['OC2']
+193,Child not identified as having a substance misuse problem but at least one of the two additional items on whether an intervention were offered and received have been completed.,"['INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'SUBSTANCE_MISUSE']",['OC2']
+196,Strengths and Difficulties (SDQ) reason is not a valid code.,['SDQ_REASON'],['OC2']
+197B,SDQ score or reason for no SDQ should be reported for 4- or 17-year-olds.,"['DOB', 'SDQ_REASON']","['Episodes', 'OC2']"
+197a,Reason for no Strengths and Difficulties (SDQ) score is not required if Strengths and Difficulties Questionnaire score is filled in.,"['SDQ_REASON', 'SDQ_SCORE']",['OC2']
+198,Child has not been looked after continuously for at least 12 months at 31 March but a reason for no Strengths and Difficulties (SDQ) score has been completed. ,['SDQ_REASON'],"['Episodes', 'OC2']"
+199,Episode information shows child has been previously adopted from care. [NOTE: This only tests the current and previous year data loaded into the tool],['CHILD'],['Episodes']
+202,The gender code conflicts with the gender already recorded for this child.,['SEX'],"['Header', 'Header_last']"
+203,Date of birth disagrees with the date of birth already recorded for this child.,['DOB'],"['Header', 'Header_last']"
+204,Ethnic origin code disagrees with the ethnic origin already recorded for this child.,['ETHNIC'],"['HEader_last', 'Header']"
+205A,"Child identified as UASC last year is no longer UASC this year, but date UASC ceased in both years does not support this.","['CHILD', 'UASC']","['Header', 'Header_last', 'UASC', 'UASC_last']"
+205B,"Child previously identified as UASC is also UASC this year, but date UASC ceased in both years does not support this.","['DUC', 'UASC']","['Header', 'Header_last', 'UASC', 'UASC_last']"
+205C,Child not identified as UASC either this year or last year but date UASC ceased has been provided.,"['DUC', 'UASC']","['Header', 'Header_last', 'UASC', 'UASC_last']"
+205D,Child identified as UASC this year but not identified as UASC status provided for the child last year.,"['CHILD', 'UASC']","['Header', 'Header_last', 'UASC', 'UASC_last']"
+207,Mother status for the current year disagrees with the mother status already recorded for this child.,['MOTHER'],"['Episodes', 'Header', 'Header_last']"
+208,Unique Pupil Number (UPN) for the current year disagrees with the Unique Pupil Number (UPN) already recorded for this child.,['UPN'],"['Header', 'Header_last']"
+209,Child looked after is of school age and should not have an unknown Unique Pupil Number (UPN) code of UN1.,"['DOB', 'UPN']",['Header']
+210,Children looked after for more than a week at 31 March should not have an unknown Unique Pupil Number (UPN) code of UN4.,"['DECOM', 'UPN']","['Episodes', 'Header']"
+213,Placement provider information not required.,['PLACE_PROVIDER'],['Episodes']
+214,Placement location information not required.,"['PL_POST', 'URN']",['Episodes']
+215,Child has care leaver information but one or more data items relating to children looked after for 12 months have been completed.,"['ACCOM', 'ACTIV', 'CONVICTED', 'HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'INTERVENTION_OFFERED', 'INTERVENTION_RECEIVED', 'IN_TOUCH', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']","['OC2', 'OC3']"
+217,"Children who are placed for adoption with current foster carers (placement types A3 or A5) must have a reason for new episode of S, T or U.","['DECOM', 'PLACE', 'RNE']",['Episodes']
+217t,Placement type 'P2' is not a valid placement type from 28 October 2023.,"['DECOM', 'PLACE']",['Episodes']
+218,Ofsted Unique reference number (URN) is required.,['URN'],['Episodes']
+219,The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement type recorded.,"['PLACE', 'URN']","['Episodes', 'Provider Info']"
+221,The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement postcode provided.,['PL_POST'],"['Episodes', 'Provider Info']"
+222,Ofsted Unique reference number (URN) should not be recorded for this placement type.,['URN'],['Episodes']
+224,The Ofsted Unique reference number (URN) provided for the child's placement does not match the placement provider recorded.,['PLACE_PROVIDER'],"['Episodes', 'Provider Info']"
+225,Reason for placement change must be recorded.,['REASON_PLACE_CHANGE'],['Episodes']
+226,Reason for placement change is not required.,"['PLACE', 'REASON_PLACE_CHANGE']",['Episodes']
+227,Ofsted Unique reference number (URN) is not valid for the episode start date.,"['DECOM', 'URN']","['Episodes', 'Provider Info']"
+228,Ofsted Unique reference number (URN) is not valid for the episode end date [NOTE: may give false positives on open episodes at providers who close during the year],"['DEC', 'URN']","['Episodes', 'Provider Info']"
+229,"Placement provider does not match between the placing authority and the local authority code of the provider. [NOTE: The provider's LA code is inferred from the its postcode, and may be inaccurate in some cases.]","['PLACE_PROVIDER', 'URN']","['Episodes', 'Provider Info']"
+230,Ofsted Unique reference number (URN) is required for any English H5 placements from 28 October 2023.,"['DEC', 'PLACE', 'URN']",['Episodes']
+3001,"Where care leavers information is being returned for a young person around their 17th birthday, the accommodation cannot be with their former foster carer(s).",['REC'],"['Header', 'OC3']"
+301,Date of birth falls after the year ended.,['DOB'],['Header']
+302,First episode starts before child was born.,"['DECOM', 'DOB']","['Episodes', 'Header']"
+303,"If date Unaccompanied Asylum-Seeking Child (UASC) status ceased is not null, UASC status must be coded 1.","['DUC', 'UASC']","['Header', 'UASC']"
+304,Date unaccompanied asylum-seeking child (UASC) status ceased must be on or before the 18th birthday of a child.,['DUC'],['UASC']
+331,"Date of matching child and adopter(s) should be the same as, or prior to, the date of placement of adoption.","['DATE_MATCH', 'DECOM', 'REC']","['AD1', 'Episodes']"
+333,Date should be placed for adoption must be on or prior to the date of matching child with adopter(s).,['DATE_INT'],['AD1']
+334,Date child started to be looked after in latest period of care must be on or prior to the date should be placed for adoption. ,"['DATE_INT', 'DECOM', 'RNE']","['AD1', 'Episodes']"
+335,"The current foster value (0) suggests that child is not adopted by current foster carer, but last placement is A2, A3, or A5. Or the current foster value (1) suggests that child is adopted by current foster carer, but last placement is A1, A4 or A6.","['FOSTER_CARE', 'PLACE']","['AD1', 'Episodes']"
+336,Child does not have a foster placement immediately prior to being placed for adoption.,['PLACE'],['Episodes']
+344,"The record shows the young person has died or returned home to live with parent(s) or someone with parental responsibility for a continuous period of 6 months or more, but activity and/or accommodation on leaving care have been completed.","['ACCOM', 'ACTIV', 'IN_TOUCH']",['OC3']
+345,"The data collection record shows the local authority is in touch with this young person, but activity and/or accommodation data items are zero.","['ACCOM', 'ACTIV', 'IN_TOUCH']",['OC3']
+347,"Care leavers aged under 18 years, can not be accommodated in a Foyer.","['DEC', 'PLACE', 'URN']",['OC3']
+351,Child was over 25 at the start of the current collection year.,['DOB'],['Header']
+352,Child who started to be looked after was aged 18 or over.,"['DECOM', 'RNE']","['Episodes', 'Header']"
+353,No episode submitted can start before 14 October 1991.,['DECOM'],['Episodes']
+354,Date episode ceased must be on or before the end of the current collection year.,['DECOM'],['Episodes']
+355,Episode appears to have lasted for less than 24 hours,"['DEC', 'DECOM']",['Episodes']
+356,The date the episode ceased is before the date the same episode started.,['DECOM'],['Episodes']
+357,"If this is the first episode ever for this child, reason for new episode must be S.  Check whether there is an episode immediately preceding this one, which has been left out.  If not the reason for new episode code must be amended to S.",['RNE'],['Episodes']
+358,Child with this legal status should not be under 10.,"['DECOM', 'DOB', 'LS']","['Episodes', 'Header']"
+359,Child being looked after following 18th birthday must be accommodated under section 20(5) of the Children Act 1989 in a community home.,"['DEC', 'LS', 'PLACE']","['Episodes', 'Header']"
+361,Police protection legal status lasted longer than maximum 72 hours allowed in the Children Act 1989.,"['DEC', 'DECOM', 'LS']",['Episodes']
+362,Emergency protection order (EPO) lasted longer than 21 days,"['DEC', 'DECOM', 'LS']",['Episodes']
+363,Child assessment order (CAO) lasted longer than 7 days allowed in the Children Act 1989.,"['DEC', 'DECOM', 'LS']",['Episodes']
+364,Sections 41-46 of Police and Criminal Evidence (PACE; 1984) severely limits the time a child can be detained in custody in Local Authority (LA) accommodation.,"['DEC', 'DECOM', 'LS']",['Episodes']
+365,Any individual short- term respite placement must not exceed 17 days.,"['DEC', 'DECOM', 'LS']",['Episodes']
+366,A child cannot change placement during the course of an individual short-term respite break.,['RNE'],['Episodes']
+367,The maximum amount of respite care allowable is 75 days in any 12-month period.,"['DEC', 'DECOM', 'LS']",['Episodes']
+370,Child in independent living should be at least 16.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+371,Child in semi-independent living accommodation not subject to children’s homes regulations should be at least 16.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+372,Child in youth custody or prison should be at least 10.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+373,Child placed in a school should be at least 4 years old.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+374,Child in residential employment should be at least 14 years old.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+375,Hospitalisation coded as a temporary placement exceeds six weeks.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+376,Temporary placements coded as being due to holiday of usual foster carer(s) cannot exceed three weeks.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+377,Only two temporary placements coded as being due to holiday of usual foster carer(s) are allowed in any 12- month period.,['PLACE'],['Episodes']
+378,A child who is placed with parent(s) cannot be looked after under a single period of accommodation under Section 20 of the Children Act 1989.,"['LS', 'PLACE']",['Episodes']
+379,Temporary placements for unspecified reason (placement code T4) cannot exceed seven days.,"['DECOM', 'PLACE']","['Episodes', 'Header']"
+380,A period of care cannot start with a temporary placement.,"['PLACE', 'RNE']",['Episodes']
+381,A period of care cannot end with a temporary placement.,"['PLACE', 'REC']",['Episodes']
+382,A child receiving respite care cannot be in a temporary placement.,"['LS', 'PLACE']",['Episodes']
+383,A child in a temporary placement must subsequently return to his/her normal placement.,['PLACE'],['Episodes']
+384,A child receiving respite care cannot be in a long-term foster placement ,"['LS', 'PLACE']",['Episodes']
+385,Date episode ceased must be on or before the end of the current collection year.,['DEC'],['Episodes']
+386,Reason episode ceased is adopted but child has reached age 18.,['REC'],"['Episodes', 'Header']"
+387,"Reason episode ceased is child moved into independent living arrangement, but the child is aged under 14.",['REC'],"['Episodes', 'Header']"
+388,"Reason episode ceased is coded new episode begins, but there is no continuation episode.",['REC'],['Episodes']
+389,"Reason episode ceased is that child transferred to care of adult social care services, but child is aged under 16.",['REC'],"['Episodes', 'Header']"
+390,Reason episode ceased is adopted but child has not been previously placed for adoption.,"['PLACE', 'REC']",['Episodes']
+391,"Young person was not 17, 18, 19, 20 or 21 during the current collection year. ","['ACCOM', 'ACTIV', 'DOB', 'IN_TOUCH']",['OC3']
+392a,Child is looked after but no distance is recorded. [NOTE: This check may result in false positives for children formerly UASC],['PL_DISTANCE'],['Episodes']
+392b,"Child is looked after but no postcodes are recorded. [NOTE: This check may result in false positives for children formerly UASC, particularly if current & prior year UASC data not loaded]","['HOME_POST', 'PL_POST']",['Episodes']
+392c,Postcode(s) provided are invalid.,"['HOME_POST', 'PL_POST']",['Episodes']
+392d,Home and placement postcodes should not be same unless the placement type is P1.,"['HOME_POST', 'PLACE', 'PL_POST']",['Episodes']
+393,Child is looked after but mother field is not completed.,['MOTHER'],"['Episodes', 'Header']"
+398,Distance field completed but child looked after under legal status V3 or V4.,"['HOME_POST', 'LS', 'PL_POST']",['Episodes']
+399,"Mother field, review field or participation field are completed but child is looked after under legal status V3 or V4.","['LS', 'MOTHER', 'REVIEW', 'REVIEW_CODE']","['Episodes', 'Header', 'Reviews']"
+406,Child is Unaccompanied Asylum-Seeking Child (UASC) or was formerly UASC. Distance should be blank. [NOTE: This check will result in false negatives for children formerly UASC not identified as such in loaded data],['PL_DISTANCE'],['Episodes']
+407,"Reason episode ceased is Special Guardianship Order, but child has reached age 18.","['DEC', 'DOB', 'REC']","['Episodes', 'Header']"
+408,"Child is placed for adoption with a placement order, but no placement order has been recorded.","['LS', 'PLACE']",['Episodes']
+411,Placement location code disagrees with LA of placement.,['PL_LOCATION'],['Episodes']
+420,LA of placement completed but child is looked after under legal status V3 or V4.,['PL_LA'],['Episodes']
+426,A child receiving respite care cannot be recorded under a legal status of V3 and V4 in the same year.,['LS'],['Episodes']
+431,"The reason for new episode is started to be looked after, but the previous episode ended on the same day.","['DECOM', 'RNE']",['Episodes']
+432,The child ceased to be looked after at the end of the previous episode but the reason for the new episode is not started to be looked after.,['RNE'],['Episodes']
+433,"The reason for new episode suggests that this is a continuation episode, but the episode does not start on the same day as the last episode finished.","['DECOM', 'RNE']",['Episodes']
+434,"Reason for new episode is that child's legal status has changed but not the placement, but this is not reflected in the episode data.","['LS', 'PLACE', 'PLACE_PROVIDER', 'PL_POST', 'RNE', 'URN']",['Episodes']
+435,"Reason for new episode is that child’s placement has changed but not the legal status, but this is not reflected in the episode data recorded.","['LS', 'PLACE', 'PLACE_PROVIDER', 'PL_POST', 'URN']",['Episodes']
+436,"Reason for new episode is that both child’s placement and legal status have changed, but this is not reflected in the episode data.","['LS', 'PLACE', 'PLACE_PROVIDER', 'PL_POST', 'RNE', 'URN']",['Episodes']
+437,Reason episode ceased is child has died or is aged 18 or over but there are further episodes.,['REC'],['Episodes']
+440,"Participation method indicates child was under 4 years old at the time of the review, but date of birth and review date indicates the child was 4 years old or over.","['DOB', 'REVIEW', 'REVIEW_CODE']",['Reviews']
+441,"Participation method indicates child was 4 years old or over at the time of the review, but the date of birth and review date indicates the child was under 4 years old.","['DOB', 'REVIEW', 'REVIEW_CODE']",['Reviews']
+442,Unique Pupil Number (UPN) field is not completed.,['UPN'],"['Episodes', 'Header']"
+445,D1 is not a valid code for episodes starting after December 2005.,"['DECOM', 'LS']",['Episodes']
+446,E1 is not a valid code for episodes starting before December 2005.,"['DECOM', 'LS']",['Episodes']
+451,"Child is still freed for adoption, but freeing orders could not be applied for since 30 December 2005.","['DEC', 'LS', 'REC']",['Episodes']
+452,Contradiction between local authority of placement code in the last episode of the previous year and in the first episode of the current year.,['PL_LA'],"['Episodes', 'Episodes_last']"
+453,Contradiction between placement distance in the last episode of the previous year and in the first episode of the current year.,['PL_DISTANCE'],"['Episodes', 'Episodes_last']"
+460,"Reason episode ceased is that child stayed with current carers at age 18 (or above), but child is aged under 18.","['DEC', 'REC']","['Episodes', 'Header']"
+501,A new episode has started before the end date of the previous episode.,"['DEC', 'DECOM']",['Episodes']
+502,Last year's record ended with an open episode. The date on which that episode started does not match the start date of the first episode on this year’s record.,['DECOM'],"['Episodes', 'Episodes_last']"
+503A,The reason for new episode in the first episode does not match open episode at end of last year.,['RNE'],"['Episodes', 'Episodes_last']"
+503B,The legal status in the first episode does not match open episode at end of last year.,['LS'],"['Episodes', 'Episodes_last']"
+503C,The category of need in the first episode does not match open episode at end of last year.,['CIN'],"['Episodes', 'Episodes_last']"
+503D,The placement type in the first episode does not match open episode at end of last year,['PLACE'],"['Episodes', 'Episodes_last']"
+503E,The placement provider in the first episode does not match open episode at end of last year.,['PLACE_PROVIDER'],"['Episodes', 'Episodes_last']"
+503F,The Ofsted URN in the  first episode does not match open episode at end of last year.,['URN'],"['Episodes', 'Episodes_last']"
+503G,The distance in first episode does not match open episode at end of last year.,['PL_DISTANCE'],"['Episodes', 'Episodes_last']"
+503H,The placement LA in first episode does not match open episode at end of last year.,['PL_LA'],"['Episodes', 'Episodes_last']"
+503J,The placement location in first episode does not match open episode at end of last year.,['PL_LOCATION'],"['Episodes', 'Episodes_last']"
+504,The category of need code differs from that reported at start of current period of being looked after,['CIN'],['Episodes']
+511,"If reporting that the number of person(s) adopting the looked after child is two adopters then the code should only be MM, FF or MF. MM = the adopting couple are both males; FF = the adopting couple are both females; MF = The adopting couple are male and female.","['NB_ADOPTR', 'SEX_ADOPTR']",['AD1']
+514,Data entry on the legal status of adopters shows a single adopter but data entry for the numbers of adopters shows it as a couple.,"['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+516,The episode data submitted for this child does not show that he/she was with their former foster carer(s) during the year.If the code in the reason episode ceased is E45 or E46 the child must have a placement code of U1 to U6.,"['PLACE', 'REC']",['Episodes']
+517,If reporting legal status of adopters is L3 then the genders of adopters should be coded as MF. MF = the adopting couple are male and female.,"['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+518,If reporting legal status of adopters is L4 then the genders of adopters should be coded as MM or FF. MM = the adopting couple are both males. FF = the adopting couple are both females.,"['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+519,"Data entered on the legal status of adopters shows civil partnership couple, but data entered on genders of adopters does not show it as a couple.","['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+520,Data entry on the legal status of adopters shows different gender married couple but data entry on genders of adopters shows it as a same gender couple.,"['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+521,Date of local authority's decision (LA) that adoption is in the best interests of the child (date should be placed) must be on or prior to the date the child is placed for adoption.,"['DATE_INT', 'DECOM', 'PLACE']","['AD1', 'Episodes']"
+522,Date of decision that the child should be placed for adoption must be on or before the date that a child should no longer be placed for adoption.,"['DATE_PLACED', 'DATE_PLACED_CEASED']",['PlacedAdoption']
+523,Date of decision that the child should be placed for adoption should be the same date as the decision that adoption is in the best interest (date should be placed).,"['DATE_INT', 'DATE_PLACED']","['AD1', 'PlacedAdoption']"
+524,If reporting legal status of adopters is L12 then the genders of adopters should be coded as MM or FF. MM = the adopting couple are both males. FF = the adopting couple are both females,"['LS_ADOPTR', 'SEX_ADOPTR']",['AD1']
+525,A child for whom the decision to be placed for adoption has been reversed cannot be adopted during the year.,"['DATE_INT', 'DATE_MATCH', 'DATE_PLACED_CEASED', 'FOSTER_CARE', 'LS_ADOPTR', 'NB_ADOPTR', 'SEX_ADOPTR']","['AD1', 'PlacedAdoption']"
+526,Child is missing a placement provider code for at least one episode.,"['PLACE', 'PLACE_PROVIDER']",['Episodes']
+527,"A placement provider code of PR1 cannot be associated with placements P1, R2 or R5.","['PLACE', 'PLACE_PROVIDER']",['Episodes']
+528,"A placement provider code of PR2 cannot be associated with placements P1, R2 or R5.","['PLACE', 'PLACE_PROVIDER']",['Episodes']
+529,"Placement provider code of PR3 cannot be associated with placements P1, A3 to A6, K1, K2 and U1 to U6 as these placements cannot be provided by other public organisations.","['PLACE', 'PLACE_PROVIDER']",['Episodes']
+530,A placement provider code of PR4 cannot be associated with placement P1.,"['PLACE', 'PLACE_PROVIDER']",['Episodes']
+531,A placement provider code of PR5 cannot be associated with placements P1.,"['PLACE', 'PLACE_PROVIDER']",['Episodes']
+542,A child aged under 10 at 31 March should not have conviction information completed.,['CONVICTED'],['OC2s']
+543,Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.,"['CONVICTED', 'DOB']","['Episodes', 'OC2']"
+544,"Any child who has conviction information completed must also have immunisation, teeth check, health assessment and substance misuse problem identified fields completed.","['CONVICTED', 'HEALTH_ASSESSMENT', 'IMMUNISATIONS', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']",['OC2']
+545,Child is aged under 5 at 31 March and has been looked after continuously for 12 months yet health promotion information has not been completed.,"['DOB', 'HEALTH_CHECK']",['OC2']
+546,Children aged 5 or over at 31 March should not have health promotion information completed.,"['DOB', 'HEALTH_CHECK']","['Episodes', 'OC2']"
+547,"Any child who has health promotion information completed must also have immunisation, teeth check, health assessment and substance misuse problem identified fields completed.","['HEALTH_ASSESSMENT', 'HEALTH_CHECK', 'IMMUNISATIONS', 'SUBSTANCE_MISUSE', 'TEETH_CHECK']",['OC2']
+550,A placement provider code of PR0 can only be associated with placement P1.,"['PLACE', 'PLACE_PROVIDER']",['Episodes']
+551,Child has been placed for adoption but there is no date of the decision that the child should be placed for adoption.,"['DATE_PLACED', 'PLACE']","['Episodes', 'PlacedAdoption']"
+552,Date of Decision to place a child for adoption should be on or prior to the date that the child was placed for adoption.,"['DATE_PLACED', 'DECOM']","['Episodes', 'PlacedAdoption']"
+553,Placement order has been granted but there is no date of decision that the child should be placed for adoption.,"['CHILD', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED']","['Episodes', 'PlacedAdoption']"
+554,Date of decision that the child should be placed for adoption should be on or prior to the date that the placement order was granted. [NOTE: This rule may result in false positives or false negatives if relevant episodes are in previous years; please check carefully!],"['DATE_PLACED', 'DECOM', 'LS']","['Episodes', 'PlacedAdoption']"
+555,Freeing order has been granted but there is no date of decision that the child should be placed for adoption.,"['CHILD', 'DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED']","['Episodes', 'PlacedAdoption']"
+556,Date of decision that the child should be placed for adoption should be on or prior to the date that the freeing order was granted.,"['DATE_PLACED', 'DECOM']","['Episodes', 'PlacedAdoption']"
+557,Child for whom the decision was made that they should be placed for adoption has left care but was not adopted and information on the decision that they should no longer be placed for adoption items has not been completed.,"['DATE_PLACED_CEASED', 'LS', 'PLACE', 'REASON_PLACED_CEASED', 'REC']","['Episodes', 'PlacedAdoption']"
+558,"If a child has been adopted, then the decision to place them for adoption has not been disrupted and the date of the decision that a child should no longer be placed for adoption should be left blank.","['DATE_PLACED_CEASED', 'REC']","['Episodes', 'PlacedAdoption']"
+559,Date of decision that a child should be placed for adoption was not in the current year but the date of the decision that the child should be placed for adoption was not completed in a previous return.,['DATE_PLACED'],"['PlacedAdoption', 'PlacedAdoption_last']"
+560,Date of decision that the child should be placed for adoption this year is different from that recorded last year but the decision to place the child for adoption did not change.,"['DATE_PLACED', 'DATE_PLACED_CEASED']","['PlacedAdoption', 'PlacedAdoption_last']"
+561,"Date of the decision that the child should be placed for adoption this year is the same as that recorded last year but records show that the decision changed, and the child should no longer be placed for adoption last year.",['DATE_PLACED'],"['PlacedAdoption', 'PlacedAdoption_last']"
+562,Episode commenced before the start of the current collection year but there is a missing continuous episode in the previous year.,['DECOM'],"['Episodes', 'Episodes_last']"
+563,The child should no longer be placed for adoption but the date of the decision that the child should be placed for adoption is blank,"['DATE_PLACED', 'DATE_PLACED_CEASED', 'REASON_PLACED_CEASED']",['PlacedAdoption']
+564,Child was missing or away from placement without authorisation and the date started is blank.,"['MISSING', 'MIS_START']",['Missing']
+565,The date that the child started to be missing or away from placement without authorisation has been completed but whether the child was missing or away from placement without authorisation has not been completed.,"['MISSING', 'MIS_START']",['Missing']
+566,The date that the child's episode of being missing or away from placement without authorisation ended has been completed but whether the child was missing or away without authorisation has not been completed.,"['MISSING', 'MIS_END']",['Missing']
+567,The date that the missing episode or episode that the child was away from placement without authorisation ended is before the date that it started.,"['MIS_END', 'MIS_START']",['Missing']
+570,The date that the child started to be missing or away from placement without authorisation is after the end of the collection year.,['MIS_START'],['Missing']
+571,The date that the child ceased to be missing or away from placement without authorisation is before the start or after the end of the collection year.,['MIS_END'],['Missing']
+574,A new missing/away from placement without authorisation period cannot start when the previous missing/away from placement without authorisation period is still open. Missing/away from placement without authorisation periods should also not overlap.,"['MIS_END', 'MIS_START']",['Missing']
+575,"If the placement from which the child goes missing/away from placement without authorisation ends, the missing/away from placement without authorisation period in the missing module must also have an end date.",['MIS_END'],"['Episodes', 'Missing']"
+576,There is an open missing/away from placement without authorisation period in last year’s return and there is no corresponding period recorded at the start of this year.,['CHILD'],"['MIssing', 'Missing_last']"
+577,Child ceased to be looked after but there is a missing/away from placement without authorisation period without an end date.,['MIS_END'],"['Episodes', 'Missing']"
+578,The date that the child started to be missing is after the child ceased to be looked after.,['MIS_START'],"['Episodes', 'Missing']"
+579,A new decision that the child should be placed for adoption this year cannot start when the previous decision is still open. Decisions to place the child for adoption should also not overlap. The date of any new decision to place the child for adoption must not be before the date placed ceased of previous decisions.,"['DATE_PLACED', 'DATE_PLACED_CEASED']",['PlacedAdoption']
+580,Child is missing when cease being looked after but reason episode ceased not ‘E8’.,['REC'],"['Episodes', 'MIssing']"
+581,Child is missing but has not yet started to be looked after.,['MIS_START'],"['Episodes', 'Missing']"
+582,"Child is showing as ceasing to be looked after due to adoption, but the date of adoption is the same as the date reported for being matched with adopters. In most circumstances we expect the date the child is matched with adopters to be before the date of adoption.","['DATE_MATCH', 'DEC']","['AD1', 'Episodes']"
+583,"More than one date the child should be placed for adoption has been reported, but an earlier decision has not been revoked. Check that both dates are required and add in the date the earlier decision was revoked. Note this may be in a previous year.","['DATE_PLACED', 'DATE_PLACED_CEASED']",['PlacedAdoption']
+584,"Date of decision that the child should be placed for adoption this year is different from that recorded last year, but the decision to placed the child for adoption changed and the child should no longer be placed for adoption.",['DATE_PLACED'],"['PlacedAdoption', 'PlacedAdoption_last']"
+586,Dates of missing periods are before child’s date of birth.,['MIS_START'],['Missing']
+601,The additional fields relating to adoption have not been completed although the episode data shows that the child was adopted during the year.,"['DATE_INT', 'DATE_MATCH', 'FOSTER_CARE', 'LS_ADOPTR', 'NB_ADOPTR', 'REC', 'SEX_ADOPTR']","['AD1', 'Episodes']"
+602,The episode data submitted for this child does not show that he/she was adopted during the year.,['CHILD'],"['AD1', 'Episodes']"
+607,"Child ceased to be looked after in the year, but mother field has not been completed.","['DEC', 'LS', 'MOTHER', 'REC', 'SEX']","['Episodes', 'Header']"
+611,"Date of birth field is blank, but child is a mother.","['MC_DOB', 'MOTHER']",['Header']
+612,Date of birth field has been completed but mother field indicates child is not a mother.,"['MC_DOB', 'MOTHER', 'SEX']",['Header']
+620,"Child has been recorded as a mother, but date of birth shows that the mother is under 11 years of age.","['DOB', 'MOTHER']",['Header']
+621,Mother’s field has been completed but date of birth shows that the mother is younger than her child.,"['DOB', 'MC_DOB']",['Header']
+624,Date of birth of the first child contradicts the date of birth of the first child previously recorded.,['MC_DOB'],"['Header', 'Header_last']"
+625,Date of birth of the first child is beyond the end of this reporting year or the date the child ceased to be looked after.,"['DEC', 'MC_DOB']","['Episodes', 'Header']"
+626,Child was reported as a mother but the date of birth of the first child is before the current year which contradicts with the mother status recorded last year.,"['MC_DOB', 'MOTHER']","['Header', 'Header_last']"
+628,Motherhood details are not required for care leavers who have not been looked after during the year.,['MOTHER'],"['Episodes', 'Header', 'OC3']"
+630,Information on previous permanence option should be returned.,['RNE'],"['Episodes', 'PrevPerm']"
+631,Previous permanence option not a valid value.,['PREV_PERM'],['PrevPerm']
+632,Date of previous permanence order not a valid value. NOTE: This rule may result in false negatives where the period of care started before the current collection year,"['DATE_PERM', 'DECOM']","['Episodes', 'PrevPerm']"
+633,Local authority code where previous permanence option was arranged is not a valid value.,['LA_PERM'],['PrevPerm']
+634,"There are entries for previous permanence options, but child has not started to be looked after from 1 April 2016 onwards.","['DATE_PERM', 'DECOM', 'LA_PERM', 'PREV_PERM']","['Episodes', 'PrevPerm']"
+635,There are entries for date of order and local authority code where previous permanence option was arranged but previous permanence code is Z1,"['DATE_PERM', 'LA_PERM', 'PREV_PERM']",['PrevPerm']
+EPI,"WARNING: Episodes need to be loaded for this child before further validation is possible [NOTE: This refers to the DfE portal - here, all checks that can be performed with only the available data will be.]",['CHILD'],['Header']
+INT01,Data Integrity Check: Child in AD1 does not exist in Header.,['CHILD'],"['AD1', 'Header']"
+INT02,Internal Check: Child in PlacedAdoption does not exist in Header.,['CHILD'],"['Header', 'PlacedAdoption']"
+INT03,Internal Check: Child in Episodes does not exist in Header.,['CHILD'],"['Episodes', 'Header']"
+INT04,Internal Check: Child in Missing does not exist in Header.,['CHILD'],"['Header', 'Missing']"
+INT05,Internal Check: Child in OC2 does not exist in Header.,['CHILD'],"['Header', 'OC2']"
+INT06,Internal Check: Child in OC3 does not exist in Header.,['CHILD'],"['Header', 'OC3']"
+INT07,Internal Check: Child in PrevPerm does not exist in Header.,['CHILD'],"['Header', 'PrevPerm']"
+INT08,Internal Check: Child in Reviews does not exist in Header.,['CHILD'],"['Header', 'Reviews']"
+INT09,Internal Check: Child in UASC does not exist in Header.,['CHILD'],"['Header', 'UASC']"
+INT11,Internal Check: DOB in AD1 is different to DOB in Header.,['DOB'],"['AD1', 'Header']"
+INT12,Internal Check: DOB in PlacedAdoption is different to DOB in Header.,['DOB'],"['Header', 'PlacedAdoption']"
+INT13,Internal Check: DOB in Missing is different to DOB in Header.,['DOB'],"['Header', 'Missing']"
+INT14,Internal Check: DOB in OC2 is different to DOB in Header.,['DOB'],"['Header', 'OC2']"
+INT15,Internal Check: DOB in OC3 is different to DOB in Header.,['DOB'],"['Header', 'OC3']"
+INT16,Internal Check: DOB in PrevPerm is different to DOB in Header.,['DOB'],"['Header', 'PrevPerm']"
+INT17,Internal Check: DOB in Reviews is different to DOB in Header.,['DOB'],"['Header', 'Reviews']"
+INT18,Internal Check: DOB in UASC is different to DOB in Header.,['DOB'],"['Header', 'UASC']"
+INT21,Internal Check: SEX in UASC is different to SEX in Header.,['SEX'],"['Header', 'UASC']"
+INT31,Internal Check: Child should only exist once in AD1.,['CHILD'],['AD1']
+INT32,Internal Check: Child should only exist once in Header.,['CHILD'],['Header']
+INT33,Internal Check: Child should only exist once in OC2.,['CHILD'],['OC2']
+INT34,Internal Check: Child should only exist once in OC3.,['CHILD'],['OC3']
+INT35,Internal Check: Child should only exist once in PrevPerm.,['CHILD'],['PrevPerm']
+INT36,Internal Check: Child should only exist once in UASC.,['CHILD'],['UASC']
+NoE,This child has no episodes loaded for previous year even though child started to be looked after before this current year.,['DECOM'],"['Episodes', 'Episodes_last']"
+SW01STG1,"Child looked after on 31 March, but no social worker episode information is reported",['DEC'],"['Episodes', 'SWEpisodes']"
+SW02STG1,Social worker ID does not begin with the characters ‘SW’ or ‘XX’.,['SW_ID'],['SWEpisodes']
+SW03STG1,"For each social worker episode, information should be complete.","['SW_DECOM', 'SW_ID', 'SW_REASON']",['SWEpisodes']
+SW04STG1,Date social worker episode began is not a valid date..,['SW_DECOM'],['SWEpisodes']
+SW05STG1,Date social worker episode began is not a valid date.,['SW_DEC'],['SWEpisodes']
+SW06STG2,Social worker episode data should be within the social worker data reporting year.,['SW_DECOM'],['SWEpisodes']
+SW07STG2,"Social worker episode end date should be on or after the start of the social worker reporting period, and should be on or before the collection end date.",['SW_DEC'],['SWEpisodes']
+SW09STG2,Social worker episode appears to have lasted for less than 24 hours.,"['SW_DEC', 'SW_DECOM']",['SWEpisodes']
+SW108STG2,"A new social worker episode has started, but the previous episode has not ended.",['SW_DEC'],['SWEpisodes']
+SW10STG2,A new social worker episode has started before the end date of the previous social worker episode.,['SW_DECOM'],['SWEpisodes']
+SW11STG2,Social worker episode has ended before 31 March and no subsequent social worker episode has been provided.,['SW_DEC'],['SWEpisodes']
+SW12STG2,"If a child is looked after on 31 March then all social worker episodes for the full previous year should be reported, even those whilst they were not looked after",['SW_DECOM'],"['Episodes', 'SWEpisodes']"
+SW13STG1,The reason for social worker change is either not valid or has not been entered.,['SW_REASON'],['SWEpisodes']
+SW14STG2,Social worker episode date ceased is blank.,['SW_DEC'],['SWEpisodes']

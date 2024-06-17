@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="517",
     message="If reporting legal status of adopters is L3 then the genders of adopters should be coded as MF. MF = the adopting couple are male and female.",
     affected_fields=["LS_ADOPTR", "SEX_ADOPTR"],
+    tables=["AD1"],
 )
 def validate(dfs):
     if "AD1" not in dfs:

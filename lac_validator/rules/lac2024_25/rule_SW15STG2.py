@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW15STG2",
     message="Reason for social worker change is missing.",
     affected_fields=["SW_REASON"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

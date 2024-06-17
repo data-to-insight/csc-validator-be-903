@@ -1,6 +1,8 @@
 import importlib
 import os
 from pathlib import Path
+import pandas as pd
+
 
 import click
 import pytest
@@ -9,6 +11,7 @@ from lac_validator import lac_validator
 from lac_validator.ingress import read_from_text
 from lac_validator.report import Report
 from lac_validator.utils import process_uploaded_files
+from lac_validator.config import column_names
 
 
 @click.group()
@@ -34,6 +37,43 @@ def list_cmd(ruleset):
     ruleset_registry = getattr(module, "registry")
     for _, rule in ruleset_registry.items():
         click.echo(f"{rule.code}\t{rule.message}")
+
+
+# Output rules, message, affected fields to csv
+@cli.command(name="rule-info")
+@click.option(
+    "--ruleset",
+    "-r",
+    default="lac2024_25",
+    help="validation year, e.g lac2024_25",
+)
+def rule_info_cmd(ruleset):
+    """
+    :param str ruleset: validation year whose version of rules should be run.
+
+    :return cli output: tables of rules to be run in a year with message, affected fields,
+                        affected tables, and CSV download of info.
+    """
+    module = importlib.import_module(f"lac_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
+    rules_list = []
+    for _, rule in ruleset_registry.items():
+        rules_list.append(
+            {
+                "Rule code": f"{rule.code}",
+                "Rule message": f"{rule.message}",
+                "Affected fields": f"{sorted(rule.affected_fields)}",
+                "Tables": f"{sorted(rule.tables)}",
+            }
+        )
+    rule_info = pd.DataFrame(rules_list)
+    rule_info.sort_values("Rule code", inplace=True)
+    click.echo(rule_info)
+
+    # uncomment to check if any rules are midding table info
+    # click.echo(rule_info[rule_info["Tables"].isna()])
+
+    rule_info.to_csv(f"output_data/903_{ruleset[3:]}_rule_info.csv", index=False)
 
 
 # TEST

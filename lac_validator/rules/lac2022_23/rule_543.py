@@ -10,6 +10,7 @@ from lac_validator.utils import (
     code="543",
     message="Child is aged 10 or over at 31 March and has been looked after continuously for 12 months yet conviction information has not been completed.",
     affected_fields=["DOB", "CONVICTED"],
+    tables=["Episodes", "OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:

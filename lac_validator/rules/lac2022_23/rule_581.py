@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="581",
     message="Child is missing but has not yet started to be looked after.",
     affected_fields=["MIS_START"],
+    tables=["Episodes", "Missing"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Missing" not in dfs:

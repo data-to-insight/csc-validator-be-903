@@ -9,6 +9,7 @@ from lac_validator.rule_engine import rule_definition
     "Check whether there is an episode immediately preceding this one, which has been left out.  "
     "If not the reason for new episode code must be amended to S.",
     affected_fields=["RNE"],
+    tables=["Episodes"],
 )
 
 # !# Potential false negatives for first episodes before the current collection year?

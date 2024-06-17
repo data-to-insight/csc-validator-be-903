@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="384",
     message="A child receiving respite care cannot be in a long-term foster placement ",
     affected_fields=["PLACE", "LS"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="166",
     message="Date of review is invalid or blank.",
     affected_fields=["REVIEW"],
+    tables=["Reviews"],
 )
 def validate(dfs):
     if "Reviews" not in dfs:

@@ -8,6 +8,7 @@ from lac_validator.rules.rule_utils import field_different_from_previous
     code="503D",
     message="The placement type in the first episode does not match open episode at end of last year",
     affected_fields=["PLACE"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     return field_different_from_previous(dfs, field="PLACE")

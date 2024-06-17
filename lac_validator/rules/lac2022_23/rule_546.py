@@ -10,6 +10,7 @@ from lac_validator.utils import (
     code="546",
     message="Children aged 5 or over at 31 March should not have health promotion information completed.",
     affected_fields=["DOB", "HEALTH_CHECK"],
+    tables=["Episodes", "OC2"],
 )
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:

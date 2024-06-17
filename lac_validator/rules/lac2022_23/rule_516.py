@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="516",
     message="The episode data submitted for this child does not show that he/she was with their former foster carer(s) during the year.If the code in the reason episode ceased is E45 or E46 the child must have a placement code of U1 to U6.",
     affected_fields=["REC", "PLACE"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

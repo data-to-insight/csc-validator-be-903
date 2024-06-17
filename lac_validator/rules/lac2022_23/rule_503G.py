@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="503G",
     message="The distance in first episode does not match open episode at end of last year.",
     affected_fields=["PL_DISTANCE"],
+    tables=["Episodes", "Episodes_last"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Episodes_last" not in dfs:

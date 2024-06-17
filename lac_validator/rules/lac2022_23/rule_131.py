@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="131",
     message="Data entry for being in touch after leaving care is invalid.",
     affected_fields=["IN_TOUCH"],
+    tables=["OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs:

@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="583",
     message="More than one date the child should be placed for adoption has been reported, but an earlier decision has not been revoked. Check that both dates are required and add in the date the earlier decision was revoked. Note this may be in a previous year.",
     affected_fields=["DATE_PLACED", "DATE_PLACED_CEASED"],
+    tables=["PlacedAdoption"],
 )
 def validate(dfs):
     # If more than one <DATE_PLACED> is present, then all but the latest <DATE_PLACED> must have <DATE_PLACED_CEASED>

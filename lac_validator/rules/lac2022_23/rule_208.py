@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="208",
     message="Unique Pupil Number (UPN) for the current year disagrees with the Unique Pupil Number (UPN) already recorded for this child.",
     affected_fields=["UPN"],
+    tables=["Header", "Header_last"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Header_last" not in dfs:

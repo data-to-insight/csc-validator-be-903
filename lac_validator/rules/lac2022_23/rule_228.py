@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     message="Ofsted Unique reference number (URN) is not valid for the episode end date "
     "[NOTE: may give false positives on open episodes at providers who close during the year]",
     affected_fields=["URN", "DEC"],
+    tables=["Episodes", "Provider Info"],
 )
 def validate(dfs):
     if ("Episodes" not in dfs) or ("provider_info" not in dfs["metadata"]):

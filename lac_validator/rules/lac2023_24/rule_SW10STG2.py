@@ -8,6 +8,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW10STG2",
     message="A new social worker episode has started before the end date of the previous social worker episode.",
     affected_fields=["SW_DECOM"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

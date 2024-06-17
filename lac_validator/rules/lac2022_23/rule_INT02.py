@@ -6,6 +6,7 @@ from lac_validator.rule_engine import rule_definition
     code="INT02",
     message="Internal Check: Child in PlacedAdoption does not exist in Header.",
     affected_fields=["CHILD"],
+    tables=["Header", "PlacedAdoption"],
 )
 def validate(dfs):
     if "Header" not in dfs or "PlacedAdoption" not in dfs:

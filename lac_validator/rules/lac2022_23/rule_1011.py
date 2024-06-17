@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="1011",
     message="This child is recorded as having his/her care transferred to another local authority for the final episode and therefore should not have the care leaver information completed.",
     affected_fields=["IN_TOUCH", "ACTIV", "ACCOM"],
+    tables=["Episodes", "OC3"],
 )
 def validate(dfs):
     if "OC3" not in dfs or "Episodes" not in dfs:

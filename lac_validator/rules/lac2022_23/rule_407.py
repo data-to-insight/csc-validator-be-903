@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="407",
     message="Reason episode ceased is Special Guardianship Order, but child has reached age 18.",
     affected_fields=["DEC", "DOB", "REC"],
+    tables=["Episodes", "Header"],
 )
 def validate(dfs):
     if "Episodes" not in dfs or "Header" not in dfs:

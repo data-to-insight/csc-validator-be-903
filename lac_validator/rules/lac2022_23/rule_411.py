@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="411",
     message="Placement location code disagrees with LA of placement.",
     affected_fields=["PL_LOCATION"],
+    tables=["Episodes"],
 )
 def validate(dfs):
     if "Episodes" not in dfs:

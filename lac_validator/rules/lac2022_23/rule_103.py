@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="103",
     message="The ethnicity code is either not valid or has not been entered.",
     affected_fields=["ETHNIC"],
+    tables=["Header"],
 )
 def validate(dfs):
     if "Header" not in dfs:

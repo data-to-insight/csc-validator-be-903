@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="SW02STG1",
     message="Social worker ID does not begin with the characters ‘SW’ or ‘XX’.",
     affected_fields=["SW_ID"],
+    tables=["SWEpisodes"],
 )
 def validate(dfs):
     if "SWEpisodes" not in dfs:

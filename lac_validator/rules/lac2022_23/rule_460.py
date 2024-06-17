@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="460",
     message="Reason episode ceased is that child stayed with current carers at age 18 (or above), but child is aged under 18.",
     affected_fields=["DEC", "REC"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs:

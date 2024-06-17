@@ -20,6 +20,7 @@ from lac_validator.utils import (
         "INTERVENTION_RECEIVED",
         "INTERVENTION_OFFERED",
     ],  # AD1
+    tables=["OC2", "Episodes"],
 )
 def validate(dfs):
     if "OC2" not in dfs or "Episodes" not in dfs:

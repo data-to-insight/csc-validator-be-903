@@ -7,6 +7,7 @@ from lac_validator.rule_engine import rule_definition
     code="210",
     message="Children looked after for more than a week at 31 March should not have an unknown Unique Pupil Number (UPN) code of UN4.",
     affected_fields=["UPN", "DECOM"],
+    tables=["Header", "Episodes"],
 )
 def validate(dfs):
     if "Header" not in dfs or "Episodes" not in dfs:

@@ -4,7 +4,7 @@ from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
-    code="SW11STG2",
+    code="SW11aSTG2",
     message="Social worker episode has ended before 31 March and no subsequent social worker episode has been provided.",
     affected_fields=["SW_DEC"],
     tables=["SWEpisodes"],
@@ -37,11 +37,15 @@ def validate(dfs):
             suffixes=("", "_prev"),
         )
 
-        before_end = m_df[m_df["SW_DEC_prev"] < collection_end]
+        before_end = m_df[m_df["SW_DEC_prev"] < collection_end - pd.DateOffset(days=5)]
+        decom_within_timeframe = (
+            before_end["SW_DECOM"] >= before_end["SW_DEC_prev"] - pd.DateOffset(days=5)
+        ) & (
+            before_end["SW_DECOM"] <= before_end["SW_DEC_prev"] + pd.DateOffset(days=5)
+        )
 
         error_rows = before_end[
-            before_end["SW_DECOM"].isna()
-            | (before_end["SW_DECOM"] != before_end["SW_DEC_prev"])
+            before_end["SW_DECOM"].isna() | ~decom_within_timeframe
         ]["index"]
 
         return {"SWEpisodes": error_rows.tolist()}
@@ -52,14 +56,33 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         [
-            {"CHILD": "1", "SW_DECOM": "01/04/2000", "SW_DEC": "30/03/2000"},
+            {"CHILD": "1", "SW_DECOM": "01/04/2000", "SW_DEC": "25/03/2000"},
             {"CHILD": "1", "SW_DECOM": pd.NA, "SW_DEC": pd.NA},
-            {"CHILD": "2", "SW_DECOM": "01/04/2000", "SW_DEC": "30/03/2000"},
+            {"CHILD": "2", "SW_DECOM": "01/04/2000", "SW_DEC": "25/03/2000"},
             {"CHILD": "2", "SW_DECOM": "02/04/2000", "SW_DEC": "03/04/2000"},
             {"CHILD": "3", "SW_DECOM": "01/04/2000", "SW_DEC": "1/04/2000"},
             {"CHILD": "3", "SW_DECOM": "02/04/2000", "SW_DEC": "03/04/2000"},
             {"CHILD": "4", "SW_DECOM": "01/04/2000", "SW_DEC": "30/03/2000"},
             {"CHILD": "4", "SW_DECOM": "30/03/2000", "SW_DEC": "03/04/2000"},
+            {"CHILD": "5", "SW_DECOM": "01/04/2000", "SW_DEC": "30/03/2000"},
+            {
+                "CHILD": "5",
+                "SW_DECOM": pd.NA,
+                "SW_DEC": pd.NA,
+            },  # passes, SW_DEC later than end - 5
+            {"CHILD": "6", "SW_DECOM": "01/04/2000", "SW_DEC": "25/03/2000"},
+            {
+                "CHILD": "6",
+                "SW_DECOM": "29/03/2000",
+                "SW_DEC": "03/04/2000",
+            },  # passes, SW_DECOM within timeframe
+            {"CHILD": "7", "SW_DECOM": "01/04/2000", "SW_DEC": "20/03/2000"},
+            {"CHILD": "7", "SW_DECOM": "21/03/2000", "SW_DEC": "22/03/2000"},
+            {
+                "CHILD": "7",
+                "SW_DECOM": "29/03/2000",
+                "SW_DEC": "03/04/2000",
+            },  # Fails, not within timeframe, child 7 checks it works for children with multiple rows
         ]
     )
 
@@ -69,4 +92,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"SWEpisodes": [1, 3]}
+    assert result == {"SWEpisodes": [1, 3, 14]}

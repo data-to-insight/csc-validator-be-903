@@ -37,15 +37,17 @@ def validate(dfs):
             suffixes=("", "_prev"),
         )
 
-        before_end = m_df[m_df["SW_DEC_prev"] < collection_end - pd.DateOffset(days=5)]
+        before_end = m_df[m_df["SW_DEC_prev"] <= collection_end - pd.DateOffset(days=5)]
         decom_within_timeframe = (
             before_end["SW_DECOM"] >= before_end["SW_DEC_prev"] - pd.DateOffset(days=5)
         ) & (
             before_end["SW_DECOM"] <= before_end["SW_DEC_prev"] + pd.DateOffset(days=5)
         )
 
+        same_child = before_end["CHILD"] == before_end["CHILD_prev"]
+
         error_rows = before_end[
-            before_end["SW_DECOM"].isna() | ~decom_within_timeframe
+            (before_end["SW_DECOM"].isna() | ~decom_within_timeframe) & same_child
         ]["index"]
 
         return {"SWEpisodes": error_rows.tolist()}

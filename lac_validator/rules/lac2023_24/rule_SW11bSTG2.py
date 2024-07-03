@@ -24,6 +24,8 @@ def validate(dfs):
         collection_end = pd.to_datetime(collection_end, format="%d/%m/%Y")
 
         df["index"] = df.index
+
+        # Children with an NA following a SW_DEC
         df = df.sort_values(["CHILD", "SW_DECOM"])
 
         df_lead = df.shift(1)
@@ -45,6 +47,9 @@ def validate(dfs):
             & (m_df["SW_DEC_prev"] <= collection_end)
         ]
 
+        error_rows = before_end[before_end["SW_DECOM"].isna()]["index"]
+        error_rows = error_rows.to_list()
+
         # need children who appear once in SW DEC after timeframe
         appearance_counts = df.value_counts("CHILD").reset_index()
         one_appearance = appearance_counts[appearance_counts[0] == 1]["CHILD"].tolist()
@@ -57,17 +62,35 @@ def validate(dfs):
         ]["index"].tolist()
 
         # children who have multiple SW_DEC in the time period and no following SW_DECOM
-        no_following_decom = m_df[(m_df["SW_DECOM"] > m_df["SW_DEC_prev"])]
+        # sorting in reverse lets us find rows where there's multiple filled DEC/DECOM
+        # in the timeframe with no DECOM following the last DEC by putting the
+        df = df.sort_values(["CHILD", "SW_DECOM"], ascending=False)
 
-        pd.options.display.max_columns = None
-        pd.options.display.max_rows = None
-        print(m_df)
-        print(no_following_decom)
+        df_reverse_lead = df.shift(1)
 
-        # Children with an NA following a SW_DEC
-        error_rows = before_end[before_end["SW_DECOM"].isna()]["index"]
-        error_rows = error_rows.to_list()
+        df_reverse_lead = df_reverse_lead.reset_index()
+
+        m_reverse_df = df.merge(
+            df_reverse_lead,
+            left_on=["index", "CHILD"],
+            right_on=["level_0", "CHILD"],
+            how="outer",
+            suffixes=("", "_prev"),
+        )
+        no_following_decom = m_reverse_df[
+            (m_reverse_df["SW_DECOM"] < m_reverse_df["SW_DEC_prev"])
+            & (
+                (m_reverse_df["SW_DEC_prev"] >= collection_end - pd.DateOffset(days=5))
+                & (m_reverse_df["SW_DEC_prev"] <= collection_end)
+            )
+        ]
+
+        multiple_dec_in_timeframe = (
+            no_following_decom["index_prev"].astype(int).to_list()
+        )
+
         error_rows.extend(children_appearing_once)
+        error_rows.extend(multiple_dec_in_timeframe)
         return {"SWEpisodes": error_rows}
 
 

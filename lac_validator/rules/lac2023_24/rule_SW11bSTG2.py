@@ -42,21 +42,29 @@ def validate(dfs):
         m_df["index"] = m_df["index"].astype("int")
         before_end = m_df[
             (m_df["SW_DEC_prev"] >= collection_end - pd.DateOffset(days=5))
+            & (m_df["SW_DEC_prev"] <= collection_end)
         ]
 
-        # If children only appear once and have a SW_DEC within 5 days of the collection end, they can't have a follow up SW_DECOM
-        # non_m_df_before_end = df[df['SW_DEC'] >= collection_end - pd.DateOffset(days=5)]
+        # need children who appear once in SW DEC after timeframe
         appearance_counts = df.value_counts("CHILD").reset_index()
         one_appearance = appearance_counts[appearance_counts[0] == 1]["CHILD"].tolist()
-        children_appearing_once = df[df["CHILD"].isin(one_appearance)]["index"].tolist()
+        children_appearing_once = df[
+            df["CHILD"].isin(one_appearance)
+            & (
+                (df["SW_DEC"] >= collection_end - pd.DateOffset(days=5))
+                & (df["SW_DEC"] <= collection_end)
+            )
+        ]["index"].tolist()
+
+        # children who have multiple SW_DEC in the time period and no following SW_DECOM
+        no_following_decom = m_df[(m_df["SW_DECOM"] > m_df["SW_DEC_prev"])]
 
         pd.options.display.max_columns = None
         pd.options.display.max_rows = None
-        print(children_appearing_once)
-        # different_child = before_end['CHILD'] != before_end['CHILD_prev']
-        # same_child = before_end['CHILD'] == before_end['CHILD_prev']
-        # error_rows = before_end[(before_end["SW_DECOM"].isna() & same_child) | (before_end['SW_DECOM_prev'].notna() & different_child)]["index"]
+        print(m_df)
+        print(no_following_decom)
 
+        # Children with an NA following a SW_DEC
         error_rows = before_end[before_end["SW_DECOM"].isna()]["index"]
         error_rows = error_rows.to_list()
         error_rows.extend(children_appearing_once)

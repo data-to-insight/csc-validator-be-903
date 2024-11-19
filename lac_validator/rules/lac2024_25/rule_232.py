@@ -16,7 +16,7 @@ def validate(dfs):
     else:
         df = dfs["Header"]
 
-        error_df = df[df['SEX'].str.upper() == "U"]
+        error_df = df[df["SEX"].str.upper() == "U"]
 
         errors = error_df.index
 
@@ -28,11 +28,10 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         [
-            {"SEX":"U"},  # sex U, fails
-            {"SEX":"u"},  # sex u fails
-            {"SEX":"m"},
-            {"SEX":0},
-            
+            {"SEX": "U"},  # sex U, fails
+            {"SEX": "u"},  # sex u fails
+            {"SEX": "m"},
+            {"SEX": 0},
         ]
     )  # over 11, uasc, passes
 

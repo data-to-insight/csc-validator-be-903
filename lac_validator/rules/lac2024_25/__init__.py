@@ -12,7 +12,20 @@ this_year_validator_funcs: dict[str, RuleDefinition] = extract_validator_functio
     files
 )
 # if any rules need to be deleted, add their codes as strings into del_list
-del_list: list[str] = ["217t", "230", "370"]
+del_list: list[str] = [
+    "217t",
+    "230",
+    "370",
+    "445",
+    "451",
+    "555",
+    "556",
+    "SW01STG1",
+    "SW03STG1",
+    "SW11aSTG2",
+    "SW14STG2",
+    "SW15STG2",
+]
 this_year_config = YearConfig(
     deleted=del_list, added_or_modified=this_year_validator_funcs
 )

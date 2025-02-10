@@ -4,6 +4,7 @@ Load up a codespace on 903
 Ensure docker is installed,
 ctrl+shift+p rebuild container
 in the terminal poetry install
+terminal: 'pip install poetry-plugin-shell'
 then poetry shell (starts poetry virtual environment)
 You should now have access to the CLI
 

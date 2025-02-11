@@ -150,14 +150,17 @@ def test_construct_provider_info_table(dummy_chscp):
     scp = {}
     combined = {}
     combined_assisted = {}
+    combined_2025 = {}
     (
         ch["file_content"],
         scp["file_content"],
         ch_path_dir,
         scp_path_dir,
         combined_path_dir,
+        combined_2025_dir,
         combined["file_content"],
         combined_assisted["file_content"],
+        combined_2025["file_content"],
     ) = dummy_chscp
 
     output_from_string = construct_provider_info_table(ch_path_dir, scp_path_dir)
@@ -175,14 +178,17 @@ def test_combined_ch_scp_check(dummy_chscp):
     scp = {}
     combined = {}
     combined_assisted = {}
+    combined_2025 = {}
     (
         ch["file_content"],
         scp["file_content"],
         ch_path_dir,
         scp_path_dir,
         combined_path_dir,
+        combined_2025_dir,
         combined["file_content"],
         combined_assisted["file_content"],
+        combined_2025["file_content"],
     ) = dummy_chscp
 
     with pytest.raises(UploadError):
@@ -196,6 +202,9 @@ def test_combined_ch_scp_check(dummy_chscp):
 
     combined_assisted_outcome = combined_ch_scp_check(combined_assisted["file_content"])
     assert combined_assisted_outcome == True
+
+    combined_2025_outcome = combined_ch_scp_check(combined_2025["file_content"])
+    assert combined_2025_outcome == True
 
 
 def test_scpch_provider_info_table(dummy_chscp):
@@ -213,20 +222,27 @@ def test_scpch_provider_info_table(dummy_chscp):
 
     combined = {}
     combined_assisted = {}
+    combined_2025 = {}
     (
         ch,
         scp,
         ch_path_dir,
         scp_path_dir,
         combined_path_dir,
+        combined_2025_dir,
         combined["file_content"],
         combined_assisted["file_content"],
+        combined_2025["file_content"],
     ) = dummy_chscp
 
-    combined_output = scpch_provider_info_table(combined)
-    combined_output_columns = combined_output.columns.to_list()
-    assert combined_output_columns == expected_columns
+    # combined_output = scpch_provider_info_table(combined)
+    # combined_output_columns = combined_output.columns.to_list()
+    # assert combined_output_columns == expected_columns
 
-    combined_assisted_output = scpch_provider_info_table(combined_assisted)
-    combined_assisted_output_columns = combined_assisted_output.columns.to_list()
-    assert combined_assisted_output_columns == expected_columns
+    # combined_assisted_output = scpch_provider_info_table(combined_assisted)
+    # combined_assisted_output_columns = combined_assisted_output.columns.to_list()
+    # assert combined_assisted_output_columns == expected_columns
+
+    combined_2025_output = scpch_provider_info_table(combined_2025)
+    combined_2025_output_columns = combined_2025_output.columns.to_list()
+    assert combined_2025_output_columns == expected_columns

@@ -82,16 +82,22 @@ def dummy_chscp():
     scpch_assisted_dir = os.path.join(
         os.path.dirname(__file__), "fake_data", "scpch_assisted.xlsx"
     )
+    combined_2025_fake_dir = os.path.join(
+        os.path.dirname(__file__), "fake_data", "scp_ch_2025_fake.xlsx"
+    )
     dummy_ch = read_file(fake_ch_dir)
     dummy_scp = read_file(fake_scp_dir)
     dummy_combined = read_file(combined_fake_dir)
     dummy_combined_assisted = read_file(scpch_assisted_dir)
+    dummy_combined_2025 = read_file(combined_2025_fake_dir)
     return (
         dummy_ch,
         dummy_scp,
         fake_ch_dir,
         fake_scp_dir,
         combined_fake_dir,
+        combined_2025_fake_dir,
         dummy_combined,
         dummy_combined_assisted,
+        dummy_combined_2025,
     )

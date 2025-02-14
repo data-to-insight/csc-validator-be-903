@@ -199,13 +199,14 @@ def test_combined_ch_scp_check(dummy_chscp):
 
     combined_outcome = combined_ch_scp_check(combined["file_content"])
     assert combined_outcome == True
-    print('pass 1')
+    print("pass 1")
     combined_assisted_outcome = combined_ch_scp_check(combined_assisted["file_content"])
     assert combined_assisted_outcome == True
-    print('pass 2')
+    print("pass 2")
     combined_2025_outcome = combined_ch_scp_check(combined_2025["file_content"])
     assert combined_2025_outcome == True
-    print('pass 3')
+    print("pass 3")
+
 
 def test_scpch_provider_info_table(dummy_chscp):
     expected_columns = [

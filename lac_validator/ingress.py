@@ -730,7 +730,9 @@ def combined_ch_scp_check(excel_to_check):
         )
     input_file = pd.read_excel(CH_bytes, engine="openpyxl", sheet_name=None)
 
-    if (set(input_file.keys()) == set(["Providers", "SA providers"])) | (set(input_file.keys()) == set(['Providers', 'SA Providers'])):
+    if (set(input_file.keys()) == set(["Providers", "SA providers"])) | (
+        set(input_file.keys()) == set(["Providers", "SA Providers"])
+    ):
         logger.info(
             f"'Childrens home' and 'Social Care Providers' lists detected across two sheets of Excel workbook. {sc.t}"
         )

@@ -451,7 +451,7 @@ def scpch_provider_info_table(scpch: UploadedFile):
         scpch_2["deregistration date"] = scpch_2["closed date"]
 
         if "placement provider code" not in scpch_2.columns:
-            scpch_2["placement provider code"] = pd.NA
+            scpch_2["placement provider code"] = "PR4"
             print(scpch_2.columns)
 
         scpch_2 = scpch_2[

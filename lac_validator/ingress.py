@@ -445,10 +445,14 @@ def scpch_provider_info_table(scpch: UploadedFile):
         scpch_2.columns = scpch_2.columns.str.lower()
         scpch_1.columns = scpch_1.columns.str.lower()
 
-        # Supported accomodation has the placement code H5 (I believe)
-        scpch_2["placement code"] = "H5, K3"
+        # Supported accomodation has the placement code K3 (I believe)
+        scpch_2["placement code"] = "K3"
 
         scpch_2["deregistration date"] = scpch_2["closed date"]
+
+        if "placement provider code" not in scpch_2.columns:
+            scpch_2["placement provider code"] = "PR4"
+            print(scpch_2.columns)
 
         scpch_2 = scpch_2[
             [
@@ -725,43 +729,58 @@ def combined_ch_scp_check(excel_to_check):
             "but it doesn't appear to be a combined list."
             "Please upload lists from Ofsted into their respective boxes above."
         )
-    df = pd.read_excel(CH_bytes, engine="openpyxl")
-    df.columns = df.columns.str.lower()
-    if "provider type" not in df.columns:
+    input_file = pd.read_excel(CH_bytes, engine="openpyxl", sheet_name=None)
+    if set(input_file.keys()) == set(["Providers", "SA Providers"]):
         logger.info(
-            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
-                    \n and that the column names are correct. {sc.t}"
-        )
-        raise UploadError(
-            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
-            "but it doesn't appear to be a combined list."
-            "Please upload lists from Ofsted into their respective boxes above."
-        )
-    if (len(df["provider type"]) > 1) & (
-        "Children's Home" in df["provider type"].values
-    ):
-        logger.info(
-            f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+            f"'Childrens home' and 'Social Care Providers' lists detected across two sheets of Excel workbook. {sc.t}"
         )
         return True
-    if (len(df["provider type"]) == 1) & (
-        "Children's Home" in df["provider type"].values
-    ):
-        logger.info(
-            f"'Children's home' list as only CH data file in upload detected. {sc.t}"
-        )
-        raise UploadError(
-            "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
-            "but it doesn't appear to be a combined list."
-            "Please upload lists from Ofsted into their respective boxes above."
-        )
+    elif len(input_file.keys()) == 1:
+        df = next(iter(input_file.values()))
+        df.columns = df.columns.str.lower()
+        if "provider type" not in df.columns:
+            logger.info(
+                f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                        \n and that the column names are correct. {sc.t}"
+            )
+            raise UploadError(
+                "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+                "but it doesn't appear to be a combined list."
+                "Please upload lists from Ofsted into their respective boxes above."
+            )
+        if (len(df["provider type"]) > 1) & (
+            "Children's Home" in df["provider type"].values
+        ):
+            logger.info(
+                f"Combined 'Childrens home' and 'Social Care Providers' lists detected. {sc.t}"
+            )
+            return True
+        if (len(df["provider type"]) == 1) & (
+            "Children's Home" in df["provider type"].values
+        ):
+            logger.info(
+                f"'Children's home' list as only CH data file in upload detected. {sc.t}"
+            )
+            raise UploadError(
+                "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+                "but it doesn't appear to be a combined list."
+                "Please upload lists from Ofsted into their respective boxes above."
+            )
+        else:
+            logger.info(
+                f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
+                        \n and that the column names are correct. {sc.t}"
+            )
+            raise UploadError(
+                "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
+                "but it doesn't appear to be a combined list."
+                "Please upload lists from Ofsted into their respective boxes above."
+            )
     else:
         logger.info(
-            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're uploaded in the right boxes \
-                    \n and that the column names are correct. {sc.t}"
+            f"Something is wrong with your 'Children's Home' or 'Social Care Providers' lists, check they're of the correct file type. {sc.t}"
         )
         raise UploadError(
             "Only one 'Children's Home' or 'Social Care Providers' list detected in upload,"
-            "but it doesn't appear to be a combined list."
-            "Please upload lists from Ofsted into their respective boxes above."
+            "but the file cannot be read for some reason. Check it's the correct file type."
         )

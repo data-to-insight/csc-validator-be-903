@@ -24,7 +24,7 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2023_24",
+    default="lac2024_25",
     help="validation year, e.g lac2023_24",
 )
 def list_cmd(ruleset):
@@ -81,7 +81,7 @@ def rule_info_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2023_24",
+    default="lac2024_25",
     help="validation year, e.g lac2023_24",
 )
 def test_cmd(ruleset):
@@ -129,7 +129,7 @@ def test_one_rule(code, ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2023_24",
+    default="lac2024_25",
     help="validation year e.g lac2022_23",
 )
 @click.option("--select", "-s", default=None)

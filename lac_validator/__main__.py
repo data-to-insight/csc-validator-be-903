@@ -24,8 +24,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2024_25",
-    help="validation year, e.g lac2023_24",
+    default="lac2025_26",
+    help="validation year, e.g lac2025_26",
 )
 def list_cmd(ruleset):
     """
@@ -44,8 +44,8 @@ def list_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2024_25",
-    help="validation year, e.g lac2024_25",
+    default="lac2025_26",
+    help="validation year, e.g lac2025_26",
 )
 def rule_info_cmd(ruleset):
     """
@@ -81,8 +81,8 @@ def rule_info_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2024_25",
-    help="validation year, e.g lac2023_24",
+    default="lac2025_26",
+    help="validation year, e.g lac2025_26",
 )
 def test_cmd(ruleset):
     """
@@ -105,8 +105,8 @@ def test_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2023_24",
-    help="validation year, e.g lac2023_24",
+    default="lac2025_26",
+    help="validation year, e.g lac2025_26",
 )
 def test_one_rule(code, ruleset):
     """
@@ -129,8 +129,8 @@ def test_one_rule(code, ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2024_25",
-    help="validation year e.g lac2022_23",
+    default="lac2025_26",
+    help="validation year e.g lac2025_26",
 )
 @click.option("--select", "-s", default=None)
 def run_all(p4a_path, ad1_path, ruleset, select):
@@ -183,8 +183,8 @@ def run_all(p4a_path, ad1_path, ruleset, select):
 @click.option(
     "--ruleset",
     "-r",
-    default="lac2023_24",
-    help="validation year e.g lac2023_24",
+    default="lac2025_26",
+    help="validation year e.g lac2025_26",
 )
 @click.option("--select", "-s", default=None)
 def run_all(filename: str, ruleset, select):

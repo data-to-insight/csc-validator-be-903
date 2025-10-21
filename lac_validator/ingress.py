@@ -15,7 +15,7 @@ from lac_validator.datastore import la_df, merge_postcodes
 from lac_validator.types import UploadedFile, UploadError
 
 logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)  # uncomment if you want to see debug messages
+logger.setLevel(logging.DEBUG)  # uncomment if you want to see debug messages
 
 
 class Timer:

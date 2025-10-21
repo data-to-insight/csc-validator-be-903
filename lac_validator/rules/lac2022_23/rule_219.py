@@ -79,7 +79,7 @@ def test_validate():
             },  # 7 fail - PLACE_CODES should not be null so probly needs a look
             {
                 "CHILD": "5555",
-                "PLACE": "PR2",
+                "PLACE": "K3",
                 "URN": 1,
             },  # 8 pass
         ]
@@ -88,7 +88,7 @@ def test_validate():
         [
             {
                 "URN": 1,
-                "PLACE_CODES": "PR2",
+                "PLACE_CODES": "PR2,K3",
             },  # 0
             {
                 "URN": 2,

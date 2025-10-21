@@ -10,6 +10,7 @@ from lac_validator.rule_engine import RuleDefinition
 from lac_validator.types import UploadedFile
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class LacValidator:

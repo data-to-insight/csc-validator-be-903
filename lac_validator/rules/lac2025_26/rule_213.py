@@ -20,12 +20,28 @@ def validate(dfs):
         )
         return {"Episodes": df.index[mask].tolist()}
 
+
 def test_validate():
     import pandas as pd
 
     fake_data = pd.DataFrame(
         {
-            "PLACE": ["T0", "U6", "U1", "U4", "P1", "T2", "T3", pd.NA, "Z1", "Z1", "Z11", "Z12", "Z13", "Z14"],
+            "PLACE": [
+                "T0",
+                "U6",
+                "U1",
+                "U4",
+                "P1",
+                "T2",
+                "T3",
+                pd.NA,
+                "Z1",
+                "Z1",
+                "Z11",
+                "Z12",
+                "Z13",
+                "Z14",
+            ],
             "PLACE_PROVIDER": [
                 pd.NA,
                 pd.NA,
@@ -39,8 +55,8 @@ def test_validate():
                 "notna",
                 pd.NA,
                 pd.NA,
-                "value", # Fail
-                "PR6" # Fail
+                "value",  # Fail
+                "PR6",  # Fail
             ],
         }
     )

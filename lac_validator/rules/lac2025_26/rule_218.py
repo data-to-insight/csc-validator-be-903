@@ -10,9 +10,9 @@ from lac_validator.rule_engine import rule_definition
     tables=["Episodes"],
 )
 def validate(dfs):
-    # Where <PL> not in 
+    # Where <PL> not in
     # ‘P1’; ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’; ‘T1’; ‘T2’; ‘T3’; ‘T4’; ‘Z11’; ‘Z12’; ‘Z13’; ‘Z14’
-    # And <PL_LA> not in ‘CON’; ‘NIR’ ‘SCO’; ‘WAL’; ‘NUK’ 
+    # And <PL_LA> not in ‘CON’; ‘NIR’ ‘SCO’; ‘WAL’; ‘NUK’
     # And <DEC> > 31/03/2015 or Null then <URN> should be provided
 
     if "Episodes" not in dfs:
@@ -34,7 +34,7 @@ def validate(dfs):
             "Z11",
             "Z12",
             "Z13",
-            "Z14"
+            "Z14",
         ]
 
         # convert string date values to datetime format to enable comparison.
@@ -50,7 +50,7 @@ def validate(dfs):
             .astype("str")
             .str.upper()
             # .str.startswith(("N", "W", "S", "C"))
-            .isin(['CON', 'NIR', 'SCO', 'WAL', 'NUK'])
+            .isin(["CON", "NIR", "SCO", "WAL", "NUK"])
         )
         place_exempt = episodes["PLACE"].isin(pl_list)
         ends_after_collection_start = (

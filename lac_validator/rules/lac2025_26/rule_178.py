@@ -56,7 +56,18 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "PLACE_PROVIDER": ["PR0", "PR1", "", pd.NA, "", pd.NA, "pr4", "PR5", pd.NA, "PR5"],
+            "PLACE_PROVIDER": [
+                "PR0",
+                "PR1",
+                "",
+                pd.NA,
+                "",
+                pd.NA,
+                "pr4",
+                "PR5",
+                pd.NA,
+                "PR5",
+            ],
             "PLACE": ["U1", "T0", "U2", "Z1", "T1", pd.NA, "U1", "Z14", "Z11", "z12"],
         }
     )

@@ -15,7 +15,9 @@ def validate(dfs):
     else:
         epi = dfs["Episodes"]
         error_mask = (
-            ~epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4", "Z1"])
+            ~epi["PLACE"].isin(
+                ["T0", "T1", "T2", "T3", "T4", "Z11", "Z12", "Z13", "Z14"]
+            )
             & epi["PLACE_PROVIDER"].isna()
         )
         return {"Episodes": epi.index[error_mask].to_list()}
@@ -26,11 +28,11 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "PLACE": ["E1", "P0", "T1", "T3", "P1", "Z1", "P0"],
-            "PLACE_PROVIDER": ["PR1", "PR2", pd.NA, "PR0", pd.NA, pd.NA, pd.NA],
+            "PLACE": ["E1", "P0", "T1", "T3", "Z14", "Z1", "P0", "Z14"],
+            "PLACE_PROVIDER": ["PR1", "PR2", pd.NA, "PR0", pd.NA, pd.NA, pd.NA, pd.NA],
         }
     )
 
     fake_dfs = {"Episodes": fake_data}
 
-    assert validate(fake_dfs) == {"Episodes": [4, 6]}
+    assert validate(fake_dfs) == {"Episodes": [5, 6]}

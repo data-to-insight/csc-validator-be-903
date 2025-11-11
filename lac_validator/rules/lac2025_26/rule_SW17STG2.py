@@ -10,7 +10,7 @@ from lac_validator.rule_engine import rule_definition
     tables=["SWEpisodes"],
 )
 def validate(dfs):
-    if ("SWEpisodes" not in dfs):
+    if "SWEpisodes" not in dfs:
         return {}
     else:
         SWE = dfs["SWEpisodes"]
@@ -18,14 +18,16 @@ def validate(dfs):
 
         # For the last SW episode (i.e. the episode with the latest <DECOM>), <SW_DEC> must be NULL
 
-        SWE['SW_DECOM'] = pd.to_datetime(SWE['SW_DECOM'], dayfirst=True, errors='coerce')
+        SWE["SW_DECOM"] = pd.to_datetime(
+            SWE["SW_DECOM"], dayfirst=True, errors="coerce"
+        )
 
         eps_sorted = SWE.sort_values(by=["SW_DECOM"], ascending=False)
-        most_recent_ep = eps_sorted.drop_duplicates("CHILD", keep='first')
+        most_recent_ep = eps_sorted.drop_duplicates("CHILD", keep="first")
 
         print(most_recent_ep)
 
-        most_recent_has_dec = most_recent_ep[most_recent_ep['SW_DEC'].notna()]
+        most_recent_has_dec = most_recent_ep[most_recent_ep["SW_DEC"].notna()]
 
         error_rows = SWE[SWE.index.isin(most_recent_has_dec["index"])].index
 
@@ -52,12 +54,12 @@ def test_validate():
                 "CHILD": "child2",
                 "SW_DECOM": "02/01/2000",
                 "SW_DEC": "01/01/2001",
-            },  # 2 fail,        
+            },  # 2 fail,
             {
                 "CHILD": "child1",
                 "SW_DECOM": "01/01/2000",
                 "SW_DEC": "01/01/2001",
-            },  # 0 pass,   
+            },  # 0 pass,
         ]
     )
 

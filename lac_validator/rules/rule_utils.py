@@ -77,7 +77,16 @@ def field_different_from_previous(dfs, field):
                 (merged_co[this_one].astype(str) == "K3")
                 & (merged_co[pre_one].astype(str) == "H5")
             )
-
+        if (field == "PLACE") & (collection_year == "2025"):
+            err_mask = err_mask & ~(
+                (merged_co[this_one].astype(str) == "K3")
+                & (merged_co[pre_one].astype(str) == "H5")
+            )
+        if (field == "PLACE") & (collection_year == "2026"):
+            err_mask = err_mask & ~(
+                (merged_co[this_one].astype(str).isin(["Z11", "Z12", "Z13", "Z14"]))
+                & (merged_co[pre_one].astype(str) == "Z1")
+            )
         err_list = merged_co["index"][err_mask].unique().tolist()
         err_list.sort()
         return {"Episodes": err_list}

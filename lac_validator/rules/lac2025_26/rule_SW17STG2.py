@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="SW17STG2",
     message="There is no social worker episode open at 31 March",
-    affected_fields=["SW_DEC"],
+    affected_fields=["SW_DEC", "SW_DECOM"],
     tables=["SWEpisodes"],
 )
 def validate(dfs):

@@ -61,4 +61,5 @@ column_names = {
     "PrevPerm": ["CHILD", "DOB", "PREV_PERM", "LA_PERM", "DATE_PERM"],
     "Missing": ["CHILD", "DOB", "MISSING", "MIS_START", "MIS_END"],
     "SWEpisodes": ["CHILD", "DOB", "SW_ID", "SW_DECOM", "SW_DEC", "SW_REASON"],
+    "DoLo": ["CHILD", "DOB", "DOLO_START", "DOLO_END"],
 }

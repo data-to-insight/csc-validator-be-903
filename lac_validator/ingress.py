@@ -682,11 +682,6 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
                         sbpfa_df.append(
                             get_fields_for_table({**all_data, **data}, "PlacedAdoption")
                         )
-                    elif child_table.tag == "SW_EPISODE":
-                        data = read_data(child_table)
-                        sbpfa_df.append(
-                            get_fields_for_table({**all_data, **data}, "PlacedAdoption")
-                        )
 
     data = {
         "Header": pd.DataFrame(header_df),

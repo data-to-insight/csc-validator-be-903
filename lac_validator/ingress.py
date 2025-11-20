@@ -694,8 +694,6 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         "PlacedAdoption": pd.DataFrame(sbpfa_df),
         "PrevPerm": pd.DataFrame(prev_perm_df),
         "Missing": pd.DataFrame(missing_df),
-        "sw_episodes": pd.DataFrame(sw_episodes_df),
-        "DoLo": pd.DataFrame(dolo_df),
     }
 
     # capitalize string columns

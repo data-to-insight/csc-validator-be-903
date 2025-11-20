@@ -25,6 +25,9 @@ del_list: list[str] = [
     "SW11aSTG2",
     "SW14STG2",
     "SW15STG2",
+    "SW16aSTG2",
+    "SW16bSTG2",
+    "SW16cSTG2",
 ]
 this_year_config = YearConfig(
     deleted=del_list, added_or_modified=this_year_validator_funcs

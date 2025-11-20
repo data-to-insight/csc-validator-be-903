@@ -22,6 +22,7 @@ def dummy_input_files():
         "previous_permanence.csv": "PrevPerm",
         "missing.csv": "Missing",
         "sw_episodes.csv": "SWEpisodes",
+        "DoLo.csv": "DoLo",
     }
 
 

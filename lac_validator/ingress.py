@@ -610,8 +610,6 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     sbpfa_df = []
     prev_perm_df = []
     missing_df = []
-    sw_episodes_df = []
-    dolo_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV

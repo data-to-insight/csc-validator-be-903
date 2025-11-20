@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="234",
     message="A child aged under 10 can not change placement due to being admitted to custody",
-    affected_fields=["REASON_PLACE_CHANGE"],
+    affected_fields=["REASON_PLACE_CHANGE", "DOB"],
     tables=["Episodes", "Header"],
 )
 def validate(dfs):

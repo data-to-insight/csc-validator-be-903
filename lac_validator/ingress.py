@@ -610,6 +610,8 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
     sbpfa_df = []
     prev_perm_df = []
     missing_df = []
+    sw_episodes_df = []
+    dolo_df = []
 
     def read_data(table):
         # The CHILDID tag needs to be renamed to CHILD to match the CSV
@@ -682,6 +684,11 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
                         sbpfa_df.append(
                             get_fields_for_table({**all_data, **data}, "PlacedAdoption")
                         )
+                    elif child_table.tag == "SW_EPISODE":
+                        data = read_data(child_table)
+                        sbpfa_df.append(
+                            get_fields_for_table({**all_data, **data}, "PlacedAdoption")
+                        )
 
     data = {
         "Header": pd.DataFrame(header_df),
@@ -694,6 +701,8 @@ def read_xml_from_text(xml_string) -> Dict[str, DataFrame]:
         "PlacedAdoption": pd.DataFrame(sbpfa_df),
         "PrevPerm": pd.DataFrame(prev_perm_df),
         "Missing": pd.DataFrame(missing_df),
+        "sw_episodes": pd.DataFrame(sw_episodes_df),
+        "DoLo": pd.DataFrame(dolo_df),
     }
 
     # capitalize string columns

@@ -32,9 +32,9 @@ def validate(dfs):
     V3_eps["DEC_dt"] = pd.to_datetime(V3_eps["DEC"], format="%d/%m/%Y", errors="coerce")
 
     # truncate episode start/end dates to collection start/end respectively
-    V3_eps.loc[
-        V3_eps["DEC"].isna() | (V3_eps["DEC_dt"] > collection_end), "DEC_dt"
-    ] = collection_end
+    V3_eps.loc[V3_eps["DEC"].isna() | (V3_eps["DEC_dt"] > collection_end), "DEC_dt"] = (
+        collection_end
+    )
     V3_eps.loc[V3_eps["DECOM_dt"] < collection_start, "DECOM_dt"] = collection_start
 
     V3_eps["duration"] = (V3_eps["DEC_dt"] - V3_eps["DECOM_dt"]).dt.days

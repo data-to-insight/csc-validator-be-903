@@ -10,6 +10,7 @@ from lac_validator.rule_engine import rule_definition
     tables=["DoLo", "EPISODES"],
 )
 def validate(dfs):
+    # Uses the logic from 577 which is the same rule but for missing
     if "Episodes" not in dfs or "DoLo" not in dfs:
         return {}
     else:

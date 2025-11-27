@@ -6,8 +6,8 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="709",
     message="Child with a DoLO is in an unexpected placement type.",
-    affected_fields=["DOLO_START"],
-    tables=["DoLo"],
+    affected_fields=["DOLO_START", "PLACEMENT"],
+    tables=["DoLo", "Episodes"],
 )
 def validate(dfs):
     # If <DOLO_START> and <DOLO_END> are present then <PLACEMENT> for any episode
@@ -20,7 +20,8 @@ def validate(dfs):
     dolo = dfs["DoLo"]
     epi = dfs["Episodes"]
 
-    dolo["index"] = dolo.index
+    dolo["index_dolo"] = dolo.index
+    epi["index_epi"] = epi.index
 
     # The rule asks for dolo start and end to be present but if it
     # didn't we could find overlaps by popping collection end as DOLO_END
@@ -48,9 +49,10 @@ def validate(dfs):
         ~overlaps["PLACEMENT"].isin(["K2", "Z12", "Z13"])
     ]
 
-    error_rows = wrong_placement_overlaps["index"]
+    error_rows_dolo = wrong_placement_overlaps["index_dolo"]
+    error_rows_epi = wrong_placement_overlaps["index_epi"]
 
-    return {"DoLo": error_rows.tolist()}
+    return {"DoLo": error_rows_dolo.tolist(), "Episodes": error_rows_epi.to_list()}
 
 
 def test_validate():
@@ -123,4 +125,6 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"DoLo": [0, 1, 2, 3]}
+    # Each of these DOLOs fails the same epi so I wasn't sure how to pass
+    # it to the front end so that they link up correctly
+    assert result == {"DoLo": [0, 1, 2, 3], "Episodes": [0, 0, 0, 0]}

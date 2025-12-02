@@ -18,38 +18,42 @@ def validate(dfs):
         return {}
 
     dolo = dfs["DoLo"]
-    dolo.reset_index(inplace=True)
-    dolo = dolo[dolo["DOLO_START"].notna()]
-
-    dolo["DOLO_START_dt"] = pd.to_datetime(
+    dolo["DOLO_START"] = pd.to_datetime(
         dolo["DOLO_START"], format="%d/%m/%Y", errors="coerce"
     )
-
-    dolo["DOLO_END_dt"] = pd.to_datetime(
+    dolo["DOLO_END"] = pd.to_datetime(
         dolo["DOLO_END"], format="%d/%m/%Y", errors="coerce"
     )
 
-    # sorting by DOLO_END
-    dolo.sort_values(["CHILD", "DOLO_END"], ascending=False, inplace=True)
-    dolo["LEAD_INDEX"] = dolo["index"].shift(1)
+    dolo["DOLO_END_FILL"] = dolo["DOLO_END"].fillna(dolo["DOLO_START"])
+    dolo.sort_values(["CHILD", "DOLO_END_FILL", "DOLO_START"], inplace=True)
 
-    m_dolo = dolo.merge(
-        dolo[["CHILD", "LEAD_INDEX", "DOLO_START", "DOLO_END"]],
+    dolo.reset_index(inplace=True)
+    dolo.reset_index(inplace=True)  # Twice on purpose
+
+    dolo["LAG_INDEX"] = dolo["level_0"].shift(-1)
+
+    lag_dolo = dolo.merge(
+        dolo,
         how="inner",
-        left_on="index",
-        right_on="LEAD_INDEX",
-        suffixes=("", "_prev"),
+        left_on="level_0",
+        right_on="LAG_INDEX",
+        suffixes=["", "_PREV"],
     )
 
-    same_child = m_dolo["CHILD"] == m_dolo["CHILD_prev"]
-    empty_end_prev = m_dolo["DOLO_END_prev"].isna()
-    dolo_overlap = m_dolo["DOLO_START"] < m_dolo["DOLO_START_prev"]
+    # We're only interested in cases where there is more than one row for a child.
+    lag_dolo = lag_dolo[lag_dolo["CHILD"] == lag_dolo["CHILD_PREV"]]
 
-    error_rows = m_dolo[same_child & (empty_end_prev | dolo_overlap)].sort_values(
-        "index"
-    )
+    # A previous dolo_END date is null
+    mask1 = lag_dolo["DOLO_END_PREV"].isna()
+    # dolo_START is before previous dolo_END (overlapping dates)
+    mask2 = lag_dolo["DOLO_START"] < lag_dolo["DOLO_END_PREV"]
 
-    return {"DoLo": error_rows["index"].to_list()}
+    mask = mask1 | mask2
+
+    error_list = lag_dolo["index"][mask].to_list()
+    error_list.sort()
+    return {"DoLo": error_list}
 
 
 def test_validate():
@@ -57,7 +61,7 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         {
-            "CHILD": [1, 1, 1, 2, 2, 3],
+            "CHILD": [1, 1, 1, 2, 2, 3, 4, 4, 4],
             "DOLO_START": [
                 "01/01/2000",
                 "04/01/2000",
@@ -65,6 +69,9 @@ def test_validate():
                 "01/01/2000",
                 "02/01/2000",
                 "01/01/2000",
+                "01/04/2025",
+                "04/04/2025",
+                "08/04/2025",
             ],
             "DOLO_END": [
                 "02/01/2000",
@@ -73,6 +80,9 @@ def test_validate():
                 pd.NA,
                 "02/01/2000",
                 "02/01/2000",
+                "o2/04/2025",
+                pd.NA,
+                "10/04/2025",
             ],
         }
     )
@@ -81,4 +91,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"DoLo": [2, 4]}
+    assert result == {"DoLo": [2, 4, 7, 8]}

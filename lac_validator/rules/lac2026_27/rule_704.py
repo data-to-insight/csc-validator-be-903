@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="704",
     message="The date that the DoLO ended is before the start or after the end of the collection year.",
-    affected_fields=["DOLO_START", "DOLO_END"],
+    affected_fields=["DOLO_END"],
     tables=["DoLo"],
 )
 def validate(dfs):

@@ -79,22 +79,22 @@ def validate(dfs):
         pocs = pocs.merge(dolo, on="CHILD", how="right", suffixes=["_eps", "_dolo"])
         # poc : period of care
         pocs["out_of_poc"] = (
-            # (a) POC is over, but Missing ep is ongoing:
+            # (a) POC is over, but dolo ep is ongoing:
             (
                 pocs["DOLO_START"].notna()
                 & pocs["DOLO_END"].isna()
                 & pocs["poc_DEC"].notna()
             )
-            # (b) Ongoing Missing ep, but started before POC:
+            # (b) Ongoing dolo ep, but started before POC:
             | (pocs["DOLO_END"].isna() & (pocs["DOLO_START"] < pocs["poc_DECOM"]))
-            # (c) Missing ep ends after POC:
+            # (c) dolo ep ends after POC:
             | (pocs["DOLO_END"] > pocs["poc_DEC"])
-            # (d) Missing ep ends before POC:
+            # (d) dolog ep ends before POC:
             | (pocs["DOLO_END"] < pocs["poc_DECOM"])
-            # (e?) Starts during a previous poc??? (row 12 of Missing table in testvalidate_577)
+            # (e?) Starts during a previous poc??? (row 12 of dolo table in testvalidate_577)
         )
 
-        # Drop rows where child was not present in 'Missing' table.
+        # Drop rows where child was not present in 'dolo' table.
         pocs = pocs[pocs["index_dolo"].notna()]
 
         mask = pocs.groupby("index_dolo")["out_of_poc"].transform("min")

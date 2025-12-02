@@ -14,38 +14,33 @@ def validate(dfs):
         return {}
     else:
         epi = dfs["Episodes"]
-        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.sort_values(["CHILD", "DECOM"], inplace=True)
 
-        epi.reset_index(inplace=True)
-        epi.reset_index(inplace=True)
-        epi["LAG_INDEX"] = epi["level_0"].shift(-1)
-        epi["LEAD_INDEX"] = epi["level_0"].shift(1)
+        epi["index"] = epi.index
 
-        m_epi = epi.merge(
-            epi,
-            how="inner",
-            left_on="level_0",
-            right_on="LAG_INDEX",
-            suffixes=["", "_TOP"],
+        epi["DECOM_dt"] = pd.to_datetime(epi["DECOM"], dayfirst=True, errors="coerce")
+
+        epi.sort_values(["CHILD", "DECOM_dt"], inplace=True)
+
+        epi["prev_index"] = epi["index"].shift(-1)
+        epi["prev-1_index"] = epi["index"].shift(-2)
+
+        epi_1_prev = epi.merge(
+            epi, left_on="index", right_on="prev_index", suffixes=("", "_prev")
         )
-        m_epi = m_epi.merge(
-            epi,
-            how="inner",
-            left_on="level_0",
-            right_on="LEAD_INDEX",
-            suffixes=["", "_BOTM"],
+        epi_2_prev = epi_1_prev.merge(
+            epi, left_on="index", right_on="prev-1_index", suffixes=("", "_prev-1")
         )
-        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_TOP"]]
-        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_BOTM"]]
-        m_epi = m_epi[m_epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])]
 
-        mask1 = m_epi["RNE_BOTM"] != "P"
-        mask2 = m_epi["PLACE_BOTM"] != m_epi["PLACE_TOP"]
-        err_mask = mask1 | mask2
-        err_list = m_epi["index"][err_mask].unique().tolist()
-        err_list.sort()
-        return {"Episodes": err_list}
+        same_child = (epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev"]) & (
+            epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev-1"]
+        )
+        prev_pl = epi_2_prev["PLACE_prev"].isin(["T0", "T1", "T2", "T3", "T4"])
+        rne = epi_2_prev["RNE"] != "P"
+        pl_not_equal = epi_2_prev["PLACE"] != epi_2_prev["PLACE_prev-1"]
+
+        error_rows = epi_2_prev[(same_child & prev_pl) & (rne | pl_not_equal)]["index"]
+
+        return {"Episodes": error_rows.to_list()}
 
 
 def test_validate():
@@ -93,4 +88,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [1, 5]}
+    assert result == {"Episodes": [2, 6]}

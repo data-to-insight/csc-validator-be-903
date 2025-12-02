@@ -37,19 +37,6 @@ def validate(dfs):
         epi, left_on="index", right_on="prev-1_index", suffixes=("", "_prev-1")
     )
 
-    print(
-        epi_2_prev[
-            [
-                "CHILD",
-                "DECOM_dt",
-                "CHILD_prev",
-                "DECOM_dt_prev",
-                "CHILD_prev-1",
-                "DECOM_prev-1",
-            ]
-        ]
-    )
-
     same_child = (epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev"]) & (
         epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev-1"]
     )

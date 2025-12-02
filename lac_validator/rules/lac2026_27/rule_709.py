@@ -41,7 +41,7 @@ def validate(dfs):
 
     # We can find overlaps by finding a DOLO_START before a DEC and a DOLO_END after a  after a DECOM
     overlaps = merged[
-        (merged["DOLO_START_dt"] <= merged["DEC_dt"])
+        ((merged["DOLO_START_dt"] <= merged["DEC_dt"]) | (merged["DEC_dt"].isna()))
         & (merged["DOLO_END_dt"] >= merged["DECOM_dt"])
     ]
 

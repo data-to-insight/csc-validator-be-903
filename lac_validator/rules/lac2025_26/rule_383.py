@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="383",
     message="A child in a temporary placement must subsequently return to his/her normal placement.",
-    affected_fields=["PLACE"],
+    affected_fields=["PLACE", "RNE", "PL_POST"],
     tables=["Episodes"],
 )
 def validate(dfs):
@@ -18,44 +18,38 @@ def validate(dfs):
     # <PL_POST> must = previous episode -1 <PL_POST>
     if "Episodes" not in dfs:
         return {}
-    else:
-        epi = dfs["Episodes"]
-        epi["DECOM"] = pd.to_datetime(epi["DECOM"], format="%d/%m/%Y", errors="coerce")
-        epi.sort_values(["CHILD", "DECOM"], inplace=True)
 
-        epi.reset_index(inplace=True)
-        epi.reset_index(inplace=True)
-        epi["LAG_INDEX"] = epi["level_0"].shift(-1)
-        epi["LEAD_INDEX"] = epi["level_0"].shift(1)
+    epi = dfs["Episodes"]
 
-        m_epi = epi.merge(
-            epi,
-            how="inner",
-            left_on="level_0",
-            right_on="LAG_INDEX",
-            suffixes=["", "_TOP"],
-        )
-        m_epi = m_epi.merge(
-            epi,
-            how="inner",
-            left_on="level_0",
-            right_on="LEAD_INDEX",
-            suffixes=["", "_BOTM"],
-        )
+    epi["index"] = epi.index
 
-        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_TOP"]]
-        m_epi = m_epi[m_epi["CHILD"] == m_epi["CHILD_BOTM"]]
-        m_epi = m_epi[m_epi["PLACE"].isin(["T0", "T1", "T2", "T3", "T4"])]
-        print(
-            m_epi[["DECOM", "PLACE", "CHILD", "PL_POST", "PL_POST_TOP", "PL_POST_BOTM"]]
-        )
-        mask1 = m_epi["RNE_BOTM"] != "P"
-        mask2 = m_epi["PLACE_BOTM"] != m_epi["PLACE_TOP"]
-        mask_3 = m_epi["PL_POST_TOP"] != m_epi["PL_POST"]
-        err_mask = mask1 | mask2 | mask_3
-        err_list = m_epi["index"][err_mask].unique().tolist()
-        err_list.sort()
-        return {"Episodes": err_list}
+    epi["DECOM_dt"] = pd.to_datetime(epi["DECOM"], dayfirst=True, errors="coerce")
+
+    epi.sort_values(["CHILD", "DECOM_dt"], inplace=True)
+
+    epi["prev_index"] = epi["index"].shift(-1)
+    epi["prev-1_index"] = epi["index"].shift(-2)
+
+    epi_1_prev = epi.merge(
+        epi, left_on="index", right_on="prev_index", suffixes=("", "_prev")
+    )
+    epi_2_prev = epi_1_prev.merge(
+        epi, left_on="index", right_on="prev-1_index", suffixes=("", "_prev-1")
+    )
+
+    same_child = (epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev"]) & (
+        epi_2_prev["CHILD"] == epi_2_prev["CHILD_prev-1"]
+    )
+    prev_pl = epi_2_prev["PLACE_prev"].isin(["T0", "T1", "T2", "T3", "T4"])
+    rne = epi_2_prev["RNE"] != "P"
+    pl_not_equal = epi_2_prev["PLACE"] != epi_2_prev["PLACE_prev-1"]
+    post_not_equal = epi_2_prev["PL_POST"] != epi_2_prev["PL_POST_prev-1"]
+
+    error_rows = epi_2_prev[
+        (same_child & prev_pl) & (rne | pl_not_equal | post_not_equal)
+    ]["index"]
+
+    return {"Episodes": error_rows.to_list()}
 
 
 def test_validate():
@@ -76,7 +70,7 @@ def test_validate():
                 "DECOM": "05/06/2020",
                 "PLACE": "T1",
                 "PL_POST": 1,
-            },  # 1 Middle Fails as next RNE not P
+            },  # 1
             {
                 "CHILD": "111",
                 "RNE": "T",
@@ -104,7 +98,7 @@ def test_validate():
                 "DECOM": "10/06/2020",
                 "PLACE": "T1",
                 "PL_POST": 1,
-            },  # 5 Middle Fails as pre PL not next PL
+            },  # 5
             {
                 "CHILD": "333",
                 "RNE": "P",
@@ -125,7 +119,7 @@ def test_validate():
                 "DECOM": "09/06/2020",
                 "PLACE": "P4",
                 "PL_POST": 1,
-            },  # 8  Middle Passes not a T code
+            },  # 8
             {
                 "CHILD": "444",
                 "RNE": "S",
@@ -146,7 +140,7 @@ def test_validate():
                 "DECOM": "13/06/2020",
                 "PLACE": "T1",
                 "PL_POST": 1,
-            },  # 11 Middle Passes
+            },  # 11
             {
                 "CHILD": "6666",
                 "RNE": "P",
@@ -167,14 +161,14 @@ def test_validate():
                 "DECOM": "05/06/2020",
                 "PLACE": "T1",
                 "PL_POST": 2,
-            },  # 14 fails as next PL_POST != first PL_POST
+            },  # 14
             {
                 "CHILD": "777",
                 "RNE": "P",
                 "DECOM": "06/06/2020",
                 "PLACE": "S1",
                 "PL_POST": 3,
-            },  # 15 fails as PL_POST is different
+            },  # 15
         ]
     )
 
@@ -182,4 +176,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [1, 5, 14]}
+    assert result == {"Episodes": [2, 6, 15]}

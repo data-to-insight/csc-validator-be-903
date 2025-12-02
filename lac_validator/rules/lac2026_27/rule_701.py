@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="701",
     message="The end date of the DoLO is not a valid date.",
-    affected_fields=["DOLO_START"],
+    affected_fields=["DOLO_END"],
     tables=["DoLo"],
 )
 def validate(dfs):

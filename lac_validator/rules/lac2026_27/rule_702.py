@@ -6,7 +6,7 @@ from lac_validator.rule_engine import rule_definition
 @rule_definition(
     code="702",
     message="The date that the DoLO ended is before the date that it started.",
-    affected_fields=["DOLO_START"],
+    affected_fields=["DOLO_START", "DOLO_END"],
     tables=["DoLo"],
 )
 def validate(dfs):

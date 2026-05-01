@@ -13,9 +13,8 @@ def validate(dfs):
     if "SWEpisodes" not in dfs:
         return {}
     else:
-
         df = dfs["SWEpisodes"]
-        
+
         df["SW_DEC_dt"] = pd.to_datetime(
             df["SW_DEC"], format="%d/%m/%Y", errors="coerce"
         )

@@ -4,42 +4,20 @@ from lac_validator.rule_engine import rule_definition
 
 
 @rule_definition(
-    code="222",
-    message="Ofsted Unique reference number (URN) should not be recorded for this placement type.",
+    code="243",
+    message="Only placements with providers registered with Ofsted should have a URN reported.",
     affected_fields=["URN"],
     tables=["Episodes"],
 )
 def validate(dfs):
-    # If <URN> provided and <URN> not = ‘XXXXXX’, and where
-    # <PL> = ‘P1’; ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’ or Z1 then should not be provided
-
-    # If <URN> provided and <URN> not = ‘XXXXXXX’, and where <PL> =
-    # ‘P1’; ‘P3’; ‘R1’; ‘R2’; ‘R5’; ‘T0’ ‘T1’; ‘T2’; ‘T3’; ‘T4’; ‘Z11’; ‘Z12’; ‘Z13’; ‘Z14’ then
-    # <URN> should not be provided
+    # If <PL_LA> in (‘CON’; ‘NIR’ ‘SCO’; ‘WAL’; ‘NUK’) then <URN> should be null
     if "Episodes" not in dfs:
         return {}
     else:
         df = dfs["Episodes"]
-        place_code_list = [
-            "P1",
-            "P3",
-            "R1",
-            "R2",
-            "R5",
-            "T0",
-            "T1",
-            "T2",
-            "T3",
-            "T4",
-            "Z11",
-            "Z12",
-            "Z13",
-            "Z14",
-        ]
-        mask = (
-            (df["PLACE"].isin(place_code_list))
-            & (df["URN"].notna())
-            & (df["URN"] != "XXXXXXX")
+
+        mask = (df["PL_LA"].isin(["CON", "NIR", "SCO", "WAL", "NUK"])) & (
+            df["URN"].notna()
         )
         return {"Episodes": df.index[mask].tolist()}
 
@@ -49,15 +27,9 @@ def test_validate():
 
     fake_data = pd.DataFrame(
         [
-            {"PLACE": "H5", "URN": "XXXXXXX"},  # 0
-            {"PLACE": "U1", "URN": "Whatever"},  # 1
-            {"PLACE": "U2", "URN": pd.NA},  # 2
-            {"PLACE": "T1", "URN": pd.NA},  # 3
-            {"PLACE": "R1", "URN": "Whatever"},  # 4  Fail
-            {"PLACE": "T2", "URN": "Whatever"},  # 5  Fail
-            {"PLACE": "P2", "URN": "Whatever"},  # 6  Pass
-            {"PLACE": "Z1", "URN": pd.NA},  # 7  Pass
-            {"PLACE": "Z11", "URN": "Whatevs"},  # 8  Fail
+            {"PL_LA": "H5", "URN": "XXXXXXX"},  # 0
+            {"PL_LA": "NIR", "URN": "XXXXXXX"},  # 1 FAILS
+            {"PL_LA": "CON", "URN": pd.NA},  # 2
         ]
     )
 
@@ -65,4 +37,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"Episodes": [4, 5, 8]}
+    assert result == {"Episodes": [1]}

@@ -21,10 +21,9 @@ def validate(dfs):
         )
 
         # Removing rows without a dec
-        has_dec = df[df["SW_DEC"].notna() | df["SW_DECOM"]].copy()
+        has_dec = df[df["SW_DEC"].notna() | df["SW_DECOM"].notna()].copy()
 
         has_dec["time_delta"] = has_dec["SW_DEC_dt"] - has_dec["SW_DECOM_dt"]
-        print(has_dec)
 
         error_rows = has_dec[has_dec["time_delta"] < pd.Timedelta(days=3)].index
 
@@ -41,6 +40,7 @@ def test_validate():
             {"CHILD": "2", "SW_DEC": "03/01/1901", "SW_DECOM": "01/01/1901"},  # fail
             {"CHILD": "2", "SW_DEC": "01/01/1901", "SW_DECOM": pd.NA},
             {"CHILD": "3", "SW_DEC": pd.NA, "SW_DECOM": pd.NA},
+            {"CHILD": "4", "SW_DEC": pd.NA, "SW_DECOM": "01/01/2000"},
         ]
     )
 

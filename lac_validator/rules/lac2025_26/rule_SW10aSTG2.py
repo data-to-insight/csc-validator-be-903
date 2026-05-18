@@ -38,7 +38,7 @@ def validate(dfs):
         # <SW_DECOM> of current episode must be >= (<SW_DEC>+/- 7 days) of previous episode if present.
         # Can be interpreted as meaning >= sw_dec - 7 days (which includes all days inside the tolerance)
         error_cohort = m_df[
-            (m_df["SW_REASON"] != "FCONTA")
+            ((m_df["SW_REASON"] != "FCONTA") | (m_df["SW_REASON"].isna()))
             & (
                 ~(m_df["SW_DECOM"] >= (m_df["SW_DEC_prev"] - pd.DateOffset(days=7)))
                 | ~(m_df["SW_DECOM"] <= (m_df["SW_DEC_prev"] + pd.DateOffset(days=7)))

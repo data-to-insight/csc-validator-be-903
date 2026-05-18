@@ -15,11 +15,13 @@ def validate(dfs):
     else:
         df = dfs["SWEpisodes"]
 
+        df = df[df["SW_DECOM"].notna()].copy()
+
         df["SW_DECOM_dt"] = pd.to_datetime(
             df["SW_DECOM"], format="%d/%m/%Y", errors="coerce"
         )
 
-        error_rows = df[(df["SW_DECOM_dt"].isna()) | (df["SW_DECOM"].isna())].index
+        error_rows = df[(df["SW_DECOM_dt"].isna())].index
 
         return {"SWEpisodes": error_rows.tolist()}
 
@@ -44,4 +46,4 @@ def test_validate():
 
     result = validate(fake_dfs)
 
-    assert result == {"SWEpisodes": [0, 2, 3, 4, 5]}
+    assert result == {"SWEpisodes": [0, 2, 3, 5]}
